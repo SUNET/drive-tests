@@ -1,0 +1,23 @@
+acceptance:
+  - test_tests.py
+  - test_status_cli.py
+  # python test_storage.py
+  - test_ocs.py
+  - test_apps_ocs.py
+  - test_webdav.py
+selenium:
+  - test_login_selenium.py
+seleniumtotp:
+  - test_login_selenium_totp.py
+collabora:
+  - test_collabora_selenium.py
+node:
+  - test_tests.py
+  - test_status_cli.py
+  - test_ocs.py
+  - test_apps_ocs.py
+  - test_webdav.py
+  - test_login_selenium.py
+  - test_login_selenium_totp.py
+  - test_login_multi_selenium.py
+  - test_collabora_selenium.py
