@@ -366,8 +366,8 @@ class StatusResult():
     installed=True
     maintenance=False
     needsDbUpgrade=False
-    version="26.0.2.2"
-    versionstring="26.0.2 Enterprise"
+    version="26.0.4.3"
+    versionstring="26.0.4 Enterprise"
     edition=""
     productname="Nextcloud"
     extendedSupport=False
@@ -376,8 +376,8 @@ class StatusResultTest():
     installed=True
     maintenance=False
     needsDbUpgrade=False
-    version="26.0.3.3"
-    versionstring="26.0.3 Enterprise"
+    version="26.0.4.3"
+    versionstring="26.0.4 Enterprise"
     edition=""
     productname="Nextcloud"
     extendedSupport=False
@@ -386,8 +386,8 @@ class StatusResultGss():
     installed=True
     maintenance=False
     needsDbUpgrade=False
-    version="26.0.2.2"
-    versionstring="26.0.2 Enterprise"
+    version="26.0.4.3"
+    versionstring="26.0.4 Enterprise"
     edition=""
     productname="Nextcloud"
     extendedSupport=False
@@ -396,8 +396,8 @@ class StatusResultGssTest():
     installed=True
     maintenance=False
     needsDbUpgrade=False
-    version="26.0.3.3"
-    versionstring="26.0.3 Enterprise"
+    version="26.0.4.3"
+    versionstring="26.0.4 Enterprise"
     edition=""
     productname="Nextcloud"
     extendedSupport=False
@@ -410,14 +410,14 @@ class OcsCapabilitiesResult():
     ocs_meta_status= "ok"
     ocs_meta_statuscode = 100
     ocs_meta_message = "OK"
-    ocs_data_version_string = "26.0.2 Enterprise"
+    ocs_data_version_string = "26.0.4 Enterprise"
     ocs_data_capabilities_globalscale_enabled = True
 
 class OcsCapabilitiesResultTest():
     ocs_meta_status= "ok"
     ocs_meta_statuscode = 100
     ocs_meta_message = "OK"
-    ocs_data_version_string = "26.0.3 Enterprise"
+    ocs_data_version_string = "26.0.4 Enterprise"
     ocs_data_capabilities_globalscale_enabled = True
 
 class OcsUserExistsResult():
@@ -427,15 +427,15 @@ class OcsUserExistsResult():
 
 class AppUserSamlResult():
     id="user_saml"
-    version="5.2.0"
+    version="5.2.2"
 
 class AppUserSamlResultTest():
     id="user_saml"
-    version="5.2.1"
+    version="5.2.2"
 
 class AppGssResult():
     id="globalsiteselector"
-    version="2.4.1"
+    version="2.4.3"
 
 class AppGssResultTest():
     id="globalsiteselector"
