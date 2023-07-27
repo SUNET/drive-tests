@@ -9,7 +9,7 @@ from webdav3.client import Client
 
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
-from webdriver_manager.chrome import ChromeDriverManager
+from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
@@ -35,14 +35,14 @@ class TestRdsNextcloudLocal(unittest.TestCase):
         nodepwd = os.environ.get(sciebopwdenv)
 
         # We test locally, so we need to disable some of the certificate checks
-        chromeOptions = webdriver.ChromeOptions()
+        chromeOptions = Options()
         chromeOptions.add_argument("--disable-web-security")
         chromeOptions.add_argument("--allow-running-insecure-content")
         chromeOptions.add_argument("--ignore-ssl-errors=yes")
         chromeOptions.add_argument("--ignore-certificate-errors")
         chromeOptions.add_argument("--allow-insecure-localhost")
 
-        driver = webdriver.Chrome(ChromeDriverManager().install(), options=chromeOptions)
+        driver = webdriver.Chrome(options=chromeOptions)
         driver.maximize_window()
         # driver2 = webdriver.Firefox()
         driver.get(loginurl)
@@ -71,14 +71,14 @@ class TestRdsNextcloudLocal(unittest.TestCase):
         nodepwd = os.environ.get(sciebopwdenv)
 
         # We test locally, so we need to disable some of the certificate checks
-        chromeOptions = webdriver.ChromeOptions()
+        chromeOptions = Options()
         chromeOptions.add_argument("--disable-web-security")
         chromeOptions.add_argument("--allow-running-insecure-content")
         chromeOptions.add_argument("--ignore-ssl-errors=yes")
         chromeOptions.add_argument("--ignore-certificate-errors")
         chromeOptions.add_argument("--allow-insecure-localhost")
 
-        driver = webdriver.Chrome(ChromeDriverManager().install(), options=chromeOptions)
+        driver = webdriver.Chrome(options=chromeOptions)
         driver.maximize_window()
         # driver2 = webdriver.Firefox()
         driver.get(loginurl)

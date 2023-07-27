@@ -10,7 +10,7 @@ import pyautogui
 
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
-from webdriver_manager.chrome import ChromeDriverManager
+from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
@@ -49,7 +49,13 @@ class TestAppsSelenium(unittest.TestCase):
                 nodeuser = drv.get_seleniumuser(appnode)
                 nodepwd = drv.get_seleniumuserpassword(appnode)
                 
-                driver = webdriver.Chrome(ChromeDriverManager().install())
+                try:
+                    options = Options()
+                    driver = webdriver.Chrome(options=options)
+                except:
+                    self.logger.error(f'Error initializing Chrome driver')
+                    self.assertTrue(False)
+                
                 driver.maximize_window()
                 actions = ActionChains(driver)
                 # driver2 = webdriver.Firefox()

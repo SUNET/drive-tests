@@ -11,7 +11,7 @@ import time
 
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
-from webdriver_manager.chrome import ChromeDriverManager
+from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
@@ -42,10 +42,11 @@ class TestSciebo(unittest.TestCase):
         zenodoButtonIndex = '2'
         
         try:
-            driver = webdriver.Chrome(ChromeDriverManager().install())
+            options = Options()
+            driver = webdriver.Chrome(options=options)
         except:
-            options = webdriver.ChromeOptions()
-            driver = webdriver.Chrome(options)
+            self.logger.error(f'Error initializing Chrome driver')
+            self.assertTrue(False)
         driver.maximize_window()
         # driver2 = webdriver.Firefox()
         driver.get(loginurl)

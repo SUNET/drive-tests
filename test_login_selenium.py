@@ -11,12 +11,12 @@ import time
 
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
-from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
 from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.common.action_chains import ActionChains
+from selenium.webdriver.chrome.options import Options
 import os
 import time
 import logging
@@ -46,10 +46,11 @@ class TestLoginSelenium(unittest.TestCase):
         nodepwd = drv.get_seleniumuserpassword(fullnode)
         
         try:
-            driver = webdriver.Chrome(ChromeDriverManager().install())
+            options = Options()
+            driver = webdriver.Chrome(options=options)
         except:
-            options = webdriver.ChromeOptions()
-            driver = webdriver.Chrome(options)
+            self.logger.error(f'Error initializing Chrome driver')
+            self.assertTrue(False)
         # driver2 = webdriver.Firefox()
         driver.get(loginurl)
 
@@ -113,10 +114,11 @@ class TestLoginSelenium(unittest.TestCase):
                 self.assertEqual(client.list().count('SharedFolder/'), 1)
 
                 try:
-                    driver = webdriver.Chrome(ChromeDriverManager().install())
+                    options = Options()
+                    driver = webdriver.Chrome(options=options)
                 except:
-                    options = webdriver.ChromeOptions()
-                    driver = webdriver.Chrome(options)
+                    self.logger.error(f'Error initializing Chrome driver')
+                    self.assertTrue(False)
                 driver.maximize_window()
                 # driver2 = webdriver.Firefox()
                 driver.get(loginurl)
@@ -190,10 +192,11 @@ class TestLoginSelenium(unittest.TestCase):
         samlpassword=drv.get_samluserpassword("eduidtest")
         
         try:
-            driver = webdriver.Chrome(ChromeDriverManager().install())
+            options = Options()
+            driver = webdriver.Chrome(options=options)
         except:
-            options = webdriver.ChromeOptions()
-            driver = webdriver.Chrome(options)
+            self.logger.error(f'Error initializing Chrome driver')
+            self.assertTrue(False)
         # driver2 = webdriver.Firefox()
         driver.get(loginurl)
 
@@ -258,10 +261,11 @@ class TestLoginSelenium(unittest.TestCase):
         samlpassword=drv.get_samluserpassword("su")
         
         try:
-            driver = webdriver.Chrome(ChromeDriverManager().install())
+            options = Options()
+            driver = webdriver.Chrome(options=options)
         except:
-            options = webdriver.ChromeOptions()
-            driver = webdriver.Chrome(options)
+            self.logger.error(f'Error initializing Chrome driver')
+            self.assertTrue(False)
         # driver2 = webdriver.Firefox()
         driver.get(loginurl)
 
@@ -310,5 +314,4 @@ class TestLoginSelenium(unittest.TestCase):
         driver.implicitly_wait(10) # seconds before quitting
 
 if __name__ == '__main__':
-    # unittest.main()
     unittest.main(testRunner=xmlrunner.XMLTestRunner(output='test-reports'))
