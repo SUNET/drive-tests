@@ -12,7 +12,7 @@ import yaml
 import sunetdrive
 
 g_testtarget = os.environ.get('DriveTestTarget')
-repobase='../'
+repobase='sunet-drive-ops/'
 
 class TestStorage(unittest.TestCase):
     def test_existingbuckets(self):

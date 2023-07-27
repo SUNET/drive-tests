@@ -8,7 +8,7 @@ import yaml
 import sunetdrive
 import os
 
-repobase='../'
+repobase='sunet-drive-ops/'
 
 class TestTests(unittest.TestCase):
     # Ensure that all full nodes are properly tested
