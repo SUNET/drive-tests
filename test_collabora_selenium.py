@@ -37,6 +37,7 @@ class TestCollaboraSelenium(unittest.TestCase):
 
     try:
         options = Options()
+        options.add_argument("--headless")
         driver = webdriver.Chrome(options=options)
     except:
         self.logger.error(f'Error initializing Chrome driver')
