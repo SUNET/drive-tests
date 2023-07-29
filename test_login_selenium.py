@@ -90,7 +90,7 @@ class TestLoginSelenium(unittest.TestCase):
         driver.implicitly_wait(10) # seconds before quitting
 
     def test_node_login(self):
-        delay = 10 # seconds
+        delay = 30 # seconds
         drv = sunetdrive.TestTarget()
         for fullnode in drv.fullnodes:
             with self.subTest(mynode=fullnode):
@@ -178,7 +178,7 @@ class TestLoginSelenium(unittest.TestCase):
                 driver.implicitly_wait(10) # seconds before quitting
 
     def test_saml_eduid_nomfa(self):
-        delay = 10 # seconds
+        delay = 30 # seconds
         drv = sunetdrive.TestTarget()
 
         if len(drv.allnodes) == 1:
@@ -248,7 +248,7 @@ class TestLoginSelenium(unittest.TestCase):
         driver.implicitly_wait(10) # seconds before quitting
 
     def test_saml_su_nomfa(self):
-        delay = 10 # seconds
+        delay = 30 # seconds
         drv = sunetdrive.TestTarget()
         if len(drv.allnodes) == 1:
             self.logger.info(f'Only testing {drv.allnodes[0]}, not testing su saml')

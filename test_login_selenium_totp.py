@@ -96,7 +96,7 @@ class TestLoginSeleniumTotp(unittest.TestCase):
         print(driver.current_url)
 
     def test_node_login(self):
-        delay = 10 # seconds
+        delay = 30 # seconds
         drv = sunetdrive.TestTarget(g_testtarget)
         for fullnode in drv.fullnodes:
             with self.subTest(mynode=fullnode):

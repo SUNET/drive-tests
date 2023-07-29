@@ -34,8 +34,8 @@ class TestLoginMultiSelenium(unittest.TestCase):
         self.logger.info(f'self.logger.info test_logger')
         pass
 
-    def test_node_login(self):
-        delay = 10 # seconds
+    def test_node_multi_login(self):
+        delay = 30 # seconds
         drv = sunetdrive.TestTarget(g_testtarget)
         for fullnode in drv.fullnodes:
             with self.subTest(mynode=fullnode):
@@ -96,8 +96,13 @@ class TestLoginMultiSelenium(unittest.TestCase):
                 currentUrl = driver.current_url
                 # self.assertEqual(dashboardUrl, currentUrl)                
 
-                files = driver.find_element(By.XPATH, '//a[@href="'+ '/index.php/apps/files/' +'"]')
-                files.click()
+                try:
+                    self.logger.info(f'Waiting for files app button')
+                    files = driver.find_element(By.XPATH, '//a[@href="'+ '/index.php/apps/files/' +'"]')
+                    files.click()
+                except:
+                    self.logger.error(f'Files app button not found')
+                    self.assertTrue(False)
 
                 try:
                     wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'app-menu-entry')))
