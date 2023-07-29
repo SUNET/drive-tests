@@ -78,6 +78,14 @@ class TestLoginMultiSelenium(unittest.TestCase):
                 wait.until(EC.presence_of_element_located((By.ID, 'password'))).send_keys(nodepwd + Keys.ENTER)
 
                 # Wait for TOTP screen
+                try:
+                    self.logger.info(f'Check if TOTP selection dialogue is visible')
+                    totpselect = driver.find_element(By.XPATH, '//a[@href="'+ '/index.php/login/challenge/totp' +'"]')
+                    self.logger.warning(f'Found TOTP selection dialogue')
+                    totpselect.click()
+                except:
+                    self.logger.info(f'No need to select TOTP provider')
+
                 totp = pyotp.TOTP(nodetotpsecret)
                 wait.until(EC.presence_of_element_located((By.XPATH, '//*[@id="body-login"]/div[1]/div/main/div/form/input'))).send_keys(totp.now() + Keys.ENTER)
 
