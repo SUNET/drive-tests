@@ -7,7 +7,7 @@ import unittest
 import sunetdrive
 from webdav3.client import Client
 import pyotp
-
+import pyautogui
 import time
 
 from selenium import webdriver
@@ -24,6 +24,7 @@ import logging
 
 # 'prod' for production environment, 'test' for test environment
 g_testtarget = os.environ.get('DriveTestTarget')
+g_filename=datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 
 class TestLoginMultiSelenium(unittest.TestCase):
     logger = logging.getLogger(__name__)
@@ -101,7 +102,9 @@ class TestLoginMultiSelenium(unittest.TestCase):
                     files = driver.find_element(By.XPATH, '//a[@href="'+ '/index.php/apps/files/' +'"]')
                     files.click()
                 except:
-                    self.logger.error(f'Files app button not found')
+                    self.logger.error(f'Files app button not found, saving screenshot')
+                    screenshot = pyautogui.screenshot()
+                    screenshot.save("screenshots/" + fullnode + "test_node_multi_login" + g_filename + ".png")
                     self.assertTrue(False)
 
                 try:
