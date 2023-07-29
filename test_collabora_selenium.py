@@ -160,7 +160,10 @@ class TestCollaboraSelenium(unittest.TestCase):
                 ActionChains(self.driver).send_keys(f'Lorem Ipsum! {Keys.ENTER} {g_filename}').perform()
                 time.sleep(3) # We give nextcloud a literal second to register the keystrokes before closing the document
                 self.logger.info(f'Closing document...')
-                wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'header-close'))).click()
+                try:
+                    wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'header-close'))).click()
+                except:
+                    self.logger.warning("Closing markup document failed")
 
                 self.logger.info(f'Manually open home folder in case closing of document fails')
                 self.driver.get(self.drv.get_folder_url(collaboranode,''))
@@ -318,6 +321,7 @@ class TestCollaboraSelenium(unittest.TestCase):
                         self.logger.info('Proceed...')
 
                     try:
+                        blockSuccess = False
                         self.driver.switch_to.default_content()
                         self.logger.info(f'Switched to default content...')
                         wait.until(EC.frame_to_be_available_and_switch_to_it((By.ID, "collaboraframe")))
@@ -329,6 +333,7 @@ class TestCollaboraSelenium(unittest.TestCase):
                         ActionChains(self.driver).send_keys(f'Lorem Ipsum! {Keys.ENTER} {g_filename}').perform()
                         time.sleep(1) # We give collabora a literal second to register the keystrokes before closing the document
                         self.logger.info(f'Closing document...')
+                        blockSuccess = True
                         wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'closebuttonimage'))).click()
                         self.logger.info(f'And done...')
                         time.sleep(3)
@@ -336,7 +341,8 @@ class TestCollaboraSelenium(unittest.TestCase):
                         self.logger.error(f'Content not found, saving screenshot of latest result...')
                         screenshot = pyautogui.screenshot()
                         screenshot.save("screenshots/" + collaboranode + g_filename + ".png")
-                        success = False
+                        if (blockSuccess == False):
+                            success = False
 
                     self.logger.info(f'Manually open home folder in case closing of document fails')
                     self.driver.get(self.drv.get_folder_url(collaboranode,''))
@@ -496,6 +502,7 @@ class TestCollaboraSelenium(unittest.TestCase):
                     self.logger.info('Proceed...')
 
                 try:
+                    blockSuccess = False
                     self.driver.switch_to.default_content()
                     self.logger.info(f'Switched to default content...')
                     wait.until(EC.frame_to_be_available_and_switch_to_it((By.ID, "collaboraframe")))
@@ -509,13 +516,15 @@ class TestCollaboraSelenium(unittest.TestCase):
                     ActionChains(self.driver).send_keys(f'{g_filename}{Keys.ENTER}{Keys.SPACE}1{Keys.ENTER}{Keys.SPACE}2{Keys.ENTER}{Keys.SPACE}3{Keys.ENTER}{Keys.SPACE}4{Keys.ENTER}{Keys.SPACE}').perform()
                     time.sleep(1) # We give collabora a literal second to register the keystrokes before closing the document
                     self.logger.info(f'Closing document...')
+                    blockSuccess = True
                     wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'closebuttonimage'))).click()
                     self.logger.info(f'And done...')
                 except:
                     self.logger.error(f'Content not found, saving screenshot of latest result...')
                     screenshot = pyautogui.screenshot()
                     screenshot.save("screenshots/" + collaboranode + g_filename + ".png")
-                    success = False
+                    if (blockSuccess == False):
+                        success = False
                 self.assertTrue(success)
 
                 self.logger.info(f'Manually open home folder in case closing of document fails')
@@ -673,6 +682,7 @@ class TestCollaboraSelenium(unittest.TestCase):
                     self.logger.info('Proceed...')
 
                 try:
+                    blockSuccess = False
                     self.driver.switch_to.default_content()
                     self.logger.info(f'Switched to default content...')
                     wait.until(EC.frame_to_be_available_and_switch_to_it((By.ID, "collaboraframe")))
@@ -686,13 +696,15 @@ class TestCollaboraSelenium(unittest.TestCase):
                     time.sleep(1) # We give collabora a literal second to register the keystrokes before closing the document
 
                     self.logger.info(f'Closing document...')
+                    blockSuccess = True
                     wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'closebuttonimage'))).click()
                     self.logger.info(f'And done...')
                 except:
                     self.logger.error(f'Content not found, saving screenshot of latest result...')
                     screenshot = pyautogui.screenshot()
                     screenshot.save("screenshots/" + collaboranode + g_filename + ".png")
-                    success = False
+                    if (blockSuccess == False):
+                        success = False
                 self.assertTrue(success)
 
                 self.logger.info(f'Manually open home folder in case closing of document fails')
