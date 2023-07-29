@@ -142,9 +142,16 @@ class TestCollaboraSelenium(unittest.TestCase):
                 self.driver.get(folderurl)
 
                 # Sort file list so that new files are created at the beginning of the list
-                wait.until(EC.presence_of_element_located((By.LINK_TEXT, 'SeleniumCollaboraTest')))
-                wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'sort-indicator')))
-                
+                try:
+                    self.logger.info(f'Wait for folder to be sortable')
+                    wait.until(EC.presence_of_element_located((By.LINK_TEXT, 'SeleniumCollaboraTest')))
+                    wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'sort-indicator')))
+                except:
+                    self.logger.error(f'Unable to sort, saving screenshot of latest result...')
+                    screenshot = pyautogui.screenshot()
+                    screenshot.save("screenshots/" + collaboranode + "_test_markup_text_" + g_filename + ".png")
+                    self.assertTrue(False)
+
                 if (EC.presence_of_element_located((By.CLASS_NAME, 'icon-triangle-n'))):
                     wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'sort-indicator'))).click
                     self.logger.info(f'Change sorting to descending!')
@@ -264,9 +271,16 @@ class TestCollaboraSelenium(unittest.TestCase):
                     self.driver.get(folderurl)
 
                     # Sort file list so that new files are created at the beginning of the list
-                    wait.until(EC.presence_of_element_located((By.LINK_TEXT, testfolder)))
-                    wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'sort-indicator')))
-                    
+                    try:
+                        self.logger.info(f'Wait for folder to be sortable')
+                        wait.until(EC.presence_of_element_located((By.LINK_TEXT, testfolder)))
+                        wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'sort-indicator')))
+                    except:
+                        self.logger.error(f'Unable to sort, saving screenshot of latest result...')
+                        screenshot = pyautogui.screenshot()
+                        screenshot.save("screenshots/" + collaboranode + "_test_collabora_document_" + g_filename + ".png")
+                        self.assertTrue(False)
+
                     if (EC.presence_of_element_located((By.CLASS_NAME, 'icon-triangle-n'))):
                         wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'sort-indicator'))).click
                         self.logger.info(f'Change sorting to descending!')
@@ -444,8 +458,15 @@ class TestCollaboraSelenium(unittest.TestCase):
                 self.driver.get(folderurl)
 
                 # Sort file list so that new files are created at the beginning of the list
-                wait.until(EC.presence_of_element_located((By.LINK_TEXT, 'SeleniumCollaboraTest')))
-                wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'sort-indicator')))
+                try:
+                    self.logger.info(f'Wait for folder to be sortable')
+                    wait.until(EC.presence_of_element_located((By.LINK_TEXT, 'SeleniumCollaboraTest')))
+                    wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'sort-indicator')))
+                except:
+                    self.logger.error(f'Unable to sort, saving screenshot of latest result...')
+                    screenshot = pyautogui.screenshot()
+                    screenshot.save("screenshots/" + collaboranode + "_test_collabora_spreadsheet_" + g_filename + ".png")
+                    self.assertTrue(False)
                 
                 if (EC.presence_of_element_located((By.CLASS_NAME, 'icon-triangle-n'))):
                     wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'sort-indicator'))).click
@@ -624,8 +645,15 @@ class TestCollaboraSelenium(unittest.TestCase):
                 self.driver.get(folderurl)
 
                 # Sort file list so that new files are created at the beginning of the list
-                wait.until(EC.presence_of_element_located((By.LINK_TEXT, 'SeleniumCollaboraTest')))
-                wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'sort-indicator')))
+                try:
+                    self.logger.info(f'Wait for folder to be sortable')
+                    wait.until(EC.presence_of_element_located((By.LINK_TEXT, 'SeleniumCollaboraTest')))
+                    wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'sort-indicator')))
+                except:
+                    self.logger.error(f'Unable to sort, saving screenshot of latest result...')
+                    screenshot = pyautogui.screenshot()
+                    screenshot.save("screenshots/" + collaboranode + "_test_collabora_presentation_" + g_filename + ".png")
+                    self.assertTrue(False)
                 
                 if (EC.presence_of_element_located((By.CLASS_NAME, 'icon-triangle-n'))):
                     wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'sort-indicator'))).click
