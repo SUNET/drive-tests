@@ -108,6 +108,7 @@ class TestLoginMultiSelenium(unittest.TestCase):
 
                 try:
                     self.logger.info(f'Waiting for files app button')
+                    wait.until(EC.presence_of_element_located((By.XPATH, '//a[@href="'+ '/index.php/apps/files/' +'"]')))
                     files = driver.find_element(By.XPATH, '//a[@href="'+ '/index.php/apps/files/' +'"]')
                     files.click()
                 except:

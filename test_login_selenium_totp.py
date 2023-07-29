@@ -7,6 +7,7 @@ import unittest
 import sunetdrive
 from webdav3.client import Client
 import pyotp
+import pyautogui
 
 import time
 
@@ -166,8 +167,16 @@ class TestLoginSeleniumTotp(unittest.TestCase):
                 currentUrl = driver.current_url
                 # self.assertEqual(dashboardUrl, currentUrl)                
 
-                files = driver.find_element(By.XPATH, '//a[@href="'+ '/index.php/apps/files/' +'"]')
-                files.click()
+                try:
+                    self.logger.info(f'Waiting for files app button')
+                    wait.until(EC.presence_of_element_located((By.XPATH, '//a[@href="'+ '/index.php/apps/files/' +'"]')))
+                    files = driver.find_element(By.XPATH, '//a[@href="'+ '/index.php/apps/files/' +'"]')
+                    files.click()
+                except:
+                    self.logger.error(f'Files app button not found, saving screenshot')
+                    screenshot = pyautogui.screenshot()
+                    screenshot.save("screenshots/" + fullnode + "test_node_login" + g_filename + ".png")
+                    self.assertTrue(False)
 
                 try:
                     wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'app-menu-entry')))
