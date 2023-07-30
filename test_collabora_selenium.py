@@ -129,11 +129,10 @@ class TestCollaboraSelenium(unittest.TestCase):
                 wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'icon-home')))
                 
                 try:
-                    wait.until(EC.presence_of_element_located((By.XPATH, "//*[contains(@class, 'innernametext') and text()='SeleniumCollaboraTest']")))
+                    self.driver.find_element(By.XPATH, "//*[contains(@class, 'innernametext') and text()='SeleniumCollaboraTest']")
                     self.logger.info(f'SeleniumCollaboraTest folder found')
                 except:
                     self.logger.info(f'SeleniumCollaboraTest folder not found, creating')
-
                     wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'icon-add'))).click()
                     wait.until(EC.presence_of_element_located((By.XPATH, "//*[contains(@class, 'displayname') and text()='New folder']"))).click()
                     wait.until(EC.presence_of_element_located((By.XPATH, "//*[contains(@id, 'input-folder')]" ))).send_keys('SeleniumCollaboraTest' + Keys.ENTER)
@@ -299,7 +298,6 @@ class TestCollaboraSelenium(unittest.TestCase):
                         wait.until(EC.frame_to_be_available_and_switch_to_it((By.ID, "collaboraframe")))
                         self.logger.info(f'Collabora loaded... Wait for loleafletframe')
                         wait.until(EC.frame_to_be_available_and_switch_to_it((By.ID, "loleafletframe")))
-                        # self.logger.info(f'Rich documents loaded... Wait for loleafletframe")
                         self.logger.info(f'loleafletframe loaded')
 
                         skipwelcomeframe = False
@@ -444,12 +442,13 @@ class TestCollaboraSelenium(unittest.TestCase):
                 
                 wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'icon-home')))
                 
+                self.logger.info(f'Looking for SeleniumCollaboraTest folder')
+                
                 try:
-                    wait.until(EC.presence_of_element_located((By.XPATH, "//*[contains(@class, 'innernametext') and text()='SeleniumCollaboraTest']")))
+                    self.driver.find_element(By.XPATH, "//*[contains(@class, 'innernametext') and text()='SeleniumCollaboraTest']")
                     self.logger.info(f'SeleniumCollaboraTest folder found')
                 except:
                     self.logger.info(f'SeleniumCollaboraTest folder not found, creating')
-
                     wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'icon-add'))).click()
                     wait.until(EC.presence_of_element_located((By.XPATH, "//*[contains(@class, 'displayname') and text()='New folder']"))).click()
                     wait.until(EC.presence_of_element_located((By.XPATH, "//*[contains(@id, 'input-folder')]" ))).send_keys('SeleniumCollaboraTest' + Keys.ENTER)
@@ -485,8 +484,6 @@ class TestCollaboraSelenium(unittest.TestCase):
                     self.logger.info(f'Waiting for collabora frame')
                     wait.until(EC.frame_to_be_available_and_switch_to_it((By.ID, "collaboraframe")))
                     self.logger.info(f'Collabora loaded... Wait for loleafletframe')
-                    wait.until(EC.frame_to_be_available_and_switch_to_it((By.ID, "loleafletframe")))
-                    # self.logger.info(f'Rich documents loaded... Wait for loleafletframe")
                     wait.until(EC.frame_to_be_available_and_switch_to_it((By.ID, "loleafletframe")))
                     self.logger.info(f'loleafletframe loaded')
 
@@ -632,11 +629,10 @@ class TestCollaboraSelenium(unittest.TestCase):
                 wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'icon-home')))
                 
                 try:
-                    wait.until(EC.presence_of_element_located((By.XPATH, "//*[contains(@class, 'innernametext') and text()='SeleniumCollaboraTest']")))
+                    self.driver.find_element(By.XPATH, "//*[contains(@class, 'innernametext') and text()='SeleniumCollaboraTest']")
                     self.logger.info(f'SeleniumCollaboraTest folder found')
                 except:
                     self.logger.info(f'SeleniumCollaboraTest folder not found, creating')
-
                     wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'icon-add'))).click()
                     wait.until(EC.presence_of_element_located((By.XPATH, "//*[contains(@class, 'displayname') and text()='New folder']"))).click()
                     wait.until(EC.presence_of_element_located((By.XPATH, "//*[contains(@id, 'input-folder')]" ))).send_keys('SeleniumCollaboraTest' + Keys.ENTER)
@@ -672,8 +668,6 @@ class TestCollaboraSelenium(unittest.TestCase):
                     self.logger.info(f'Waiting for collabora frame')
                     wait.until(EC.frame_to_be_available_and_switch_to_it((By.ID, "collaboraframe")))
                     self.logger.info(f'Collabora loaded... Wait for loleafletframe')
-                    wait.until(EC.frame_to_be_available_and_switch_to_it((By.ID, "loleafletframe")))
-                    # self.logger.info(f'Rich documents loaded... Wait for loleafletframe")
                     wait.until(EC.frame_to_be_available_and_switch_to_it((By.ID, "loleafletframe")))
                     self.logger.info(f'loleafletframe loaded')
 
