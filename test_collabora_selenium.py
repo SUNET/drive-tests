@@ -155,10 +155,15 @@ class TestCollaboraSelenium(unittest.TestCase):
                     wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'sort-indicator'))).click
                     self.logger.info(f'Change sorting to descending!')
 
-                wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'icon-add'))).click()
-                wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'icon-filetype-text'))).click()
-                
-                wait.until(EC.presence_of_element_located((By.XPATH, "//*[contains(@id, 'input-file')]"))).send_keys(g_filename + Keys.ENTER)
+                try:
+                    wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'icon-add'))).click()
+                    wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'icon-filetype-text'))).click()
+                    wait.until(EC.presence_of_element_located((By.XPATH, "//*[contains(@id, 'input-file')]"))).send_keys(g_filename + Keys.ENTER)
+                except:
+                    self.logger.error(f'Unable to create new file: {g_filename}, saving screenshot')
+                    screenshot = pyautogui.screenshot()
+                    screenshot.save("screenshots/" + collaboranode + g_filename + ".png")
+                    self.assertTrue(False)
 
                 self.logger.info(f'Sleep for 3 seconds...')
                 time.sleep(3)
@@ -284,10 +289,16 @@ class TestCollaboraSelenium(unittest.TestCase):
                         wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'sort-indicator'))).click
                         self.logger.info(f'Change sorting to descending!')
 
-                    wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'icon-add'))).click()
-                    wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'icon-filetype-document'))).click()
-                    
-                    wait.until(EC.presence_of_element_located((By.XPATH, "//*[contains(@id, 'input-file')]"))).send_keys(g_filename + Keys.ENTER)
+                    try:
+                        wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'icon-add'))).click()
+                        wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'icon-filetype-document'))).click()
+                        wait.until(EC.presence_of_element_located((By.XPATH, "//*[contains(@id, 'input-file')]"))).send_keys(g_filename + Keys.ENTER)
+                    except:
+                        self.logger.error(f'Unable to create new file: {g_filename}, saving screenshot')
+                        screenshot = pyautogui.screenshot()
+                        screenshot.save("screenshots/" + collaboranode + g_filename + ".png")
+                        self.assertTrue(False)
+
 
                     self.logger.info(f'Sleep for 3 seconds...')
                     time.sleep(3)
@@ -471,10 +482,15 @@ class TestCollaboraSelenium(unittest.TestCase):
                     wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'sort-indicator'))).click
                     self.logger.info(f'Change sorting to descending!')
 
-                wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'icon-add'))).click()
-                wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'icon-filetype-spreadsheet'))).click()
-                
-                wait.until(EC.presence_of_element_located((By.XPATH, "//*[contains(@id, 'input-file')]"))).send_keys(g_filename + Keys.ENTER)
+                try:
+                    wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'icon-add'))).click()
+                    wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'icon-filetype-spreadsheet'))).click()
+                    wait.until(EC.presence_of_element_located((By.XPATH, "//*[contains(@id, 'input-file')]"))).send_keys(g_filename + Keys.ENTER)
+                except:
+                    self.logger.error(f'Unable to create new file: {g_filename}, saving screenshot')
+                    screenshot = pyautogui.screenshot()
+                    screenshot.save("screenshots/" + collaboranode + g_filename + ".png")
+                    self.assertTrue(False)
 
                 self.logger.info(f'Sleep for 3 seconds...')
                 time.sleep(3)
@@ -655,10 +671,15 @@ class TestCollaboraSelenium(unittest.TestCase):
                     wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'sort-indicator'))).click
                     self.logger.info(f'Change sorting to descending!')
 
-                wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'icon-add'))).click()
-                wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'icon-filetype-presentation'))).click()
-                
-                wait.until(EC.presence_of_element_located((By.XPATH, "//*[contains(@id, 'input-file')]"))).send_keys(g_filename + Keys.ENTER)
+                try:
+                    wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'icon-add'))).click()
+                    wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'icon-filetype-presentation'))).click()
+                    wait.until(EC.presence_of_element_located((By.XPATH, "//*[contains(@id, 'input-file')]"))).send_keys(g_filename + Keys.ENTER)
+                except:
+                    self.logger.error(f'Unable to create new file: {g_filename}, saving screenshot')
+                    screenshot = pyautogui.screenshot()
+                    screenshot.save("screenshots/" + collaboranode + g_filename + ".png")
+                    self.assertTrue(False)
 
                 self.logger.info(f'Sleep for 3 seconds...')
                 time.sleep(3)
