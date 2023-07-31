@@ -2,6 +2,7 @@
 Author: Richard Freitag <freitag@sunet.se>
 Selenium tests to log on to a Sunet Drive node, and performing various operations to ensure basic operation of a node
 """
+from datetime import datetime
 import xmlrunner
 import unittest
 import sunetdrive
@@ -25,6 +26,7 @@ import logging
 
 # 'prod' for production environment, 'test' for test environment
 g_testtarget = os.environ.get('DriveTestTarget')
+g_filename=datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 
 class TestLoginSeleniumTotp(unittest.TestCase):
     logger = logging.getLogger(__name__)
