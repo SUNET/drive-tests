@@ -1,7 +1,7 @@
 """ Sunet Drive Support Module for unit and general testing
 Author: Richard Freitag <freitag@sunet.se>
 TestTarget is a helper class containing node-information, as well as for saving and retrieving node-local usernames/passwords.
-StatusResult contains expected results when retrieving status.php from a Sunet Drive node 
+expected.yaml contains expected results when retrieving status.php from a Sunet Drive node 
 """
 import os
 import sys
@@ -361,91 +361,6 @@ class TestTarget(object):
             return os.environ.get(env)
         else:
             raise NotImplementedError
-
-class StatusResult():
-    installed=True
-    maintenance=False
-    needsDbUpgrade=False
-    version="26.0.4.3"
-    versionstring="26.0.4 Enterprise"
-    edition=""
-    productname="Nextcloud"
-    extendedSupport=False
-
-class StatusResultTest():
-    installed=True
-    maintenance=False
-    needsDbUpgrade=False
-    version="26.0.5.2"
-    versionstring="26.0.5 Enterprise"
-    edition=""
-    productname="Nextcloud"
-    extendedSupport=False
-
-class StatusResultGss():
-    installed=True
-    maintenance=False
-    needsDbUpgrade=False
-    version="26.0.4.3"
-    versionstring="26.0.4 Enterprise"
-    edition=""
-    productname="Nextcloud"
-    extendedSupport=False
-
-class StatusResultGssTest():
-    installed=True
-    maintenance=False
-    needsDbUpgrade=False
-    version="26.0.5.2"
-    versionstring="26.0.5 Enterprise"
-    edition=""
-    productname="Nextcloud"
-    extendedSupport=False
-
-class StorageResult():
-    mainStorageLocation='s3.sto4.safedc.net'
-    backupStorageLocation='s3.sto3.safedc.net'
-
-class OcsCapabilitiesResult():
-    ocs_meta_status= "ok"
-    ocs_meta_statuscode = 100
-    ocs_meta_message = "OK"
-    ocs_data_version_string = "26.0.4 Enterprise"
-    ocs_data_capabilities_globalscale_enabled = True
-
-class OcsCapabilitiesResultTest():
-    ocs_meta_status= "ok"
-    ocs_meta_statuscode = 100
-    ocs_meta_message = "OK"
-    ocs_data_version_string = "26.0.5 Enterprise"
-    ocs_data_capabilities_globalscale_enabled = True
-
-class OcsUserExistsResult():
-    ocs_meta_status= "failure"
-    ocs_meta_statuscode = 102
-    ocs_meta_message = "User already exists"
-
-class AppUserSamlResult():
-    id="user_saml"
-    version="5.2.2"
-
-class AppUserSamlResultTest():
-    id="user_saml"
-    version="5.2.2"
-
-class AppGssResult():
-    id="globalsiteselector"
-    version="2.4.3"
-
-class AppGssResultTest():
-    id="globalsiteselector"
-    version="2.4.4"
-
-class GssMetadataResult():
-    certMd5 = '702b0112df7e6e4b2ca2af3280841196'
-
-class GssMetadataResultTest():
-    certMd5 = '9dc0f8318dcda31e78308705449f1e2a'
 
 class Helper():
     def get_random_string(self, length):

@@ -13,8 +13,12 @@ import sunetdrive
 
 g_testtarget = os.environ.get('DriveTestTarget')
 repobase='sunet-drive-ops/'
+expectedResultsFile = 'expected.yaml'
 
 class TestStorage(unittest.TestCase):
+    with open(expectedResultsFile, "r") as stream:
+        expectedResults=yaml.safe_load(stream)
+
     def test_existingbuckets(self):
         drv = sunetdrive.TestTarget(g_testtarget)
         premotes=os.popen('rclone listremotes')
@@ -26,24 +30,22 @@ class TestStorage(unittest.TestCase):
 
     def test_fullnodestoragelocation(self):
         drv = sunetdrive.TestTarget(g_testtarget)
-        storageResult=sunetdrive.StorageResult()
         for fullnode in drv.fullnodes:
             with self.subTest(nodetotest=fullnode):
                 configfile = repobase + fullnode + "-common/overlay/etc/hiera/data/group.yaml"
                 with open(configfile, "r") as stream:
                     data=yaml.safe_load(stream)
-                    self.assertEqual(data[drv.target]["s3_host"],storageResult.mainStorageLocation)
+                    self.assertEqual(data[drv.target]["s3_host"],self.expectedResults['storage']['mainStorageLocation'])
 
     def test_multinodestoragelocation(self):
         print('Test target: ', g_testtarget)
         drv = sunetdrive.TestTarget(g_testtarget)
-        storageResult=sunetdrive.StorageResult()
         with open(repobase + "multinode-common/overlay/etc/hiera/data/group.yaml", "r") as stream:
             data=yaml.safe_load(stream)
             for multinode in drv.multinodes:
                 with self.subTest(nodetotest=multinode):
                     print(multinode)
-                    self.assertEqual(data[multinode][drv.target]["s3_host"],storageResult.mainStorageLocation)
+                    self.assertEqual(data[multinode][drv.target]["s3_host"],self.expectedResults['storage']['mainStorageLocation'])
 
     # Test if the primary and the mirror bucket exist at the right location
     def test_fullnode_primarybackupmirrorbuckets(self):

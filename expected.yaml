@@ -1,9 +1,62 @@
 prod:
+  status:
+    installed: true
+    maintenance: false
+    needsDbUpgrade: false
+    version: '26.0.4.3'
+    versionstring: '26.0.4 Enterprise'
+    edition: ''
+    productname: 'Nextcloud'
+    extendedSupport: false
+  status_gss:
+    installed: true
+    maintenance: false
+    needsDbUpgrade: false
+    version: '26.0.4.3'
+    versionstring: '26.0.4 Enterprise'
+    edition: ''
+    productname: 'Nextcloud'
+    extendedSupport: false
+  ocs_capabilities:
+    ocs_meta_status: 'ok'
+    ocs_meta_statuscode: 100
+    ocs_meta_message: 'OK'
+    ocs_data_version_string: '26.0.4 Enterprise'
+    ocs_data_capabilities_globalscale_enabled: true
+  cert_md5: '702b0112df7e6e4b2ca2af3280841196'
   ocsapps: 
     default: 54
 test:
+  status:
+    installed: true
+    maintenance: false
+    needsDbUpgrade: false
+    version: '26.0.5.2'
+    versionstring: '26.0.5 Enterprise'
+    edition: ''
+    productname: 'Nextcloud'
+    extendedSupport: false
+  status_gss:
+    installed: true
+    maintenance: false
+    needsDbUpgrade: false
+    version: '26.0.5.2'
+    versionstring: '26.0.5 Enterprise'
+    edition: ''
+    productname: 'Nextcloud'
+    extendedSupport: false
+  ocs_capabilities:
+    ocs_meta_status: 'ok'
+    ocs_meta_statuscode: 100
+    ocs_meta_message: 'OK'
+    ocs_data_version_string: '26.0.5 Enterprise'
+    ocs_data_capabilities_globalscale_enabled: true
+  cert_md5: '9dc0f8318dcda31e78308705449f1e2a'
   ocsapps: 
     default: 62
+storage:
+    mainStorageLocation: 's3.sto4.safedc.net'
+    backupStorageLocation: 's3.sto3.safedc.net'
 apps:
   activity:
     version: 2.18.0 
@@ -230,11 +283,18 @@ apps:
     installed:  true
     enabled: false
   globalsiteselector:
-    version:  '2.4.2'
-    installed:  true
-    enabled: true
-    exceptdisabled:
-      - kau
+    prod:
+      version:  '2.4.3'
+      installed:  true
+      enabled: true
+      exceptdisabled:
+        - kau
+    test:
+      version:  '2.4.4'
+      installed:  true
+      enabled: true
+      exceptdisabled:
+        - kau
   login_notes:
     version:  1.2.0
     installed:  true
@@ -268,8 +328,15 @@ apps:
     installed:  true
     enabled: false
   user_saml:
-    version: 5.2.0
-    installed:  true
-    enabled: false
-    exceptenabled:
-      - scilifelab 
+    prod:
+      version: 5.2.2
+      installed:  true
+      enabled: false
+      exceptenabled:
+        - scilifelab 
+    test:
+      version: 5.2.2
+      installed:  true
+      enabled: false
+      exceptenabled:
+        - scilifelab 

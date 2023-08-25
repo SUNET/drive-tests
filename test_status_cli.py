@@ -10,14 +10,19 @@ import logging
 import hashlib
 from xml.etree.ElementTree import XML, fromstring
 import xmltodict
+import yaml
 
 import sunetdrive
 import os
+
+expectedResultsFile = 'expected.yaml'
 
 class TestStatus(unittest.TestCase):
     logger = logging.getLogger(__name__)
     logging.basicConfig(format = '%(asctime)s - %(module)s.%(funcName)s - %(levelname)s: %(message)s',
                     datefmt = '%Y-%m-%d %H:%M:%S', level = logging.INFO)
+    with open(expectedResultsFile, "r") as stream:
+        expectedResults=yaml.safe_load(stream)
 
     def test_logger(self):
         self.logger.info(f'self.logger.info test_logger')
@@ -33,21 +38,18 @@ class TestStatus(unittest.TestCase):
 
     def test_statusinfo_gss(self):
         drv = sunetdrive.TestTarget()
-        if drv.target == 'prod':
-            statusResult = sunetdrive.StatusResultGss()
-        else:
-            statusResult = sunetdrive.StatusResultGssTest()
+
         url=drv.get_gss_url() + "/status.php"
         print(self._testMethodName, url)
         r =requests.get(url)
         j = json.loads(r.text)
-        self.assertEqual(j["maintenance"], statusResult.maintenance)
-        self.assertEqual(j["needsDbUpgrade"], statusResult.needsDbUpgrade)
-        self.assertEqual(j["version"], statusResult.version)
-        self.assertEqual(j["versionstring"], statusResult.versionstring)
-        self.assertEqual(j["edition"], statusResult.edition)
-        # self.assertEqual(j["productname"], statusResult.productname)
-        self.assertEqual(j["extendedSupport"], statusResult.extendedSupport)
+
+        self.assertEqual(j["maintenance"], self.expectedResults[drv.target]['status_gss']['maintenance']) 
+        self.assertEqual(j["needsDbUpgrade"], self.expectedResults[drv.target]['status_gss']['needsDbUpgrade'])
+        self.assertEqual(j["version"], self.expectedResults[drv.target]['status_gss']['version'])
+        self.assertEqual(j["versionstring"], self.expectedResults[drv.target]['status_gss']['versionstring'])
+        self.assertEqual(j["edition"], self.expectedResults[drv.target]['status_gss']['edition'])
+        self.assertEqual(j["extendedSupport"], self.expectedResults[drv.target]['status_gss']['extendedSupport'])
         self.logger.info(f'GSS Status information tested')
 
     def test_status(self):
@@ -61,21 +63,17 @@ class TestStatus(unittest.TestCase):
 
     def test_statusinfo(self):
         drv = sunetdrive.TestTarget()
-        if drv.target == 'prod':
-            statusResult = sunetdrive.StatusResult()
-        else:
-            statusResult = sunetdrive.StatusResultTest()
         for url in drv.get_allnode_status_urls():
             with self.subTest(myurl=url):
                 r =requests.get(url)
                 j = json.loads(r.text)
-                self.assertEqual(j["maintenance"], statusResult.maintenance)
-                self.assertEqual(j["needsDbUpgrade"], statusResult.needsDbUpgrade)
-                self.assertEqual(j["version"], statusResult.version)
-                self.assertEqual(j["versionstring"], statusResult.versionstring)
-                self.assertEqual(j["edition"], statusResult.edition)
+                self.assertEqual(j["maintenance"], self.expectedResults[drv.target]['status']['maintenance'])
+                self.assertEqual(j["needsDbUpgrade"], self.expectedResults[drv.target]['status']['needsDbUpgrade'])
+                self.assertEqual(j["version"], self.expectedResults[drv.target]['status']['version'])
+                self.assertEqual(j["versionstring"], self.expectedResults[drv.target]['status']['versionstring'])
+                self.assertEqual(j["edition"], self.expectedResults[drv.target]['status']['edition'])
                 # self.assertEqual(j["productname"], statusResult.productname)
-                self.assertEqual(j["extendedSupport"], statusResult.extendedSupport)
+                self.assertEqual(j["extendedSupport"], self.expectedResults[drv.target]['status']['extendedSupport'])
                 self.logger.info(f'Status information tested: {url}')
 
     def test_metadata_gss(self):
@@ -100,16 +98,11 @@ class TestStatus(unittest.TestCase):
             j = json.loads(jsonString)
             certString = j["md:EntityDescriptor"]["md:SPSSODescriptor"]["md:KeyDescriptor"]["ds:KeyInfo"]["ds:X509Data"]["ds:X509Certificate"]
             certMd5 = hashlib.md5(certString.encode('utf-8')).hexdigest()
-
-            if drv.target == 'prod':
-                metadataResult = sunetdrive.GssMetadataResult()
-            else:
-                metadataResult = sunetdrive.GssMetadataResultTest()
         except:
             self.logger.error(f'Metadata is not valid XML')
 
         self.assertEqual(expectedEntityId, drv.get_gss_entity_id())
-        self.assertEqual(metadataResult.certMd5, certMd5)
+        self.assertEqual(certMd5, self.expectedResults[drv.target]['cert_md5'])
         self.logger.info(f'GSS metadata test done')
 
 if __name__ == '__main__':

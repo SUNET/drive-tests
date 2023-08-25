@@ -6,9 +6,11 @@ Author: Richard Freitag <freitag@sunet.se>
 import unittest
 import requests
 import json
+import yaml
 
 g_cs3url        = 'https://iop.sciencemesh.uni-muenster.de/iop/mentix/cs3'
 g_sitesurl      = 'https://iop.sciencemesh.uni-muenster.de/iop/mentix/sites'
+expectedResultsFile = 'expected.yaml'
 
 class TestScienceMesh(unittest.TestCase):
     def test_cs3(self):
@@ -71,59 +73,6 @@ class TestScienceMesh(unittest.TestCase):
         print("Instances: ", instanceCount)
         print("Live sites: ", statusCount)
         print("Offline: ", offlineCount)
-
-# class TestStatusPage(unittest.TestCase):
-#     def test_status_gss(self):
-#         drv = sunetdrive.TestTarget(g_testtarget)
-#         url = drv.get_gss_url()
-#         print(self._testMethodName, url)
-#         r=requests.get(url)
-#         self.assertEqual(r.status_code, 200)
-
-#     def test_statusinfo_gss(self):
-#         drv = sunetdrive.TestTarget(g_testtarget)
-#         if g_testtarget == 'prod':
-#             statusResult = sunetdrive.StatusResult()
-#         else:
-#             statusResult = sunetdrive.StatusResultTest()
-#         url=drv.get_gss_url() + "/status.php"
-#         print(self._testMethodName, url)
-#         r =requests.get(url)
-#         j = json.loads(r.text)
-#         self.assertEqual(j["maintenance"], statusResult.maintenance)
-#         self.assertEqual(j["needsDbUpgrade"], statusResult.needsDbUpgrade)
-#         self.assertEqual(j["version"], statusResult.version)
-#         self.assertEqual(j["versionstring"], statusResult.versionstring)
-#         self.assertEqual(j["edition"], statusResult.edition)
-#         # self.assertEqual(j["productname"], statusResult.productname)
-#         self.assertEqual(j["extendedSupport"], statusResult.extendedSupport)
-
-#     def test_status(self):
-#         drv = sunetdrive.TestTarget(g_testtarget)
-#         for url in drv.get_allnode_status_urls():
-#             with self.subTest(myurl=url):
-#                 print(self._testMethodName, url)
-#                 r=requests.get(url)
-#                 self.assertEqual(r.status_code, 200)
-
-#     def test_statusinfo(self):
-#         drv = sunetdrive.TestTarget(g_testtarget)
-#         if g_testtarget == 'prod':
-#             statusResult = sunetdrive.StatusResult()
-#         else:
-#             statusResult = sunetdrive.StatusResultTest()
-#         for url in drv.get_allnode_status_urls():
-#             with self.subTest(myurl=url):
-#                 print(self._testMethodName, url)
-#                 r =requests.get(url)
-#                 j = json.loads(r.text)
-#                 self.assertEqual(j["maintenance"], statusResult.maintenance)
-#                 self.assertEqual(j["needsDbUpgrade"], statusResult.needsDbUpgrade)
-#                 self.assertEqual(j["version"], statusResult.version)
-#                 self.assertEqual(j["versionstring"], statusResult.versionstring)
-#                 self.assertEqual(j["edition"], statusResult.edition)
-#                 # self.assertEqual(j["productname"], statusResult.productname)
-#                 self.assertEqual(j["extendedSupport"], statusResult.extendedSupport)
 
 if __name__ == '__main__':
     import xmlrunner
