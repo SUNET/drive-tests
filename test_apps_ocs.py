@@ -8,7 +8,7 @@ import sunetdrive
 import logging
 
 ocsheaders = { "OCS-APIRequest" : "true" } 
-appsConfigurationFile = 'apps.yaml'
+appsConfigurationFile = 'expected.yaml'
 
 class TestAppsOcs(unittest.TestCase):
     logger = logging.getLogger(__name__)
