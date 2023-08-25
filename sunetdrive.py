@@ -376,8 +376,8 @@ class StatusResultTest():
     installed=True
     maintenance=False
     needsDbUpgrade=False
-    version="26.0.4.3"
-    versionstring="26.0.4 Enterprise"
+    version="26.0.5.2"
+    versionstring="26.0.5 Enterprise"
     edition=""
     productname="Nextcloud"
     extendedSupport=False
@@ -396,8 +396,8 @@ class StatusResultGssTest():
     installed=True
     maintenance=False
     needsDbUpgrade=False
-    version="26.0.4.3"
-    versionstring="26.0.4 Enterprise"
+    version="26.0.5.2"
+    versionstring="26.0.5 Enterprise"
     edition=""
     productname="Nextcloud"
     extendedSupport=False
@@ -417,7 +417,7 @@ class OcsCapabilitiesResultTest():
     ocs_meta_status= "ok"
     ocs_meta_statuscode = 100
     ocs_meta_message = "OK"
-    ocs_data_version_string = "26.0.4 Enterprise"
+    ocs_data_version_string = "26.0.5 Enterprise"
     ocs_data_capabilities_globalscale_enabled = True
 
 class OcsUserExistsResult():
