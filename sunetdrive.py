@@ -439,7 +439,7 @@ class AppGssResult():
 
 class AppGssResultTest():
     id="globalsiteselector"
-    version="2.4.3"
+    version="2.4.4"
 
 class GssMetadataResult():
     certMd5 = '702b0112df7e6e4b2ca2af3280841196'
