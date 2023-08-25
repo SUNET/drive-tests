@@ -49,7 +49,12 @@ class TestAppsOcs(unittest.TestCase):
                     
                 with open(appsConfigurationFile, "r") as stream:
                     expectedApps=yaml.safe_load(stream)
-                    numExpectedApps = expectedApps[drv.target]['ocsapps']
+                    try:
+                        numExpectedApps = expectedApps[drv.target]['ocsapps'][fullnode]
+                        self.logger.info(f'Expected number of apps differs from default: {numExpectedApps}')
+                    except:
+                        numExpectedApps = expectedApps[drv.target]['ocsapps']['default']
+                        self.logger.info(f'Expected number of apps: {numExpectedApps}')
 
                     self.assertEqual(len(nodeApps), numExpectedApps)
     # Test if the apps installed on the node are found in the configuration file

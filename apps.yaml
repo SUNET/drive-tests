@@ -1,7 +1,9 @@
 prod:
-  ocsapps: 54
+  ocsapps: 
+    default: 54
 test:
-  ocsapps: 54
+  ocsapps: 
+    default: 62
 apps:
   activity:
     version: 2.18.0 
