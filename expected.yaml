@@ -54,7 +54,7 @@ test:
   cert_md5: '9dc0f8318dcda31e78308705449f1e2a'
   ocsapps: 
     default: 62
-    sunet: 64
+    sunet: 65
 storage:
     mainStorageLocation: 's3.sto4.safedc.net'
     backupStorageLocation: 's3.sto3.safedc.net'
