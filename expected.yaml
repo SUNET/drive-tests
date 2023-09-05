@@ -285,7 +285,7 @@ apps:
     enabled: false
   globalsiteselector:
     prod:
-      version:  '2.4.3'
+      version:  '2.4.4'
       installed:  true
       enabled: true
       exceptdisabled:
