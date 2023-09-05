@@ -104,7 +104,13 @@ class TestTarget(object):
         return 'https://' + self.getnodeprefix(node) + self.targetprefix + '.sunet.se/remote.php/dav/files/' + username + '/'
  
     def get_file_lock_url(self, node, filename):
-        return 'https://$USERNAME$:$PASSWORD$@' + self.getnodeprefix(node) + self.targetprefix + '.sunet.se/ocs/v2.php/apps/files_lock/lock/' + filename
+        return 'https://' + self.getnodeprefix(node) + self.targetprefix + '.sunet.se/ocs/v2.php/apps/files_lock/lock/' + filename
+
+    def get_file_lock_curl(self, node, username, filename):
+        return 'curl -X LOCK --url https://' + username + ':$PASSWORD$@' + self.getnodeprefix(node) + self.targetprefix + '.sunet.se/remote.php/dav/files/' + username + '/' + filename + ' --header \'X-User-Lock: 1\''
+
+    def get_file_unlock_curl(self, node, username, filename):
+        return 'curl -X UNLOCK --url https://' + username + ':$PASSWORD$@' + self.getnodeprefix(node) + self.targetprefix + '.sunet.se/remote.php/dav/files/' + username + '/' + filename + ' --header \'X-User-Lock: 1\''
 
     def get_serverinfo_url(self, node):
         return 'https://' + self.getnodeprefix(node) + self.targetprefix + '.sunet.se/ocs/v2.php/apps/serverinfo/api/v1/info?format=json'
