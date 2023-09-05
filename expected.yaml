@@ -3,8 +3,8 @@ prod:
     installed: true
     maintenance: false
     needsDbUpgrade: false
-    version: '26.0.4.3'
-    versionstring: '26.0.4 Enterprise'
+    version: '26.0.5.2'
+    versionstring: '26.0.5 Enterprise'
     edition: ''
     productname: 'Nextcloud'
     extendedSupport: false
@@ -12,8 +12,8 @@ prod:
     installed: true
     maintenance: false
     needsDbUpgrade: false
-    version: '26.0.4.3'
-    versionstring: '26.0.4 Enterprise'
+    version: '26.0.5.2'
+    versionstring: '26.0.5 Enterprise'
     edition: ''
     productname: 'Nextcloud'
     extendedSupport: false
@@ -21,7 +21,7 @@ prod:
     ocs_meta_status: 'ok'
     ocs_meta_statuscode: 100
     ocs_meta_message: 'OK'
-    ocs_data_version_string: '26.0.4 Enterprise'
+    ocs_data_version_string: '26.0.5 Enterprise'
     ocs_data_capabilities_globalscale_enabled: true
   cert_md5: '702b0112df7e6e4b2ca2af3280841196'
   ocsapps: 
@@ -54,7 +54,7 @@ test:
   cert_md5: '9dc0f8318dcda31e78308705449f1e2a'
   ocsapps: 
     default: 62
-    sunet: 65
+    # sunet: 65
 storage:
     mainStorageLocation: 's3.sto4.safedc.net'
     backupStorageLocation: 's3.sto3.safedc.net'
