@@ -220,7 +220,9 @@ class TestLoginSelenium(unittest.TestCase):
         driver.implicitly_wait(10)
 
         wait.until(EC.presence_of_element_located((By.ID, 'email'))).send_keys(samluser)
-        wait.until(EC.presence_of_element_located((By.ID, 'current-password'))).send_keys(samlpassword + Keys.ENTER)
+        self.logger.info(f'Email entered')
+        wait.until(EC.presence_of_element_located((By.ID, 'currentPassword'))).send_keys(samlpassword + Keys.ENTER)
+        self.logger.info(f'Password entered, proceeding')
         # wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'login-form-button'))).click()
 
         try:
