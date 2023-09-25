@@ -62,17 +62,17 @@ class TestCleanAllWebDAV(unittest.TestCase):
                         subElements = client.list(rootElem)
                         subElements.pop(0)
                         for subElement in subElements:
-                            self.logger.info(f'Removing {subElement}')
+                            self.logger.info(f'Removing {fullnode} - {drv.target} - {subElement}')
                             try:
                                 client.clean(rootElem + subElement)
                             except:
-                                self.logger.error(f'Could not delete {rootElem}\{subElement}')
+                                self.logger.error(f'Could not delete sub element {rootElem}\{subElement}')
                     else:
-                        self.logger.info(f'Removing {rootElem}')
+                        self.logger.info(f'Removing {fullnode} - {drv.target} - {rootElem}')
                         try:
                             client.clean(rootElem)
                         except:
-                            self.logger.error(f'Could not delete {rootElem}')
+                            self.logger.error(f'Could not delete {fullnode} - {drv.target} - {rootElem}')
 
 if __name__ == '__main__':
     import xmlrunner
