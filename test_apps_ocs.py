@@ -6,17 +6,171 @@ import unittest
 import yaml
 import sunetdrive
 import logging
+import time
+import threading
 
 ocsheaders = { "OCS-APIRequest" : "true" } 
-appsConfigurationFile = 'expected.yaml'
+expectedResultsFile = 'expected.yaml'
+testThreadRunning = False
+
+logger = logging.getLogger(__name__)
+logging.basicConfig(format = '%(asctime)s - %(module)s.%(funcName)s - %(levelname)s: %(message)s',
+                datefmt = '%Y-%m-%d %H:%M:%S', level = logging.INFO)
+
+with open(expectedResultsFile, "r") as stream:
+    expectedResults=yaml.safe_load(stream)
+
+class ConfiguredAppsInstalled(threading.Thread):
+    def __init__(self, name, TestAppsOcs):
+        threading.Thread.__init__(self)
+        self.name = name
+        self.TestAppsOcs = TestAppsOcs
+
+    def run(self):
+        global testThreadRunning
+        global logger
+        testThreadRunning = True
+        logger.info(f'ConfiguredAppsInstalled thread started for node {self.name}')
+        drv = sunetdrive.TestTarget()
+        fullnode = self.name    
+
+        session = requests.Session()
+        nodeuser = drv.get_ocsuser(fullnode)
+        nodepwd = drv.get_ocsuserapppassword(fullnode)
+        url = drv.get_all_apps_url(fullnode)
+
+        logger.info(f'{url}')
+        url = url.replace("$USERNAME$", nodeuser)
+        url = url.replace("$PASSWORD$", nodepwd)
+
+        nodeuser = drv.get_ocsuser(fullnode)
+        nodepwd = drv.get_ocsuserpassword(fullnode)
+
+        r=session.get(url, headers=ocsheaders)
+        nodeApps = []
+        try:
+            j = json.loads(r.text)
+            # print(json.dumps(j, indent=4, sort_keys=True))
+            nodeApps = j["ocs"]["data"]["apps"]
+        except:
+            logger.warning(f'No JSON reply received on node {fullnode}')
+            # self.logger.warning(r.text)
+            self.TestAppsOcs.assertTrue(False)
+
+        logger.info(f'Check if all apps configured in {expectedResultsFile} are installed on {fullnode}')
+
+        for expectedApp in expectedResults['apps']:
+            logger.info(f'Check if {expectedApp} is installed on {fullnode}')
+            print()
+            try:
+                pos = nodeApps.index(expectedApp)
+                logger.info(f'Found app at {pos}')    
+            except:
+                logger.warning(f'App {expectedApp} NOT found on {fullnode}')
+
+        logger.info(f'ConfiguredAppsInstalled thread done for node {self.name}')
+        testThreadRunning = False
+
+class InstalledAppsConfigured(threading.Thread):
+    def __init__(self, name, TestAppsOcs):
+        threading.Thread.__init__(self)
+        self.name = name
+        self.TestAppsOcs = TestAppsOcs
+
+    def run(self):
+        global testThreadRunning
+        global logger
+        testThreadRunning = True
+        logger.info(f'InstalledAppsConfigured thread started for node {self.name}')
+        drv = sunetdrive.TestTarget()
+        fullnode = self.name
+
+        session = requests.Session()
+        nodeuser = drv.get_ocsuser(fullnode)
+        nodepwd = drv.get_ocsuserapppassword(fullnode)
+        url = drv.get_all_apps_url(fullnode)
+
+        logger.info(f'{url}')
+        url = url.replace("$USERNAME$", nodeuser)
+        url = url.replace("$PASSWORD$", nodepwd)
+
+        nodeuser = drv.get_ocsuser(fullnode)
+        nodepwd = drv.get_ocsuserpassword(fullnode)
+
+        r=session.get(url, headers=ocsheaders)
+        nodeApps = []
+        try:
+            j = json.loads(r.text)
+            # print(json.dumps(j, indent=4, sort_keys=True))
+            nodeApps = j["ocs"]["data"]["apps"]
+        except:
+            logger.warning(f'No JSON reply received on {fullnode}')
+            # self.logger.warning(r.text)
+            self.TestAppsOcs.assertTrue(False)
+
+        logger.info(f'Check if all installed apps on {fullnode} are found in {expectedResultsFile}')
+        for nodeApp in nodeApps:
+            try:
+                appInfo = expectedResults['apps'][nodeApp]
+            except:
+                logger.warning(f'{nodeApp} NOT found on {fullnode}')
+
+        logger.info(f'InstalledAppsConfigured thread done for node {self.name}')
+        testThreadRunning = False
+
+class NumberOfAppsOnNode(threading.Thread):
+    def __init__(self, name, TestAppsOcs):
+        threading.Thread.__init__(self)
+        self.name = name
+        self.TestAppsOcs = TestAppsOcs
+
+    def run(self):
+        global testThreadRunning
+        global logger
+        testThreadRunning = True
+        logger.info(f'NumberOfAppsOnNode thread started for node {self.name}')
+        drv = sunetdrive.TestTarget()
+        fullnode = self.name
+
+        session = requests.Session()
+        nodeuser = drv.get_ocsuser(fullnode)
+        nodepwd = drv.get_ocsuserapppassword(fullnode)
+        url = drv.get_all_apps_url(fullnode)
+
+        logger.info(f'{url}')
+        url = url.replace("$USERNAME$", nodeuser)
+        url = url.replace("$PASSWORD$", nodepwd)
+
+        nodeuser = drv.get_ocsuser(fullnode)
+        nodepwd = drv.get_ocsuserpassword(fullnode)
+
+        r=session.get(url, headers=ocsheaders)
+        nodeApps = []
+        try:
+            j = json.loads(r.text)
+            # print(json.dumps(j, indent=4, sort_keys=True))
+            nodeApps = j["ocs"]["data"]["apps"]
+            logger.info(f'Number of apps on {fullnode}: {len(nodeApps)}')
+        except:
+            logger.warning(f'No JSON reply received')
+            logger.warning(r.text)
+            
+        try:
+            numExpectedApps = expectedResults[drv.target]['ocsapps'][fullnode]
+            logger.info(f'Expected number of apps differs from default: {numExpectedApps}')
+        except:
+            numExpectedApps = expectedResults[drv.target]['ocsapps']['default']
+            logger.info(f'Expected number of apps: {numExpectedApps}')
+
+            self.TestAppsOcs.assertEqual(len(nodeApps), numExpectedApps)
+
+        logger.info(f'NumberOfAppsOnNode thread done for node {self.name}')
+        testThreadRunning = False
 
 class TestAppsOcs(unittest.TestCase):
-    logger = logging.getLogger(__name__)
-    logging.basicConfig(format = '%(asctime)s - %(module)s.%(funcName)s - %(levelname)s: %(message)s',
-                    datefmt = '%Y-%m-%d %H:%M:%S', level = logging.INFO)
-
     def test_logger(self):
-        self.logger.info(f'self.logger.info test_logger')
+        global logger
+        logger.info(f'self.logger.info test_logger')
         pass
 
     def test_number_of_apps_on_node(self):
@@ -24,77 +178,23 @@ class TestAppsOcs(unittest.TestCase):
 
         for fullnode in drv.fullnodes:
             with self.subTest(mynode=fullnode):
-                session = requests.Session()
-                nodeuser = drv.get_ocsuser(fullnode)
-                nodepwd = drv.get_ocsuserapppassword(fullnode)
-                url = drv.get_all_apps_url(fullnode)
+                numberOfAppsOnNodeThread = NumberOfAppsOnNode(fullnode, self)
+                numberOfAppsOnNodeThread.start()
 
-                self.logger.info(f'{url}')
-                url = url.replace("$USERNAME$", nodeuser)
-                url = url.replace("$PASSWORD$", nodepwd)
+        while(testThreadRunning == True):
+            time.sleep(1)
 
-                nodeuser = drv.get_ocsuser(fullnode)
-                nodepwd = drv.get_ocsuserpassword(fullnode)
-
-                r=session.get(url, headers=ocsheaders)
-                nodeApps = []
-                try:
-                    j = json.loads(r.text)
-                    # print(json.dumps(j, indent=4, sort_keys=True))
-                    nodeApps = j["ocs"]["data"]["apps"]
-                    self.logger.info(f'Number of apps on {fullnode}: {len(nodeApps)}')
-                except:
-                    self.logger.warning(f'No JSON reply received')
-                    self.logger.warning(r.text)
-                    
-                with open(appsConfigurationFile, "r") as stream:
-                    expectedApps=yaml.safe_load(stream)
-                    try:
-                        numExpectedApps = expectedApps[drv.target]['ocsapps'][fullnode]
-                        self.logger.info(f'Expected number of apps differs from default: {numExpectedApps}')
-                    except:
-                        numExpectedApps = expectedApps[drv.target]['ocsapps']['default']
-                        self.logger.info(f'Expected number of apps: {numExpectedApps}')
-
-                    self.assertEqual(len(nodeApps), numExpectedApps)
     # Test if the apps installed on the node are found in the configuration file
     def test_installed_apps_configured(self):
         drv = sunetdrive.TestTarget()
 
         for fullnode in drv.fullnodes:
             with self.subTest(mynode=fullnode):
-                session = requests.Session()
-                nodeuser = drv.get_ocsuser(fullnode)
-                nodepwd = drv.get_ocsuserapppassword(fullnode)
-                url = drv.get_all_apps_url(fullnode)
+                InstalledAppsConfiguredThread = InstalledAppsConfigured(fullnode, self)
+                InstalledAppsConfiguredThread.start()
 
-                self.logger.info(f'{url}')
-                url = url.replace("$USERNAME$", nodeuser)
-                url = url.replace("$PASSWORD$", nodepwd)
-
-                nodeuser = drv.get_ocsuser(fullnode)
-                nodepwd = drv.get_ocsuserpassword(fullnode)
-
-                r=session.get(url, headers=ocsheaders)
-                nodeApps = []
-                try:
-                    j = json.loads(r.text)
-                    # print(json.dumps(j, indent=4, sort_keys=True))
-                    nodeApps = j["ocs"]["data"]["apps"]
-                except:
-                    self.logger.warning(f'No JSON reply received on {fullnode}')
-                    # self.logger.warning(r.text)
-                    self.assertTrue(False)
-
-                with open(appsConfigurationFile, "r") as stream:
-                    expectedApps=yaml.safe_load(stream)
-
-                    self.logger.info(f'Check if all installed apps on {fullnode} are found in {appsConfigurationFile}')
-                    for nodeApp in nodeApps:
-                        try:
-                            appInfo = expectedApps['apps'][nodeApp]
-                        except:
-                            self.logger.warning(f'{nodeApp} NOT found on {fullnode}')
+        while(testThreadRunning == True):
+            time.sleep(1)
 
     # Test if all configured/expected apps are installed on the node
     def test_configured_apps_installed(self):
@@ -102,42 +202,11 @@ class TestAppsOcs(unittest.TestCase):
 
         for fullnode in drv.fullnodes:
             with self.subTest(mynode=fullnode):
-                session = requests.Session()
-                nodeuser = drv.get_ocsuser(fullnode)
-                nodepwd = drv.get_ocsuserapppassword(fullnode)
-                url = drv.get_all_apps_url(fullnode)
+                ConfiguredAppsInstalledThread = ConfiguredAppsInstalled(fullnode, self)
+                ConfiguredAppsInstalledThread.start()
 
-                self.logger.info(f'{url}')
-                url = url.replace("$USERNAME$", nodeuser)
-                url = url.replace("$PASSWORD$", nodepwd)
-
-                nodeuser = drv.get_ocsuser(fullnode)
-                nodepwd = drv.get_ocsuserpassword(fullnode)
-
-                r=session.get(url, headers=ocsheaders)
-                nodeApps = []
-                try:
-                    j = json.loads(r.text)
-                    # print(json.dumps(j, indent=4, sort_keys=True))
-                    nodeApps = j["ocs"]["data"]["apps"]
-                except:
-                    self.logger.warning(f'No JSON reply received on node {fullnode}')
-                    # self.logger.warning(r.text)
-                    self.assertTrue(False)
-
-                with open(appsConfigurationFile, "r") as stream:
-                    expectedApps=yaml.safe_load(stream)
-
-                    self.logger.info(f'Check if all apps configured in {appsConfigurationFile} are installed on {fullnode}')
-
-                    for expectedApp in expectedApps['apps']:
-                        self.logger.info(f'Check if {expectedApp} is installed on {fullnode}')
-                        print()
-                        try:
-                            pos = nodeApps.index(expectedApp)
-                            self.logger.info(f'Found app at {pos}')    
-                        except:
-                            self.logger.warning(f'App {expectedApp} NOT found on {fullnode}')
+        while(testThreadRunning == True):
+            time.sleep(1)
 
 if __name__ == '__main__':
     # unittest.main()

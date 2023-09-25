@@ -10,65 +10,145 @@ import os
 import time
 import yaml
 import logging
+import threading
 
 import sunetdrive
 
 ocsheaders = { "OCS-APIRequest" : "true" } 
 expectedResultsFile = 'expected.yaml'
+testThreadRunning = False
 
-class TestOcsCalls(unittest.TestCase):
-    logger = logging.getLogger(__name__)
-    logging.basicConfig(format = '%(asctime)s - %(module)s.%(funcName)s - %(levelname)s: %(message)s',
-                    datefmt = '%Y-%m-%d %H:%M:%S', level = logging.INFO)
-    with open(expectedResultsFile, "r") as stream:
-        expectedResults=yaml.safe_load(stream)
+logger = logging.getLogger('TestLogger')
+logging.basicConfig(format = '%(asctime)s - %(module)s.%(funcName)s - %(levelname)s: %(message)s',
+                datefmt = '%Y-%m-%d %H:%M:%S', level = logging.INFO)
 
-    def test_logger(self):
-        self.logger.info(f'self.logger.info test_logger')
-        pass
+with open(expectedResultsFile, "r") as stream:
+    expectedResults=yaml.safe_load(stream)
 
-    def test_capabilities_nouser(self):
+class AppVersions(threading.Thread):
+    def __init__(self, name, TestOcsCalls):
+        threading.Thread.__init__(self)
+        self.name = name
+        self.TestOcsCalls = TestOcsCalls
+
+    def run(self):
+        global testThreadRunning
+        global logger
+        global expectedResults
+        testThreadRunning = True
+        logger.info(f'AppVersion thread started for node {self.name}')
         drv = sunetdrive.TestTarget()
-        for fullnode in drv.fullnodes:
-            with self.subTest(mynode=fullnode):
-                url = drv.get_ocs_capabilities_url(fullnode)
-                self.logger.info(f'{self._testMethodName} {url}')
-                r=requests.get(url, headers=ocsheaders)
-                try:
-                    j = json.loads(r.text)
-                except:
-                    self.logger.info("No JSON reply received")
-                    self.logger.info(r.text)
+        fullnode = self.name
 
-                self.assertEqual(j["ocs"]["meta"]["status"], self.expectedResults[drv.target]['ocs_capabilities']['ocs_meta_status'])
-                self.assertEqual(j["ocs"]["meta"]["statuscode"], self.expectedResults[drv.target]['ocs_capabilities']['ocs_meta_statuscode'])
-                self.assertEqual(j["ocs"]["meta"]["message"], self.expectedResults[drv.target]['ocs_capabilities']['ocs_meta_message'])
-                self.assertEqual(j["ocs"]["data"]["version"]["string"], self.expectedResults[drv.target]['ocs_capabilities']['ocs_data_version_string'])
+        userSamlFound = False
+        gssFound = False
 
-    def test_capabilities(self):
+        session = requests.Session()
+        nodeuser = drv.get_ocsuser(fullnode)
+        nodepwd = drv.get_ocsuserapppassword(fullnode)
+        url = drv.get_all_apps_url(fullnode)
+
+        logger.info(url)
+        url = url.replace("$USERNAME$", nodeuser)
+        url = url.replace("$PASSWORD$", nodepwd)
+
+        nodeuser = drv.get_ocsuser(fullnode)
+        nodepwd = drv.get_ocsuserpassword(fullnode)
+
+        r=session.get(url, headers=ocsheaders)
+        nodeApps = []
+        try:
+            j = json.loads(r.text)
+            # print(json.dumps(j, indent=4, sort_keys=True))
+            apps = j["ocs"]["data"]["apps"]
+        except:
+            logger.info(f'No JSON reply received')
+            logger.info(r.text)
+
+        if 'user_saml' in apps:
+            userSamlFound = True
+        if 'globalsiteselector' in apps:
+            gssFound = True
+
+        # # user_saml check
+        if userSamlFound:
+            nodeuser = drv.get_ocsuser(fullnode)
+            nodepwd = drv.get_ocsuserapppassword(fullnode)
+            url = drv.get_app_url(fullnode, 'user_saml')
+
+            logger.info(url)
+            url = url.replace("$USERNAME$", nodeuser)
+            url = url.replace("$PASSWORD$", nodepwd)
+
+            nodeuser = drv.get_ocsuser(fullnode)
+            nodepwd = drv.get_ocsuserpassword(fullnode)
+
+            r=session.get(url, headers=ocsheaders)
+            try:
+                j = json.loads(r.text)
+                # print(json.dumps(j, indent=4, sort_keys=True))
+                logger.info(j["ocs"]["data"]["id"])
+                logger.info(j["ocs"]["data"]["version"])
+                
+            except:
+                logger.info(f'No JSON reply received')
+                logger.info(r.text)
+
+            self.TestOcsCalls.assertTrue(userSamlFound)
+            self.TestOcsCalls.assertEqual(j["ocs"]["data"]["id"], 'user_saml')
+            self.TestOcsCalls.assertEqual(j["ocs"]["data"]["version"], expectedResults['apps']['user_saml'][drv.target]['version'])
+
+        # # global site selector check
+        if gssFound:
+            nodeuser = drv.get_ocsuser(fullnode)
+            nodepwd = drv.get_ocsuserapppassword(fullnode)
+            url = drv.get_app_url(fullnode, 'globalsiteselector')
+
+            logger.info(url)
+            url = url.replace("$USERNAME$", nodeuser)
+            url = url.replace("$PASSWORD$", nodepwd)
+
+            nodeuser = drv.get_ocsuser(fullnode)
+            nodepwd = drv.get_ocsuserpassword(fullnode)
+
+            r=session.get(url, headers=ocsheaders)
+            try:
+                j = json.loads(r.text)
+                logger.info(j["ocs"]["data"]["id"])
+                logger.info(j["ocs"]["data"]["version"])
+                # print(json.dumps(j, indent=4, sort_keys=True))
+            except:
+                logger.info(f'No JSON reply received')
+                logger.info(r.text)
+
+            self.TestOcsCalls.assertTrue(gssFound)
+            self.TestOcsCalls.assertEqual(j["ocs"]["data"]["id"], 'globalsiteselector')
+            self.TestOcsCalls.assertEqual(j["ocs"]["data"]["version"], expectedResults['apps']['globalsiteselector'][drv.target]['version'])
+
+        # Summary and test
+        logger.info(f'Saml app found: {userSamlFound}')
+        logger.info(f'Gss app found: {gssFound}')
+
+
+        logger.info(f'AppVersion thread done for node {self.name}')
+        testThreadRunning = False
+
+class NodeUsers(threading.Thread):
+    def __init__(self, name, TestOcsCalls):
+        threading.Thread.__init__(self)
+        self.name = name
+        self.TestOcsCalls = TestOcsCalls
+
+    def run(self):
+        global testThreadRunning
+        global logger
+        testThreadRunning = True
+        logger.info(f'NodeUsers thread started for node {self.name}')
         drv = sunetdrive.TestTarget()
-        for fullnode in drv.fullnodes:
-            with self.subTest(mynode=fullnode):
-                url = drv.get_ocs_capabilities_url(fullnode)
-                self.logger.info(f'{self._testMethodName} {url}')
-                nodeuser = drv.get_ocsuser(fullnode)
-                nodepwd = drv.get_ocsuserpassword(fullnode)
+        fullnode = self.name
 
-                r=requests.get(url, headers=ocsheaders, auth = HTTPBasicAuth(nodeuser, nodepwd))
-                try:
-                    j = json.loads(r.text)
-                except:
-                    self.logger.info("No JSON reply received")
-                    self.logger.info(r.text)
-
-                # TBD: Add assertion for GSS enabled
-                # self.assertEqual(j["ocs"]["data"]["capabilities"]["globalscale"]["enabled"], ocsresult.ocs_data_capabilities_globalscale_enabled)
-
-    def test_gssusers(self):
-        drv = sunetdrive.TestTarget()
-        fullnode = 'gss'
         url = drv.get_add_user_url(fullnode)
-        self.logger.info(f'{self._testMethodName} {url}')
+        logger.info(f'{self.TestOcsCalls._testMethodName} {url}')
         nodeuser = drv.get_ocsuser(fullnode)
         nodepwd = drv.get_ocsuserapppassword(fullnode)
         url = url.replace("$USERNAME$", nodeuser)
@@ -77,201 +157,242 @@ class TestOcsCalls(unittest.TestCase):
         r = requests.get(url, headers=ocsheaders)
         try:
             j = json.loads(r.text)
-            self.logger.info(json.dumps(j, indent=4, sort_keys=True))
+            logger.info(json.dumps(j, indent=4, sort_keys=True))
             users = j["ocs"]["data"]["users"]
         except:
-            self.logger.info("No JSON reply received")
-            self.logger.info(r.text)
+            logger.info("No JSON reply received")
+            logger.info(r.text)
+
+        logger.info(f'NodeUsers thread done for node {self.name}')
+        testThreadRunning = False
+
+class CapabilitiesNoUser(threading.Thread):
+    def __init__(self, name, TestOcsCalls):
+        threading.Thread.__init__(self)
+        self.name = name
+        self.TestOcsCalls = TestOcsCalls
+
+    def run(self):
+        global testThreadRunning
+        global logger
+        global expectedResults
+        testThreadRunning = True
+        logger.info(f'Capabilities no user thread started for node {self.name}')
+        drv = sunetdrive.TestTarget()
+        fullnode = self.name
+
+        url = drv.get_ocs_capabilities_url(fullnode)
+        logger.info(f'{self.TestOcsCalls._testMethodName} {url}')
+        r=requests.get(url, headers=ocsheaders)
+        try:
+            j = json.loads(r.text)
+        except:
+            logger.info("No JSON reply received")
+            logger.info(r.text)
+
+        self.TestOcsCalls.assertEqual(j["ocs"]["meta"]["status"], expectedResults[drv.target]['ocs_capabilities']['ocs_meta_status'])
+        self.TestOcsCalls.assertEqual(j["ocs"]["meta"]["statuscode"], expectedResults[drv.target]['ocs_capabilities']['ocs_meta_statuscode'])
+        self.TestOcsCalls.assertEqual(j["ocs"]["meta"]["message"], expectedResults[drv.target]['ocs_capabilities']['ocs_meta_message'])
+        self.TestOcsCalls.assertEqual(j["ocs"]["data"]["version"]["string"], expectedResults[drv.target]['ocs_capabilities']['ocs_data_version_string'])
+
+        logger.info(f'Capabilities no user thread done for node {self.name}')
+        testThreadRunning = False
+
+
+class Capabilities(threading.Thread):
+    def __init__(self, name, TestOcsCalls):
+        threading.Thread.__init__(self)
+        self.name = name
+        self.TestOcsCalls = TestOcsCalls
+
+    def run(self):
+        global testThreadRunning
+        global logger
+        testThreadRunning = True
+        logger.info(f'Capabilities thread started for node {self.name}')
+        drv = sunetdrive.TestTarget()
+        fullnode = self.name
+
+        url = drv.get_ocs_capabilities_url(fullnode)
+        logger.info(f'{self.TestOcsCalls._testMethodName} {url}')
+        nodeuser = drv.get_ocsuser(fullnode)
+        nodepwd = drv.get_ocsuserpassword(fullnode)
+
+        r=requests.get(url, headers=ocsheaders, auth = HTTPBasicAuth(nodeuser, nodepwd))
+        try:
+            j = json.loads(r.text)
+        except:
+            logger.info("No JSON reply received")
+            logger.info(r.text)
+
+        # TBD: Add assertion for GSS enabled
+        # self.assertEqual(j["ocs"]["data"]["capabilities"]["globalscale"]["enabled"], ocsresult.ocs_data_capabilities_globalscale_enabled)
+        logger.info(f'Capabilities thread done for node {self.name}')
+        testThreadRunning = False
+
+class UserLifeCycle(threading.Thread):
+    def __init__(self, name, TestOcsCalls):
+        threading.Thread.__init__(self)
+        self.name = name
+        self.TestOcsCalls = TestOcsCalls
+
+    def run(self):
+        global testThreadRunning
+        global expectedResults
+        testThreadRunning = True
+        logger.info(f'User lifecycle thread started for node {self.name}')
+        drv = sunetdrive.TestTarget()
+        fullnode = self.name
+
+        session = requests.Session()
+        url = drv.get_add_user_url(fullnode)
+        logger.info(f'{self.TestOcsCalls._testMethodName} {url}')
+        nodeuser = drv.get_ocsuser(fullnode)
+        nodepwd = drv.get_ocsuserapppassword(fullnode)
+        url = url.replace("$USERNAME$", nodeuser)
+        url = url.replace("$PASSWORD$", nodepwd)
+
+        cliuser = "__cli_user_" + fullnode
+        clipwd = sunetdrive.Helper().get_random_string(12)
+
+        data = { 'userid': cliuser, 'password': clipwd}
+
+        logger.info(f'Create cli user {cliuser}')
+        r = session.post(url, headers=ocsheaders, data=data)
+        try:
+            j = json.loads(r.text)
+            logger.info(json.dumps(j, indent=4, sort_keys=True))
+
+            if (j["ocs"]["meta"]["statuscode"] == 996):
+                logger.info(f'Create cli user after internal server error {cliuser}')
+                r = session.post(url, headers=ocsheaders, data=data)
+                j = json.loads(r.text)
+                logger.info(json.dumps(j, indent=4, sort_keys=True))
+        except:
+            logger.info("No JSON reply received")
+            logger.info(r.text)
+
+        # self.assertEqual(j["ocs"]["meta"]["status"], expectedResults[drv.target]['ocs_capabilities']['ocs_meta_status'])
+        # self.assertEqual(j["ocs"]["meta"]["statuscode"], expectedResults[drv.target]['ocs_capabilities']['ocs_meta_statuscode'])
+        # self.assertEqual(j["ocs"]["meta"]["message"], expectedResults[drv.target]['ocs_capabilities']['ocs_meta_message'])
+
+        logger.info(f'Disable cli user {cliuser}')
+        disableuserurl = drv.get_disable_user_url(fullnode, cliuser)
+        disableuserurl = disableuserurl.replace("$USERNAME$", nodeuser)
+        disableuserurl = disableuserurl.replace("$PASSWORD$", nodepwd)
+        r = session.put(disableuserurl, headers=ocsheaders)
+        try:
+            j = json.loads(r.text)
+            logger.info(json.dumps(j, indent=4, sort_keys=True))
+
+            if (j["ocs"]["meta"]["statuscode"] == 996):
+                logger.info(f'Disable cli user after internal server error {cliuser}')
+                r = session.put(disableuserurl, headers=ocsheaders)
+                j = json.loads(r.text)
+                logger.info(json.dumps(j, indent=4, sort_keys=True))
+
+            self.TestOcsCalls.assertEqual(j["ocs"]["meta"]["status"], expectedResults[drv.target]['ocs_capabilities']['ocs_meta_status'])
+            self.TestOcsCalls.assertEqual(j["ocs"]["meta"]["statuscode"], expectedResults[drv.target]['ocs_capabilities']['ocs_meta_statuscode'])
+            self.TestOcsCalls.assertEqual(j["ocs"]["meta"]["message"], expectedResults[drv.target]['ocs_capabilities']['ocs_meta_message'])
+
+            logger.info(f'Delete cli user {cliuser}')
+            userurl = drv.get_user_url(fullnode, cliuser)
+            userurl = userurl.replace("$USERNAME$", nodeuser)
+            userurl = userurl.replace("$PASSWORD$", nodepwd)
+            r = session.delete(userurl, headers=ocsheaders)
+            j = json.loads(r.text)
+            logger.info(json.dumps(j, indent=4, sort_keys=True))
+
+            if (j["ocs"]["meta"]["statuscode"] == 996):
+                logger.info(f'Delete cli user after internal server error {cliuser}')
+                r = session.delete(userurl, headers=ocsheaders)
+                j = json.loads(r.text)
+                logger.info(json.dumps(j, indent=4, sort_keys=True))
+
+            self.TestOcsCalls.assertEqual(j["ocs"]["meta"]["status"], expectedResults[drv.target]['ocs_capabilities']['ocs_meta_status'])
+            self.TestOcsCalls.assertEqual(j["ocs"]["meta"]["statuscode"], expectedResults[drv.target]['ocs_capabilities']['ocs_meta_statuscode'])
+            self.TestOcsCalls.assertEqual(j["ocs"]["meta"]["message"], expectedResults[drv.target]['ocs_capabilities']['ocs_meta_message'])
+        except:
+            logger.info("No JSON reply received")
+            logger.info(r.text)
+
+        logger.info(f'User lifecycle thread done for node {self.name}')
+        testThreadRunning = False
+
+class TestOcsCalls(unittest.TestCase):
+    def test_logger(self):
+        logger.info(f'logger.info test_logger')
+        pass
+
+    def test_capabilities_nouser(self):
+        drv = sunetdrive.TestTarget()
+        for fullnode in drv.fullnodes:
+            with self.subTest(mynode=fullnode):
+                capabilitiesNoUserThread = CapabilitiesNoUser(fullnode, self)
+                capabilitiesNoUserThread.start()
+
+        while(testThreadRunning == True):
+            time.sleep(1)
+
+    def test_capabilities(self):
+        drv = sunetdrive.TestTarget()
+        for fullnode in drv.fullnodes:
+            with self.subTest(mynode=fullnode):
+                capabilitiesThread = Capabilities(fullnode, self)
+                capabilitiesThread.start()
+
+        while(testThreadRunning == True):
+            time.sleep(1)
+
+    def test_gssusers(self):
+        drv = sunetdrive.TestTarget()
+        fullnode = 'gss'
+        url = drv.get_add_user_url(fullnode)
+        logger.info(f'{self._testMethodName} {url}')
+        nodeuser = drv.get_ocsuser(fullnode)
+        nodepwd = drv.get_ocsuserapppassword(fullnode)
+        url = url.replace("$USERNAME$", nodeuser)
+        url = url.replace("$PASSWORD$", nodepwd)
+
+        r = requests.get(url, headers=ocsheaders)
+        try:
+            j = json.loads(r.text)
+            logger.info(json.dumps(j, indent=4, sort_keys=True))
+            users = j["ocs"]["data"]["users"]
+        except:
+            logger.info("No JSON reply received")
+            logger.info(r.text)
 
     def test_nodeusers(self):
         drv = sunetdrive.TestTarget()
         for fullnode in drv.fullnodes:
             with self.subTest(mynode=fullnode):
-                url = drv.get_add_user_url(fullnode)
-                self.logger.info(f'{self._testMethodName} {url}')
-                nodeuser = drv.get_ocsuser(fullnode)
-                nodepwd = drv.get_ocsuserapppassword(fullnode)
-                url = url.replace("$USERNAME$", nodeuser)
-                url = url.replace("$PASSWORD$", nodepwd)
+                nodeUsersThread = NodeUsers(fullnode, self)
+                nodeUsersThread.start()
 
-                r = requests.get(url, headers=ocsheaders)
-                try:
-                    j = json.loads(r.text)
-                    self.logger.info(json.dumps(j, indent=4, sort_keys=True))
-                    users = j["ocs"]["data"]["users"]
-                except:
-                    self.logger.info("No JSON reply received")
-                    self.logger.info(r.text)
+        while(testThreadRunning == True):
+            time.sleep(1)
+
 
     def test_userlifecycle(self):
         drv = sunetdrive.TestTarget()
         for fullnode in drv.fullnodes:
             with self.subTest(mynode=fullnode):
-                session = requests.Session()
-                url = drv.get_add_user_url(fullnode)
-                self.logger.info(f'{self._testMethodName} {url}')
-                nodeuser = drv.get_ocsuser(fullnode)
-                nodepwd = drv.get_ocsuserapppassword(fullnode)
-                url = url.replace("$USERNAME$", nodeuser)
-                url = url.replace("$PASSWORD$", nodepwd)
+                userLifecycleThread = UserLifeCycle(fullnode, self)
+                userLifecycleThread.start()
 
-                cliuser = "__cli_user_" + fullnode
-                clipwd = sunetdrive.Helper().get_random_string(12)
-
-                data = { 'userid': cliuser, 'password': clipwd}
-
-                self.logger.info(f'Create cli user {cliuser}')
-                r = session.post(url, headers=ocsheaders, data=data)
-                try:
-                    j = json.loads(r.text)
-                    self.logger.info(json.dumps(j, indent=4, sort_keys=True))
-
-                    if (j["ocs"]["meta"]["statuscode"] == 996):
-                        self.logger.info(f'Create cli user after internal server error {cliuser}')
-                        r = session.post(url, headers=ocsheaders, data=data)
-                        j = json.loads(r.text)
-                        self.logger.info(json.dumps(j, indent=4, sort_keys=True))
-                except:
-                    self.logger.info("No JSON reply received")
-                    self.logger.info(r.text)
-
-                # self.assertEqual(j["ocs"]["meta"]["status"], self.expectedResults[drv.target]['ocs_capabilities']['ocs_meta_status'])
-                # self.assertEqual(j["ocs"]["meta"]["statuscode"], self.expectedResults[drv.target]['ocs_capabilities']['ocs_meta_statuscode'])
-                # self.assertEqual(j["ocs"]["meta"]["message"], self.expectedResults[drv.target]['ocs_capabilities']['ocs_meta_message'])
-
-                self.logger.info(f'Disable cli user {cliuser}')
-                disableuserurl = drv.get_disable_user_url(fullnode, cliuser)
-                disableuserurl = disableuserurl.replace("$USERNAME$", nodeuser)
-                disableuserurl = disableuserurl.replace("$PASSWORD$", nodepwd)
-                r = session.put(disableuserurl, headers=ocsheaders)
-                try:
-                    j = json.loads(r.text)
-                    self.logger.info(json.dumps(j, indent=4, sort_keys=True))
-
-                    if (j["ocs"]["meta"]["statuscode"] == 996):
-                        self.logger.info(f'Disable cli user after internal server error {cliuser}')
-                        r = session.put(disableuserurl, headers=ocsheaders)
-                        j = json.loads(r.text)
-                        self.logger.info(json.dumps(j, indent=4, sort_keys=True))
-
-                    self.assertEqual(j["ocs"]["meta"]["status"], self.expectedResults[drv.target]['ocs_capabilities']['ocs_meta_status'])
-                    self.assertEqual(j["ocs"]["meta"]["statuscode"], self.expectedResults[drv.target]['ocs_capabilities']['ocs_meta_statuscode'])
-                    self.assertEqual(j["ocs"]["meta"]["message"], self.expectedResults[drv.target]['ocs_capabilities']['ocs_meta_message'])
-
-                    self.logger.info(f'Delete cli user {cliuser}')
-                    userurl = drv.get_user_url(fullnode, cliuser)
-                    userurl = userurl.replace("$USERNAME$", nodeuser)
-                    userurl = userurl.replace("$PASSWORD$", nodepwd)
-                    r = session.delete(userurl, headers=ocsheaders)
-                    j = json.loads(r.text)
-                    self.logger.info(json.dumps(j, indent=4, sort_keys=True))
-
-                    if (j["ocs"]["meta"]["statuscode"] == 996):
-                        self.logger.info(f'Delete cli user after internal server error {cliuser}')
-                        r = session.delete(userurl, headers=ocsheaders)
-                        j = json.loads(r.text)
-                        self.logger.info(json.dumps(j, indent=4, sort_keys=True))
-
-                    self.assertEqual(j["ocs"]["meta"]["status"], self.expectedResults[drv.target]['ocs_capabilities']['ocs_meta_status'])
-                    self.assertEqual(j["ocs"]["meta"]["statuscode"], self.expectedResults[drv.target]['ocs_capabilities']['ocs_meta_statuscode'])
-                    self.assertEqual(j["ocs"]["meta"]["message"], self.expectedResults[drv.target]['ocs_capabilities']['ocs_meta_message'])
-                except:
-                    self.logger.info("No JSON reply received")
-                    self.logger.info(r.text)
+        while(testThreadRunning == True):
+            time.sleep(1)
 
     def test_app_versions(self):
         drv = sunetdrive.TestTarget()
         for fullnode in drv.fullnodes:
             with self.subTest(mynode=fullnode):
-                userSamlFound = False
-                gssFound = False
+                appVersionsThread = AppVersions(fullnode, self)
+                appVersionsThread.start()
 
-                session = requests.Session()
-                nodeuser = drv.get_ocsuser(fullnode)
-                nodepwd = drv.get_ocsuserapppassword(fullnode)
-                url = drv.get_all_apps_url(fullnode)
-
-                self.logger.info(url)
-                url = url.replace("$USERNAME$", nodeuser)
-                url = url.replace("$PASSWORD$", nodepwd)
-
-                nodeuser = drv.get_ocsuser(fullnode)
-                nodepwd = drv.get_ocsuserpassword(fullnode)
-
-                r=session.get(url, headers=ocsheaders)
-                nodeApps = []
-                try:
-                    j = json.loads(r.text)
-                    # print(json.dumps(j, indent=4, sort_keys=True))
-                    apps = j["ocs"]["data"]["apps"]
-                except:
-                    self.logger.info(f'No JSON reply received')
-                    self.logger.info(r.text)
-
-                if 'user_saml' in apps:
-                    userSamlFound = True
-                if 'globalsiteselector' in apps:
-                    gssFound = True
-
-                # # user_saml check
-                if userSamlFound:
-                    nodeuser = drv.get_ocsuser(fullnode)
-                    nodepwd = drv.get_ocsuserapppassword(fullnode)
-                    url = drv.get_app_url(fullnode, 'user_saml')
-
-                    self.logger.info(url)
-                    url = url.replace("$USERNAME$", nodeuser)
-                    url = url.replace("$PASSWORD$", nodepwd)
-
-                    nodeuser = drv.get_ocsuser(fullnode)
-                    nodepwd = drv.get_ocsuserpassword(fullnode)
-
-                    r=session.get(url, headers=ocsheaders)
-                    try:
-                        j = json.loads(r.text)
-                        # print(json.dumps(j, indent=4, sort_keys=True))
-                        self.logger.info(j["ocs"]["data"]["id"])
-                        self.logger.info(j["ocs"]["data"]["version"])
-                        
-                    except:
-                        self.logger.info(f'No JSON reply received')
-                        self.logger.info(r.text)
-
-                    self.assertTrue(userSamlFound)
-                    self.assertEqual(j["ocs"]["data"]["id"], 'user_saml')
-                    self.assertEqual(j["ocs"]["data"]["version"], self.expectedResults['apps']['user_saml'][drv.target]['version'])
-
-                # # global site selector check
-                if gssFound:
-                    nodeuser = drv.get_ocsuser(fullnode)
-                    nodepwd = drv.get_ocsuserapppassword(fullnode)
-                    url = drv.get_app_url(fullnode, 'globalsiteselector')
-
-                    self.logger.info(url)
-                    url = url.replace("$USERNAME$", nodeuser)
-                    url = url.replace("$PASSWORD$", nodepwd)
-
-                    nodeuser = drv.get_ocsuser(fullnode)
-                    nodepwd = drv.get_ocsuserpassword(fullnode)
-
-                    r=session.get(url, headers=ocsheaders)
-                    try:
-                        j = json.loads(r.text)
-                        self.logger.info(j["ocs"]["data"]["id"])
-                        self.logger.info(j["ocs"]["data"]["version"])
-                        # print(json.dumps(j, indent=4, sort_keys=True))
-                    except:
-                        self.logger.info(f'No JSON reply received')
-                        self.logger.info(r.text)
-
-                    self.assertTrue(gssFound)
-                    self.assertEqual(j["ocs"]["data"]["id"], 'globalsiteselector')
-                    self.assertEqual(j["ocs"]["data"]["version"], self.expectedResults['apps']['globalsiteselector'][drv.target]['version'])
-
-                # Summary and test
-                self.logger.info(f'Saml app found: {userSamlFound}')
-                self.logger.info(f'Gss app found: {gssFound}')
-
+        while(testThreadRunning == True):
+            time.sleep(1)
 
 if __name__ == '__main__':
     import xmlrunner

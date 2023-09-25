@@ -11,32 +11,89 @@ import hashlib
 from xml.etree.ElementTree import XML, fromstring
 import xmltodict
 import yaml
+import threading
+import time
 
 import sunetdrive
 import os
 
 expectedResultsFile = 'expected.yaml'
+testThreadRunning = False
+logger = logging.getLogger(__name__)
+logging.basicConfig(format = '%(asctime)s - %(module)s.%(funcName)s - %(levelname)s: %(message)s',
+                datefmt = '%Y-%m-%d %H:%M:%S', level = logging.INFO)
+with open(expectedResultsFile, "r") as stream:
+    expectedResults=yaml.safe_load(stream)
+
+class StatusInfo(threading.Thread):
+    def __init__(self, url, TestStatus):
+        threading.Thread.__init__(self)
+        self.url = url
+        self.TestStatus = TestStatus
+
+    def run(self):
+        global testThreadRunning
+        global logger
+        global expectedResults
+        testThreadRunning = True
+        drv = sunetdrive.TestTarget()
+        logger.info(f'Status thread started for node {self.url}')
+
+        r =requests.get(self.url)
+        try:
+            j = json.loads(r.text)
+            self.TestStatus.assertEqual(j["maintenance"], expectedResults[drv.target]['status']['maintenance'])
+            self.TestStatus.assertEqual(j["needsDbUpgrade"], expectedResults[drv.target]['status']['needsDbUpgrade'])
+            self.TestStatus.assertEqual(j["version"], expectedResults[drv.target]['status']['version'])
+            self.TestStatus.assertEqual(j["versionstring"], expectedResults[drv.target]['status']['versionstring'])
+            self.TestStatus.assertEqual(j["edition"], expectedResults[drv.target]['status']['edition'])
+            # self.assertEqual(j["productname"], statusResult.productname)
+            self.TestStatus.assertEqual(j["extendedSupport"], expectedResults[drv.target]['status']['extendedSupport'])
+            logger.info(f'Status information tested: {self.url}')
+        except:
+            logger.info(f'No valid JSON reply received for {self.url}')
+            logger.info(r.text)
+
+        logger.info(f'Status thread done for node {self.url}')
+        testThreadRunning = False
+
+class Status(threading.Thread):
+    def __init__(self, url, TestStatus):
+        threading.Thread.__init__(self)
+        self.url = url
+        self.TestStatus = TestStatus
+
+    def run(self):
+        global testThreadRunning
+        global logger
+        global expectedResults
+        testThreadRunning = True
+        logger.info(f'Status thread started for node {self.url}')
+
+        r=requests.get(self.url)
+        self.TestStatus.assertEqual(r.status_code, 200)
+        logger.info(f'Status tested: {self.url}')
+
+        logger.info(f'Status thread done for node {self.url}')
+        testThreadRunning = False
 
 class TestStatus(unittest.TestCase):
-    logger = logging.getLogger(__name__)
-    logging.basicConfig(format = '%(asctime)s - %(module)s.%(funcName)s - %(levelname)s: %(message)s',
-                    datefmt = '%Y-%m-%d %H:%M:%S', level = logging.INFO)
-    with open(expectedResultsFile, "r") as stream:
-        expectedResults=yaml.safe_load(stream)
-
     def test_logger(self):
         self.logger.info(f'self.logger.info test_logger')
         pass
 
     def test_status_gss(self):
+        global logger
         drv = sunetdrive.TestTarget()
         url = drv.get_gss_url()
         print(self._testMethodName, url)
         r=requests.get(url)
         self.assertEqual(r.status_code, 200)
-        self.logger.info(f'GSS Status tested')
+        logger.info(f'GSS Status tested')
 
     def test_statusinfo_gss(self):
+        global logger
+        global expectedResults
         drv = sunetdrive.TestTarget()
 
         url=drv.get_gss_url() + "/status.php"
@@ -44,37 +101,33 @@ class TestStatus(unittest.TestCase):
         r =requests.get(url)
         j = json.loads(r.text)
 
-        self.assertEqual(j["maintenance"], self.expectedResults[drv.target]['status_gss']['maintenance']) 
-        self.assertEqual(j["needsDbUpgrade"], self.expectedResults[drv.target]['status_gss']['needsDbUpgrade'])
-        self.assertEqual(j["version"], self.expectedResults[drv.target]['status_gss']['version'])
-        self.assertEqual(j["versionstring"], self.expectedResults[drv.target]['status_gss']['versionstring'])
-        self.assertEqual(j["edition"], self.expectedResults[drv.target]['status_gss']['edition'])
-        self.assertEqual(j["extendedSupport"], self.expectedResults[drv.target]['status_gss']['extendedSupport'])
-        self.logger.info(f'GSS Status information tested')
+        self.assertEqual(j["maintenance"], expectedResults[drv.target]['status_gss']['maintenance']) 
+        self.assertEqual(j["needsDbUpgrade"], expectedResults[drv.target]['status_gss']['needsDbUpgrade'])
+        self.assertEqual(j["version"], expectedResults[drv.target]['status_gss']['version'])
+        self.assertEqual(j["versionstring"], expectedResults[drv.target]['status_gss']['versionstring'])
+        self.assertEqual(j["edition"], expectedResults[drv.target]['status_gss']['edition'])
+        self.assertEqual(j["extendedSupport"], expectedResults[drv.target]['status_gss']['extendedSupport'])
+        logger.info(f'GSS Status information tested')
 
     def test_status(self):
         drv = sunetdrive.TestTarget()
         for url in drv.get_allnode_status_urls():
             with self.subTest(myurl=url):
-                r=requests.get(url)
-                self.assertEqual(r.status_code, 200)
-                self.logger.info(f'Status tested: {url}')
+                statusThread = Status(url, self)
+                statusThread.start()
 
+        while(testThreadRunning == True):
+            time.sleep(1)
 
     def test_statusinfo(self):
         drv = sunetdrive.TestTarget()
         for url in drv.get_allnode_status_urls():
             with self.subTest(myurl=url):
-                r =requests.get(url)
-                j = json.loads(r.text)
-                self.assertEqual(j["maintenance"], self.expectedResults[drv.target]['status']['maintenance'])
-                self.assertEqual(j["needsDbUpgrade"], self.expectedResults[drv.target]['status']['needsDbUpgrade'])
-                self.assertEqual(j["version"], self.expectedResults[drv.target]['status']['version'])
-                self.assertEqual(j["versionstring"], self.expectedResults[drv.target]['status']['versionstring'])
-                self.assertEqual(j["edition"], self.expectedResults[drv.target]['status']['edition'])
-                # self.assertEqual(j["productname"], statusResult.productname)
-                self.assertEqual(j["extendedSupport"], self.expectedResults[drv.target]['status']['extendedSupport'])
-                self.logger.info(f'Status information tested: {url}')
+                statusInfoThread = StatusInfo(url, self)
+                statusInfoThread.start()
+
+        while(testThreadRunning == True):
+            time.sleep(1)
 
     def test_metadata_gss(self):
         drv = sunetdrive.TestTarget()
