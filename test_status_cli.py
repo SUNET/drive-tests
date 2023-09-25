@@ -79,7 +79,8 @@ class Status(threading.Thread):
 
 class TestStatus(unittest.TestCase):
     def test_logger(self):
-        self.logger.info(f'self.logger.info test_logger')
+        global logger
+        logger.info(f'self.logger.info test_logger')
         pass
 
     def test_status_gss(self):
@@ -130,11 +131,13 @@ class TestStatus(unittest.TestCase):
             time.sleep(1)
 
     def test_metadata_gss(self):
+        global logger
+        global expectedResults
         drv = sunetdrive.TestTarget()
         url = drv.get_gss_metadata_url()
         expectedEntityId = ''
         certMd5 = ''
-        self.logger.info(f'Verify metadata for {url}')
+        logger.info(f'Verify metadata for {url}')
         r = requests.get(url)
 
         try:
@@ -144,7 +147,7 @@ class TestStatus(unittest.TestCase):
                 name = item[0]
                 if name == 'entityID':
                     expectedEntityId = item[1]
-                    self.logger.info("entityID checked")
+                    logger.info("entityID checked")
 
             metadataDict = xmltodict.parse(r.text)
             jsonString = json.dumps(metadataDict)
@@ -152,11 +155,11 @@ class TestStatus(unittest.TestCase):
             certString = j["md:EntityDescriptor"]["md:SPSSODescriptor"]["md:KeyDescriptor"]["ds:KeyInfo"]["ds:X509Data"]["ds:X509Certificate"]
             certMd5 = hashlib.md5(certString.encode('utf-8')).hexdigest()
         except:
-            self.logger.error(f'Metadata is not valid XML')
+            logger.error(f'Metadata is not valid XML')
 
         self.assertEqual(expectedEntityId, drv.get_gss_entity_id())
-        self.assertEqual(certMd5, self.expectedResults[drv.target]['cert_md5'])
-        self.logger.info(f'GSS metadata test done')
+        self.assertEqual(certMd5, expectedResults[drv.target]['cert_md5'])
+        logger.info(f'GSS metadata test done')
 
 if __name__ == '__main__':
     import xmlrunner
