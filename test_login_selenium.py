@@ -202,10 +202,7 @@ class TestLoginSelenium(unittest.TestCase):
 
         wait = WebDriverWait(driver, delay)
 
-        if drv.target == 'prod':
-            loginLinkText = 'Access through your institution'
-        else:
-            loginLinkText = 'ACCESS THROUGH YOUR INSTITUTION'
+        loginLinkText = 'Access through your institution'
 
         wait.until(EC.presence_of_element_located((By.LINK_TEXT, loginLinkText))).click()
         driver.implicitly_wait(10)
