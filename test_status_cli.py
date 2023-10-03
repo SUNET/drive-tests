@@ -52,6 +52,7 @@ class StatusInfo(threading.Thread):
             logger.info(f'Status information tested: {self.url}')
         except:
             logger.info(f'No valid JSON reply received for {self.url}')
+            self.TestStatus.assertTrue(False)
             logger.info(r.text)
 
         logger.info(f'Status thread done for node {self.url}')
