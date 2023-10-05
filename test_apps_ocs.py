@@ -55,6 +55,7 @@ class ConfiguredAppsInstalled(threading.Thread):
         except:
             logger.warning(f'No JSON reply received on node {fullnode}')
             # self.logger.warning(r.text)
+            testThreadRunning = False
             self.TestAppsOcs.assertTrue(False)
 
         logger.info(f'Check if all apps configured in {expectedResultsFile} are installed on {fullnode}')
@@ -106,6 +107,7 @@ class InstalledAppsConfigured(threading.Thread):
         except:
             logger.warning(f'No JSON reply received on {fullnode}')
             # self.logger.warning(r.text)
+            testThreadRunning = False
             self.TestAppsOcs.assertTrue(False)
 
         logger.info(f'Check if all installed apps on {fullnode} are found in {expectedResultsFile}')
@@ -162,10 +164,9 @@ class NumberOfAppsOnNode(threading.Thread):
             numExpectedApps = expectedResults[drv.target]['ocsapps']['default']
             logger.info(f'Expected number of apps: {numExpectedApps}')
 
-            self.TestAppsOcs.assertEqual(len(nodeApps), numExpectedApps)
-
         logger.info(f'NumberOfAppsOnNode thread done for node {self.name}')
         testThreadRunning = False
+        self.TestAppsOcs.assertEqual(len(nodeApps), numExpectedApps)
 
 class TestAppsOcs(unittest.TestCase):
     def test_logger(self):
