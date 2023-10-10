@@ -46,7 +46,7 @@ class TestTarget(object):
             self.multinodes = self.allnodes
 
     def getnodeprefix(self, node):
-        if node == 'gss':
+        if (node == 'gss' or node == 'none'):
             prefix = 'drive'
         else:
             prefix = node + '.drive'
@@ -126,6 +126,9 @@ class TestTarget(object):
 
     def get_node_entity_id(self, node):
         return 'https://' + self.getnodeprefix(node) + self.targetprefix + '.sunet.se/index.php/apps/user_saml/saml/metadata'
+
+    def get_collabora_node_url(self, node):
+        return 'https://document' + str(node) + '.' + self.getnodeprefix('none') + self.targetprefix + '.sunet.se'
 
     def get_fullnode_status_urls(self):
         nodeurls = []

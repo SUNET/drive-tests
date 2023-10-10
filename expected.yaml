@@ -26,6 +26,9 @@ prod:
   cert_md5: '702b0112df7e6e4b2ca2af3280841196'
   ocsapps: 
     default: 62
+  collabora:
+    nodes: 3
+    status: 'OK'
 test:
   status:
     installed: true
@@ -55,6 +58,9 @@ test:
   ocsapps: 
     default: 62
     sunet: 63
+  collabora:
+    nodes: 3
+    status: 'OK'
 storage:
     mainStorageLocation: 's3.sto4.safedc.net'
     backupStorageLocation: 's3.sto3.safedc.net'

@@ -162,6 +162,19 @@ class TestStatus(unittest.TestCase):
         self.assertEqual(certMd5, expectedResults[drv.target]['cert_md5'])
         logger.info(f'GSS metadata test done')
 
+    def test_collabora_nodes(self):
+        global logger
+        global expectedResults
+        drv = sunetdrive.TestTarget()
+        numCollaboraNodes = expectedResults[drv.target]['collabora']['nodes']
+        logger.info(f'Collabora nodes: {numCollaboraNodes}')
+        for i in range(1,numCollaboraNodes+1):
+            url = drv.get_collabora_node_url(i)
+            logger.info(f'Testing Collabora Node: {url}')
+            r = requests.get(url)
+            logger.info(f'Status: {r.text}')
+            self.assertEqual(expectedResults[drv.target]['collabora']['status'], r.text)
+
 if __name__ == '__main__':
     import xmlrunner
     # unittest.main()
