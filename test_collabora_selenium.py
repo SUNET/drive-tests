@@ -311,13 +311,11 @@ class TestCollaboraSelenium(unittest.TestCase):
                         wait.until(EC.frame_to_be_available_and_switch_to_it((By.ID, "loleafletframe")))
                         self.logger.info(f'loleafletframe loaded')
 
-                        skipwelcomeframe = False
-                        try:
-                            self.driver.find_element(by=By.CLASS_NAME, value='iframe-welcome-modal')
+                        if self.drv.target == 'prod':
                             skipwelcomeframe = False
-                        except NoSuchElementException:
-                            self.logger.info(f'Quick test iframe-welcome-modal, skipping further checks')
+                        else:
                             skipwelcomeframe = True
+                        self.logger.info(f'Skipping welcome frame: {skipwelcomeframe} for {self.drv.target}')
 
                         if skipwelcomeframe == False:                        
                             try:
@@ -503,13 +501,11 @@ class TestCollaboraSelenium(unittest.TestCase):
                     wait.until(EC.frame_to_be_available_and_switch_to_it((By.ID, "loleafletframe")))
                     self.logger.info(f'loleafletframe loaded')
 
-                    skipwelcomeframe = False
-                    try:
-                        self.driver.find_element(by=By.CLASS_NAME, value='iframe-welcome-modal')
+                    if self.drv.target == 'prod':
                         skipwelcomeframe = False
-                    except NoSuchElementException:
-                        self.logger.info(f'Quick test iframe-welcome-modal, skipping further checks')
+                    else:
                         skipwelcomeframe = True
+                    self.logger.info(f'Skipping welcome frame: {skipwelcomeframe} for {self.drv.target}')
 
                     if skipwelcomeframe == False:                        
                         try:
@@ -692,13 +688,11 @@ class TestCollaboraSelenium(unittest.TestCase):
                     wait.until(EC.frame_to_be_available_and_switch_to_it((By.ID, "loleafletframe")))
                     self.logger.info(f'loleafletframe loaded')
 
-                    skipwelcomeframe = False
-                    try:
-                        self.driver.find_element(by=By.CLASS_NAME, value='iframe-welcome-modal')
+                    if self.drv.target == 'prod':
                         skipwelcomeframe = False
-                    except NoSuchElementException:
-                        self.logger.info(f'Quick test iframe-welcome-modal, skipping further checks')
+                    else:
                         skipwelcomeframe = True
+                    self.logger.info(f'Skipping welcome frame: {skipwelcomeframe} for {self.drv.target}')
 
                     if skipwelcomeframe == False:                        
                         try:
