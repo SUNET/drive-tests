@@ -130,6 +130,9 @@ class TestTarget(object):
     def get_collabora_node_url(self, node):
         return 'https://document' + str(node) + '.' + self.getnodeprefix('none') + self.targetprefix + '.sunet.se'
 
+    def get_collabora_capabilities_url(self, node):
+        return 'https://document' + str(node) + '.' + self.getnodeprefix('none') + self.targetprefix + '.sunet.se/hosting/capabilities'
+
     def get_fullnode_status_urls(self):
         nodeurls = []
         for node in self.fullnodes:

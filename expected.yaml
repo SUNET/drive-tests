@@ -29,6 +29,15 @@ prod:
   collabora:
     nodes: 3
     status: 'OK'
+    capabilities:
+      hasMobileSupport: true
+      hasProxyPrefix: false
+      hasTemplateSaveAs: false
+      hasTemplateSource: true
+      hasZoteroSupport: true
+      productName: "Collabora Online Development Edition"
+      productVersion: "23.05.2.2"
+      productVersionHash: "91c166d"
 test:
   status:
     installed: true
@@ -61,6 +70,15 @@ test:
   collabora:
     nodes: 3
     status: 'OK'
+    capabilities:
+      hasMobileSupport: true
+      hasProxyPrefix: false
+      hasTemplateSaveAs: false
+      hasTemplateSource: true
+      hasZoteroSupport: true
+      productName: "Collabora Online"
+      productVersion: "23.05.4.2"
+      productVersionHash: "0b27e85"
 storage:
     mainStorageLocation: 's3.sto4.safedc.net'
     backupStorageLocation: 's3.sto3.safedc.net'
