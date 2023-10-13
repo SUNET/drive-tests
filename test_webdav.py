@@ -183,16 +183,19 @@ class WebDAVCleanSeleniumFolders(threading.Thread):
         # for i in range(1,g_maxCheck):
         #     if (client.check(g_testFolder)):
         #         logger.error(f'Check for {g_testFolder} should not return true')
-
-        logger.info('Listing folder contents before removing the Selenium folders')
-        logger.info(client.list())
-        logger.info('Removing Selenium user folders')
-        if client.check(g_testFolder):
-            client.clean(g_testFolder)
-        if client.check(g_stressTestFolder):
-            client.clean(g_stressTestFolder)
-        logger.info('Listing folder contents after removing the Selenium folders')
-        logger.info(client.list())
+        try:
+            logger.info('Listing folder contents before removing the Selenium folders')
+            logger.info(client.list())
+            logger.info('Removing Selenium user folders')
+            if client.check(g_testFolder):
+                client.clean(g_testFolder)
+            if client.check(g_stressTestFolder):
+                client.clean(g_stressTestFolder)
+            logger.info('Listing folder contents after removing the Selenium folders')
+            logger.info(client.list())
+        except:
+            logger.error(f'Error in WebDAVCleanSeleniumFolders thread done for node {self.name}')
+            testThreadRunning = False
 
         logger.info(f'WebDAVCleanSeleniumFolders thread done for node {self.name}')
         testThreadRunning = False
