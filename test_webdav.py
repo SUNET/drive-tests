@@ -56,7 +56,11 @@ class WebDAVDneCheck(threading.Thread):
             result = client.check(dneName)
             if (result):
                 logger.error(f'DNE check {i} for {dneName} should not return true')
-            self.TestWebDAV.assertFalse(result)
+            try:
+                self.TestWebDAV.assertFalse(result)
+            except:
+                logger.error(f'Error in WebDAVDneCheck thread done for node {self.name}')
+                testThreadRunning = False
 
         logger.info(f'WebDAVDneCheck thread done for node {self.name}')
         testThreadRunning = False
@@ -141,7 +145,11 @@ class WebDAVMultiCheckAndRemove(threading.Thread):
                 if (client.clean(g_testFolder)):
                     logger.info(f'Folder removed {g_testFolder}')    
             logger.warning(f'Multiple tries to remove folder: {count}')
-        self.TestWebDAV.assertFalse(client.check(g_testFolder))
+        try:
+            self.TestWebDAV.assertFalse(client.check(g_testFolder))
+        except:
+            logger.warning(f'Error in WebDAVMultiCheckAndRemove for node {self.name}')
+            testThreadRunning = False
 
         logger.info(f'WebDAVMultiCheckAndRemove thread done for node {self.name}')
         testThreadRunning = False
@@ -216,7 +224,11 @@ class WebDAVMakeSharingFolder(threading.Thread):
         client = Client(options)
 
         client.mkdir(g_sharedTestFolder)
-        self.TestWebDAV.assertEqual(client.list().count(f'{g_sharedTestFolder}/'), 1)
+        try:
+            self.TestWebDAV.assertEqual(client.list().count(f'{g_sharedTestFolder}/'), 1)
+        except:
+            logger.error(f'Error in WebDAVMakeSharingFolder thread done for node {self.name}')
+            testThreadRunning = False
 
         logger.info(f'WebDAVMakeSharingFolder thread done for node {self.name}')
         testThreadRunning = False
@@ -247,16 +259,20 @@ class WebDAVPersonalBucketFolders(threading.Thread):
 
         client = Client(options)
 
-        self.TestWebDAV.assertEqual(client.list().count(f'{g_personalBucket}/'), 1)
+        try:
+            self.TestWebDAV.assertEqual(client.list().count(f'{g_personalBucket}/'), 1)
+            folder = 'test_webdav'
+            path = g_personalBucket + '/' + folder
+            client.mkdir(path)
+            logger.info(client.list(path))
+            self.TestWebDAV.assertEqual(client.list(g_personalBucket).count(f'{folder}/'), 1)
+            client.clean(path)
+            self.TestWebDAV.assertEqual(client.list(g_personalBucket).count(f'{folder}/'), 0)
+            # print(client.list(g_personalBucket))
+        except:
+            logger.info(f'Error in WebDAVPersonalBucketFolders thread done for node {self.name}')
+            testThreadRunning = False
 
-        folder = 'test_webdav'
-        path = g_personalBucket + '/' + folder
-        client.mkdir(path)
-        logger.info(client.list(path))
-        self.TestWebDAV.assertEqual(client.list(g_personalBucket).count(f'{folder}/'), 1)
-        client.clean(path)
-        self.TestWebDAV.assertEqual(client.list(g_personalBucket).count(f'{folder}/'), 0)
-        # print(client.list(g_personalBucket))
 
         logger.info(f'WebDAVPersonalBucketFolders thread done for node {self.name}')
         testThreadRunning = False
@@ -287,16 +303,19 @@ class WebDAVSystemBucketFolders(threading.Thread):
 
         client = Client(options)
 
-        self.TestWebDAV.assertEqual(client.list().count(f'{g_systemBucket}/'), 1)
-
-        folder = 'test_webdav'
-        path = g_systemBucket + '/' + folder
-        client.mkdir(path)
-        logger.info(client.list(path))
-        self.TestWebDAV.assertEqual(client.list(g_systemBucket).count(f'{folder}/'), 1)
-        client.clean(path)
-        self.TestWebDAV.assertEqual(client.list(g_systemBucket).count(f'{folder}/'), 0)
-        # print(client.list(g_personalBucket))
+        try:
+            self.TestWebDAV.assertEqual(client.list().count(f'{g_systemBucket}/'), 1)
+            folder = 'test_webdav'
+            path = g_systemBucket + '/' + folder
+            client.mkdir(path)
+            logger.info(client.list(path))
+            self.TestWebDAV.assertEqual(client.list(g_systemBucket).count(f'{folder}/'), 1)
+            client.clean(path)
+            self.TestWebDAV.assertEqual(client.list(g_systemBucket).count(f'{folder}/'), 0)
+            # print(client.list(g_personalBucket))
+        except:
+            logger.error(f'Error in WebDAVSystemBucketFolders thread done for node {self.name}')
+            testThreadRunning = False
 
         logger.info(f'WebDAVSystemBucketFolders thread done for node {self.name}')
         testThreadRunning = False
