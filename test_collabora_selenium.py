@@ -310,33 +310,6 @@ class TestCollaboraSelenium(unittest.TestCase):
                         self.logger.info(f'Collabora loaded... Wait for loleafletframe')
                         wait.until(EC.frame_to_be_available_and_switch_to_it((By.ID, "loleafletframe")))
                         self.logger.info(f'loleafletframe loaded')
-
-                        if self.drv.target == 'prod':
-                            skipwelcomeframe = False
-                        else:
-                            skipwelcomeframe = True
-                        self.logger.info(f'Skipping welcome frame: {skipwelcomeframe} for {self.drv.target}')
-
-                        if skipwelcomeframe == False:                        
-                            try:
-                                self.logger.info(f'Looking for welcome frame')
-                                wait.until(EC.frame_to_be_available_and_switch_to_it((By.CLASS_NAME, "iframe-welcome-modal")))
-                                self.logger.info(f'Switched to iframe-welcome-modal')
-                            except:
-                                self.logger.info(f'No welcome frame found, skipping any further checks')
-                                skipwelcomeframe = True
-
-                        if skipwelcomeframe == False:                        
-                            self.logger.info(f'Welcome screen found, trying to close it...')
-
-                            wait.until(EC.presence_of_element_located((By.ID, 'slide-3-indicator'))).click()
-                            time.sleep(2)
-                            self.logger.info(f'Looking for slide-3-button...')
-                            button = self.driver.find_element(By.ID, 'slide-3-button')
-                            self.logger.info(f'Button found...')
-                            button.click()
-                            self.logger.info(f'Slide 3 button clicked...')
-                            skipwelcomeframe = True
                         time.sleep(2)
                     except:
                         self.logger.info('Proceed...')
@@ -500,33 +473,6 @@ class TestCollaboraSelenium(unittest.TestCase):
                     self.logger.info(f'Collabora loaded... Wait for loleafletframe')
                     wait.until(EC.frame_to_be_available_and_switch_to_it((By.ID, "loleafletframe")))
                     self.logger.info(f'loleafletframe loaded')
-
-                    if self.drv.target == 'prod':
-                        skipwelcomeframe = False
-                    else:
-                        skipwelcomeframe = True
-                    self.logger.info(f'Skipping welcome frame: {skipwelcomeframe} for {self.drv.target}')
-
-                    if skipwelcomeframe == False:                        
-                        try:
-                            self.logger.info(f'Looking for welcome frame')
-                            wait.until(EC.frame_to_be_available_and_switch_to_it((By.CLASS_NAME, "iframe-welcome-modal")))
-                            self.logger.info(f'Switched to iframe-welcome-modal')
-                        except:
-                            self.logger.info(f'No welcome frame found, skipping any further checks')
-                            skipwelcomeframe = True
-
-                    if skipwelcomeframe == False:
-                        self.logger.info(f'Welcome screen found, trying to close it...')
-
-                        wait.until(EC.presence_of_element_located((By.ID, 'slide-3-indicator'))).click()
-                        time.sleep(2)
-                        self.logger.info(f'Looking for slide-3-button...')
-                        button = self.driver.find_element(By.ID, 'slide-3-button')
-                        self.logger.info(f'Button found...')
-                        button.click()
-                        self.logger.info(f'Slide 3 button clicked...')
-                        skipwelcomeframe = True
                     time.sleep(2)
                 except:
                     self.logger.info('Proceed...')
@@ -687,33 +633,6 @@ class TestCollaboraSelenium(unittest.TestCase):
                     self.logger.info(f'Collabora loaded... Wait for loleafletframe')
                     wait.until(EC.frame_to_be_available_and_switch_to_it((By.ID, "loleafletframe")))
                     self.logger.info(f'loleafletframe loaded')
-
-                    if self.drv.target == 'prod':
-                        skipwelcomeframe = False
-                    else:
-                        skipwelcomeframe = True
-                    self.logger.info(f'Skipping welcome frame: {skipwelcomeframe} for {self.drv.target}')
-
-                    if skipwelcomeframe == False:                        
-                        try:
-                            self.logger.info(f'Looking for welcome frame')
-                            wait.until(EC.frame_to_be_available_and_switch_to_it((By.CLASS_NAME, "iframe-welcome-modal")))
-                            self.logger.info(f'Switched to iframe-welcome-modal')
-                        except:
-                            self.logger.info(f'No welcome frame found, skipping any further checks')
-                            skipwelcomeframe = True
-
-                    if skipwelcomeframe == False:
-                        self.logger.info(f'Welcome screen found, trying to close it...')
-
-                        wait.until(EC.presence_of_element_located((By.ID, 'slide-3-indicator'))).click()
-                        time.sleep(2)
-                        self.logger.info(f'Looking for slide-3-button...')
-                        button = self.driver.find_element(By.ID, 'slide-3-button')
-                        self.logger.info(f'Button found...')
-                        button.click()
-                        self.logger.info(f'Slide 3 button clicked...')
-                        skipwelcomeframe = True
                     time.sleep(2)
                 except:
                     self.logger.info('Proceed...')
