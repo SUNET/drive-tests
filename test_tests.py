@@ -7,18 +7,27 @@ import yaml
 
 import sunetdrive
 import os
+import filecmp
 
-repobase='sunet-drive-ops/'
+opsbase='sunet-drive-ops/'
+puppetbase='drive-puppet/'
+
+puppetfile = './drive-puppet/templates/application/mappingfile-' + os.environ.get('DriveTestTarget') + '.json.erb'
+referencefile = './mappingfile-' + os.environ.get('DriveTestTarget') + '.json'
 
 class TestTests(unittest.TestCase):
-    # Ensure that all full nodes are properly tested
+    # Ensure that the mapping files are the same as the reference files
+    def test_mappingfiles(self):
+        drv = sunetdrive.TestTarget()
+        self.assertTrue(filecmp.cmp(puppetfile, referencefile))
+
     def test_allnodes_tested(self):
         drv = sunetdrive.TestTarget()
         # print(len(drv.fullnodes))
 
         testMissing = False
         testWrongNode = False
-        globalconfigfile = repobase + "/global/overlay/etc/hiera/data/common.yaml"
+        globalconfigfile = opsbase + "/global/overlay/etc/hiera/data/common.yaml"
         with open(globalconfigfile, "r") as stream:
             data=yaml.safe_load(stream)
             allnodes=data['fullnodes'] + data['singlenodes']

@@ -1,6 +1,6 @@
 
 <?php
-$path = 'mappingfile.json';
+$path = 'mappingfile-prod.json';
 $jsonString = file_get_contents($path);
 $jsonData = json_decode($jsonString, true);
 
