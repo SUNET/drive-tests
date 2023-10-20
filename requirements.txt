@@ -1,4 +1,4 @@
-# PyAutoGUI==0.9.54
+PyAutoGUI==0.9.54
 pyotp>=2.9.0
 PyYAML>=6.0.1
 PyYAML>=6.0.1
