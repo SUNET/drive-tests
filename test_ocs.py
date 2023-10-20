@@ -57,13 +57,14 @@ class AppVersions(threading.Thread):
 
         r=session.get(url, headers=ocsheaders)
         nodeApps = []
+        apps = []
         try:
             j = json.loads(r.text)
             # print(json.dumps(j, indent=4, sort_keys=True))
             apps = j["ocs"]["data"]["apps"]
         except:
-            logger.info(f'No JSON reply received')
-            logger.info(r.text)
+            logger.error(f'No JSON reply received')
+            logger.error(r.text)
 
         if 'user_saml' in apps:
             userSamlFound = True
