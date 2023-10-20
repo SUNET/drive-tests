@@ -42,4 +42,8 @@ RUN update-alternatives --install /usr/bin/pip pip /usr/local/bin/pip${python_ma
 
 RUN python -V && pip -V
 
+# Install pip packages required for testing
+RUN wget https://raw.githubusercontent.com/SUNET/drive-tests/main/requirements.txt -O /tmp/requirements.txt \
+  && cd /tmp && pip install -r requirements.txt 
+
 RUN mkdir /var/lib/jenkins
