@@ -10,7 +10,7 @@ $users = ['name@sunet.se','first.last@sunet.se', 'first.last@hh.se', 'first.last
           'sunet.se@sub.inst.sunet.se','ki.se@sub.inst.sunet.se', 'sub.inst.shh.se@sub.inst.hh.se', 'sub.inst.hh.se@sub.inst.shh.se',
           '@.shh.se', 'some@.hh.se', '@...se', '@...shh.se', '@...sunet.se.', '@...sunet.se...', 'some@inst.shhs', 'sunet.se', '.sunet.se', '.sunet.se.',
           'some-user@eduid.se','ki.se@somedomain.edu','ki.se@ki.se.somedomain.edu',
-          'someone@antagning.se'];
+          'someone@antagning.se', 'generic9987@su.se'];
 
 foreach ($users as &$user)
 {
