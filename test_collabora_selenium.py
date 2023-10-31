@@ -25,11 +25,37 @@ g_testtarget = os.environ.get('DriveTestTarget')
 g_filename=datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 g_isLoggedIn=False
 g_loggedInNodes={}
+g_logger={}
+g_driver={}
+g_drv={}
+g_wait={}
+
+def nodelogin(collaboranode):
+    global g_wait
+    g_logger.info(f'Logging in to {collaboranode}')
+    loginurl = g_drv.get_node_login_url(collaboranode)
+    g_logger.info(f'Login url: {loginurl}')
+    nodeuser = g_drv.get_seleniumuser(collaboranode)
+    nodepwd = g_drv.get_seleniumuserpassword(collaboranode)
+    g_isLoggedIn = True
+    g_loggedInNodes[collaboranode] = True
+
+    g_driver.maximize_window()
+    actions = ActionChains(g_driver)
+    # driver2 = webdriver.Firefox()
+    g_driver.get(loginurl)
+
+    g_wait.until(EC.presence_of_element_located((By.ID, 'user'))).send_keys(nodeuser)
+    g_wait.until(EC.presence_of_element_located((By.ID, 'password'))).send_keys(nodepwd + Keys.ENTER)
+
+    return
 
 class TestCollaboraSelenium(unittest.TestCase):
-    global g_loggedInNodes
+    global g_loggedInNodes, g_logger, g_drv, g_wait, g_driver
     drv = sunetdrive.TestTarget(g_testtarget)
+    g_drv=drv
     logger = logging.getLogger(__name__)
+    g_logger = logger
     logging.basicConfig(format = '%(asctime)s - %(module)s.%(funcName)s - %(levelname)s: %(message)s',
                     datefmt = '%Y-%m-%d %H:%M:%S', level = logging.INFO)
 
@@ -39,9 +65,9 @@ class TestCollaboraSelenium(unittest.TestCase):
         options = Options()
         # options.add_argument("--headless")
         driver = webdriver.Chrome(options=options)
+        g_driver=driver
     except:
-        self.logger.error(f'Error initializing Chrome driver')
-        self.assertTrue(False)
+        logger.error(f'Error initializing Chrome driver')
 
     def test_logger(self):
         self.logger.info(f'self.logger.info test_logger')
@@ -53,29 +79,15 @@ class TestCollaboraSelenium(unittest.TestCase):
     # text file
     def test_markup_text(self):
         delay = 30 # seconds
-        global g_isLoggedIn
-        global g_loggedInNodes
+        global g_isLoggedIn, g_loggedInNodes, g_wait
         wait = WebDriverWait(self.driver, delay)
+        g_wait = wait
 
         for collaboranode in self.drv.fullnodes:
             with self.subTest(mynode=collaboranode):
                 # if g_isLoggedIn == False:
                 if g_loggedInNodes.get(collaboranode) == False:
-                    self.logger.info(f'Logging in to {collaboranode}')
-                    loginurl = self.drv.get_node_login_url(collaboranode)
-                    self.logger.info(f'Login url: {loginurl}')
-                    nodeuser = self.drv.get_seleniumuser(collaboranode)
-                    nodepwd = self.drv.get_seleniumuserpassword(collaboranode)
-                    g_isLoggedIn = True
-                    g_loggedInNodes[collaboranode] = True
-                
-                    self.driver.maximize_window()
-                    actions = ActionChains(self.driver)
-                    # driver2 = webdriver.Firefox()
-                    self.driver.get(loginurl)
-
-                    wait.until(EC.presence_of_element_located((By.ID, 'user'))).send_keys(nodeuser)
-                    wait.until(EC.presence_of_element_located((By.ID, 'password'))).send_keys(nodepwd + Keys.ENTER)
+                    nodelogin(collaboranode)
                 self.assertTrue(g_loggedInNodes.get(collaboranode))
                 success = True
 
@@ -184,29 +196,15 @@ class TestCollaboraSelenium(unittest.TestCase):
 
     def test_collabora_document(self):
         delay = 30 # seconds
-        global g_isLoggedIn
-        global g_loggedInNodes
+        global g_isLoggedIn, g_loggedInNodes, g_wait
         wait = WebDriverWait(self.driver, delay)
+        g_wait = wait
         
         for collaboranode in self.drv.fullnodes:
             with self.subTest(mynode=collaboranode):
                 # if g_isLoggedIn == False:
                 if g_loggedInNodes.get(collaboranode) == False:
-                    self.logger.info(f'Logging in to {collaboranode}')
-                    loginurl = self.drv.get_node_login_url(collaboranode)
-                    self.logger.info(f'Login url: {loginurl}')
-                    nodeuser = self.drv.get_seleniumuser(collaboranode)
-                    nodepwd = self.drv.get_seleniumuserpassword(collaboranode)
-                    g_isLoggedIn = True
-                    g_loggedInNodes[collaboranode] = True
-                    
-                    self.driver.maximize_window()
-                    actions = ActionChains(self.driver)
-                    # driver2 = webdriver.Firefox()
-                    self.driver.get(loginurl)
-
-                    wait.until(EC.presence_of_element_located((By.ID, 'user'))).send_keys(nodeuser)
-                    wait.until(EC.presence_of_element_located((By.ID, 'password'))).send_keys(nodepwd + Keys.ENTER)
+                    nodelogin(collaboranode)
                 self.assertTrue(g_loggedInNodes.get(collaboranode))
                 success = True
 
@@ -349,29 +347,15 @@ class TestCollaboraSelenium(unittest.TestCase):
     # spreadsheet
     def test_collabora_spreadsheet(self):
         delay = 30 # seconds
-        global g_isLoggedIn
-        global g_loggedInNodes
+        global g_isLoggedIn, g_loggedInNodes, g_wait
         wait = WebDriverWait(self.driver, delay)
+        g_wait = wait
         
         for collaboranode in self.drv.fullnodes:
             with self.subTest(mynode=collaboranode):
                 # if g_isLoggedIn == False:
                 if g_loggedInNodes.get(collaboranode) == False:
-                    self.logger.info(f'Logging in to {collaboranode}')
-                    loginurl = self.drv.get_node_login_url(collaboranode)
-                    self.logger.info(f'Login url: {loginurl}')
-                    nodeuser = self.drv.get_seleniumuser(collaboranode)
-                    nodepwd = self.drv.get_seleniumuserpassword(collaboranode)
-                    g_isLoggedIn = True
-                    g_loggedInNodes[collaboranode] = True
-                
-                    self.driver.maximize_window()
-                    actions = ActionChains(self.driver)
-                    # driver2 = webdriver.Firefox()
-                    self.driver.get(loginurl)
-
-                    wait.until(EC.presence_of_element_located((By.ID, 'user'))).send_keys(nodeuser)
-                    wait.until(EC.presence_of_element_located((By.ID, 'password'))).send_keys(nodepwd + Keys.ENTER)
+                    nodelogin(collaboranode)
                 self.assertTrue(g_loggedInNodes.get(collaboranode))
                 success = True
 
@@ -511,29 +495,15 @@ class TestCollaboraSelenium(unittest.TestCase):
     # presentation
     def test_collabora_presentation(self):
         delay = 30 # seconds
-        global g_isLoggedIn
-        global g_loggedInNodes
+        global g_isLoggedIn, g_loggedInNodes, g_wait
         wait = WebDriverWait(self.driver, delay)
+        g_wait = wait
         
         for collaboranode in self.drv.fullnodes:
             with self.subTest(mynode=collaboranode):
                 # if g_isLoggedIn == False:
                 if g_loggedInNodes.get(collaboranode) == False:
-                    self.logger.info(f'Logging in to {collaboranode}')
-                    loginurl = self.drv.get_node_login_url(collaboranode)
-                    self.logger.info(f'Login url: {loginurl}')
-                    nodeuser = self.drv.get_seleniumuser(collaboranode)
-                    nodepwd = self.drv.get_seleniumuserpassword(collaboranode)
-                    g_isLoggedIn = True
-                    g_loggedInNodes[collaboranode] = True
-                
-                    self.driver.maximize_window()
-                    actions = ActionChains(self.driver)
-                    # driver2 = webdriver.Firefox()
-                    self.driver.get(loginurl)
-
-                    wait.until(EC.presence_of_element_located((By.ID, 'user'))).send_keys(nodeuser)
-                    wait.until(EC.presence_of_element_located((By.ID, 'password'))).send_keys(nodepwd + Keys.ENTER)
+                    nodelogin(collaboranode)
                 self.assertTrue(g_loggedInNodes.get(collaboranode))
                 success = True
 
