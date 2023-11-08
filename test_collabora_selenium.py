@@ -91,7 +91,7 @@ class TestCollaboraSelenium(unittest.TestCase):
                 self.assertTrue(g_loggedInNodes.get(collaboranode))
                 success = True
 
-                print('Waiting for app menu')
+                self.logger.info('Waiting for app menu')
                 try:
                     wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'app-menu')))
                     self.logger.info(f'App menu is ready!')
@@ -136,7 +136,7 @@ class TestCollaboraSelenium(unittest.TestCase):
                 self.assertTrue(success)
 
                 self.driver.implicitly_wait(10) # seconds before quitting
-                print(self.driver.current_url)
+                self.logger.info(self.driver.current_url)
                 
                 wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'icon-home')))
                 
@@ -208,7 +208,7 @@ class TestCollaboraSelenium(unittest.TestCase):
                 self.assertTrue(g_loggedInNodes.get(collaboranode))
                 success = True
 
-                print('Waiting for app menu')
+                self.logger.info('Waiting for app menu')
                 try:
                     wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'app-menu')))
                     self.logger.info(f'App menu is ready!')
@@ -255,7 +255,7 @@ class TestCollaboraSelenium(unittest.TestCase):
                     self.assertTrue(success)
 
                     self.driver.implicitly_wait(10) # seconds before quitting
-                    print(self.driver.current_url)
+                    self.logger.info(self.driver.current_url)
                     
                     wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'icon-home')))
                     
@@ -304,41 +304,22 @@ class TestCollaboraSelenium(unittest.TestCase):
 
                     try:
                         self.logger.info(f'Waiting for collabora frame')
-                        wait.until(EC.frame_to_be_available_and_switch_to_it((By.ID, "collaboraframe")))
-                        self.logger.info(f'Collabora loaded... Wait for loleafletframe')
-                        wait.until(EC.frame_to_be_available_and_switch_to_it((By.ID, "loleafletframe")))
-                        self.logger.info(f'loleafletframe loaded')
-                        time.sleep(2)
-                    except:
-                        self.logger.info('Proceed...')
-
-                    try:
-                        blockSuccess = False
-                        self.driver.switch_to.default_content()
-                        self.logger.info(f'Switched to default content...')
-                        wait.until(EC.frame_to_be_available_and_switch_to_it((By.ID, "collaboraframe")))
-                        self.logger.info(f'Collabora loaded... Wait for loleafletframe')
-                        wait.until(EC.frame_to_be_available_and_switch_to_it((By.ID, "loleafletframe")))
-                        self.logger.info(f'loleafletframe loaded...')
-                        wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'leaflet-layer'))).click()
-                        self.logger.info(f'Can we type in the leaflet layer?')
+                        wait.until(EC.frame_to_be_available_and_switch_to_it((By.CSS_SELECTOR, "iframe[id^='collaboraframe']")))
+                        self.logger.info(f'Collabora loaded... Let\'s type some text')
+                        time.sleep(1)
                         ActionChains(self.driver).send_keys(f'Lorem Ipsum! {Keys.ENTER} {g_filename}').perform()
-                        time.sleep(1) # We give collabora a literal second to register the keystrokes before closing the document
-                        self.logger.info(f'Closing document...')
-                        blockSuccess = True
-                        wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'closebuttonimage'))).click()
-                        self.logger.info(f'And done...')
-                        time.sleep(3)
+                        time.sleep(1)
                     except:
-                        self.logger.error(f'Content not found, saving screenshot of latest result...')
-                        screenshot = pyautogui.screenshot()
-                        screenshot.save("screenshots/" + collaboranode + g_filename + ".png")
-                        if (blockSuccess == False):
-                            success = False
+                        self.logger.error(f'Error writing to the document')
+                        success = False
 
-                    self.logger.info(f'Manually open home folder in case closing of document fails')
+                    # Do not close the document for the time-being until both environments are updated to v27; should be applied to all tests then
+                    # self.logger.info(f'Closing document...')
+                    # wait.until(EC.presence_of_element_located((By.ID, 'closebutton'))).click()
+                    # self.logger.info(f'And done...')
+
+                    self.logger.info(f'Open the folder URL instead of closing the document')
                     self.driver.get(self.drv.get_folder_url(collaboranode,''))
-
                     self.assertTrue(success)
 
                 self.logger.info('End of test!')
@@ -359,7 +340,7 @@ class TestCollaboraSelenium(unittest.TestCase):
                 self.assertTrue(g_loggedInNodes.get(collaboranode))
                 success = True
 
-                print('Waiting for app menu')
+                self.logger.info('Waiting for app menu')
                 try:
                     wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'app-menu')))
                     self.logger.info(f'App menu is ready!')
@@ -404,7 +385,7 @@ class TestCollaboraSelenium(unittest.TestCase):
                 self.assertTrue(success)
 
                 self.driver.implicitly_wait(10) # seconds before quitting
-                print(self.driver.current_url)
+                self.logger.info(self.driver.current_url)
                 
                 wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'icon-home')))
                 
@@ -453,42 +434,20 @@ class TestCollaboraSelenium(unittest.TestCase):
 
                 try:
                     self.logger.info(f'Waiting for collabora frame')
-                    wait.until(EC.frame_to_be_available_and_switch_to_it((By.ID, "collaboraframe")))
-                    self.logger.info(f'Collabora loaded... Wait for loleafletframe')
-                    wait.until(EC.frame_to_be_available_and_switch_to_it((By.ID, "loleafletframe")))
-                    self.logger.info(f'loleafletframe loaded')
-                    time.sleep(2)
-                except:
-                    self.logger.info('Proceed...')
-
-                try:
-                    blockSuccess = False
-                    self.driver.switch_to.default_content()
-                    self.logger.info(f'Switched to default content...')
-                    wait.until(EC.frame_to_be_available_and_switch_to_it((By.ID, "collaboraframe")))
-                    self.logger.info(f'Collabora loaded... Wait for loleafletframe')
-                    wait.until(EC.frame_to_be_available_and_switch_to_it((By.ID, "loleafletframe")))
-                    self.logger.info(f'loleafletframe loaded...')
-                    wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'leaflet-layer'))).click()
-                    self.logger.info(f'Can we type in the leaflet layer?')
+                    wait.until(EC.frame_to_be_available_and_switch_to_it((By.CSS_SELECTOR, "iframe[id^='collaboraframe']")))
+                    self.logger.info(f'Collabora loaded... Let\'s type some text')
+                    time.sleep(1)
                     ActionChains(self.driver).key_down(Keys.CONTROL).send_keys(Keys.UP).key_up(Keys.CONTROL).perform()
                     ActionChains(self.driver).key_down(Keys.CONTROL).send_keys(Keys.LEFT).key_up(Keys.CONTROL).perform()
                     ActionChains(self.driver).send_keys(f'{g_filename}{Keys.ENTER}{Keys.SPACE}1{Keys.ENTER}{Keys.SPACE}2{Keys.ENTER}{Keys.SPACE}3{Keys.ENTER}{Keys.SPACE}4{Keys.ENTER}{Keys.SPACE}').perform()
-                    time.sleep(1) # We give collabora a literal second to register the keystrokes before closing the document
-                    self.logger.info(f'Closing document...')
-                    blockSuccess = True
-                    wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'closebuttonimage'))).click()
-                    self.logger.info(f'And done...')
+                    time.sleep(1)
                 except:
-                    self.logger.error(f'Content not found, saving screenshot of latest result...')
-                    screenshot = pyautogui.screenshot()
-                    screenshot.save("screenshots/" + collaboranode + g_filename + ".png")
-                    if (blockSuccess == False):
-                        success = False
-                self.assertTrue(success)
+                    self.logger.error(f'Error writing to the document')
+                    success = False
 
-                self.logger.info(f'Manually open home folder in case closing of document fails')
+                self.logger.info(f'Open the folder URL instead of closing the document')
                 self.driver.get(self.drv.get_folder_url(collaboranode,''))
+                self.assertTrue(success)
 
                 self.logger.info('End of test!')
                 
@@ -507,7 +466,7 @@ class TestCollaboraSelenium(unittest.TestCase):
                 self.assertTrue(g_loggedInNodes.get(collaboranode))
                 success = True
 
-                print('Waiting for app menu')
+                self.logger.info('Waiting for app menu')
                 try:
                     wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'app-menu')))
                     self.logger.info(f'App menu is ready!')
@@ -552,7 +511,7 @@ class TestCollaboraSelenium(unittest.TestCase):
                 self.assertTrue(success)
 
                 self.driver.implicitly_wait(10) # seconds before quitting
-                print(self.driver.current_url)
+                self.logger.info(self.driver.current_url)
                 
                 wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'icon-home')))
                 
@@ -599,42 +558,18 @@ class TestCollaboraSelenium(unittest.TestCase):
 
                 try:
                     self.logger.info(f'Waiting for collabora frame')
-                    wait.until(EC.frame_to_be_available_and_switch_to_it((By.ID, "collaboraframe")))
-                    self.logger.info(f'Collabora loaded... Wait for loleafletframe')
-                    wait.until(EC.frame_to_be_available_and_switch_to_it((By.ID, "loleafletframe")))
-                    self.logger.info(f'loleafletframe loaded')
-                    time.sleep(2)
-                except:
-                    self.logger.info('Proceed...')
-
-                try:
-                    blockSuccess = False
-                    self.driver.switch_to.default_content()
-                    self.logger.info(f'Switched to default content...')
-                    wait.until(EC.frame_to_be_available_and_switch_to_it((By.ID, "collaboraframe")))
-                    self.logger.info(f'Collabora loaded... Wait for loleafletframe')
-                    wait.until(EC.frame_to_be_available_and_switch_to_it((By.ID, "loleafletframe")))
-                    self.logger.info(f'loleafletframe loaded...')
-                    wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'leaflet-layer'))).click()
-                    self.logger.info(f'Can we type in the leaflet layer?')
-
+                    wait.until(EC.frame_to_be_available_and_switch_to_it((By.CSS_SELECTOR, "iframe[id^='collaboraframe']")))
+                    self.logger.info(f'Collabora loaded... Let\'s type some text')
+                    time.sleep(1)
                     ActionChains(self.driver).send_keys(f'Lorem ipsum! {Keys.ENTER}{g_filename}').perform()
-                    time.sleep(1) # We give collabora a literal second to register the keystrokes before closing the document
-
-                    self.logger.info(f'Closing document...')
-                    blockSuccess = True
-                    wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'closebuttonimage'))).click()
-                    self.logger.info(f'And done...')
+                    time.sleep(1)
                 except:
-                    self.logger.error(f'Content not found, saving screenshot of latest result...')
-                    screenshot = pyautogui.screenshot()
-                    screenshot.save("screenshots/" + collaboranode + g_filename + ".png")
-                    if (blockSuccess == False):
-                        success = False
-                self.assertTrue(success)
+                    self.logger.error(f'Error writing to the document')
+                    success = False
 
-                self.logger.info(f'Manually open home folder in case closing of document fails')
+                self.logger.info(f'Open the folder URL instead of closing the document')
                 self.driver.get(self.drv.get_folder_url(collaboranode,''))
+                self.assertTrue(success)
 
                 self.logger.info('End of test!')
 
