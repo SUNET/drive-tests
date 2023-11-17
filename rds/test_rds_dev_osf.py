@@ -31,7 +31,7 @@ g_rds_dev_sso_password      = os.environ.get('RDS_DEV_SSO_USER_PASSWORD')
 g_rds_dev_sso_app_password  = os.environ.get('RDS_DEV_SSO_USER_APP_PASSWORD')
 g_driverTimeout = 30
 
-class TestRdsNextcloudLocal(unittest.TestCase):
+class TestRdsDevOsf(unittest.TestCase):
     logger = logging.getLogger(__name__)
     logging.basicConfig(format = '%(asctime)s - %(module)s.%(funcName)s - %(levelname)s: %(message)s',
                     datefmt = '%Y-%m-%d %H:%M:%S', level = logging.INFO)
@@ -40,7 +40,7 @@ class TestRdsNextcloudLocal(unittest.TestCase):
         self.logger.info(f'self.logger.info test_logger')
         pass
 
-    def test_rds_nextcloud_local_login(self):
+    def test_rds_dev_login(self):
         chromeOptions = Options()
 
         driver = webdriver.Chrome(options=chromeOptions)
@@ -57,12 +57,12 @@ class TestRdsNextcloudLocal(unittest.TestCase):
             self.logger.info(f'Page is ready!')
             proceed = True
         except TimeoutException:
-            self.logger.info(f'Loading took too much time!')
+            self.logger.error(f'Loading took too much time!')
             proceed = False
 
         self.assertTrue(proceed)
 
-    def test_rds_nextcloud_local_project(self):
+    def test_rds_dev_osf_project(self):
         chromeOptions = Options()
 
         driver = webdriver.Chrome(options=chromeOptions)
@@ -79,7 +79,7 @@ class TestRdsNextcloudLocal(unittest.TestCase):
             self.logger.info(f'Page is ready!')
             proceed = True
         except TimeoutException:
-            self.logger.info(f'Loading took too much time!')
+            self.logger.error(f'Loading took too much time!')
             proceed = False
 
         self.assertTrue(proceed)
@@ -88,18 +88,19 @@ class TestRdsNextcloudLocal(unittest.TestCase):
             # rdsAppButton = driver.find_element(by=By.XPATH, value='//a[@href="'+ '/index.php/apps/rds/' +'"]')
             rdsAppButton = driver.find_element(by=By.XPATH, value='//a[@href="'+ '/apps/rds/' +'"]')
             rdsAppButton.click()
-            proceed = True
         except TimeoutException:
-            self.logger.info(f'Loading RDS took too much time!')
+            self.logger.error(f'Loading RDS took too much time!')
             proceed = False
-
+        self.assertTrue(proceed)
        
         try:
             self.logger.info(f'Waiting for rds frame')
             wait.until(EC.frame_to_be_available_and_switch_to_it((By.ID, "rds-editor")))
             self.logger.info(f'RDS iframe loaded')
         except:
-            self.logger.info(f'RDS iframe not loaded')
+            self.logger.error(f'RDS iframe not loaded')
+            proceed = False
+        self.assertTrue(proceed)
 
         # WebDriverWait(driver, 20).until(EC.element_to_be_clickable((By.XPATH, ''))).click()
 
@@ -151,7 +152,11 @@ class TestRdsNextcloudLocal(unittest.TestCase):
             wait.until(EC.frame_to_be_available_and_switch_to_it((By.ID, "rds-editor")))
             self.logger.info(f'RDS iframe loaded')
         except:
-            self.logger.info(f'RDS iframe not loaded')
+            self.logger.error(f'RDS iframe not loaded')
+            proceed = False
+
+        self.assertTrue(proceed)
+
 
         # Input field always has a random ID
         # //*[@id="input-101"]
@@ -182,7 +187,10 @@ class TestRdsNextcloudLocal(unittest.TestCase):
             wait.until(EC.frame_to_be_available_and_switch_to_it((By.ID, "describoWindow")))
             self.logger.info(f'Describo iframe loaded')
         except:
-            self.logger.info(f'Describo iframe not loaded')
+            self.logger.error(f'Describo iframe not loaded')
+            proceed = False
+
+        self.assertTrue(proceed)
         time.sleep(3)
 
         # OSF Settings
@@ -255,7 +263,10 @@ class TestRdsNextcloudLocal(unittest.TestCase):
             WebDriverWait(driver, 60).until(EC.text_to_be_present_in_element((By.CLASS_NAME, "v-snack__content"), "successfully published"))
             self.logger.info(f'Looks like the data has been published! Well done!')
         except:
-            self.logger.info(f'Timeout while waiting for publication')
+            self.logger.error(f'Timeout while waiting for publication')
+            proceed = False
+
+        self.assertTrue(proceed)
 
         self.logger.info(f'Done...')
         time.sleep(3)

@@ -1,6 +1,6 @@
-""" Selenium tests for Sciebo
+""" Selenium tests for RDS Development Environment
 Author: Richard Freitag <freitag@sunet.se>
-Selenium tests to log on to the Sciebo test node, performing various operations to ensure basic operation
+Selenium tests to log on to the RDS test node, performing various operations to ensure basic operation
 """
 import xmlrunner
 import unittest
@@ -42,11 +42,6 @@ class TestRdsDevConnect(unittest.TestCase):
 
     def test_rds_dev_authorization(self):
         delay = 30 # seconds
-        # drv = sunetdrive.TestTarget(g_testtarget)
-        # sciebouserenv = "RDSLOCAL_NEXTCLOUD_USER"
-        # sciebouser = os.environ.get(sciebouserenv)
-        # sciebopwdenv = "RDSLOCAL_NEXTCLOUD_USER_PASSWORD"
-        # nodepwd = os.environ.get(sciebopwdenv)
 
         osfuserenv = "OSF_TEST_USER"
         osfuser = os.environ.get(osfuserenv)
@@ -62,11 +57,6 @@ class TestRdsDevConnect(unittest.TestCase):
         # zenodoButtonIndex = '1'
 
         chromeOptions = Options()
-        # chromeOptions.add_argument("--disable-web-security")
-        # chromeOptions.add_argument("--allow-running-insecure-content")
-        # chromeOptions.add_argument("--ignore-ssl-errors=yes")
-        # chromeOptions.add_argument("--ignore-certificate-errors")
-        # chromeOptions.add_argument("--allow-insecure-localhost")
 
         driver = webdriver.Chrome(options=chromeOptions)
         driver.maximize_window()
@@ -86,7 +76,7 @@ class TestRdsDevConnect(unittest.TestCase):
             self.logger.info(f'Page is ready!')
             proceed = True
         except TimeoutException:
-            self.logger.info(f'Loading took too much time!')
+            self.logger.error(f'Loading app-menu took too much time!')
             proceed = False
 
         self.assertTrue(proceed)
@@ -95,17 +85,19 @@ class TestRdsDevConnect(unittest.TestCase):
             # rdsAppButton = driver.find_element(by=By.XPATH, value='//a[@href="'+ '/index.php/apps/rds/' +'"]')
             rdsAppButton = driver.find_element(by=By.XPATH, value='//a[@href="'+ '/apps/rds/' +'"]')
             rdsAppButton.click()
-            proceed = True
         except TimeoutException:
-            self.logger.info(f'Loading RDS took too much time!')
+            self.logger.error(f'Loading RDS took too much time!')
             proceed = False
+        self.assertTrue(proceed)
         
         try:
             self.logger.info(f'Waiting for rds frame')
             wait.until(EC.frame_to_be_available_and_switch_to_it((By.ID, "rds-editor")))
             self.logger.info('RDS iframe loaded')
         except:
-            self.logger.info(f'RDS iframe not loaded')
+            self.logger.error(f'RDS iframe not loaded')
+            proceed = False
+        self.assertTrue(proceed)
 
         time.sleep(3)
         # Getting started button
@@ -115,6 +107,7 @@ class TestRdsDevConnect(unittest.TestCase):
         except:
             self.logger.info(f'Sciebo is already connected')
             needsToConnect = False
+            pass
 
         if needsToConnect:
             try:
@@ -143,7 +136,9 @@ class TestRdsDevConnect(unittest.TestCase):
                 wait.until(EC.frame_to_be_available_and_switch_to_it((By.ID, "rds-editor")))
                 self.logger.info(f'RDS iframe loaded')
             except:
-                self.logger.info(f'RDS iframe not loaded')
+                self.logger.error(f'RDS iframe not loaded')
+                proceed = False
+            self.assertTrue(proceed)
 
         # Now go for the repository connections
         # Click repositories
@@ -220,6 +215,7 @@ class TestRdsDevConnect(unittest.TestCase):
         #     WebDriverWait(driver, 20).until(EC.element_to_be_clickable((By.CLASS_NAME, 'btn-success'))).click()
 
         self.logger.info(f'Done...')
+        self.assertTrue(proceed)
         time.sleep(3)
 
 if __name__ == '__main__':

@@ -68,26 +68,27 @@ class TestRdsDevDisconnect(unittest.TestCase):
             self.logger.info(f'Page is ready!')
             proceed = True
         except TimeoutException:
-            self.logger.info(f'Loading took too much time!')
+            self.logger.error(f'Loading took too much time!')
             proceed = False
-
         self.assertTrue(proceed)
 
         try:
             # rdsAppButton = driver.find_element(by=By.XPATH, value='//a[@href="'+ '/index.php/apps/rds/' +'"]')
             rdsAppButton = driver.find_element(by=By.XPATH, value='//a[@href="'+ '/apps/rds/' +'"]')
             rdsAppButton.click()
-            proceed = True
         except TimeoutException:
-            self.logger.info(f'Loading RDS took too much time!')
+            self.logger.error(f'Loading RDS took too much time!')
             proceed = False
+        self.assertTrue(proceed)
         
         try:
             self.logger.info(f'Waiting for rds frame')
             wait.until(EC.frame_to_be_available_and_switch_to_it((By.ID, "rds-editor")))
             self.logger.info(f'RDS iframe loaded')
         except:
-            self.logger.info(f'RDS iframe not loaded')
+            self.logger.error(f'RDS iframe not loaded')
+            proceed = False
+        self.assertTrue(proceed)
 
         time.sleep(3)
 
@@ -143,6 +144,8 @@ class TestRdsDevDisconnect(unittest.TestCase):
             WebDriverWait(driver, 20).until(EC.element_to_be_clickable((By.XPATH, '//*[@id="inspire"]/div[1]/main/div/div/div/div/div/div[2]/button/span/span'))).click()            
         
         self.logger.info(f'Done...')
+        self.assertTrue(proceed)
+
         time.sleep(3)
 
 if __name__ == '__main__':
