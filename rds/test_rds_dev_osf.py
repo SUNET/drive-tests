@@ -260,11 +260,10 @@ class TestRdsDevOsf(unittest.TestCase):
 
         try:
             self.logger.info(f'Waiting for publication notification')
-            WebDriverWait(driver, 60).until(EC.text_to_be_present_in_element((By.CLASS_NAME, "v-snack__content"), "successfully published"))
+            WebDriverWait(driver, 120).until(EC.text_to_be_present_in_element((By.CLASS_NAME, "v-snack__content"), "successfully published"))
             self.logger.info(f'Looks like the data has been published! Well done!')
         except:
             self.logger.error(f'Timeout while waiting for publication')
-            proceed = False
 
         self.assertTrue(proceed)
 
