@@ -43,6 +43,7 @@ class TestRdsDevDisconnect(unittest.TestCase):
         pass
 
     def test_sciebo_rds_disconnect(self):
+        self.logger.info(f'Test RDS disconnect for user: {g_rds_dev_user}')
         delay = 30 # seconds
 
         osfButtonIndex = '2'

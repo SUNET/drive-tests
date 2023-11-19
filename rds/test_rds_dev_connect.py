@@ -41,6 +41,7 @@ class TestRdsDevConnect(unittest.TestCase):
         pass
 
     def test_rds_dev_authorization(self):
+        self.logger.info(f'Test RDS connect for user: {g_rds_dev_user}')
         delay = 30 # seconds
 
         osfuserenv = "OSF_TEST_USER"
