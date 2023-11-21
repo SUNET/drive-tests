@@ -195,7 +195,9 @@ class TestLoginMultiSelenium(unittest.TestCase):
                 # Check URLs after login
                 dashboardUrl = drv.get_dashboard_url(fullnode)
                 currentUrl = driver.current_url
-                self.assertEqual(dashboardUrl, currentUrl)                
+                if currentUrl.endswith('/#/'):
+                    dashboardUrl = dashboardUrl + '#/'
+                self.assertEqual(dashboardUrl, currentUrl)
 
                 files = driver.find_element(By.XPATH, '//a[@href="'+ '/index.php/apps/files/' +'"]')
                 files.click()
