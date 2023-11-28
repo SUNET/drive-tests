@@ -94,6 +94,8 @@ class AppVersions(threading.Thread):
             except:
                 logger.info(f'No JSON reply received')
                 logger.info(r.text)
+                testThreadRunning = False
+                return
 
             self.TestOcsCalls.assertTrue(userSamlFound)
             self.TestOcsCalls.assertEqual(j["ocs"]["data"]["id"], 'user_saml')
@@ -121,7 +123,9 @@ class AppVersions(threading.Thread):
             except:
                 logger.info(f'No JSON reply received')
                 logger.info(r.text)
-
+                testThreadRunning = False
+                return
+            
             self.TestOcsCalls.assertTrue(gssFound)
             self.TestOcsCalls.assertEqual(j["ocs"]["data"]["id"], 'globalsiteselector')
             self.TestOcsCalls.assertEqual(j["ocs"]["data"]["version"], expectedResults['apps']['globalsiteselector'][drv.target]['version'])
@@ -163,6 +167,8 @@ class NodeUsers(threading.Thread):
         except:
             logger.info("No JSON reply received")
             logger.info(r.text)
+            testThreadRunning = False
+            return
 
         logger.info(f'NodeUsers thread done for node {self.name}')
         testThreadRunning = False
@@ -190,6 +196,8 @@ class CapabilitiesNoUser(threading.Thread):
         except:
             logger.info("No JSON reply received")
             logger.info(r.text)
+            testThreadRunning = False
+            return
 
         try:
             self.TestOcsCalls.assertEqual(j["ocs"]["meta"]["status"], expectedResults[drv.target]['ocs_capabilities']['ocs_meta_status'])
@@ -198,6 +206,8 @@ class CapabilitiesNoUser(threading.Thread):
             self.TestOcsCalls.assertEqual(j["ocs"]["data"]["version"]["string"], expectedResults[drv.target]['ocs_capabilities']['ocs_data_version_string'])
         except:
             logger.error(f"Error with OCS capabilities assertion")
+            testThreadRunning = False
+            return
 
         testThreadRunning = False
 
@@ -229,6 +239,8 @@ class Capabilities(threading.Thread):
         except:
             logger.info("No JSON reply received")
             logger.info(r.text)
+            testThreadRunning = False
+            return
 
         # TBD: Add assertion for GSS enabled
         # self.assertEqual(j["ocs"]["data"]["capabilities"]["globalscale"]["enabled"], ocsresult.ocs_data_capabilities_globalscale_enabled)
@@ -276,6 +288,8 @@ class UserLifeCycle(threading.Thread):
         except:
             logger.info("No JSON reply received")
             logger.info(r.text)
+            testThreadRunning = False
+            return
 
         # self.assertEqual(j["ocs"]["meta"]["status"], expectedResults[drv.target]['ocs_capabilities']['ocs_meta_status'])
         # self.assertEqual(j["ocs"]["meta"]["statuscode"], expectedResults[drv.target]['ocs_capabilities']['ocs_meta_statuscode'])
@@ -320,6 +334,8 @@ class UserLifeCycle(threading.Thread):
         except:
             logger.info("No JSON reply received")
             logger.info(r.text)
+            testThreadRunning = False
+            return
 
         logger.info(f'User lifecycle thread done for node {self.name}')
         testThreadRunning = False
