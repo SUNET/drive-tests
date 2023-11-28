@@ -3,8 +3,8 @@ prod:
     installed: true
     maintenance: false
     needsDbUpgrade: false
-    version: '27.1.3.3'
-    versionstring: '27.1.3 Enterprise'
+    version: '27.1.4.2'
+    versionstring: '27.1.4 Enterprise'
     edition: ''
     productname: 'Nextcloud'
     extendedSupport: false
@@ -12,8 +12,8 @@ prod:
     installed: true
     maintenance: false
     needsDbUpgrade: false
-    version: '27.1.3.3'
-    versionstring: '27.1.3 Enterprise'
+    version: '27.1.4.2'
+    versionstring: '27.1.4 Enterprise'
     edition: ''
     productname: 'Nextcloud'
     extendedSupport: false
@@ -21,7 +21,7 @@ prod:
     ocs_meta_status: 'ok'
     ocs_meta_statuscode: 100
     ocs_meta_message: 'OK'
-    ocs_data_version_string: '27.1.3 Enterprise'
+    ocs_data_version_string: '27.1.4 Enterprise'
     ocs_data_capabilities_globalscale_enabled: true
   cert_md5: '702b0112df7e6e4b2ca2af3280841196'
   ocsapps: 
