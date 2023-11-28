@@ -11,6 +11,7 @@ from webdav3.client import Client
 import logging
 import threading
 import time
+from datetime import datetime
 
 import sunetdrive
 
@@ -20,6 +21,7 @@ g_stressTestFolder = 'SeleniumCollaboraStressTest'
 g_sharedTestFolder = 'SharedFolder'
 g_personalBucket = 'selenium-personal'
 g_systemBucket = 'selenium-system'
+g_filename=datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 ocsheaders = { "OCS-APIRequest" : "true" } 
 logger = logging.getLogger(__name__)
 logging.basicConfig(format = '%(asctime)s - %(module)s.%(funcName)s - %(levelname)s: %(message)s',
@@ -323,6 +325,62 @@ class WebDAVSystemBucketFolders(threading.Thread):
         logger.info(f'WebDAVSystemBucketFolders thread done for node {self.name}')
         testThreadRunning = False
 
+def webdav_create_move_delete(fullnode, target):
+    drv = sunetdrive.TestTarget()
+    nodeuser = drv.get_seleniumuser(fullnode)
+    nodepwd = drv.get_seleniumuserpassword(fullnode)
+    url = drv.get_webdav_url(fullnode, nodeuser)
+    logger.info(f'URL: {url}')
+    options = {
+    'webdav_hostname': url,
+    'webdav_login' : nodeuser,
+    'webdav_password' : nodepwd 
+    }
+
+    filename = g_filename + '.txt'
+    mvfilename = 'mv_' + filename
+    with open(filename, 'w') as f:
+        f.write('Lorem ipsum')
+        f.close()
+
+    
+    client = Client(options)
+    client.mkdir(target)
+    targetfile=target + '/' + filename
+    targetmvfile=target + '/' + mvfilename
+    deleteoriginal=False
+    testPassed = True
+    try:
+        logger.info(f'Uploading {filename} to {targetfile}')
+        client.upload_sync(remote_path=targetfile, local_path=filename)
+    except:
+        logger.error(f'Error uploading file')
+        testPassed = False
+    try:
+        logger.info(f'moving {targetfile} to {targetmvfile}')
+        client.move(remote_path_from=targetfile, remote_path_to=targetmvfile)
+    except:
+        logger.error(f'Error moving the file')
+        testPassed = False
+    try:
+        logger.info(f'Removing file {targetmvfile}')
+        client.clean(targetmvfile)
+    except:
+        logger.error(f'Error deleting the file')
+        deleteoriginal=True
+        testPassed = False
+        pass
+
+    if deleteoriginal:
+        try:
+            logger.info(f'Removing original file {targetfile}')
+            client.clean(targetfile)
+        except:
+            logger.error(f'Error deleting the original file')
+
+    os.remove(filename)
+    return testPassed
+
 class TestWebDAV(unittest.TestCase):
     def test_logger(self):
         global logger
@@ -401,6 +459,27 @@ class TestWebDAV(unittest.TestCase):
 
         while(testThreadRunning == True):
             time.sleep(1)
+
+    def cmd_in_home_folder(self):
+        drv = sunetdrive.TestTarget()
+        for fullnode in drv.fullnodes:
+            with self.subTest(mynode=fullnode):
+                testPassed = webdav_create_move_delete(fullnode, 'selenium-home')
+                self.assertTrue(testPassed)
+
+    def cmd_in_personal_bucket(self):
+        drv = sunetdrive.TestTarget()
+        for fullnode in drv.fullnodes:
+            with self.subTest(mynode=fullnode):
+                testPassed = webdav_create_move_delete(fullnode, 'selenium-personal')
+                self.assertTrue(testPassed)
+
+    def cmd_in_system_bucket(self):
+        drv = sunetdrive.TestTarget()
+        for fullnode in drv.fullnodes:
+            with self.subTest(mynode=fullnode):
+                testPassed = webdav_create_move_delete(fullnode, 'selenium-system')
+                self.assertTrue(testPassed)
 
 if __name__ == '__main__':
     import xmlrunner
