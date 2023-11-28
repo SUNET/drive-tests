@@ -384,10 +384,12 @@ def webdav_create_move_delete(fullnode, target):
 class TestWebDAV(unittest.TestCase):
     def test_logger(self):
         global logger
-        logger.warning(f'logger.info test_logger')
+        logger.info(f'logger.info test_logger')
         pass
 
     def test_webdav_dne_check(self):
+        global logger
+        logger.info(f'test_webdav_dne_check')
         drv = sunetdrive.TestTarget()
         for fullnode in drv.fullnodes:
             with self.subTest(mynode=fullnode):
@@ -398,6 +400,8 @@ class TestWebDAV(unittest.TestCase):
             time.sleep(1)
 
     def test_webdav_list(self):
+        global logger
+        logger.info(f'test_webdav_list')
         drv = sunetdrive.TestTarget()
         for fullnode in drv.fullnodes:
             with self.subTest(mynode=fullnode):
@@ -409,8 +413,9 @@ class TestWebDAV(unittest.TestCase):
 
 
     def test_webdav_multicheckandremove(self):
+        global logger
+        logger.info(f'test_webdav_multicheckandremove')
         drv = sunetdrive.TestTarget()
-
         for fullnode in drv.fullnodes:
             logger.info(f'WebDAV multicheck for {fullnode}')
             with self.subTest(mynode=fullnode):
@@ -420,7 +425,9 @@ class TestWebDAV(unittest.TestCase):
         while(testThreadRunning == True):
             time.sleep(1)
 
-    def test_webdav_clean_seleniumuserfolders(self):
+    def test_clean_seleniumuserfolders(self):
+        global logger
+        logger.info(f'test_clean_seleniumuserfolders')
         drv = sunetdrive.TestTarget()
         for fullnode in drv.fullnodes:
             with self.subTest(mynode=fullnode):
@@ -430,7 +437,9 @@ class TestWebDAV(unittest.TestCase):
         while(testThreadRunning == True):
             time.sleep(1)
 
-    def make_sharing_folder(self):
+    def test_sharing_folders(self):
+        global logger
+        logger.info(f'test_sharing_folders')
         drv = sunetdrive.TestTarget()
         for fullnode in drv.fullnodes:
             with self.subTest(mynode=fullnode):
@@ -440,7 +449,9 @@ class TestWebDAV(unittest.TestCase):
         while(testThreadRunning == True):
             time.sleep(1)
 
-    def personal_bucket_folders(self):
+    def test_personal_bucket_folders(self):
+        global logger
+        logger.info(f'test_personal_bucket_folders')
         drv = sunetdrive.TestTarget()
         for fullnode in drv.fullnodes:
             with self.subTest(mynode=fullnode):
@@ -450,7 +461,9 @@ class TestWebDAV(unittest.TestCase):
         while(testThreadRunning == True):
             time.sleep(1)
 
-    def system_bucket_folders(self):
+    def test_system_bucket_folders(self):
+        global logger
+        logger.info(f'test_system_bucket_folders')
         drv = sunetdrive.TestTarget()
         for fullnode in drv.fullnodes:
             with self.subTest(mynode=fullnode):
@@ -460,21 +473,27 @@ class TestWebDAV(unittest.TestCase):
         while(testThreadRunning == True):
             time.sleep(1)
 
-    def cmd_in_home_folder(self):
+    def test_cmd_in_home_folder(self):
+        global logger
+        logger.info(f'test_cmd_in_home_folder')
         drv = sunetdrive.TestTarget()
         for fullnode in drv.fullnodes:
             with self.subTest(mynode=fullnode):
                 testPassed = webdav_create_move_delete(fullnode, 'selenium-home')
                 self.assertTrue(testPassed)
 
-    def cmd_in_personal_bucket(self):
+    def test_cmd_in_personal_bucket(self):
+        global logger
+        logger.info(f'test_cmd_in_personal_bucket')
         drv = sunetdrive.TestTarget()
         for fullnode in drv.fullnodes:
             with self.subTest(mynode=fullnode):
                 testPassed = webdav_create_move_delete(fullnode, 'selenium-personal')
                 self.assertTrue(testPassed)
 
-    def cmd_in_system_bucket(self):
+    def test_cmd_in_system_bucket(self):
+        global logger
+        logger.info(f'test_cmd_in_system_bucket')
         drv = sunetdrive.TestTarget()
         for fullnode in drv.fullnodes:
             with self.subTest(mynode=fullnode):
