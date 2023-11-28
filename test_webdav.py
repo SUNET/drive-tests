@@ -23,6 +23,7 @@ g_personalBucket = 'selenium-personal'
 g_systemBucket = 'selenium-system'
 g_filename=datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 g_testPassed = {}
+g_testThreadsRunning = 0
 ocsheaders = { "OCS-APIRequest" : "true" } 
 logger = logging.getLogger(__name__)
 logging.basicConfig(format = '%(asctime)s - %(module)s.%(funcName)s - %(levelname)s: %(message)s',
@@ -35,14 +36,15 @@ class WebDAVDneCheck(threading.Thread):
         self.TestWebDAV = TestWebDAV
 
     def run(self):
-        global testThreadRunning
         global logger
         global g_testPassed
-        testThreadRunning = True
-        logger.info(f'WebDAVDneCheck thread started for node {self.name}')
-        drv = sunetdrive.TestTarget()
+        global g_testThreadsRunning
         fullnode = self.name
         g_testPassed[fullnode] = False
+        g_testThreadsRunning += 1
+        logger.info(f'WebDAVDneCheck thread started for node {self.name}')
+        drv = sunetdrive.TestTarget()
+        logger.info(f'Setting passed for {fullnode} to {g_testPassed.get(fullnode)}')
         
         nodeuser = drv.get_seleniumuser(fullnode)
         nodepwd = drv.get_seleniumuserpassword(fullnode)
@@ -66,11 +68,13 @@ class WebDAVDneCheck(threading.Thread):
             except:
                 logger.error(f'Error in WebDAVDneCheck thread done for node {self.name}')
                 g_testPassed[fullnode] = False
-                testThreadRunning = False
+                g_testThreadsRunning -= 1
+                return
 
         logger.info(f'WebDAVDneCheck thread done for node {self.name}')
         g_testPassed[fullnode] = True
-        testThreadRunning = False
+        logger.info(f'Setting passed for {fullnode} to {g_testPassed.get(fullnode)}')
+        g_testThreadsRunning -= 1
 
 class WebDAVList(threading.Thread):
     def __init__(self, name, TestWebDAV):
@@ -79,14 +83,14 @@ class WebDAVList(threading.Thread):
         self.TestWebDAV = TestWebDAV
 
     def run(self):
-        global testThreadRunning
         global logger
         global g_testPassed
-        testThreadRunning = True
-        logger.info(f'WebDAVList thread started for node {self.name}')
-        drv = sunetdrive.TestTarget()
+        global g_testThreadsRunning
         fullnode = self.name
         g_testPassed[fullnode] = False
+        g_testThreadsRunning += 1
+        logger.info(f'WebDAVList thread started for node {self.name}')
+        drv = sunetdrive.TestTarget()
 
         nodeuser = []
         nodepwd = []
@@ -101,21 +105,27 @@ class WebDAVList(threading.Thread):
 
         logger.info(f'Usernames: {nodeuser}')
 
-        for user in range(3):
-            logger.warning(f'Testing user: {nodeuser[user]}')
-            url = drv.get_webdav_url(fullnode, nodeuser[user])
-            logger.info(f'URL: {url}')
-            options = {
-            'webdav_hostname': url,
-            'webdav_login' : nodeuser[user],
-            'webdav_password' : nodepwd[user] 
-            }
-            client = Client(options)
-            logger.info(client.list())
+        try:
+            for user in range(3):
+                logger.warning(f'Testing user: {nodeuser[user]}')
+                url = drv.get_webdav_url(fullnode, nodeuser[user])
+                logger.info(f'URL: {url}')
+                options = {
+                'webdav_hostname': url,
+                'webdav_login' : nodeuser[user],
+                'webdav_password' : nodepwd[user] 
+                }
+                client = Client(options)
+                logger.info(client.list())
+        except:
+            logger.error(f'Error in webdav listing')
+            g_testThreadsRunning -= 1
+            g_testPassed[fullnode] = False
+            return
 
         logger.info(f'WebDAVList thread done for node {self.name}')
         g_testPassed[fullnode] = True
-        testThreadRunning = False
+        g_testThreadsRunning -= 1
 
 class WebDAVMultiCheckAndRemove(threading.Thread):
     def __init__(self, name, TestWebDAV):
@@ -124,14 +134,14 @@ class WebDAVMultiCheckAndRemove(threading.Thread):
         self.TestWebDAV = TestWebDAV
 
     def run(self):
-        global testThreadRunning
         global logger
         global g_threadResults
-        testThreadRunning = True
-        logger.info(f'WebDAVMultiCheckAndRemove thread started for node {self.name}')
-        drv = sunetdrive.TestTarget()
+        global g_testThreadsRunning
         fullnode = self.name
         g_testPassed[fullnode] = False
+        g_testThreadsRunning += 1
+        logger.info(f'WebDAVMultiCheckAndRemove thread started for node {self.name}')
+        drv = sunetdrive.TestTarget()
 
         nodeuser = drv.get_seleniumuser(fullnode)
         nodepwd = drv.get_seleniumuserpassword(fullnode)
@@ -162,11 +172,12 @@ class WebDAVMultiCheckAndRemove(threading.Thread):
         except:
             logger.warning(f'Error in WebDAVMultiCheckAndRemove for node {self.name}')
             g_testPassed[fullnode] = False
-            testThreadRunning = False
+            g_testThreadsRunning -= 1
+            return
 
         logger.info(f'WebDAVMultiCheckAndRemove thread done for node {self.name}')
         g_testPassed[fullnode] = True
-        testThreadRunning = False
+        g_testThreadsRunning -= 1
 
 class WebDAVCleanSeleniumFolders(threading.Thread):
     def __init__(self, name, TestWebDAV):
@@ -175,14 +186,14 @@ class WebDAVCleanSeleniumFolders(threading.Thread):
         self.TestWebDAV = TestWebDAV
 
     def run(self):
-        global testThreadRunning
         global logger
         global g_testPassed
-        testThreadRunning = True
-        logger.info(f'WebDAVCleanSeleniumFolders thread started for node {self.name}')
-        drv = sunetdrive.TestTarget()
+        global g_testThreadsRunning
         fullnode = self.name    
         g_testPassed[fullnode] = False
+        g_testThreadsRunning += 1
+        logger.info(f'WebDAVCleanSeleniumFolders thread started for node {self.name}')
+        drv = sunetdrive.TestTarget()
 
         nodeuser = drv.get_seleniumuser(fullnode)
         nodepwd = drv.get_seleniumuserpassword(fullnode)
@@ -212,11 +223,12 @@ class WebDAVCleanSeleniumFolders(threading.Thread):
         except:
             logger.error(f'Error in WebDAVCleanSeleniumFolders thread done for node {self.name}')
             g_testPassed[fullnode] = False
-            testThreadRunning = False
+            g_testThreadsRunning -= 1
+            return
 
         logger.info(f'WebDAVCleanSeleniumFolders thread done for node {self.name}')
         g_testPassed[fullnode] = True
-        testThreadRunning = False
+        g_testThreadsRunning -= 1
 
 class WebDAVMakeSharingFolder(threading.Thread):
     def __init__(self, name, TestWebDAV):
@@ -225,14 +237,14 @@ class WebDAVMakeSharingFolder(threading.Thread):
         self.TestWebDAV = TestWebDAV
 
     def run(self):
-        global testThreadRunning
         global logger
         global g_testPassed
-        testThreadRunning = True
-        logger.info(f'WebDAVMakeSharingFolder thread started for node {self.name}')
-        drv = sunetdrive.TestTarget()
+        global g_testThreadsRunning
         fullnode = self.name
         g_testPassed[fullnode] = False
+        g_testThreadsRunning += 1
+        logger.info(f'WebDAVMakeSharingFolder thread started for node {self.name}')
+        drv = sunetdrive.TestTarget()
 
         nodeuser = drv.get_seleniumuser(fullnode)
         nodepwd = drv.get_seleniumuserpassword(fullnode)
@@ -252,11 +264,11 @@ class WebDAVMakeSharingFolder(threading.Thread):
         except:
             logger.error(f'Error in WebDAVMakeSharingFolder thread done for node {self.name}')
             g_testPassed[fullnode] = False
-            testThreadRunning = False
+            g_testThreadsRunning -= 1
 
         logger.info(f'WebDAVMakeSharingFolder thread done for node {self.name}')
         g_testPassed[fullnode] = True
-        testThreadRunning = False
+        g_testThreadsRunning -= 1
 
 class WebDAVPersonalBucketFolders(threading.Thread):
     def __init__(self, name, TestWebDAV):
@@ -265,14 +277,14 @@ class WebDAVPersonalBucketFolders(threading.Thread):
         self.TestWebDAV = TestWebDAV
 
     def run(self):
-        global testThreadRunning
         global logger
         global g_testPassed
-        testThreadRunning = True
-        logger.info(f'WebDAVPersonalBucketFolders thread started for node {self.name}')
-        drv = sunetdrive.TestTarget()
+        global g_testThreadsRunning
         fullnode = self.name
         g_testPassed[fullnode] = False
+        g_testThreadsRunning += 1
+        logger.info(f'WebDAVPersonalBucketFolders thread started for node {self.name}')
+        drv = sunetdrive.TestTarget()
 
         nodeuser = drv.get_seleniumuser(fullnode)
         nodepwd = drv.get_seleniumuserpassword(fullnode)
@@ -299,11 +311,12 @@ class WebDAVPersonalBucketFolders(threading.Thread):
         except:
             logger.info(f'Error in WebDAVPersonalBucketFolders thread done for node {self.name}')
             g_testPassed[fullnode] = False
-            testThreadRunning = False
+            g_testThreadsRunning -= 1
+            return
 
         logger.info(f'WebDAVPersonalBucketFolders thread done for node {self.name}')
         g_testPassed[fullnode] = True
-        testThreadRunning = False
+        g_testThreadsRunning -= 1
 
 class WebDAVSystemBucketFolders(threading.Thread):
     def __init__(self, name, TestWebDAV):
@@ -312,14 +325,14 @@ class WebDAVSystemBucketFolders(threading.Thread):
         self.TestWebDAV = TestWebDAV
 
     def run(self):
-        global testThreadRunning
         global logger
         global g_testPassed
-        testThreadRunning = True
-        logger.info(f'WebDAVSystemBucketFolders thread started for node {self.name}')
-        drv = sunetdrive.TestTarget()
+        global g_testThreadsRunning
         fullnode = self.name
         g_testPassed[fullnode] = False
+        g_testThreadsRunning += 1
+        logger.info(f'WebDAVSystemBucketFolders thread started for node {self.name}')
+        drv = sunetdrive.TestTarget()
 
         nodeuser = drv.get_seleniumuser(fullnode)
         nodepwd = drv.get_seleniumuserpassword(fullnode)
@@ -346,67 +359,90 @@ class WebDAVSystemBucketFolders(threading.Thread):
         except:
             logger.error(f'Error in WebDAVSystemBucketFolders thread done for node {self.name}')
             g_testPassed[fullnode] = False
-            testThreadRunning = False
+            g_testThreadsRunning -= 1
+            return
 
         logger.info(f'WebDAVSystemBucketFolders thread done for node {self.name}')
         g_testPassed[fullnode] = True
-        testThreadRunning = False
+        g_testThreadsRunning -= 1
 
-def webdav_create_move_delete(fullnode, target):
-    drv = sunetdrive.TestTarget()
-    nodeuser = drv.get_seleniumuser(fullnode)
-    nodepwd = drv.get_seleniumuserpassword(fullnode)
-    url = drv.get_webdav_url(fullnode, nodeuser)
-    logger.info(f'URL: {url}')
-    options = {
-    'webdav_hostname': url,
-    'webdav_login' : nodeuser,
-    'webdav_password' : nodepwd 
-    }
+class WebDAVCreateMoveDelete(threading.Thread):
+    def __init__(self, name, target, TestWebDAV):
+        threading.Thread.__init__(self)
+        self.name = name
+        self.target = target
+        self.TestWebDAV = TestWebDAV
 
-    filename = g_filename + '.txt'
-    mvfilename = 'mv_' + filename
-    with open(filename, 'w') as f:
-        f.write('Lorem ipsum')
-        f.close()
+    def run(self):
+        global logger
+        global g_testPassed
+        global g_testThreadsRunning
+        fullnode = self.name
+        g_testPassed[fullnode] = False
+        g_testThreadsRunning += 1
+        logger.info(f'WebDAVCreateMoveDelete thread started for node {self.name}')
+        drv = sunetdrive.TestTarget()
 
-    
-    client = Client(options)
-    client.mkdir(target)
-    targetfile=target + '/' + filename
-    targetmvfile=target + '/' + mvfilename
-    deleteoriginal=False
-    testPassed = True
-    try:
-        logger.info(f'Uploading {filename} to {targetfile}')
-        client.upload_sync(remote_path=targetfile, local_path=filename)
-    except:
-        logger.error(f'Error uploading file')
-        testPassed = False
-    try:
-        logger.info(f'moving {targetfile} to {targetmvfile}')
-        client.move(remote_path_from=targetfile, remote_path_to=targetmvfile)
-    except:
-        logger.error(f'Error moving the file')
-        testPassed = False
-    try:
-        logger.info(f'Removing file {targetmvfile}')
-        client.clean(targetmvfile)
-    except:
-        logger.error(f'Error deleting the file')
-        deleteoriginal=True
-        testPassed = False
-        pass
+        nodeuser = drv.get_seleniumuser(fullnode)
+        nodepwd = drv.get_seleniumuserpassword(fullnode)
+        url = drv.get_webdav_url(fullnode, nodeuser)
+        logger.info(f'URL: {url}')
+        options = {
+        'webdav_hostname': url,
+        'webdav_login' : nodeuser,
+        'webdav_password' : nodepwd 
+        }
 
-    if deleteoriginal:
+        filename = fullnode + '_' + g_filename + '.txt'
+        mvfilename = 'mv_' + filename
+        with open(filename, 'w') as f:
+            f.write('Lorem ipsum')
+            f.close()
+
+        
+        client = Client(options)
+        client.mkdir(self.target)
+        targetfile=self.target + '/' + filename
+        targetmvfile=self.target + '/' + mvfilename
+        deleteoriginal=False
         try:
-            logger.info(f'Removing original file {targetfile}')
-            client.clean(targetfile)
+            logger.info(f'Uploading {filename} to {targetfile}')
+            client.upload_sync(remote_path=targetfile, local_path=filename)
         except:
-            logger.error(f'Error deleting the original file')
+            logger.error(f'Error uploading file')
+            g_testPassed[fullnode] = False
+            g_testThreadsRunning -= 1
+            return
+        try:
+            logger.info(f'moving {targetfile} to {targetmvfile}')
+            client.move(remote_path_from=targetfile, remote_path_to=targetmvfile)
+        except:
+            logger.error(f'Error moving the file')
+            g_testPassed[fullnode] = False
+            g_testThreadsRunning -= 1
+            return
+        try:
+            logger.info(f'Removing file {targetmvfile}')
+            client.clean(targetmvfile)
+        except:
+            logger.error(f'Error deleting the file')
+            deleteoriginal=True
+            g_testPassed[fullnode] = False
+            pass
 
-    os.remove(filename)
-    return testPassed
+        if deleteoriginal:
+            try:
+                logger.info(f'Removing original file {targetfile}')
+                client.clean(targetfile)
+            except:
+                logger.error(f'Error deleting the original file')
+                g_testPassed[fullnode] = False
+                g_testThreadsRunning -= 1
+                return
+
+        os.remove(filename)
+        g_testPassed[fullnode] = True
+        g_testThreadsRunning -= 1
 
 class TestWebDAV(unittest.TestCase):
     def test_logger(self):
@@ -416,6 +452,7 @@ class TestWebDAV(unittest.TestCase):
 
     def test_webdav_dne_check(self):
         global logger
+        global g_testThreadsRunning
         logger.info(f'test_webdav_dne_check')
         drv = sunetdrive.TestTarget()
         for fullnode in drv.fullnodes:
@@ -423,12 +460,12 @@ class TestWebDAV(unittest.TestCase):
                 WebDAVDneCheckThread = WebDAVDneCheck(fullnode, self)
                 WebDAVDneCheckThread.start()
 
-        while(testThreadRunning == True):
+        while(g_testThreadsRunning > 0):
             time.sleep(1)
 
-        # for fullnode in drv.fullnodes:
-        #     with self.subTest(mynode=fullnode):
-        #         self.assertTrue(g_testPassed[fullnode])
+        for fullnode in drv.fullnodes:
+            with self.subTest(mynode=fullnode):
+                self.assertTrue(g_testPassed[fullnode])
 
     def test_webdav_list(self):
         global logger
@@ -439,12 +476,12 @@ class TestWebDAV(unittest.TestCase):
                 WebDAVListThread = WebDAVList(fullnode, self)
                 WebDAVListThread.start()
 
-        while(testThreadRunning == True):
+        while(g_testThreadsRunning > 0):
             time.sleep(1)
 
-        # for fullnode in drv.fullnodes:
-        #     with self.subTest(mynode=fullnode):
-        #         self.assertTrue(g_testPassed[fullnode])
+        for fullnode in drv.fullnodes:
+            with self.subTest(mynode=fullnode):
+                self.assertTrue(g_testPassed[fullnode])
 
     def test_webdav_multicheckandremove(self):
         global logger
@@ -457,12 +494,12 @@ class TestWebDAV(unittest.TestCase):
                 WebDAVMultiCheckAndRemoveThread = WebDAVMultiCheckAndRemove(fullnode, self)
                 WebDAVMultiCheckAndRemoveThread.start()
 
-        while(testThreadRunning == True):
+        while(g_testThreadsRunning > 0):
             time.sleep(1)
 
-        # for fullnode in drv.fullnodes:
-        #     with self.subTest(mynode=fullnode):
-        #         self.assertTrue(g_testPassed[fullnode])
+        for fullnode in drv.fullnodes:
+            with self.subTest(mynode=fullnode):
+                self.assertTrue(g_testPassed[fullnode])
 
     def test_clean_seleniumuserfolders(self):
         global logger
@@ -473,12 +510,12 @@ class TestWebDAV(unittest.TestCase):
                 WebDAVCleanSeleniumFoldersThread = WebDAVCleanSeleniumFolders(fullnode, self)
                 WebDAVCleanSeleniumFoldersThread.start()
 
-        while(testThreadRunning == True):
+        while(g_testThreadsRunning > 0):
             time.sleep(1)
 
-        # for fullnode in drv.fullnodes:
-        #     with self.subTest(mynode=fullnode):
-        #         self.assertTrue(g_testPassed[fullnode])
+        for fullnode in drv.fullnodes:
+            with self.subTest(mynode=fullnode):
+                self.assertTrue(g_testPassed[fullnode])
 
     def test_sharing_folders(self):
         global logger
@@ -489,12 +526,12 @@ class TestWebDAV(unittest.TestCase):
                 WebDAVMakeSharingFolderThread = WebDAVMakeSharingFolder(fullnode, self)
                 WebDAVMakeSharingFolderThread.start()
 
-        while(testThreadRunning == True):
+        while(g_testThreadsRunning > 0):
             time.sleep(1)
 
-        # for fullnode in drv.fullnodes:
-        #     with self.subTest(mynode=fullnode):
-        #         self.assertTrue(g_testPassed[fullnode])
+        for fullnode in drv.fullnodes:
+            with self.subTest(mynode=fullnode):
+                self.assertTrue(g_testPassed[fullnode])
 
     def test_personal_bucket_folders(self):
         global logger
@@ -505,12 +542,12 @@ class TestWebDAV(unittest.TestCase):
                 WebDAVPersonalBucketFoldersThread = WebDAVPersonalBucketFolders(fullnode, self)
                 WebDAVPersonalBucketFoldersThread.start()
 
-        while(testThreadRunning == True):
+        while(g_testThreadsRunning > 0):
             time.sleep(1)
 
-        # for fullnode in drv.fullnodes:
-        #     with self.subTest(mynode=fullnode):
-        #         self.assertTrue(g_testPassed[fullnode])
+        for fullnode in drv.fullnodes:
+            with self.subTest(mynode=fullnode):
+                self.assertTrue(g_testPassed[fullnode])
 
     def test_system_bucket_folders(self):
         global logger
@@ -521,12 +558,12 @@ class TestWebDAV(unittest.TestCase):
                 WebDAVSystemBucketFoldersThread = WebDAVSystemBucketFolders(fullnode, self)
                 WebDAVSystemBucketFoldersThread.start()
 
-        while(testThreadRunning == True):
+        while(g_testThreadsRunning > 0):
             time.sleep(1)
 
-        # for fullnode in drv.fullnodes:
-        #     with self.subTest(mynode=fullnode):
-        #         self.assertTrue(g_testPassed[fullnode])
+        for fullnode in drv.fullnodes:
+            with self.subTest(mynode=fullnode):
+                self.assertTrue(g_testPassed[fullnode])
 
     def test_cmd_in_home_folder(self):
         global logger
@@ -534,8 +571,15 @@ class TestWebDAV(unittest.TestCase):
         drv = sunetdrive.TestTarget()
         for fullnode in drv.fullnodes:
             with self.subTest(mynode=fullnode):
-                testPassed = webdav_create_move_delete(fullnode, 'selenium-home')
-                self.assertTrue(testPassed)
+                WebDAVSystemBucketFoldersThread = WebDAVCreateMoveDelete(fullnode, 'selenium-home', self)
+                WebDAVSystemBucketFoldersThread.start()
+
+        while(g_testThreadsRunning > 0):
+            time.sleep(1)
+
+        for fullnode in drv.fullnodes:
+            with self.subTest(mynode=fullnode):
+                self.assertTrue(g_testPassed[fullnode])
 
     def test_cmd_in_personal_bucket(self):
         global logger
@@ -543,8 +587,15 @@ class TestWebDAV(unittest.TestCase):
         drv = sunetdrive.TestTarget()
         for fullnode in drv.fullnodes:
             with self.subTest(mynode=fullnode):
-                testPassed = webdav_create_move_delete(fullnode, 'selenium-personal')
-                self.assertTrue(testPassed)
+                WebDAVSystemBucketFoldersThread = WebDAVCreateMoveDelete(fullnode, 'selenium-personal', self)
+                WebDAVSystemBucketFoldersThread.start()
+
+        while(g_testThreadsRunning > 0):
+            time.sleep(1)
+
+        for fullnode in drv.fullnodes:
+            with self.subTest(mynode=fullnode):
+                self.assertTrue(g_testPassed[fullnode])
 
     def test_cmd_in_system_bucket(self):
         global logger
@@ -552,8 +603,15 @@ class TestWebDAV(unittest.TestCase):
         drv = sunetdrive.TestTarget()
         for fullnode in drv.fullnodes:
             with self.subTest(mynode=fullnode):
-                testPassed = webdav_create_move_delete(fullnode, 'selenium-system')
-                self.assertTrue(testPassed)
+                WebDAVSystemBucketFoldersThread = WebDAVCreateMoveDelete(fullnode, 'selenium-system', self)
+                WebDAVSystemBucketFoldersThread.start()
+
+        while(g_testThreadsRunning > 0):
+            time.sleep(1)
+
+        for fullnode in drv.fullnodes:
+            with self.subTest(mynode=fullnode):
+                self.assertTrue(g_testPassed[fullnode])
 
 if __name__ == '__main__':
     import xmlrunner
