@@ -163,6 +163,7 @@ class NumberOfAppsOnNode(threading.Thread):
         except:
             numExpectedApps = expectedResults[drv.target]['ocsapps']['default']
             logger.info(f'Expected number of apps: {numExpectedApps}')
+            testThreadRunning = False
 
         self.TestAppsOcs.assertEqual(len(nodeApps), numExpectedApps)
         logger.info(f'NumberOfAppsOnNode thread done for node {self.name}')
