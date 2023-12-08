@@ -52,6 +52,7 @@ class TestLoginSelenium(unittest.TestCase):
             self.logger.error(f'Error initializing Chrome driver')
             self.assertTrue(False)
         # driver2 = webdriver.Firefox()
+        driver.maximize_window()        
         driver.get(loginurl)
 
         wait = WebDriverWait(driver, delay)
@@ -198,6 +199,7 @@ class TestLoginSelenium(unittest.TestCase):
             self.logger.error(f'Error initializing Chrome driver')
             self.assertTrue(False)
         # driver2 = webdriver.Firefox()
+        driver.maximize_window()        
         driver.get(loginurl)
 
         wait = WebDriverWait(driver, delay)
@@ -266,6 +268,7 @@ class TestLoginSelenium(unittest.TestCase):
             self.logger.error(f'Error initializing Chrome driver')
             self.assertTrue(False)
         # driver2 = webdriver.Firefox()
+        driver.maximize_window()        
         driver.get(loginurl)
 
         wait = WebDriverWait(driver, delay)
