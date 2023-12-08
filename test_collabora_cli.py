@@ -37,6 +37,7 @@ class TestCollabora(unittest.TestCase):
         logger.info(f'Collabora nodes: {numCollaboraNodes}')
         for i in range(1,numCollaboraNodes+1):
             url=drv.get_collabora_capabilities_url(i)
+            logger.info(f'Testing collabora server url: {url}')
 
             r =requests.get(url)
             j = json.loads(r.text)
