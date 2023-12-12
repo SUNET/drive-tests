@@ -433,7 +433,8 @@ class WebDAVCreateMoveDelete(threading.Thread):
             logger.error(f'Error deleting the file')
             deleteoriginal=True
             g_testPassed[fullnode] = False
-            pass
+            g_testThreadsRunning -= 1
+            return
 
         if deleteoriginal:
             try:
