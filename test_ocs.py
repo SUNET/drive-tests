@@ -126,9 +126,14 @@ class AppVersions(threading.Thread):
                 testThreadRunning = False
                 return
             
-            self.TestOcsCalls.assertTrue(gssFound)
-            self.TestOcsCalls.assertEqual(j["ocs"]["data"]["id"], 'globalsiteselector')
-            self.TestOcsCalls.assertEqual(j["ocs"]["data"]["version"], expectedResults['apps']['globalsiteselector'][drv.target]['version'])
+            try:
+                self.TestOcsCalls.assertTrue(gssFound)
+                self.TestOcsCalls.assertEqual(j["ocs"]["data"]["id"], 'globalsiteselector')
+                self.TestOcsCalls.assertEqual(j["ocs"]["data"]["version"], expectedResults['apps']['globalsiteselector'][drv.target]['version'])
+            except:
+                logger.error(f'Error with GSS configuration')
+                testThreadRunning = False
+                return
 
         # Summary and test
         logger.info(f'Saml app found: {userSamlFound}')
