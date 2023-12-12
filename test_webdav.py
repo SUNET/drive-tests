@@ -400,11 +400,16 @@ class WebDAVCreateMoveDelete(threading.Thread):
             f.close()
 
         
-        client = Client(options)
-        client.mkdir(self.target)
-        targetfile=self.target + '/' + filename
-        targetmvfile=self.target + '/' + mvfilename
-        deleteoriginal=False
+        try:
+            client = Client(options)
+            client.mkdir(self.target)
+            targetfile=self.target + '/' + filename
+            targetmvfile=self.target + '/' + mvfilename
+            deleteoriginal=False
+        except:
+            logger.error(f'Error preparing webdav client')
+            return
+        
         try:
             logger.info(f'Uploading {filename} to {targetfile}')
             client.upload_sync(remote_path=targetfile, local_path=filename)
