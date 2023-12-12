@@ -258,13 +258,21 @@ class WebDAVMakeSharingFolder(threading.Thread):
 
         client = Client(options)
 
-        client.mkdir(g_sharedTestFolder)
+        try:
+            client.mkdir(g_sharedTestFolder)
+        except:
+            logger.error(f'Error making folder {g_sharedTestFolder}')
+            g_testPassed[fullnode] = False
+            g_testThreadsRunning -= 1
+            return
+        
         try:
             self.TestWebDAV.assertEqual(client.list().count(f'{g_sharedTestFolder}/'), 1)
         except:
             logger.error(f'Error in WebDAVMakeSharingFolder thread done for node {self.name}')
             g_testPassed[fullnode] = False
             g_testThreadsRunning -= 1
+            return
 
         logger.info(f'WebDAVMakeSharingFolder thread done for node {self.name}')
         g_testPassed[fullnode] = True
