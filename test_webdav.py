@@ -16,6 +16,7 @@ from datetime import datetime
 import sunetdrive
 
 g_maxCheck = 10
+g_webdav_timeout = 30
 g_testFolder = 'SeleniumCollaboraTest'
 g_stressTestFolder = 'SeleniumCollaboraStressTest'
 g_sharedTestFolder = 'SharedFolder'
@@ -53,7 +54,8 @@ class WebDAVDneCheck(threading.Thread):
         options = {
         'webdav_hostname': url,
         'webdav_login' : nodeuser,
-        'webdav_password' : nodepwd 
+        'webdav_password' : nodepwd,
+        'webdav_timeout': g_webdav_timeout
         }
 
         client = Client(options)
@@ -113,7 +115,8 @@ class WebDAVList(threading.Thread):
                 options = {
                 'webdav_hostname': url,
                 'webdav_login' : nodeuser[user],
-                'webdav_password' : nodepwd[user] 
+                'webdav_password' : nodepwd[user], 
+                'webdav_timeout': g_webdav_timeout
                 }
                 client = Client(options)
                 logger.info(client.list())
@@ -150,7 +153,8 @@ class WebDAVMultiCheckAndRemove(threading.Thread):
         options = {
         'webdav_hostname': url,
         'webdav_login' : nodeuser,
-        'webdav_password' : nodepwd 
+        'webdav_password' : nodepwd,
+        'webdav_timeout': g_webdav_timeout
         }
 
         client = Client(options)
@@ -202,7 +206,8 @@ class WebDAVCleanSeleniumFolders(threading.Thread):
         options = {
         'webdav_hostname': url,
         'webdav_login' : nodeuser,
-        'webdav_password' : nodepwd 
+        'webdav_password' : nodepwd,
+        'webdav_timeout': g_webdav_timeout
         }
 
         client = Client(options)
@@ -253,7 +258,8 @@ class WebDAVMakeSharingFolder(threading.Thread):
         options = {
         'webdav_hostname': url,
         'webdav_login' : nodeuser,
-        'webdav_password' : nodepwd 
+        'webdav_password' : nodepwd,
+        'webdav_timeout': g_webdav_timeout
         }
 
         client = Client(options)
@@ -301,7 +307,8 @@ class WebDAVPersonalBucketFolders(threading.Thread):
         options = {
         'webdav_hostname': url,
         'webdav_login' : nodeuser,
-        'webdav_password' : nodepwd 
+        'webdav_password' : nodepwd,
+        'webdav_timeout': g_webdav_timeout
         }
 
         client = Client(options)
@@ -349,7 +356,8 @@ class WebDAVSystemBucketFolders(threading.Thread):
         options = {
         'webdav_hostname': url,
         'webdav_login' : nodeuser,
-        'webdav_password' : nodepwd 
+        'webdav_password' : nodepwd,
+        'webdav_timeout': g_webdav_timeout
         }
 
         client = Client(options)
@@ -398,7 +406,8 @@ class WebDAVCreateMoveDelete(threading.Thread):
         options = {
         'webdav_hostname': url,
         'webdav_login' : nodeuser,
-        'webdav_password' : nodepwd 
+        'webdav_password' : nodepwd,
+        'webdav_timeout': g_webdav_timeout
         }
 
         filename = fullnode + '_' + g_filename + '.txt'
