@@ -16,7 +16,7 @@ class TestTarget(object):
     "mau","ltu","oru","miun","du","hj","hb","hig","hv","his","hkr","mdu","bth","rkh","hhs","fhs","uniarts","konstfack","esh","kmh",
     "shh","kkh","ths","nordunet","kb","kva","sics","sp","irf","vr","nrm","smhi","uhr","antagning","swamid","vinnova"]
 
-    fullnodes=["extern","sunet","su","kau","suni","scilifelab","hh","gih","hkr","mdu","mau","hv","shh","bth","kmh","ltu","hb","his","lnu","uu"]
+    fullnodes=["extern","sunet","su","kau","suni","scilifelab","hh","gih","mdu","mau","hv","shh","bth","kmh","ltu","hb","his","lnu","uu"]
 
     multinodes=["ki","lu","uu","gu","kth","liu","umu","chalmers","slu","lnu",
     "mau","ltu","oru","miun","du","hj","hb","hig","hv","his","bth","rkh","hhs","fhs","uniarts","konstfack","esh","kmh",
