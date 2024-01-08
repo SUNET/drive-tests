@@ -160,17 +160,21 @@ class WebDAVMultiCheckAndRemove(threading.Thread):
         client = Client(options)
         
         count = 0
-        while count <= g_maxCheck:
-            count += 1
-            logger.info(f'Check for folder {g_testFolder}')
-            if (client.check(g_testFolder) == False):
-                logger.info(f'Folder does not exist: {g_testFolder}')
-                break
-            else:
-                logger.warning(f'Removing folder {g_testFolder}')
-                if (client.clean(g_testFolder)):
-                    logger.info(f'Folder removed {g_testFolder}')    
-            logger.warning(f'Multiple tries to remove folder: {count}')
+        try:
+            while count <= g_maxCheck:
+                count += 1
+                logger.info(f'Check for folder {g_testFolder}')
+                if (client.check(g_testFolder) == False):
+                    logger.info(f'Folder does not exist: {g_testFolder}')
+                    break
+                else:
+                    logger.warning(f'Removing folder {g_testFolder}')
+                    if (client.clean(g_testFolder)):
+                        logger.info(f'Folder removed {g_testFolder}')    
+                logger.warning(f'Multiple tries to remove folder: {count}')
+        except:
+            logger.warning(f'Error during iteration {count} of removing {g_testFolder}')
+        
         try:
             self.TestWebDAV.assertFalse(client.check(g_testFolder))
         except:
