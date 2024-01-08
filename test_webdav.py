@@ -3,6 +3,7 @@ Author: Richard Freitag <freitag@sunet.se>
 """
 
 import unittest
+import tempfile
 import requests
 from requests.auth import HTTPBasicAuth
 import json
@@ -414,12 +415,11 @@ class WebDAVCreateMoveDelete(threading.Thread):
         'webdav_timeout': g_webdav_timeout
         }
 
-        filename = fullnode + '_' + g_filename + '.txt'
+        filename = tempfile.gettempdir() + '/' + fullnode + '_' + g_filename + '.txt'
         mvfilename = 'mv_' + filename
         with open(filename, 'w') as f:
             f.write('Lorem ipsum')
             f.close()
-
         
         try:
             client = Client(options)
