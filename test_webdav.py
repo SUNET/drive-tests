@@ -415,9 +415,10 @@ class WebDAVCreateMoveDelete(threading.Thread):
         'webdav_timeout': g_webdav_timeout
         }
 
-        filename = tempfile.gettempdir() + '/' + fullnode + '_' + g_filename + '.txt'
+        filename = fullnode + '_' + g_filename + '.txt'
         mvfilename = 'mv_' + filename
-        with open(filename, 'w') as f:
+        tmpfilename = tempfile.gettempdir() + '/' + fullnode + '_' + g_filename + '.txt'
+        with open(tmpfilename, 'w') as f:
             f.write('Lorem ipsum')
             f.close()
         
@@ -432,8 +433,8 @@ class WebDAVCreateMoveDelete(threading.Thread):
             return
         
         try:
-            logger.info(f'Uploading {filename} to {targetfile}')
-            client.upload_sync(remote_path=targetfile, local_path=filename)
+            logger.info(f'Uploading {tmpfilename} to {targetfile}')
+            client.upload_sync(remote_path=targetfile, local_path=tmpfilename)
         except:
             logger.error(f'Error uploading file')
             g_testPassed[fullnode] = False
@@ -467,7 +468,7 @@ class WebDAVCreateMoveDelete(threading.Thread):
                 g_testThreadsRunning -= 1
                 return
 
-        os.remove(filename)
+        os.remove(tmpfilename)
         g_testPassed[fullnode] = True
         g_testThreadsRunning -= 1
 
