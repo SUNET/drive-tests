@@ -252,8 +252,9 @@ class TestLoginSelenium(unittest.TestCase):
         delay = 30 # seconds
         drv = sunetdrive.TestTarget()
         if len(drv.allnodes) == 1:
-            self.logger.info(f'Only testing {drv.allnodes[0]}, not testing su saml')
-            return
+            if drv.allnodes[0] != 'su':
+                self.logger.info(f'Only testing {drv.allnodes[0]}, not testing su saml')
+                return
 
         loginurl = drv.get_gss_url()
         self.logger.info(f'Login url: {loginurl}')
