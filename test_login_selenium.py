@@ -6,6 +6,7 @@ import xmlrunner
 import unittest
 import sunetdrive
 from webdav3.client import Client
+import pyotp
 
 import time
 
@@ -251,16 +252,17 @@ class TestLoginSelenium(unittest.TestCase):
     def test_saml_su_nomfa(self):
         delay = 30 # seconds
         drv = sunetdrive.TestTarget()
+        nodeName = 'su'
         if len(drv.allnodes) == 1:
-            if drv.allnodes[0] != 'su':
+            if drv.allnodes[0] != nodeName:
                 self.logger.info(f'Only testing {drv.allnodes[0]}, not testing su saml')
                 return
 
         loginurl = drv.get_gss_url()
         self.logger.info(f'Login url: {loginurl}')
 
-        samluser=drv.get_samlusername("su")
-        samlpassword=drv.get_samluserpassword("su")
+        samluser=drv.get_samlusername(nodeName)
+        samlpassword=drv.get_samluserpassword(nodeName)
         
         try:
             options = Options()
@@ -291,6 +293,22 @@ class TestLoginSelenium(unittest.TestCase):
         wait.until(EC.presence_of_element_located((By.ID, 'username'))).send_keys(samluser)
         wait.until(EC.presence_of_element_located((By.ID, 'password'))).send_keys(samlpassword + Keys.ENTER)
         # wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'login-form-button'))).click()
+
+        # Wait for TOTP screen
+        requireTotp = False
+        try:
+            self.logger.info(f'Check if TOTP selection dialogue is visible')
+            totpselect = driver.find_element(By.XPATH, '//a[@href="'+ '/index.php/login/challenge/totp?redirect_url=/index.php/apps/dashboard/' +'"]')
+            self.logger.warning(f'Found TOTP selection dialogue')
+            requireTotp = True
+            totpselect.click()
+        except:
+            self.logger.info(f'No need to select TOTP provider')
+
+        if requireTotp:
+            nodetotpsecret = drv.get_samlusertotpsecret(nodeName)
+            totp = pyotp.TOTP(nodetotpsecret)
+            wait.until(EC.presence_of_element_located((By.XPATH, '//*[@id="body-login"]/div[1]/div/main/div/form/input'))).send_keys(totp.now() + Keys.ENTER)
 
         try:
             wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'app-menu')))

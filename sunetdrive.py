@@ -346,6 +346,19 @@ class TestTarget(object):
         else:
             raise NotImplementedError
 
+    def get_samlusertotpsecret(self, userid):
+        if self.platform == 'win32':
+            pwdcmd = 'powershell -command "& { . ./NodeCredentials.ps1; Get-SamlUserTotpSecret ' + userid + ' ' + self.target + ' }"'
+            process = os.popen(pwdcmd)
+            pwd = process.read()
+            process.close()
+            return pwd
+        elif self.platform == 'linux':
+            env = "DRIVE_SELENIUM_SAML_MFA_SECRET_" + userid.upper() + "_" + self.target.upper()
+            return os.environ.get(env)
+        else:
+            raise NotImplementedError        
+
     def save_samlusercredentials(self, userid):
         if self.platform == 'win32':
             cmd = 'powershell -command "& { . ./NodeCredentials.ps1; Save-SamlUserCredentials ' + userid + ' ' + self.target + ' }"'
