@@ -68,7 +68,7 @@ class TestTarget(object):
         if self.target == "prod":
             return 'https://drive.' + g_baseurl + '/index.php/apps/user_saml/saml/selectUserBackEnd?redirectUrl='
         else:
-            return 'https://drive.test.' + g_baseurl + 'sunet.se''/index.php/apps/user_saml/saml/selectUserBackEnd?redirectUrl='
+            return 'https://drive.test.' + g_baseurl + '/index.php/apps/user_saml/saml/selectUserBackEnd?redirectUrl='
 
     def get_node_login_url(self, node):
         return 'https://' + self.getnodeprefix(node) + self.targetprefix + '.' + g_baseurl + '/index.php/login?redirect_url=&direct=1'
@@ -139,19 +139,19 @@ class TestTarget(object):
     def get_fullnode_status_urls(self):
         nodeurls = []
         for node in self.fullnodes:
-            nodeurls.append("https://" + self.getnodeprefix(node) +  self.targetprefix + ".sunet.se/status.php" )
+            nodeurls.append("https://" + self.getnodeprefix(node) +  self.targetprefix + g_baseurl + "./status.php" )
         return nodeurls
 
     def get_multinode_status_urls(self):
         nodeurls = []
         for node in self.multinodes:
-            nodeurls.append("https://" + self.getnodeprefix(node) +  self.targetprefix + ".sunet.se/status.php" )
+            nodeurls.append("https://" + self.getnodeprefix(node) +  self.targetprefix + g_baseurl + "./status.php" )
         return nodeurls
 
     def get_allnode_status_urls(self):
         nodeurls = []
         for node in self.allnodes:
-            nodeurls.append("https://" + self.getnodeprefix(node) +  self.targetprefix + ".sunet.se/status.php" )
+            nodeurls.append("https://" + self.getnodeprefix(node) +  self.targetprefix + g_baseurl + "./status.php" )
         return nodeurls
 
     def get_webdav_root(self, username):
