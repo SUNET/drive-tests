@@ -11,11 +11,12 @@ import string
 g_testtarget = os.environ.get('DriveTestTarget')
 g_testcustomers = os.environ.get('DriveTestCustomers')
 g_baseurl = 'sunet.se'
+g_testprefix = 'test'
 g_docprefix = 'document'
 
 class TestTarget(object):
     # default target is test, unless overwritten by initializing with 'prod'
-    targetprefix = '.test'
+    targetprefix = '.' + g_testprefix
 
     allnodes=["extern","sunet","su","kau","suni","scilifelab","hh","gih","ki","lu","uu","gu","kth","liu","umu","chalmers","slu","lnu",
     "mau","ltu","oru","miun","du","hj","hb","hig","hv","his","hkr","mdu","bth","rkh","hhs","fhs","uniarts","konstfack","esh","kmh",
@@ -40,7 +41,7 @@ class TestTarget(object):
             self.targetprefix = ""
         else:
             self.target = "test"
-            self.targetprefix = ".test"
+            self.targetprefix = "." + g_testprefix
 
         if g_testcustomers in self.allnodes:
             self.allnodes = [g_testcustomers]
