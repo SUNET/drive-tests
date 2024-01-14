@@ -7,26 +7,25 @@ import os
 import sys
 import random
 import string
+import yaml
 
 g_testtarget = os.environ.get('DriveTestTarget')
 g_testcustomers = os.environ.get('DriveTestCustomers')
 g_baseurl = 'sunet.se'
 g_testprefix = 'test'
 g_docprefix = 'document'
+g_expectedFile = 'expected.yaml'
 
 class TestTarget(object):
+    with open(g_expectedFile, 'r') as stream:
+        expectedResults=yaml.safe_load(stream)
+
     # default target is test, unless overwritten by initializing with 'prod'
     targetprefix = '.' + g_testprefix
 
-    allnodes=["extern","sunet","su","kau","suni","scilifelab","hh","gih","ki","lu","uu","gu","kth","liu","umu","chalmers","slu","lnu",
-    "mau","ltu","oru","miun","du","hj","hb","hig","hv","his","hkr","mdu","bth","rkh","hhs","fhs","uniarts","konstfack","esh","kmh",
-    "shh","kkh","ths","nordunet","kb","kva","sics","sp","irf","vr","nrm","smhi","uhr","antagning","swamid","vinnova"]
-
-    fullnodes=["extern","sunet","su","kau","suni","scilifelab","hh","gih","mdu","mau","hv","shh","bth","kmh","ltu","hb","his","lnu","uu"]
-
-    multinodes=["ki","lu","uu","gu","kth","liu","umu","chalmers","slu","lnu",
-    "mau","ltu","oru","miun","du","hj","hb","hig","hv","his","bth","rkh","hhs","fhs","uniarts","konstfack","esh","kmh",
-    "shh","kkh","ths","nordunet","kb","kva","sics","sp","irf","vr","nrm","smhi","uhr","antagning","swamid","vinnova"]
+    allnodes = expectedResults['global']['allnodes']
+    fullnodes = expectedResults['global']['fullnodes']
+    multinodes = expectedResults['global']['multinodes']
 
     target = 'test'
     platform = sys.platform
@@ -139,19 +138,19 @@ class TestTarget(object):
     def get_fullnode_status_urls(self):
         nodeurls = []
         for node in self.fullnodes:
-            nodeurls.append("https://" + self.getnodeprefix(node) +  self.targetprefix + g_baseurl + "./status.php" )
+            nodeurls.append("https://" + self.getnodeprefix(node) +  self.targetprefix + '.' + g_baseurl + "./status.php" )
         return nodeurls
 
     def get_multinode_status_urls(self):
         nodeurls = []
         for node in self.multinodes:
-            nodeurls.append("https://" + self.getnodeprefix(node) +  self.targetprefix + g_baseurl + "./status.php" )
+            nodeurls.append("https://" + self.getnodeprefix(node) +  self.targetprefix + '.' + g_baseurl + "./status.php" )
         return nodeurls
 
     def get_allnode_status_urls(self):
         nodeurls = []
         for node in self.allnodes:
-            nodeurls.append("https://" + self.getnodeprefix(node) +  self.targetprefix + g_baseurl + "./status.php" )
+            nodeurls.append("https://" + self.getnodeprefix(node) +  self.targetprefix + '.' + g_baseurl + "./status.php" )
         return nodeurls
 
     def get_webdav_root(self, username):
