@@ -11,17 +11,18 @@ import yaml
 
 g_testtarget = os.environ.get('DriveTestTarget')
 g_testcustomers = os.environ.get('DriveTestCustomers')
-g_baseurl = 'sunet.se'
-g_testprefix = 'test'
-g_docprefix = 'document'
 g_expectedFile = 'expected.yaml'
 
 class TestTarget(object):
     with open(g_expectedFile, 'r') as stream:
         expectedResults=yaml.safe_load(stream)
 
+    baseurl = expectedResults['global']['baseUrl']
+    testprefix = expectedResults['global']['testPrefix']
+    docprefix = expectedResults['global']['docPrefix']
+
     # default target is test, unless overwritten by initializing with 'prod'
-    targetprefix = '.' + g_testprefix
+    targetprefix = '.' + testprefix
 
     allnodes = expectedResults['global']['allnodes']
     fullnodes = expectedResults['global']['fullnodes']
@@ -40,7 +41,7 @@ class TestTarget(object):
             self.targetprefix = ""
         else:
             self.target = "test"
-            self.targetprefix = "." + g_testprefix
+            self.targetprefix = "." + self.testprefix
 
         if g_testcustomers in self.allnodes:
             self.allnodes = [g_testcustomers]
@@ -56,101 +57,101 @@ class TestTarget(object):
 
     def get_gss_url(self):
         if self.target == "prod":
-            return 'https://drive.' + g_baseurl
+            return 'https://drive.' + self.baseurl
         else:
-            return 'https://drive.test.' + g_baseurl
+            return 'https://drive.test.' + self.baseurl
 
     def get_node_url(self, node):
-        return 'https://' + self.getnodeprefix(node) + self.targetprefix + '.' + g_baseurl
+        return 'https://' + self.getnodeprefix(node) + self.targetprefix + '.' + self.baseurl
 
     def get_gss_post_logout_url(self):
         if self.target == "prod":
-            return 'https://drive.' + g_baseurl + '/index.php/apps/user_saml/saml/selectUserBackEnd?redirectUrl='
+            return 'https://drive.' + self.baseurl + '/index.php/apps/user_saml/saml/selectUserBackEnd?redirectUrl='
         else:
-            return 'https://drive.test.' + g_baseurl + '/index.php/apps/user_saml/saml/selectUserBackEnd?redirectUrl='
+            return 'https://drive.test.' + self.baseurl + '/index.php/apps/user_saml/saml/selectUserBackEnd?redirectUrl='
 
     def get_node_login_url(self, node):
-        return 'https://' + self.getnodeprefix(node) + self.targetprefix + '.' + g_baseurl + '/index.php/login?redirect_url=&direct=1'
+        return 'https://' + self.getnodeprefix(node) + self.targetprefix + '.' + self.baseurl + '/index.php/login?redirect_url=&direct=1'
 
     def get_node_post_logout_url(self, node):
-        return 'https://' + self.getnodeprefix(node) + self.targetprefix + '.' + g_baseurl + '/index.php/login?clear=1'
+        return 'https://' + self.getnodeprefix(node) + self.targetprefix + '.' + self.baseurl + '/index.php/login?clear=1'
 
     def get_node_post_logout_saml_url(self, node):
-        return 'https://' + self.getnodeprefix(node) + self.targetprefix + '.' + g_baseurl + '/index.php/apps/user_saml/saml/selectUserBackEnd?redirectUrl='
+        return 'https://' + self.getnodeprefix(node) + self.targetprefix + '.' + self.baseurl + '/index.php/apps/user_saml/saml/selectUserBackEnd?redirectUrl='
 
     def get_ocs_capabilities_url(self, node):
-        return 'https://' + self.getnodeprefix(node) + self.targetprefix + '.' + g_baseurl + '/ocs/v1.php/cloud/capabilities?format=json'
+        return 'https://' + self.getnodeprefix(node) + self.targetprefix + '.' + self.baseurl + '/ocs/v1.php/cloud/capabilities?format=json'
 
     def get_all_apps_url(self, node):
-        return 'https://$USERNAME$:$PASSWORD$@' + self.getnodeprefix(node) + self.targetprefix + '.' + g_baseurl + '/ocs/v2.php/cloud/apps?format=json'
+        return 'https://$USERNAME$:$PASSWORD$@' + self.getnodeprefix(node) + self.targetprefix + '.' + self.baseurl + '/ocs/v2.php/cloud/apps?format=json'
 
     def get_app_url(self, node, app):
-        return 'https://$USERNAME$:$PASSWORD$@' + self.getnodeprefix(node) + self.targetprefix + '.' + g_baseurl + '/ocs/v2.php/cloud/apps/' + app + '?format=json'
+        return 'https://$USERNAME$:$PASSWORD$@' + self.getnodeprefix(node) + self.targetprefix + '.' + self.baseurl + '/ocs/v2.php/cloud/apps/' + app + '?format=json'
 
     def get_add_user_url(self, node):
-        return 'https://$USERNAME$:$PASSWORD$@' + self.getnodeprefix(node) + self.targetprefix + '.' + g_baseurl + '/ocs/v1.php/cloud/users?format=json'
+        return 'https://$USERNAME$:$PASSWORD$@' + self.getnodeprefix(node) + self.targetprefix + '.' + self.baseurl + '/ocs/v1.php/cloud/users?format=json'
 
     def get_user_url(self, node, username):
-        return 'https://$USERNAME$:$PASSWORD$@' + self.getnodeprefix(node) + self.targetprefix + '.' + g_baseurl + '/ocs/v1.php/cloud/users/' + username + '?format=json'
+        return 'https://$USERNAME$:$PASSWORD$@' + self.getnodeprefix(node) + self.targetprefix + '.' + self.baseurl + '/ocs/v1.php/cloud/users/' + username + '?format=json'
 
     def get_disable_user_url(self, node, username):
-        return 'https://$USERNAME$:$PASSWORD$@' + self.getnodeprefix(node) + self.targetprefix + '.' + g_baseurl + '/ocs/v1.php/cloud/users/' + username + '/disable?format=json'
+        return 'https://$USERNAME$:$PASSWORD$@' + self.getnodeprefix(node) + self.targetprefix + '.' + self.baseurl + '/ocs/v1.php/cloud/users/' + username + '/disable?format=json'
 
     def get_dashboard_url(self, node):
-        return 'https://' + self.getnodeprefix(node) + self.targetprefix + '.' + g_baseurl + '/index.php/apps/dashboard/'
+        return 'https://' + self.getnodeprefix(node) + self.targetprefix + '.' + self.baseurl + '/index.php/apps/dashboard/'
 
     def get_folder_url(self, node, foldername):
-        return 'https://' + self.getnodeprefix(node) + self.targetprefix + '.' + g_baseurl + '/index.php/apps/files/?dir=/' + foldername
+        return 'https://' + self.getnodeprefix(node) + self.targetprefix + '.' + self.baseurl + '/index.php/apps/files/?dir=/' + foldername
 
     def get_webdav_url(self, node, username):
-        return 'https://' + self.getnodeprefix(node) + self.targetprefix + '.' + g_baseurl + '/remote.php/dav/files/' + username + '/'
+        return 'https://' + self.getnodeprefix(node) + self.targetprefix + '.' + self.baseurl + '/remote.php/dav/files/' + username + '/'
  
     def get_file_lock_url(self, node, filename):
-        return 'https://' + self.getnodeprefix(node) + self.targetprefix + '.' + g_baseurl + '/ocs/v2.php/apps/files_lock/lock/' + filename
+        return 'https://' + self.getnodeprefix(node) + self.targetprefix + '.' + self.baseurl + '/ocs/v2.php/apps/files_lock/lock/' + filename
 
     def get_file_lock_curl(self, node, username, filename):
-        return 'curl -X LOCK --url https://' + username + ':$PASSWORD$@' + self.getnodeprefix(node) + self.targetprefix + '.' + g_baseurl + '/remote.php/dav/files/' + username + '/' + filename + ' --header \'X-User-Lock: 1\''
+        return 'curl -X LOCK --url https://' + username + ':$PASSWORD$@' + self.getnodeprefix(node) + self.targetprefix + '.' + self.baseurl + '/remote.php/dav/files/' + username + '/' + filename + ' --header \'X-User-Lock: 1\''
 
     def get_file_unlock_curl(self, node, username, filename):
-        return 'curl -X UNLOCK --url https://' + username + ':$PASSWORD$@' + self.getnodeprefix(node) + self.targetprefix + '.' + g_baseurl + '/remote.php/dav/files/' + username + '/' + filename + ' --header \'X-User-Lock: 1\''
+        return 'curl -X UNLOCK --url https://' + username + ':$PASSWORD$@' + self.getnodeprefix(node) + self.targetprefix + '.' + self.baseurl + '/remote.php/dav/files/' + username + '/' + filename + ' --header \'X-User-Lock: 1\''
 
     def get_serverinfo_url(self, node):
-        return 'https://' + self.getnodeprefix(node) + self.targetprefix + '.' + g_baseurl + '/ocs/v2.php/apps/serverinfo/api/v1/info?format=json'
+        return 'https://' + self.getnodeprefix(node) + self.targetprefix + '.' + self.baseurl + '/ocs/v2.php/apps/serverinfo/api/v1/info?format=json'
 
     def get_gss_metadata_url(self):
-        return 'https://drive' + self.targetprefix + '.' + g_baseurl + '/index.php/apps/user_saml/saml/metadata?idp=1'
+        return 'https://drive' + self.targetprefix + '.' + self.baseurl + '/index.php/apps/user_saml/saml/metadata?idp=1'
 
     def get_metadata_url(self, node):
-        return 'https://' + self.getnodeprefix(node) + self.targetprefix + '.' + g_baseurl + '/index.php/apps/user_saml/saml/metadata?idp=1'
+        return 'https://' + self.getnodeprefix(node) + self.targetprefix + '.' + self.baseurl + '/index.php/apps/user_saml/saml/metadata?idp=1'
 
     def get_gss_entity_id(self):
-        return 'https://drive' + self.targetprefix + '.' + g_baseurl + '/index.php/apps/user_saml/saml/metadata'
+        return 'https://drive' + self.targetprefix + '.' + self.baseurl + '/index.php/apps/user_saml/saml/metadata'
 
     def get_node_entity_id(self, node):
-        return 'https://' + self.getnodeprefix(node) + self.targetprefix + '.' + g_baseurl + '/index.php/apps/user_saml/saml/metadata'
+        return 'https://' + self.getnodeprefix(node) + self.targetprefix + '.' + self.baseurl + '/index.php/apps/user_saml/saml/metadata'
 
     def get_collabora_node_url(self, node):
-        return 'https://' + g_docprefix + str(node) + '.' + self.getnodeprefix('none') + self.targetprefix + '.' + g_baseurl + ''
+        return 'https://' + self.docprefix + str(node) + '.' + self.getnodeprefix('none') + self.targetprefix + '.' + self.baseurl + ''
 
     def get_collabora_capabilities_url(self, node):
-        return 'https://' + g_docprefix + str(node) + '.' + self.getnodeprefix('none') + self.targetprefix + '.' + g_baseurl + '/hosting/capabilities'
+        return 'https://' + self.docprefix + str(node) + '.' + self.getnodeprefix('none') + self.targetprefix + '.' + self.baseurl + '/hosting/capabilities'
 
     def get_fullnode_status_urls(self):
         nodeurls = []
         for node in self.fullnodes:
-            nodeurls.append("https://" + self.getnodeprefix(node) +  self.targetprefix + '.' + g_baseurl + "./status.php" )
+            nodeurls.append("https://" + self.getnodeprefix(node) +  self.targetprefix + '.' + self.baseurl + "./status.php" )
         return nodeurls
 
     def get_multinode_status_urls(self):
         nodeurls = []
         for node in self.multinodes:
-            nodeurls.append("https://" + self.getnodeprefix(node) +  self.targetprefix + '.' + g_baseurl + "./status.php" )
+            nodeurls.append("https://" + self.getnodeprefix(node) +  self.targetprefix + '.' + self.baseurl + "./status.php" )
         return nodeurls
 
     def get_allnode_status_urls(self):
         nodeurls = []
         for node in self.allnodes:
-            nodeurls.append("https://" + self.getnodeprefix(node) +  self.targetprefix + '.' + g_baseurl + "./status.php" )
+            nodeurls.append("https://" + self.getnodeprefix(node) +  self.targetprefix + '.' + self.baseurl + "./status.php" )
         return nodeurls
 
     def get_webdav_root(self, username):
