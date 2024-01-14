@@ -135,9 +135,13 @@ class TestTarget(object):
         return 'https://' + self.getnodeprefix(node) + self.targetprefix + '.' + self.baseurl + '/index.php/apps/user_saml/saml/metadata'
 
     def get_collabora_node_url(self, node):
+        if len(self.nodeprefix) == 0:
+            return 'https://' + self.docprefix + str(node) + self.targetprefix + '.' + self.baseurl + '' 
         return 'https://' + self.docprefix + str(node) + '.' + self.getnodeprefix('none') + self.targetprefix + '.' + self.baseurl + ''
 
     def get_collabora_capabilities_url(self, node):
+        if len(self.nodeprefix) == 0:
+            'https://' + self.docprefix + str(node) + self.targetprefix + '.' + self.baseurl + '/hosting/capabilities'
         return 'https://' + self.docprefix + str(node) + '.' + self.getnodeprefix('none') + self.targetprefix + '.' + self.baseurl + '/hosting/capabilities'
 
     def get_fullnode_status_urls(self):
