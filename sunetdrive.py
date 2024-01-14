@@ -20,6 +20,7 @@ class TestTarget(object):
     baseurl = expectedResults['global']['baseUrl']
     testprefix = expectedResults['global']['testPrefix']
     docprefix = expectedResults['global']['docPrefix']
+    testgss = expectedResults['global']['testGss']
 
     # default target is test, unless overwritten by initializing with 'prod'
     targetprefix = '.' + testprefix
