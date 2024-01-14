@@ -19,6 +19,7 @@ class TestTarget(object):
 
     baseurl = expectedResults['global']['baseUrl']
     testprefix = expectedResults['global']['testPrefix']
+    nodeprefix = expectedResults['global']['nodePrefix']
     docprefix = expectedResults['global']['docPrefix']
     testgss = expectedResults['global']['testGss']
 
@@ -51,9 +52,11 @@ class TestTarget(object):
 
     def getnodeprefix(self, node):
         if (node == 'gss' or node == 'none'):
-            prefix = 'drive'
+            prefix = self.nodeprefix
+        elif len(self.nodeprefix) == 0:
+            prefix = node
         else:
-            prefix = node + '.drive'
+            prefix = node + '.' + self.nodeprefix
         return prefix
 
     def get_gss_url(self):
