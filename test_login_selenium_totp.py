@@ -40,6 +40,9 @@ class TestLoginSeleniumTotp(unittest.TestCase):
     def test_gss_login(self):
         delay = 30 # seconds
         drv = sunetdrive.TestTarget(g_testtarget)
+        if drv.testgss == False:
+            self.logger.info('Not testing gss')
+            return
 
         if len(drv.allnodes) == 1:
             self.logger.info(f'Only testing {drv.allnodes[0]}, not testing gss')

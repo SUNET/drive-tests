@@ -87,6 +87,10 @@ class TestStatus(unittest.TestCase):
     def test_status_gss(self):
         global logger
         drv = sunetdrive.TestTarget()
+        if drv.testgss == False:
+            logger.info('Not testing gss')
+            return
+
         url = drv.get_gss_url()
         print(self._testMethodName, url)
         r=requests.get(url)
@@ -97,6 +101,9 @@ class TestStatus(unittest.TestCase):
         global logger
         global expectedResults
         drv = sunetdrive.TestTarget()
+        if drv.testgss == False:
+            logger.info('Not testing gss')
+            return
 
         url=drv.get_gss_url() + "/status.php"
         print(self._testMethodName, url)
@@ -135,6 +142,10 @@ class TestStatus(unittest.TestCase):
         global logger
         global expectedResults
         drv = sunetdrive.TestTarget()
+        if drv.testgss == False:
+            logger.info('Not testing gss')
+            return
+
         url = drv.get_gss_metadata_url()
         expectedEntityId = ''
         certMd5 = ''
