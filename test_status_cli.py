@@ -52,6 +52,7 @@ class StatusInfo(threading.Thread):
             logger.info(f'Status information tested: {self.url}')
         except:
             logger.info(f'No valid JSON reply received for {self.url}')
+            testThreadRunning = False
             self.TestStatus.assertTrue(False)
             logger.info(r.text)
 
@@ -71,9 +72,15 @@ class Status(threading.Thread):
         testThreadRunning = True
         logger.info(f'Status thread started for node {self.url}')
 
-        r=requests.get(self.url)
-        self.TestStatus.assertEqual(r.status_code, 200)
-        logger.info(f'Status tested: {self.url}')
+        try:
+            r=requests.get(self.url)
+            self.TestStatus.assertEqual(r.status_code, 200)
+            logger.info(f'Status tested: {self.url}')
+        except:
+            logger.info('Status test failed')
+            testThreadRunning = False
+            self.TestStatus.assertTrue(False)
+            logger.info(r.text)
 
         logger.info(f'Status thread done for node {self.url}')
         testThreadRunning = False
