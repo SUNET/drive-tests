@@ -112,12 +112,12 @@ class TestCollaboraSelenium(unittest.TestCase):
                 # self.assertEqual(dashboardUrl, currentUrl)
 
                 try:
-                    self.logger.info(f'Wait for /index.php/apps/files/')
-                    wait.until(EC.presence_of_element_located((By.XPATH,'//a[@href="'+ '/index.php/apps/files/' +'"]')))
-                    files = self.driver.find_element(by=By.XPATH, value='//a[@href="'+ '/index.php/apps/files/' +'"]')
+                    self.logger.info(f'Wait for {self.drv.indexsuffix}/apps/files/')
+                    wait.until(EC.presence_of_element_located((By.XPATH,'//a[@href="'+ self.drv.indexsuffix + '/apps/files/' +'"]')))
+                    files = self.driver.find_element(by=By.XPATH, value='//a[@href="'+ self.drv.indexsuffix + '/apps/files/' +'"]')
                     files.click()
                 except:
-                    self.logger.warning(f'Wait for /index.php/apps/files/ took too long')
+                    self.logger.warning(f'Wait for {self.drv.indexsuffix}/apps/files/ took too long')
                     success = False
                 self.assertTrue(success)
 
@@ -231,12 +231,12 @@ class TestCollaboraSelenium(unittest.TestCase):
                     self.logger.info(f'Testing folder {testfolder}')
 
                     try:
-                        self.logger.info(f'Wait for /index.php/apps/files/')
-                        wait.until(EC.presence_of_element_located((By.XPATH,'//a[@href="'+ '/index.php/apps/files/' +'"]')))
-                        files = self.driver.find_element(by=By.XPATH, value='//a[@href="'+ '/index.php/apps/files/' +'"]')
+                        self.logger.info(f'Wait for {self.drv.indexsuffix}/apps/files/')
+                        wait.until(EC.presence_of_element_located((By.XPATH,'//a[@href="'+ self.drv.indexsuffix + '/apps/files/' +'"]')))
+                        files = self.driver.find_element(by=By.XPATH, value='//a[@href="'+ self.drv.indexsuffix + '/apps/files/' +'"]')
                         files.click()
                     except:
-                        self.logger.warning(f'Wait for /index.php/apps/files/ took too long')
+                        self.logger.warning(f'Wait for {self.drv.indexsuffix}/apps/files/ took too long')
                         success = False
                     self.assertTrue(success)
 
@@ -361,12 +361,12 @@ class TestCollaboraSelenium(unittest.TestCase):
                 # self.assertEqual(dashboardUrl, currentUrl)                
 
                 try:
-                    self.logger.info(f'Wait for /index.php/apps/files/')
-                    wait.until(EC.presence_of_element_located((By.XPATH,'//a[@href="'+ '/index.php/apps/files/' +'"]')))
-                    files = self.driver.find_element(by=By.XPATH, value='//a[@href="'+ '/index.php/apps/files/' +'"]')
+                    self.logger.info(f'Wait for {self.drv.indexsuffix}/apps/files/')
+                    wait.until(EC.presence_of_element_located((By.XPATH,'//a[@href="'+ self.drv.indexsuffix + '/apps/files/' +'"]')))
+                    files = self.driver.find_element(by=By.XPATH, value='//a[@href="'+ self.drv.indexsuffix + '/apps/files/' +'"]')
                     files.click()
                 except:
-                    self.logger.warning(f'Wait for /index.php/apps/files/ took too long')
+                    self.logger.warning(f'Wait for {self.drv.indexsuffix}/apps/files/ took too long')
                     success = False
                 self.assertTrue(success)
 
@@ -487,12 +487,12 @@ class TestCollaboraSelenium(unittest.TestCase):
                 # self.assertEqual(dashboardUrl, currentUrl)                
 
                 try:
-                    self.logger.info(f'Wait for /index.php/apps/files/')
-                    wait.until(EC.presence_of_element_located((By.XPATH,'//a[@href="'+ '/index.php/apps/files/' +'"]')))
-                    files = self.driver.find_element(by=By.XPATH, value='//a[@href="'+ '/index.php/apps/files/' +'"]')
+                    self.logger.info(f'Wait for {self.drv.indexsuffix}/apps/files/')
+                    wait.until(EC.presence_of_element_located((By.XPATH,'//a[@href="'+ self.drv.indexsuffix + '/apps/files/' +'"]')))
+                    files = self.driver.find_element(by=By.XPATH, value='//a[@href="'+ self.drv.indexsuffix + '/apps/files/' +'"]')
                     files.click()
                 except:
-                    self.logger.warning(f'Wait for /index.php/apps/files/ took too long')
+                    self.logger.warning(f'Wait for {self.drv.indexsuffix}/apps/files/ took too long')
                     success = False
                 self.assertTrue(success)
 
