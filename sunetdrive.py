@@ -13,6 +13,13 @@ g_testtarget = os.environ.get('DriveTestTarget')
 g_testcustomers = os.environ.get('DriveTestCustomers')
 g_expectedFile = 'expected.yaml'
 
+def get_value(env):
+    value = os.environ.get(env)
+    if value == None:
+        msg = f'Environment variable {env} is not set!'
+        raise Exception(msg)
+    return value
+
 class TestTarget(object):
     with open(g_expectedFile, 'r') as stream:
         expectedResults=yaml.safe_load(stream)
@@ -174,7 +181,7 @@ class TestTarget(object):
             return user
         elif self.platform == 'linux':
             env = "DRIVE_OCS_USER_" + node.upper() + "_" + self.target.upper()
-            return os.environ.get(env)
+            return get_value(env)
         else:
             raise NotImplementedError
 
@@ -187,7 +194,8 @@ class TestTarget(object):
             return user
         elif self.platform == 'linux':
             env = "DRIVE_SELENIUM_USER_" + node.upper() + "_" + self.target.upper()
-            return os.environ.get(env)
+            print(f'Env: {env}')
+            return get_value(env)
         else:
             raise NotImplementedError
 
@@ -200,7 +208,7 @@ class TestTarget(object):
             return user
         elif self.platform == 'linux':
             env = "DRIVE_SELENIUM_MFA_USER_" + node.upper() + "_" + self.target.upper()
-            return os.environ.get(env)
+            return get_value(env)
         else:
             raise NotImplementedError
 
@@ -213,7 +221,7 @@ class TestTarget(object):
             return pwd
         elif self.platform == 'linux':
             env = "DRIVE_OCS_PASSWORD_" + node.upper() + "_" + self.target.upper()
-            return os.environ.get(env)
+            return get_value(env)
         else:
             raise NotImplementedError
 
@@ -226,7 +234,7 @@ class TestTarget(object):
             return pwd
         elif self.platform == 'linux':
             env = "DRIVE_SELENIUM_PASSWORD_" + node.upper() + "_" + self.target.upper()
-            return os.environ.get(env)
+            return get_value(env)
         else:
             raise NotImplementedError
 
@@ -239,7 +247,7 @@ class TestTarget(object):
             return pwd
         elif self.platform == 'linux':
             env = "DRIVE_SELENIUM_MFA_PASSWORD_" + node.upper() + "_" + self.target.upper()
-            return os.environ.get(env)
+            return get_value(env)
         else:
             raise NotImplementedError
 
@@ -252,7 +260,7 @@ class TestTarget(object):
             return pwd
         elif self.platform == 'linux':
             env = "DRIVE_OCS_APP_PASSWORD_" + node.upper() + "_" + self.target.upper()
-            return os.environ.get(env)
+            return get_value(env)
         else:
             raise NotImplementedError
 
@@ -265,7 +273,7 @@ class TestTarget(object):
             return pwd
         elif self.platform == 'linux':
             env = "DRIVE_SELENIUM_APP_PASSWORD_" + node.upper() + "_" + self.target.upper()
-            return os.environ.get(env)
+            return get_value(env)
         else:
             raise NotImplementedError
 
@@ -278,7 +286,7 @@ class TestTarget(object):
             return pwd
         elif self.platform == 'linux':
             env = "DRIVE_SELENIUM_MFA_APP_PASSWORD_" + node.upper() + "_" + self.target.upper()
-            return os.environ.get(env)
+            return get_value(env)
         else:
             raise NotImplementedError
 
@@ -291,7 +299,7 @@ class TestTarget(object):
             return pwd
         elif self.platform == 'linux':
             env = "DRIVE_SELENIUM_MFA_SECRET_" + node.upper() + "_" + self.target.upper()
-            return os.environ.get(env)
+            return get_value(env)
         else:
             raise NotImplementedError
 
@@ -340,7 +348,7 @@ class TestTarget(object):
             return user
         elif self.platform == 'linux':
             env = "DRIVE_SAML_USER_" + userid.upper() + "_" + self.target.upper()
-            return os.environ.get(env)
+            return get_value(env)
         else:
             raise NotImplementedError
 
@@ -353,7 +361,7 @@ class TestTarget(object):
             return pwd
         elif self.platform == 'linux':
             env = "DRIVE_SAML_PASSWORD_" + userid.upper() + "_" + self.target.upper()
-            return os.environ.get(env)
+            return get_value(env)
         else:
             raise NotImplementedError
 
@@ -366,7 +374,7 @@ class TestTarget(object):
             return pwd
         elif self.platform == 'linux':
             env = "DRIVE_SELENIUM_SAML_MFA_SECRET_" + userid.upper() + "_" + self.target.upper()
-            return os.environ.get(env)
+            return get_value(env)
         else:
             raise NotImplementedError        
 
@@ -397,7 +405,7 @@ class TestTarget(object):
             return pwd
         elif self.platform == 'linux':
             env = "DRIVE_SAML_PASSWORD_" + userid.upper() + "_" + self.target.upper()
-            return os.environ.get(env)
+            return get_value(env)
         else:
             raise NotImplementedError
 
