@@ -430,6 +430,7 @@ class WebDAVCreateMoveDelete(threading.Thread):
             deleteoriginal=False
         except:
             logger.error(f'Error preparing webdav client')
+            g_testThreadsRunning -= 1
             return
         
         try:
