@@ -63,7 +63,14 @@ class WebDAVDneCheck(threading.Thread):
         dneName = 'THISFOLDERDOESNOTEXIST'
 
         for i in range(1,g_maxCheck):
-            result = client.check(dneName)
+            try:
+                result = client.check(dneName)
+            except:
+                logger.error(f'Error during client.check for {self.name}')
+                g_testPassed[fullnode] = False
+                g_testThreadsRunning -= 1
+                return
+
             if (result):
                 logger.error(f'DNE check {i} for {dneName} should not return true')
             try:
