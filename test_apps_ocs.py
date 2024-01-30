@@ -156,6 +156,7 @@ class NumberOfAppsOnNode(threading.Thread):
         except:
             logger.warning(f'No JSON reply received')
             logger.warning(r.text)
+            testThreadRunning = False
             
         try:
             numExpectedApps = expectedResults[drv.target]['ocsapps'][fullnode]
@@ -168,9 +169,12 @@ class NumberOfAppsOnNode(threading.Thread):
         try:
             self.TestAppsOcs.assertEqual(len(nodeApps), numExpectedApps)
             logger.info(f'NumberOfAppsOnNode thread done for node {self.name}')
-            testThreadRunning = False
         except:
             logger.error(f'Error with number of apps for node {self.name}')
+            testThreadRunning = False
+
+        logger.info(f'Test number of apps done for node {self.name}')
+        testThreadRunning = False
 
 class TestAppsOcs(unittest.TestCase):
     def test_logger(self):
