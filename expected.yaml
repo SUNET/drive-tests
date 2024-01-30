@@ -370,7 +370,7 @@ apps:
       exceptenabled:
         - scilifelab 
     test:
-      version: 5.2.4
+      version: 5.2.6
       installed:  true
       enabled: false
       exceptenabled:
