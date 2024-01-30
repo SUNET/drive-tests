@@ -170,7 +170,7 @@ class NumberOfAppsOnNode(threading.Thread):
             logger.info(f'NumberOfAppsOnNode thread done for node {self.name}')
             testThreadRunning = False
         except:
-            logger.error(f'Error with number of apps for node {self.node}')
+            logger.error(f'Error with number of apps for node {self.name}')
 
 class TestAppsOcs(unittest.TestCase):
     def test_logger(self):
