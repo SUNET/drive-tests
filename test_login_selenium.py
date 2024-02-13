@@ -222,7 +222,7 @@ class TestLoginSelenium(unittest.TestCase):
         wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'label-url'))).click()
         driver.implicitly_wait(10)
 
-        wait.until(EC.presence_of_element_located((By.ID, 'email'))).send_keys(samluser)
+        wait.until(EC.presence_of_element_located((By.ID, 'username'))).send_keys(samluser)
         self.logger.info(f'Email entered')
         wait.until(EC.presence_of_element_located((By.ID, 'currentPassword'))).send_keys(samlpassword + Keys.ENTER)
         self.logger.info(f'Password entered, proceeding')
