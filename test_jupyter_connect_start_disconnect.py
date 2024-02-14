@@ -19,6 +19,9 @@ from selenium.webdriver.common.action_chains import ActionChains
 import os
 import time
 import logging
+import pyautogui
+
+g_filename=datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 
 class TestJupyterSelenium(unittest.TestCase):
     logger = logging.getLogger(__name__)
@@ -36,7 +39,7 @@ class TestJupyterSelenium(unittest.TestCase):
         self.logger.info(f'self.logger.info test_logger')
         pass
     
-    def test_authorize_jupyter(self):
+    def test_jupyter_aio(self):
         delay = 30 # seconds
         drv = sunetdrive.TestTarget()
         for fullnode in drv.fullnodes:
@@ -125,8 +128,11 @@ class TestJupyterSelenium(unittest.TestCase):
                     self.logger.info(f'Logged out and disconnected from JupyterHub')
                     proceed = True
                 except:
-                    self.logger.error(f'Error logging out from JupyterHub')
+                    self.logger.error(f'Error logging out from JupyterHub, saving screenshot')
+                    screenshot = pyautogui.screenshot()
+                    screenshot.save("screenshots/" + fullnode + "test_jupyter_aio" + g_filename + ".png")
                     proceed = False
+
                 self.assertTrue(proceed)
 
                 self.logger.info(f'Done...')
