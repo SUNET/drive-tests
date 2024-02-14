@@ -33,6 +33,13 @@ class TestLoginSeleniumTotp(unittest.TestCase):
     logging.basicConfig(format = '%(asctime)s - %(module)s.%(funcName)s - %(levelname)s: %(message)s',
                     datefmt = '%Y-%m-%d %H:%M:%S', level = logging.INFO)
 
+    def deleteCookies(self, driver):
+        cookies = driver.get_cookies()
+        self.logger.info(f'Deleting all cookies: {cookies}')
+        driver.delete_all_cookies()
+        cookies = driver.get_cookies()
+        self.logger.info(f'Cookies deleted: {cookies}')
+
     def test_logger(self):
         self.logger.info(f'self.logger.info test_logger')
         pass
@@ -68,6 +75,7 @@ class TestLoginSeleniumTotp(unittest.TestCase):
             self.logger.error(f'Error initializing Chrome driver')
             self.assertTrue(False)
         # driver2 = webdriver.Firefox()
+        self.deleteCookies(driver)
         driver.get(loginurl)
 
         wait = WebDriverWait(driver, delay)
@@ -143,6 +151,7 @@ class TestLoginSeleniumTotp(unittest.TestCase):
                     self.assertTrue(False)
                 driver.maximize_window()
                 # driver2 = webdriver.Firefox()
+                self.deleteCookies(driver)
                 driver.get(loginurl)
 
                 wait = WebDriverWait(driver, delay)

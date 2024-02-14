@@ -30,8 +30,16 @@ g_driver={}
 g_drv={}
 g_wait={}
 
+def deleteCookies():
+    cookies = g_driver.get_cookies()
+    g_logger.info(f'Deleting all cookies: {cookies}')
+    g_driver.delete_all_cookies()
+    cookies = g_driver.get_cookies()
+    g_logger.info(f'Cookies deleted: {cookies}')
+
 def nodelogin(collaboranode):
     global g_wait
+    deleteCookies()
     g_logger.info(f'Logging in to {collaboranode}')
     loginurl = g_drv.get_node_login_url(collaboranode)
     g_logger.info(f'Login url: {loginurl}')
