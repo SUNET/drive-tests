@@ -109,12 +109,15 @@ class TestJupyterSelenium(unittest.TestCase):
                 try:
                     wait.until(EC.presence_of_element_located((By.ID, 'start')))
                     needsToConnect = True
+                    self.logger.info(f'Server needs to be started')
                 except:
                     needsToConnect = False
+                    self.logger.info(f'Server already started')
 
                 if needsToConnect:
                     login = driver.find_element(By.ID, 'start')
                     login.click()
+                    self.logger.info(f'Starting server')
 
                 try:
                     self.logger.info(f'Logging out')
