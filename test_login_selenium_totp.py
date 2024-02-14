@@ -58,9 +58,9 @@ class TestLoginSeleniumTotp(unittest.TestCase):
         fullnode = 'gss'
 
         loginurl = drv.get_node_login_url(fullnode)
-        self.logger.info(f'Login url: {loginurl}')
-
+        self.logger.info(f'URL: {loginurl}')
         nodeuser = drv.get_seleniummfauser(fullnode)
+        self.logger.info(f'Username: {nodeuser}')
         nodepwd = drv.get_seleniummfauserpassword(fullnode)
         nodeapppwd = drv.get_seleniummfauserapppassword(fullnode)
         nodetotpsecret = drv.get_seleniummfausertotpsecret(fullnode)
@@ -125,6 +125,7 @@ class TestLoginSeleniumTotp(unittest.TestCase):
                 loginurl = drv.get_node_login_url(fullnode)
                 self.logger.info(f'URL: {loginurl}')
                 nodeuser = drv.get_seleniummfauser(fullnode)
+                self.logger.info(f'Username: {nodeuser}')
                 nodepwd = drv.get_seleniummfauserpassword(fullnode)
                 nodeapppwd = drv.get_seleniummfauserapppassword(fullnode)
                 nodetotpsecret = drv.get_seleniummfausertotpsecret(fullnode)

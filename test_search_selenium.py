@@ -89,6 +89,7 @@ class TestSearchSelenium(unittest.TestCase):
                 loginurl = g_drv.get_node_login_url(fullnode)
                 g_logger.info(f'URL: {loginurl}')
                 nodeuser = g_drv.get_seleniumuser(fullnode)
+                g_logger.info(f'Username: {nodeuser}')
                 nodepwd = g_drv.get_seleniumuserpassword(fullnode)
 
                 # Create folder for testing using webdav

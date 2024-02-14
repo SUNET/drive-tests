@@ -52,8 +52,9 @@ class TestLoginSelenium(unittest.TestCase):
         fullnode = 'gss'
 
         loginurl = drv.get_node_login_url(fullnode)
-        self.logger.info(f'Login url: {loginurl}')
+        self.logger.info(f'URL: {loginurl}')
         nodeuser = drv.get_seleniumuser(fullnode)
+        self.logger.info(f'Username: {nodeuser}')
         nodepwd = drv.get_seleniumuserpassword(fullnode)
         
         try:
@@ -110,6 +111,7 @@ class TestLoginSelenium(unittest.TestCase):
                 loginurl = drv.get_node_login_url(fullnode)
                 self.logger.info(f'URL: {loginurl}')
                 nodeuser = drv.get_seleniumuser(fullnode)
+                self.logger.info(f'Username: {nodeuser}')
                 nodepwd = drv.get_seleniumuserpassword(fullnode)
 
                 # Create folder for testing using webdav
@@ -200,9 +202,9 @@ class TestLoginSelenium(unittest.TestCase):
             return
 
         loginurl = drv.get_gss_url()
-        self.logger.info(f'Login url: {loginurl}')
-
+        self.logger.info(f'URL: {loginurl}')
         samluser=drv.get_samlusername("eduidtest")
+        self.logger.info(f'Username: {samluser}')
         samlpassword=drv.get_samluserpassword("eduidtest")
         
         try:
@@ -272,9 +274,9 @@ class TestLoginSelenium(unittest.TestCase):
                 return
 
         loginurl = drv.get_gss_url()
-        self.logger.info(f'Login url: {loginurl}')
-
+        self.logger.info(f'URL: {loginurl}')
         samluser=drv.get_samlusername(nodeName)
+        self.logger.info(f'Username: {samluser}')
         samlpassword=drv.get_samluserpassword(nodeName)
         
         try:

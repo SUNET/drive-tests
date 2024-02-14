@@ -53,6 +53,7 @@ class TestLoginMultiSelenium(unittest.TestCase):
                 loginurl = drv.get_node_login_url(fullnode)
                 self.logger.info(f'URL: {loginurl}')
                 nodeuser = drv.get_seleniummfauser(fullnode)
+                self.logger.info(f'Username: {nodeuser}')
                 nodepwd = drv.get_seleniummfauserpassword(fullnode)
                 nodeapppwd = drv.get_seleniummfauserapppassword(fullnode)
                 nodetotpsecret = drv.get_seleniummfausertotpsecret(fullnode)
@@ -172,6 +173,7 @@ class TestLoginMultiSelenium(unittest.TestCase):
                 loginurl = drv.get_node_login_url(fullnode)
                 self.logger.info(f'URL: {loginurl}')
                 nodeuser = drv.get_seleniumuser(fullnode)
+                self.logger.info(f'Username: {nodeuser}')
                 nodepwd = drv.get_seleniumuserpassword(fullnode)
 
                 # Create folder for testing using webdav
