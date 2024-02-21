@@ -181,7 +181,7 @@ class TestTarget(object):
             process.close()
             return user
         elif self.platform == 'linux':
-            env = "DRIVE_OCS_USER_" + node.upper() + "_" + self.target.upper()
+            env = "NEXTCLOUD_OCS_USER_" + node.upper() + "_" + self.target.upper()
             return get_value(env)
         else:
             raise NotImplementedError
@@ -194,7 +194,7 @@ class TestTarget(object):
             process.close()
             return user
         elif self.platform == 'linux':
-            env = "DRIVE_SELENIUM_USER_" + node.upper() + "_" + self.target.upper()
+            env = "NEXTCLOUD_SELENIUM_USER_" + node.upper() + "_" + self.target.upper()
             return get_value(env)
         else:
             raise NotImplementedError
@@ -207,7 +207,7 @@ class TestTarget(object):
             process.close()
             return user
         elif self.platform == 'linux':
-            env = "DRIVE_SELENIUM_MFA_USER_" + node.upper() + "_" + self.target.upper()
+            env = "NEXTCLOUD_SELENIUM_MFA_USER_" + node.upper() + "_" + self.target.upper()
             return get_value(env)
         else:
             raise NotImplementedError
@@ -220,7 +220,7 @@ class TestTarget(object):
             process.close()
             return user
         elif self.platform == 'linux':
-            env = "DRIVE_JUPYTER_USER_" + node.upper() + "_" + self.target.upper()
+            env = "NEXTCLOUD_JUPYTER_USER_" + node.upper() + "_" + self.target.upper()
             return get_value(env)
         else:
             raise NotImplementedError
@@ -233,7 +233,7 @@ class TestTarget(object):
             process.close()
             return pwd
         elif self.platform == 'linux':
-            env = "DRIVE_OCS_PASSWORD_" + node.upper() + "_" + self.target.upper()
+            env = "NEXTCLOUD_OCS_PASSWORD_" + node.upper() + "_" + self.target.upper()
             return get_value(env)
         else:
             raise NotImplementedError
@@ -246,7 +246,7 @@ class TestTarget(object):
             process.close()
             return pwd
         elif self.platform == 'linux':
-            env = "DRIVE_SELENIUM_PASSWORD_" + node.upper() + "_" + self.target.upper()
+            env = "NEXTCLOUD_SELENIUM_PASSWORD_" + node.upper() + "_" + self.target.upper()
             return get_value(env)
         else:
             raise NotImplementedError
@@ -259,7 +259,7 @@ class TestTarget(object):
             process.close()
             return pwd
         elif self.platform == 'linux':
-            env = "DRIVE_SELENIUM_MFA_PASSWORD_" + node.upper() + "_" + self.target.upper()
+            env = "NEXTCLOUD_SELENIUM_MFA_PASSWORD_" + node.upper() + "_" + self.target.upper()
             return get_value(env)
         else:
             raise NotImplementedError
@@ -272,7 +272,7 @@ class TestTarget(object):
             process.close()
             return pwd
         elif self.platform == 'linux':
-            env = "DRIVE_JUPYTER_PASSWORD_" + node.upper() + "_" + self.target.upper()
+            env = "NEXTCLOUD_JUPYTER_PASSWORD_" + node.upper() + "_" + self.target.upper()
             return get_value(env)
         else:
             raise NotImplementedError
@@ -285,7 +285,7 @@ class TestTarget(object):
             process.close()
             return pwd
         elif self.platform == 'linux':
-            env = "DRIVE_OCS_APP_PASSWORD_" + node.upper() + "_" + self.target.upper()
+            env = "NEXTCLOUD_OCS_APP_PASSWORD_" + node.upper() + "_" + self.target.upper()
             return get_value(env)
         else:
             raise NotImplementedError
@@ -298,7 +298,7 @@ class TestTarget(object):
             process.close()
             return pwd
         elif self.platform == 'linux':
-            env = "DRIVE_SELENIUM_APP_PASSWORD_" + node.upper() + "_" + self.target.upper()
+            env = "NEXTCLOUD_SELENIUM_APP_PASSWORD_" + node.upper() + "_" + self.target.upper()
             return get_value(env)
         else:
             raise NotImplementedError
@@ -311,7 +311,7 @@ class TestTarget(object):
             process.close()
             return pwd
         elif self.platform == 'linux':
-            env = "DRIVE_SELENIUM_MFA_APP_PASSWORD_" + node.upper() + "_" + self.target.upper()
+            env = "NEXTCLOUD_SELENIUM_MFA_APP_PASSWORD_" + node.upper() + "_" + self.target.upper()
             return get_value(env)
         else:
             raise NotImplementedError
@@ -324,7 +324,7 @@ class TestTarget(object):
             process.close()
             return pwd
         elif self.platform == 'linux':
-            env = "DRIVE_SELENIUM_MFA_SECRET_" + node.upper() + "_" + self.target.upper()
+            env = "NEXTCLOUD_SELENIUM_MFA_SECRET_" + node.upper() + "_" + self.target.upper()
             return get_value(env)
         else:
             raise NotImplementedError
@@ -373,7 +373,7 @@ class TestTarget(object):
             process.close()
             return user
         elif self.platform == 'linux':
-            env = "DRIVE_SAML_USER_" + userid.upper() + "_" + self.target.upper()
+            env = "NEXTCLOUD_SAML_USER_" + userid.upper() + "_" + self.target.upper()
             return get_value(env)
         else:
             raise NotImplementedError
@@ -386,7 +386,7 @@ class TestTarget(object):
             process.close()
             return pwd
         elif self.platform == 'linux':
-            env = "DRIVE_SAML_PASSWORD_" + userid.upper() + "_" + self.target.upper()
+            env = "NEXTCLOUD_SAML_PASSWORD_" + userid.upper() + "_" + self.target.upper()
             return get_value(env)
         else:
             raise NotImplementedError
@@ -399,7 +399,7 @@ class TestTarget(object):
             process.close()
             return pwd
         elif self.platform == 'linux':
-            env = "DRIVE_SELENIUM_SAML_MFA_SECRET_" + userid.upper() + "_" + self.target.upper()
+            env = "NEXTCLOUD_SELENIUM_SAML_MFA_SECRET_" + userid.upper() + "_" + self.target.upper()
             return get_value(env)
         else:
             raise NotImplementedError        
@@ -430,7 +430,7 @@ class TestTarget(object):
             process.close()
             return pwd
         elif self.platform == 'linux':
-            env = "DRIVE_SAML_PASSWORD_" + userid.upper() + "_" + self.target.upper()
+            env = "NEXTCLOUD_SAML_PASSWORD_" + userid.upper() + "_" + self.target.upper()
             return get_value(env)
         else:
             raise NotImplementedError
