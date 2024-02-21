@@ -13,7 +13,7 @@ from datetime import datetime
 import time
 import threading
 
-import sunetdrive
+import sunetnextcloud
 
 g_testtarget = os.environ.get('DriveTestTarget')
 g_excludeList = ['selenium-system/', 'selenium-personal/', 'projectbucket/']
@@ -33,7 +33,7 @@ class CleanWebDAV(threading.Thread):
     def run(self):
         global davThreadRunning
         self.logger.info(f'DAV cleaning thread started: {self.name}')
-        drv = sunetdrive.TestTarget(g_testtarget)
+        drv = sunetnextcloud.TestTarget(g_testtarget)
         davThreadRunning = True
         fullnode = self.name
 
@@ -92,7 +92,7 @@ class TestCleanAllWebDAV(unittest.TestCase):
 
     def test_cleanallwebdav(self):
         self.logger.info(f'Target: {g_testtarget}')
-        drv = sunetdrive.TestTarget(g_testtarget)
+        drv = sunetnextcloud.TestTarget(g_testtarget)
         for fullnode in drv.fullnodes:
             with self.subTest(mynode=fullnode):
                 davCleanThread = CleanWebDAV(fullnode)

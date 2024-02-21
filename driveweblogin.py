@@ -1,5 +1,5 @@
 import argparse
-import sunetdrive
+import sunetnextcloud
 import os
 
 g_firefoxCmd = 'firefox '
@@ -16,7 +16,7 @@ parser.add_argument('environment', choices = ['test', 'prod'], help="Environment
 args = parser.parse_args()
 config = vars(args)
 
-drv = sunetdrive.TestTarget(args.environment)
+drv = sunetnextcloud.TestTarget(args.environment)
 
 if args.browser == 'firefox':
     g_exec += g_firefoxCmd

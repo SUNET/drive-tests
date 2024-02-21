@@ -4,7 +4,7 @@ Selenium tests to log on to the Sciebo test node, performing various operations 
 """
 import xmlrunner
 import unittest
-import sunetdrive
+import sunetnextcloud
 from webdav3.client import Client
 
 from selenium import webdriver
@@ -26,7 +26,7 @@ g_delay = 30
 
 class TestRdsNextcloudLocal(unittest.TestCase):
     def test_rds_nextcloud_local_login(self):
-        drv = sunetdrive.TestTarget(g_testtarget)
+        drv = sunetnextcloud.TestTarget(g_testtarget)
         loginurl = g_rdslocal_nextcloud_url
         print("Login url: ", loginurl)
         sciebouserenv = "RDSLOCAL_NEXTCLOUD_USER"
@@ -62,7 +62,7 @@ class TestRdsNextcloudLocal(unittest.TestCase):
         self.assertTrue(proceed)
 
     def test_rds_nextcloud_local_project(self):
-        drv = sunetdrive.TestTarget(g_testtarget)
+        drv = sunetnextcloud.TestTarget(g_testtarget)
         loginurl = g_rdslocal_nextcloud_url
         print("Login url: ", loginurl)
         sciebouserenv = "RDSLOCAL_NEXTCLOUD_USER"

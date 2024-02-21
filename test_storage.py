@@ -9,7 +9,7 @@ import json
 import os
 import yaml
 
-import sunetdrive
+import sunetnextcloud
 
 g_testtarget = os.environ.get('DriveTestTarget')
 repobase='sunet-drive-ops/'
@@ -20,7 +20,7 @@ class TestStorage(unittest.TestCase):
         expectedResults=yaml.safe_load(stream)
 
     def test_existingbuckets(self):
-        drv = sunetdrive.TestTarget(g_testtarget)
+        drv = sunetnextcloud.TestTarget(g_testtarget)
         premotes=os.popen('rclone listremotes')
         for remote in premotes.read().splitlines():
             print('Read: ',remote)
@@ -29,7 +29,7 @@ class TestStorage(unittest.TestCase):
             print('Buckets: ', buckets)
 
     def test_fullnodestoragelocation(self):
-        drv = sunetdrive.TestTarget(g_testtarget)
+        drv = sunetnextcloud.TestTarget(g_testtarget)
         for fullnode in drv.fullnodes:
             with self.subTest(nodetotest=fullnode):
                 configfile = repobase + fullnode + "-common/overlay/etc/hiera/data/group.yaml"
@@ -39,7 +39,7 @@ class TestStorage(unittest.TestCase):
 
     def test_multinodestoragelocation(self):
         print('Test target: ', g_testtarget)
-        drv = sunetdrive.TestTarget(g_testtarget)
+        drv = sunetnextcloud.TestTarget(g_testtarget)
         with open(repobase + "multinode-common/overlay/etc/hiera/data/group.yaml", "r") as stream:
             data=yaml.safe_load(stream)
             for multinode in drv.multinodes:
@@ -49,7 +49,7 @@ class TestStorage(unittest.TestCase):
 
     # Test if the primary and the mirror bucket exist at the right location
     def test_fullnode_primarybackupmirrorbuckets(self):
-        drv = sunetdrive.TestTarget(g_testtarget)
+        drv = sunetnextcloud.TestTarget(g_testtarget)
         for fullnode in drv.fullnodes:
             with self.subTest(nodetotest=fullnode):
                 globalconfigfile = repobase + "/global/overlay/etc/hiera/data/common.yaml"
@@ -94,7 +94,7 @@ class TestStorage(unittest.TestCase):
 
     # Test if the primary and the mirror bucket exist at the right location
     def test_multinode_primarybackupmirrorbuckets(self):
-        drv = sunetdrive.TestTarget(g_testtarget)
+        drv = sunetnextcloud.TestTarget(g_testtarget)
         for fullnode in drv.multinodes:
             with self.subTest(nodetotest=fullnode):
                 globalconfigfile = repobase + "/global/overlay/etc/hiera/data/common.yaml"
@@ -139,7 +139,7 @@ class TestStorage(unittest.TestCase):
 
     # Test if the number of buckets in the mirror project is the same in Sto4 and Sto3
     def test_project_mapping_primary_bucket_number(self):
-        drv = sunetdrive.TestTarget(g_testtarget)
+        drv = sunetnextcloud.TestTarget(g_testtarget)
         for fullnode in drv.fullnodes:
             with self.subTest(nodetotest=fullnode):
                 globalconfigfile = repobase + "/global/overlay/etc/hiera/data/common.yaml"
@@ -168,7 +168,7 @@ class TestStorage(unittest.TestCase):
 
     # Test project buckets for consistency: Name, number of buckets, mirror bucket
     def test_fullnode_projectbucketconsistency(self):
-        drv = sunetdrive.TestTarget(g_testtarget)
+        drv = sunetnextcloud.TestTarget(g_testtarget)
         for fullnode in drv.fullnodes:
             with self.subTest(nodetotest=fullnode):
                 globalconfigfile = repobase + "/global/overlay/etc/hiera/data/common.yaml"
@@ -214,7 +214,7 @@ class TestStorage(unittest.TestCase):
 
     # Test project buckets for consistency: Name, number of buckets, mirror bucket
     def test_multinode_projectbucketconsistency(self):
-        drv = sunetdrive.TestTarget(g_testtarget)
+        drv = sunetnextcloud.TestTarget(g_testtarget)
         for fullnode in drv.multinodes:
             with self.subTest(nodetotest=fullnode):
                 globalconfigfile = repobase + "/global/overlay/etc/hiera/data/common.yaml"

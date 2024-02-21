@@ -14,7 +14,7 @@ import yaml
 import threading
 import time
 
-import sunetdrive
+import sunetnextcloud
 import os
 
 expectedResultsFile = 'expected.yaml'
@@ -36,7 +36,7 @@ class StatusInfo(threading.Thread):
         global logger
         global expectedResults
         testThreadRunning = True
-        drv = sunetdrive.TestTarget()
+        drv = sunetnextcloud.TestTarget()
         logger.info(f'Status thread started for node {self.url}')
 
         r =requests.get(self.url)
@@ -93,7 +93,7 @@ class TestStatus(unittest.TestCase):
 
     def test_status_gss(self):
         global logger
-        drv = sunetdrive.TestTarget()
+        drv = sunetnextcloud.TestTarget()
         if drv.testgss == False:
             logger.info('Not testing gss')
             return
@@ -107,7 +107,7 @@ class TestStatus(unittest.TestCase):
     def test_statusinfo_gss(self):
         global logger
         global expectedResults
-        drv = sunetdrive.TestTarget()
+        drv = sunetnextcloud.TestTarget()
         if drv.testgss == False:
             logger.info('Not testing gss')
             return
@@ -126,7 +126,7 @@ class TestStatus(unittest.TestCase):
         logger.info(f'GSS Status information tested')
 
     def test_status(self):
-        drv = sunetdrive.TestTarget()
+        drv = sunetnextcloud.TestTarget()
         for url in drv.get_allnode_status_urls():
             with self.subTest(myurl=url):
                 statusThread = Status(url, self)
@@ -136,7 +136,7 @@ class TestStatus(unittest.TestCase):
             time.sleep(1)
 
     def test_statusinfo(self):
-        drv = sunetdrive.TestTarget()
+        drv = sunetnextcloud.TestTarget()
         for url in drv.get_allnode_status_urls():
             with self.subTest(myurl=url):
                 statusInfoThread = StatusInfo(url, self)
@@ -148,7 +148,7 @@ class TestStatus(unittest.TestCase):
     def test_metadata_gss(self):
         global logger
         global expectedResults
-        drv = sunetdrive.TestTarget()
+        drv = sunetnextcloud.TestTarget()
         if drv.testgss == False:
             logger.info('Not testing gss')
             return
@@ -183,7 +183,7 @@ class TestStatus(unittest.TestCase):
     def test_collabora_nodes(self):
         global logger
         global expectedResults
-        drv = sunetdrive.TestTarget()
+        drv = sunetnextcloud.TestTarget()
         numCollaboraNodes = expectedResults[drv.target]['collabora']['nodes']
         logger.info(f'Collabora nodes: {numCollaboraNodes}')
         for i in range(1,numCollaboraNodes+1):

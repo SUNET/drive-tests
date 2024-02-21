@@ -4,7 +4,7 @@ Selenium test to publish data through the OSF connector
 """
 import xmlrunner
 import unittest
-# import sunetdrive
+# import sunetnextcloud
 import logging
 from webdav3.client import Client
 

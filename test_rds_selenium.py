@@ -5,7 +5,7 @@ Selenium tests to test Collabora on a local node
 from datetime import datetime
 import xmlrunner
 import unittest
-import sunetdrive
+import sunetnextcloud
 import pyautogui
 
 from selenium import webdriver
@@ -28,7 +28,7 @@ g_rdsnodes = ["sunet"]
 class TestRDSSelenium(unittest.TestCase):
     def test_rds_app(self):
         delay = 30 # seconds
-        drv = sunetdrive.TestTarget(g_testtarget)
+        drv = sunetnextcloud.TestTarget(g_testtarget)
 
         for rdsnode in g_rdsnodes:
             with self.subTest(mynode=rdsnode):

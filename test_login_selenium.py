@@ -4,7 +4,7 @@ Selenium tests to log on to a Sunet Drive node, and performing various operation
 """
 import xmlrunner
 import unittest
-import sunetdrive
+import sunetnextcloud
 from webdav3.client import Client
 import pyotp
 
@@ -40,7 +40,7 @@ class TestLoginSelenium(unittest.TestCase):
 
     def test_gss_login(self):
         delay = 30 # seconds
-        drv = sunetdrive.TestTarget()
+        drv = sunetnextcloud.TestTarget()
         if drv.testgss == False:
             self.logger.info('Not testing gss')
             return
@@ -105,7 +105,7 @@ class TestLoginSelenium(unittest.TestCase):
 
     def test_node_login(self):
         delay = 30 # seconds
-        drv = sunetdrive.TestTarget()
+        drv = sunetnextcloud.TestTarget()
         for fullnode in drv.fullnodes:
             with self.subTest(mynode=fullnode):
                 loginurl = drv.get_node_login_url(fullnode)
@@ -195,7 +195,7 @@ class TestLoginSelenium(unittest.TestCase):
 
     def test_saml_eduid_nomfa(self):
         delay = 30 # seconds
-        drv = sunetdrive.TestTarget()
+        drv = sunetnextcloud.TestTarget()
 
         if len(drv.allnodes) == 1:
             self.logger.info(f'Only testing {drv.allnodes[0]}, not testing eduid saml')
@@ -266,7 +266,7 @@ class TestLoginSelenium(unittest.TestCase):
 
     def test_saml_su_nomfa(self):
         delay = 30 # seconds
-        drv = sunetdrive.TestTarget()
+        drv = sunetnextcloud.TestTarget()
         nodeName = 'su'
         if len(drv.allnodes) == 1:
             if drv.allnodes[0] != nodeName:

@@ -12,7 +12,7 @@ import yaml
 import threading
 import time
 
-import sunetdrive
+import sunetnextcloud
 import os
 
 expectedResultsFile = 'expected.yaml'
@@ -31,7 +31,7 @@ class TestCollabora(unittest.TestCase):
 
     def test_collabora_capabilities(self):
         global logger
-        drv = sunetdrive.TestTarget()
+        drv = sunetnextcloud.TestTarget()
 
         numCollaboraNodes = expectedResults[drv.target]['collabora']['nodes']
         logger.info(f'Collabora nodes: {numCollaboraNodes}')

@@ -4,7 +4,7 @@ Selenium tests to log on to the RDS test node, performing various operations to 
 """
 import xmlrunner
 import unittest
-# import sunetdrive
+# import sunetnextcloud
 import logging
 from webdav3.client import Client
 

@@ -1,5 +1,5 @@
 import argparse
-import sunetdrive
+import sunetnextcloud
 import os
 import yaml
 

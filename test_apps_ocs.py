@@ -4,7 +4,7 @@ from requests.auth import HTTPBasicAuth
 import json
 import unittest
 import yaml
-import sunetdrive
+import sunetnextcloud
 import logging
 import time
 import threading
@@ -31,7 +31,7 @@ class ConfiguredAppsInstalled(threading.Thread):
         global logger
         testThreadRunning = True
         logger.info(f'ConfiguredAppsInstalled thread started for node {self.name}')
-        drv = sunetdrive.TestTarget()
+        drv = sunetnextcloud.TestTarget()
         fullnode = self.name    
 
         session = requests.Session()
@@ -83,7 +83,7 @@ class InstalledAppsConfigured(threading.Thread):
         global logger
         testThreadRunning = True
         logger.info(f'InstalledAppsConfigured thread started for node {self.name}')
-        drv = sunetdrive.TestTarget()
+        drv = sunetnextcloud.TestTarget()
         fullnode = self.name
 
         session = requests.Session()
@@ -131,7 +131,7 @@ class NumberOfAppsOnNode(threading.Thread):
         global logger
         testThreadRunning = True
         logger.info(f'NumberOfAppsOnNode thread started for node {self.name}')
-        drv = sunetdrive.TestTarget()
+        drv = sunetnextcloud.TestTarget()
         fullnode = self.name
 
         session = requests.Session()
@@ -183,7 +183,7 @@ class TestAppsOcs(unittest.TestCase):
         pass
 
     def test_number_of_apps_on_node(self):
-        drv = sunetdrive.TestTarget()
+        drv = sunetnextcloud.TestTarget()
 
         for fullnode in drv.fullnodes:
             with self.subTest(mynode=fullnode):
@@ -195,7 +195,7 @@ class TestAppsOcs(unittest.TestCase):
 
     # Test if the apps installed on the node are found in the configuration file
     def test_installed_apps_configured(self):
-        drv = sunetdrive.TestTarget()
+        drv = sunetnextcloud.TestTarget()
 
         for fullnode in drv.fullnodes:
             with self.subTest(mynode=fullnode):
@@ -207,7 +207,7 @@ class TestAppsOcs(unittest.TestCase):
 
     # Test if all configured/expected apps are installed on the node
     def test_configured_apps_installed(self):
-        drv = sunetdrive.TestTarget()
+        drv = sunetnextcloud.TestTarget()
 
         for fullnode in drv.fullnodes:
             with self.subTest(mynode=fullnode):

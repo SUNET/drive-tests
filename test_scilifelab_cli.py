@@ -11,7 +11,7 @@ import hashlib
 from xml.etree.ElementTree import XML, fromstring
 import xmltodict
 
-import sunetdrive
+import sunetnextcloud
 import os
 
 class TestSciLifeLabCli(unittest.TestCase):
@@ -25,7 +25,7 @@ class TestSciLifeLabCli(unittest.TestCase):
 
     def test_metadata(self):
         node = 'scilifelab'
-        drv = sunetdrive.TestTarget()
+        drv = sunetnextcloud.TestTarget()
         expectedEntityId = ''
         url = drv.get_metadata_url(node)
         self.logger.info(f'Verify metadata for {url}')

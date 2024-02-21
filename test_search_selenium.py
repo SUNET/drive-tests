@@ -4,7 +4,7 @@ Selenium tests to log on to a Sunet Drive node, and performing various operation
 """
 import xmlrunner
 import unittest
-import sunetdrive
+import sunetnextcloud
 from webdav3.client import Client
 
 import time
@@ -59,7 +59,7 @@ class TestSearchSelenium(unittest.TestCase):
     
     g_logger.info(f'Logger initialized')
 
-    g_drv = sunetdrive.TestTarget(g_testtarget)
+    g_drv = sunetnextcloud.TestTarget(g_testtarget)
     try:
         options = Options()
         # options.add_argument("--headless")

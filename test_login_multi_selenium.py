@@ -5,7 +5,7 @@ Selenium tests to log on to a Sunet Drive node, and performing various operation
 from datetime import datetime
 import xmlrunner
 import unittest
-import sunetdrive
+import sunetnextcloud
 from webdav3.client import Client
 import pyotp
 import pyautogui
@@ -46,7 +46,7 @@ class TestLoginMultiSelenium(unittest.TestCase):
 
     def test_node_multi_login(self):
         delay = 30 # seconds
-        drv = sunetdrive.TestTarget(g_testtarget)
+        drv = sunetnextcloud.TestTarget(g_testtarget)
         for fullnode in drv.fullnodes:
             with self.subTest(mynode=fullnode):
                 success = True

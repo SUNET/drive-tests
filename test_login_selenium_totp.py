@@ -5,7 +5,7 @@ Selenium tests to log on to a Sunet Drive node, and performing various operation
 from datetime import datetime
 import xmlrunner
 import unittest
-import sunetdrive
+import sunetnextcloud
 from webdav3.client import Client
 import pyotp
 import pyautogui
@@ -46,7 +46,7 @@ class TestLoginSeleniumTotp(unittest.TestCase):
 
     def test_gss_login(self):
         delay = 30 # seconds
-        drv = sunetdrive.TestTarget(g_testtarget)
+        drv = sunetnextcloud.TestTarget(g_testtarget)
         if drv.testgss == False:
             self.logger.info('Not testing gss')
             return
@@ -119,7 +119,7 @@ class TestLoginSeleniumTotp(unittest.TestCase):
 
     def test_node_login(self):
         delay = 30 # seconds
-        drv = sunetdrive.TestTarget(g_testtarget)
+        drv = sunetnextcloud.TestTarget(g_testtarget)
         for fullnode in drv.fullnodes:
             with self.subTest(mynode=fullnode):
                 loginurl = drv.get_node_login_url(fullnode)

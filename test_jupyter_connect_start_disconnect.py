@@ -5,7 +5,7 @@ Selenium tests to test apps in Sunet Drive
 from datetime import datetime
 import xmlrunner
 import unittest
-import sunetdrive
+import sunetnextcloud
 from webdav3.client import Client
 
 from selenium import webdriver
@@ -41,14 +41,14 @@ class TestJupyterSelenium(unittest.TestCase):
     
     def test_jupyter_aio(self):
         delay = 30 # seconds
-        drv = sunetdrive.TestTarget()
+        drv = sunetnextcloud.TestTarget()
         for fullnode in drv.fullnodes:
             with self.subTest(mynode=fullnode):
                 loginurl = drv.get_node_login_url(fullnode)
                 self.logger.info(f'URL: {loginurl}')
-                nodeuser = drv.get_seleniumuser(fullnode)
+                nodeuser = drv.get_jupyteruser(fullnode)
                 self.logger.info(f'Username: {nodeuser}')
-                nodepwd = drv.get_seleniumuserpassword(fullnode)
+                nodepwd = drv.get_jupyteruserpassword(fullnode)
 
                 # Create folder for testing using webdav
                 url = drv.get_webdav_url(fullnode, nodeuser)
@@ -121,10 +121,14 @@ class TestJupyterSelenium(unittest.TestCase):
                     login = driver.find_element(By.ID, 'start')
                     login.click()
                     self.logger.info(f'Starting server')
-
+                time.sleep(3)
                 try:
                     self.logger.info(f'Logging out')
-                    wait.until(EC.presence_of_element_located((By.ID, 'logout'))).click()
+                    wait.until(EC.element_to_be_clickable((By.XPATH, "//*[contains(@class, 'lm-MenuBar-itemLabel') and text()='File']"))).click()
+                    self.logger.info(f'File menu opened')
+                    wait.until(EC.element_to_be_clickable((By.XPATH, "//li[@data-command='hub:logout']"))).click()
+                    time.sleep(600)
+                    # wait.until(EC.element_to_be_clickable((By.XPATH, "//li[@data-command='hub:logout']"))).click()
                     self.logger.info(f'Logged out and disconnected from JupyterHub')
                     proceed = True
                 except:
@@ -133,6 +137,7 @@ class TestJupyterSelenium(unittest.TestCase):
                     screenshot.save("screenshots/" + fullnode + "test_jupyter_aio" + g_filename + ".png")
                     proceed = False
 
+                time.sleep(2)
                 self.assertTrue(proceed)
 
                 self.logger.info(f'Done...')

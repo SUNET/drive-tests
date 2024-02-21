@@ -5,7 +5,7 @@ Selenium tests to test apps in Sunet Drive
 from datetime import datetime
 import xmlrunner
 import unittest
-import sunetdrive
+import sunetnextcloud
 from webdav3.client import Client
 
 from selenium import webdriver
@@ -38,14 +38,14 @@ class TestJupyterSelenium(unittest.TestCase):
     
     def test_authorize_jupyter(self):
         delay = 30 # seconds
-        drv = sunetdrive.TestTarget()
+        drv = sunetnextcloud.TestTarget()
         for fullnode in drv.fullnodes:
             with self.subTest(mynode=fullnode):
                 loginurl = drv.get_node_login_url(fullnode)
                 self.logger.info(f'URL: {loginurl}')
-                nodeuser = drv.get_seleniumuser(fullnode)
+                nodeuser = drv.get_jupyteruser(fullnode)
                 self.logger.info(f'Username: {nodeuser}')
-                nodepwd = drv.get_seleniumuserpassword(fullnode)
+                nodepwd = drv.get_jupyteruserpassword(fullnode)
 
                 # Create folder for testing using webdav
                 url = drv.get_webdav_url(fullnode, nodeuser)

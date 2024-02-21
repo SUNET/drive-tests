@@ -12,7 +12,7 @@ import yaml
 import logging
 import threading
 
-import sunetdrive
+import sunetnextcloud
 
 ocsheaders = { "OCS-APIRequest" : "true" } 
 expectedResultsFile = 'expected.yaml'
@@ -37,7 +37,7 @@ class AppVersions(threading.Thread):
         global expectedResults
         testThreadRunning = True
         logger.info(f'AppVersion thread started for node {self.name}')
-        drv = sunetdrive.TestTarget()
+        drv = sunetnextcloud.TestTarget()
         fullnode = self.name
 
         userSamlFound = False
@@ -158,7 +158,7 @@ class NodeUsers(threading.Thread):
         global logger
         testThreadRunning = True
         logger.info(f'NodeUsers thread started for node {self.name}')
-        drv = sunetdrive.TestTarget()
+        drv = sunetnextcloud.TestTarget()
         fullnode = self.name
 
         url = drv.get_add_user_url(fullnode)
@@ -194,7 +194,7 @@ class CapabilitiesNoUser(threading.Thread):
         global expectedResults
         testThreadRunning = True
         logger.info(f'Capabilities no user thread started for node {self.name}')
-        drv = sunetdrive.TestTarget()
+        drv = sunetnextcloud.TestTarget()
         fullnode = self.name
 
         url = drv.get_ocs_capabilities_url(fullnode)
@@ -234,7 +234,7 @@ class Capabilities(threading.Thread):
         global logger
         testThreadRunning = True
         logger.info(f'Capabilities thread started for node {self.name}')
-        drv = sunetdrive.TestTarget()
+        drv = sunetnextcloud.TestTarget()
         fullnode = self.name
 
         url = drv.get_ocs_capabilities_url(fullnode)
@@ -267,7 +267,7 @@ class UserLifeCycle(threading.Thread):
         global expectedResults
         testThreadRunning = True
         logger.info(f'User lifecycle thread started for node {self.name}')
-        drv = sunetdrive.TestTarget()
+        drv = sunetnextcloud.TestTarget()
         fullnode = self.name
 
         session = requests.Session()
@@ -279,7 +279,7 @@ class UserLifeCycle(threading.Thread):
         url = url.replace("$PASSWORD$", nodepwd)
 
         cliuser = "__cli_user_" + fullnode
-        clipwd = sunetdrive.Helper().get_random_string(12)
+        clipwd = sunetnextcloud.Helper().get_random_string(12)
 
         data = { 'userid': cliuser, 'password': clipwd}
 
@@ -355,7 +355,7 @@ class TestOcsCalls(unittest.TestCase):
         pass
 
     def test_capabilities_nouser(self):
-        drv = sunetdrive.TestTarget()
+        drv = sunetnextcloud.TestTarget()
         for fullnode in drv.fullnodes:
             with self.subTest(mynode=fullnode):
                 capabilitiesNoUserThread = CapabilitiesNoUser(fullnode, self)
@@ -365,7 +365,7 @@ class TestOcsCalls(unittest.TestCase):
             time.sleep(1)
 
     def test_capabilities(self):
-        drv = sunetdrive.TestTarget()
+        drv = sunetnextcloud.TestTarget()
         for fullnode in drv.fullnodes:
             with self.subTest(mynode=fullnode):
                 capabilitiesThread = Capabilities(fullnode, self)
@@ -375,7 +375,7 @@ class TestOcsCalls(unittest.TestCase):
             time.sleep(1)
 
     def test_gssusers(self):
-        drv = sunetdrive.TestTarget()
+        drv = sunetnextcloud.TestTarget()
         fullnode = 'gss'
         url = drv.get_add_user_url(fullnode)
         logger.info(f'{self._testMethodName} {url}')
@@ -394,7 +394,7 @@ class TestOcsCalls(unittest.TestCase):
             logger.info(r.text)
 
     def test_nodeusers(self):
-        drv = sunetdrive.TestTarget()
+        drv = sunetnextcloud.TestTarget()
         for fullnode in drv.fullnodes:
             with self.subTest(mynode=fullnode):
                 nodeUsersThread = NodeUsers(fullnode, self)
@@ -405,7 +405,7 @@ class TestOcsCalls(unittest.TestCase):
 
 
     def test_userlifecycle(self):
-        drv = sunetdrive.TestTarget()
+        drv = sunetnextcloud.TestTarget()
         for fullnode in drv.fullnodes:
             with self.subTest(mynode=fullnode):
                 userLifecycleThread = UserLifeCycle(fullnode, self)
@@ -415,7 +415,7 @@ class TestOcsCalls(unittest.TestCase):
             time.sleep(1)
 
     def test_app_versions(self):
-        drv = sunetdrive.TestTarget()
+        drv = sunetnextcloud.TestTarget()
         for fullnode in drv.fullnodes:
             with self.subTest(mynode=fullnode):
                 appVersionsThread = AppVersions(fullnode, self)

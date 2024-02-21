@@ -4,7 +4,7 @@ Selenium tests to log on to the Sciebo test node, performing various operations 
 """
 import xmlrunner
 import unittest
-import sunetdrive
+import sunetnextcloud
 from webdav3.client import Client
 
 import time
@@ -27,7 +27,7 @@ g_rdslocal_nextcloud_url = 'https://test-nextcloud.localdomain.test/'
 class TestRdsNextcloudLocal(unittest.TestCase):
     def test_rds_nextcloud_local_authorization(self):
         delay = 30 # seconds
-        drv = sunetdrive.TestTarget(g_testtarget)
+        drv = sunetnextcloud.TestTarget(g_testtarget)
         loginurl = g_rdslocal_nextcloud_url
         print("Login url: ", loginurl)
         sciebouserenv = "RDSLOCAL_NEXTCLOUD_USER"

@@ -5,7 +5,7 @@ Author: Richard Freitag <freitag@sunet.se>
 import unittest
 import yaml
 
-import sunetdrive
+import sunetnextcloud
 import os
 import logging
 import filecmp
@@ -23,7 +23,7 @@ class TestTests(unittest.TestCase):
 
     def test_allnodes_tested(self):
         self.logger.info(f'{self._testMethodName}')
-        drv = sunetdrive.TestTarget()
+        drv = sunetnextcloud.TestTarget()
         # print(len(drv.fullnodes))
 
         testMissing = False
@@ -47,7 +47,7 @@ class TestTests(unittest.TestCase):
     # Ensure user credentials to execute tests are available
     def test_required_usercredentials(self):
         self.logger.info(f'{self._testMethodName}')
-        drv = sunetdrive.TestTarget()
+        drv = sunetnextcloud.TestTarget()
         for fullnode in drv.fullnodes:
             with self.subTest(mynode=fullnode):
                 url = drv.get_ocs_capabilities_url(fullnode)

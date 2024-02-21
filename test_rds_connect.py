@@ -5,7 +5,7 @@ Selenium tests to test apps in Sunet Drive
 from datetime import datetime
 import xmlrunner
 import unittest
-import sunetdrive
+import sunetnextcloud
 from webdav3.client import Client
 
 from selenium import webdriver
@@ -38,7 +38,7 @@ class TestRdsSelenium(unittest.TestCase):
     
     def test_rds_connect(self):
         delay = 30 # seconds
-        drv = sunetdrive.TestTarget()
+        drv = sunetnextcloud.TestTarget()
         for fullnode in drv.fullnodes:
             with self.subTest(mynode=fullnode):
                 loginurl = drv.get_node_login_url(fullnode)

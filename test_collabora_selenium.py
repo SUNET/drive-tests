@@ -5,7 +5,7 @@ Selenium tests to test Collabora on a local node
 from datetime import datetime
 import xmlrunner
 import unittest
-import sunetdrive
+import sunetnextcloud
 import pyautogui
 
 from selenium import webdriver
@@ -60,7 +60,7 @@ def nodelogin(collaboranode):
 
 class TestCollaboraSelenium(unittest.TestCase):
     global g_loggedInNodes, g_logger, g_drv, g_wait, g_driver
-    drv = sunetdrive.TestTarget(g_testtarget)
+    drv = sunetnextcloud.TestTarget(g_testtarget)
     g_drv=drv
     logger = logging.getLogger(__name__)
     g_logger = logger

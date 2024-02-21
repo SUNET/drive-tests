@@ -4,7 +4,7 @@ Selenium tests to log on to the Sciebo test node, performing various operations 
 """
 import xmlrunner
 import unittest
-import sunetdrive
+import sunetnextcloud
 from webdav3.client import Client
 
 import time
@@ -27,7 +27,7 @@ g_driverTimeout = 30
 
 class TestSciebo(unittest.TestCase):
     def test_sciebo_rds_delete_projects(self):
-        drv = sunetdrive.TestTarget(g_testtarget)
+        drv = sunetnextcloud.TestTarget(g_testtarget)
         loginurl = g_sciebourl
         print("Login url: ", loginurl)
         sciebouserenv = "SCIEBO_USER"

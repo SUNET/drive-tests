@@ -212,6 +212,19 @@ class TestTarget(object):
         else:
             raise NotImplementedError
 
+    def get_jupyteruser(self, node):
+        if self.platform == 'win32':
+            usercmd = 'powershell -command "& { . ./NodeCredentials.ps1; Get-SeleniumMfaUser ' + node + ' ' + self.target + ' }"'
+            process = os.popen(usercmd)
+            user = process.read()
+            process.close()
+            return user
+        elif self.platform == 'linux':
+            env = "DRIVE_JUPYTER_USER_" + node.upper() + "_" + self.target.upper()
+            return get_value(env)
+        else:
+            raise NotImplementedError
+
     def get_ocsuserpassword(self, node):
         if self.platform == 'win32':
             pwdcmd = 'powershell -command "& { . ./NodeCredentials.ps1; Get-OcsPassword ' + node + ' ' + self.target + ' }"'
@@ -247,6 +260,19 @@ class TestTarget(object):
             return pwd
         elif self.platform == 'linux':
             env = "DRIVE_SELENIUM_MFA_PASSWORD_" + node.upper() + "_" + self.target.upper()
+            return get_value(env)
+        else:
+            raise NotImplementedError
+
+    def get_jupyteruserpassword(self, node):
+        if self.platform == 'win32':
+            pwdcmd = 'powershell -command "& { . ./NodeCredentials.ps1; Get-SeleniumUserPassword ' + node + ' ' + self.target + ' }"'
+            process = os.popen(pwdcmd)
+            pwd = process.read()
+            process.close()
+            return pwd
+        elif self.platform == 'linux':
+            env = "DRIVE_JUPYTER_PASSWORD_" + node.upper() + "_" + self.target.upper()
             return get_value(env)
         else:
             raise NotImplementedError

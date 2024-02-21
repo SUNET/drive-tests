@@ -10,7 +10,7 @@ import json
 import os
 from webdav3.client import Client
 import logging
-import sunetdrive
+import sunetnextcloud
 from xml.dom import minidom
 
 g_maxCheck = 10
@@ -41,7 +41,7 @@ class TestFileLock(unittest.TestCase):
         pass
 
     def test_lock_unlock_curl_webdav(self):
-        drv = sunetdrive.TestTarget()
+        drv = sunetnextcloud.TestTarget()
         for fullnode in drv.fullnodes:
             with self.subTest(mynode=fullnode):
                 with open(g_localFile, "w") as text_file:
@@ -71,7 +71,7 @@ class TestFileLock(unittest.TestCase):
                 os.system(curlUnlock)
 
     def test_lock_unlock_ocs(self):
-        drv = sunetdrive.TestTarget()
+        drv = sunetnextcloud.TestTarget()
 
         for fullnode in drv.fullnodes:
             with self.subTest(mynode=fullnode):

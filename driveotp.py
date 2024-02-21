@@ -1,5 +1,5 @@
 import argparse
-import sunetdrive
+import sunetnextcloud
 import os
 import pyotp
 
@@ -10,7 +10,7 @@ parser.add_argument('environment', choices = ['test', 'prod'], help="Environment
 args = parser.parse_args()
 config = vars(args)
 
-drv = sunetdrive.TestTarget(args.environment)
+drv = sunetnextcloud.TestTarget(args.environment)
 nodetotpsecret = drv.get_seleniummfausertotpsecret(args.customer)
 
 totp = pyotp.TOTP(nodetotpsecret)

@@ -5,7 +5,7 @@ Author: Richard Freitag <freitag@sunet.se>
 import unittest
 import yaml
 
-import sunetdrive
+import sunetnextcloud
 import os
 import logging
 import filecmp
@@ -28,12 +28,12 @@ class TestRepos(unittest.TestCase):
     # Ensure that the mapping files are the same as the reference files
     def test_mappingfiles(self):
         self.logger.info(f'{self._testMethodName}')
-        drv = sunetdrive.TestTarget()
+        drv = sunetnextcloud.TestTarget()
         self.assertTrue(filecmp.cmp(puppetfile, referencefile))
 
     def test_allnodes_tested(self):
         self.logger.info(f'{self._testMethodName}')
-        drv = sunetdrive.TestTarget()
+        drv = sunetnextcloud.TestTarget()
         # print(len(drv.fullnodes))
 
         testMissing = False

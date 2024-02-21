@@ -5,7 +5,7 @@ Selenium tests to test apps in Sunet Drive
 from datetime import datetime
 import xmlrunner
 import unittest
-import sunetdrive
+import sunetnextcloud
 import pyautogui
 
 from selenium import webdriver
@@ -31,7 +31,7 @@ g_apps_prod = []
 class TestAppsSelenium(unittest.TestCase):
     def test_rds_app(self):
         delay = 30 # seconds
-        drv = sunetdrive.TestTarget(g_testtarget)
+        drv = sunetnextcloud.TestTarget(g_testtarget)
         if g_testtarget == 'prod':
             nodestotest = g_appnodes_prod
             appstotest = g_apps_prod
