@@ -21,7 +21,7 @@ import os
 import time
 import logging
 
-g_testtarget = os.environ.get('DriveTestTarget')
+g_testtarget = os.environ.get('NextcloudTestTarget')
 g_loggedInNodes={}
 g_logger={}
 g_driver={}

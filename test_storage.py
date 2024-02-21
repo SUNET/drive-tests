@@ -11,7 +11,7 @@ import yaml
 
 import sunetnextcloud
 
-g_testtarget = os.environ.get('DriveTestTarget')
+g_testtarget = os.environ.get('NextcloudTestTarget')
 repobase='sunet-drive-ops/'
 expectedResultsFile = 'expected.yaml'
 

@@ -15,7 +15,7 @@ import threading
 
 import sunetnextcloud
 
-g_testtarget = os.environ.get('DriveTestTarget')
+g_testtarget = os.environ.get('NextcloudTestTarget')
 g_excludeList = ['selenium-system/', 'selenium-personal/', 'projectbucket/']
 
 # os.environ.set()

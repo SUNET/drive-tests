@@ -9,8 +9,8 @@ import random
 import string
 import yaml
 
-g_testtarget = os.environ.get('DriveTestTarget')
-g_testcustomers = os.environ.get('DriveTestCustomers')
+g_testtarget = os.environ.get('NextcloudTestTarget')
+g_testcustomers = os.environ.get('NextcloudTestCustomers')
 g_expectedFile = 'expected.yaml'
 
 def get_value(env):

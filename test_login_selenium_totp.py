@@ -25,7 +25,7 @@ import time
 import logging
 
 # 'prod' for production environment, 'test' for test environment
-g_testtarget = os.environ.get('DriveTestTarget')
+g_testtarget = os.environ.get('NextcloudTestTarget')
 g_filename=datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 
 class TestLoginSeleniumTotp(unittest.TestCase):

@@ -171,7 +171,7 @@ class NodeUsers(threading.Thread):
         r = requests.get(url, headers=ocsheaders)
         try:
             j = json.loads(r.text)
-            # logger.info(json.dumps(j, indent=4, sort_keys=True))
+            logger.info(json.dumps(j, indent=4, sort_keys=True))
             users = j["ocs"]["data"]["users"]
         except:
             logger.info("No JSON reply received")

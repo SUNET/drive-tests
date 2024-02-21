@@ -13,8 +13,8 @@ import filecmp
 opsbase='sunet-drive-ops/'
 puppetbase='drive-puppet/'
 
-puppetfile = './drive-puppet/templates/application/mappingfile-' + os.environ.get('DriveTestTarget') + '.json.erb'
-referencefile = './mappingfile-' + os.environ.get('DriveTestTarget') + '.json'
+puppetfile = './drive-puppet/templates/application/mappingfile-' + os.environ.get('NextcloudTestTarget') + '.json.erb'
+referencefile = './mappingfile-' + os.environ.get('NextcloudTestTarget') + '.json'
 
 class TestRepos(unittest.TestCase):
     logger = logging.getLogger(__name__)

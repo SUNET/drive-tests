@@ -20,7 +20,7 @@ import os
 import time
 
 # 'prod' for production environment, 'test' for test environment
-g_testtarget = os.environ.get('DriveTestTarget')
+g_testtarget = os.environ.get('NextcloudTestTarget')
 g_appnodes_test = ["sunet"]
 g_appnodes_prod = ["sunet"]
 

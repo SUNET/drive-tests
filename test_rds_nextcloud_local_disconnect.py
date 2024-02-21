@@ -21,7 +21,7 @@ import os
 import time
 
 # 'prod' for production environment, 'test' for test environment
-g_testtarget = os.environ.get('DriveTestTarget')
+g_testtarget = os.environ.get('NextcloudTestTarget')
 g_rdslocal_nextcloud_url = 'https://test-nextcloud.localdomain.test/'
 
 debugSleep = 3
