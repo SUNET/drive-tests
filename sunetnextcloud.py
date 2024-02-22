@@ -149,7 +149,7 @@ class TestTarget(object):
 
     def get_collabora_capabilities_url(self, node):
         if len(self.nodeprefix) == 0:
-            'https://' + self.docprefix + str(node) + self.targetprefix + '.' + self.baseurl + '/hosting/capabilities'
+            return 'https://' + self.docprefix + str(node) + self.targetprefix + '.' + self.baseurl + '/hosting/capabilities'
         return 'https://' + self.docprefix + str(node) + '.' + self.getnodeprefix('none') + self.targetprefix + '.' + self.baseurl + '/hosting/capabilities'
 
     def get_fullnode_status_urls(self):
