@@ -376,6 +376,10 @@ class TestOcsCalls(unittest.TestCase):
 
     def test_gssusers(self):
         drv = sunetnextcloud.TestTarget()
+        if drv.testgss == False:
+            logger.info(f'Not testing gss')
+            return
+
         fullnode = 'gss'
         url = drv.get_add_user_url(fullnode)
         logger.info(f'{self._testMethodName} {url}')
