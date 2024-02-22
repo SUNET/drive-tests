@@ -4,13 +4,13 @@ Author: Richard Freitag <freitag@sunet.se>
 
 import unittest
 import yaml
+import os
 
 import sunetnextcloud
-import os
 import logging
-import filecmp
 
 opsbase='sunet-drive-ops/'
+globalconfigfile = opsbase + "/global/overlay/etc/hiera/data/common.yaml"
 
 class TestTests(unittest.TestCase):
     logger = logging.getLogger(__name__)
@@ -27,20 +27,22 @@ class TestTests(unittest.TestCase):
         # print(len(drv.fullnodes))
 
         testMissing = False
-        testWrongNode = False
-        globalconfigfile = opsbase + "/global/overlay/etc/hiera/data/common.yaml"
-        with open(globalconfigfile, "r") as stream:
-            data=yaml.safe_load(stream)
-            allnodes=data['fullnodes'] + data['singlenodes']
+        if os.path.exists(globalconfigfile):
+            with open(globalconfigfile, "r") as stream:
+                data=yaml.safe_load(stream)
+                allnodes=data['fullnodes'] + data['singlenodes']
 
-            for node in allnodes:
-                if node not in drv.fullnodes:
-                    print(f'{node} in common.yaml but not tested')
+                for node in allnodes:
+                    if node not in drv.fullnodes:
+                        self.logger.error(f'{node} in common.yaml but not tested')
+                        testMissing = True
 
-            for node in drv.fullnodes:
-                if node not in allnodes:
-                    print(f'{node} in tests but not in common.yaml')
-
+                for node in drv.fullnodes:
+                    if node not in allnodes:
+                        self.logger.error(f'{node} in tests but not in common.yaml')
+                        testMissing = True
+        else:
+            self.logger.info(f'Global config file not found, skipping test if all nodes are tested')
 
         self.assertFalse(testMissing)
 
