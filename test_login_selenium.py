@@ -116,9 +116,11 @@ class TestLoginSelenium(unittest.TestCase):
         version = self.expectedResults[drv.target]['status']['version']
         if version.startswith('27'):
             sharedClass = 'icon-shared'
+            simpleLogoutUrl = False
         else:
             # This will select the first available sharing button
             sharedClass = 'files-list__row-action-sharing-status'
+            simpleLogoutUrl = True
 
         for fullnode in drv.fullnodes:
             with self.subTest(mynode=fullnode):
@@ -200,11 +202,17 @@ class TestLoginSelenium(unittest.TestCase):
                 self.logger.info(driver.current_url)
 
                 if self.expectedResults['global']['testGss'] == False:
-                    self.assertEqual(driver.current_url, drv.get_node_post_logout_simple_url(fullnode))
+                    if simpleLogoutUrl == True:
+                        self.assertEqual(driver.current_url, drv.get_node_post_logout_simple_url(fullnode))
+                    else:
+                        self.assertEqual(driver.current_url, drv.get_node_post_logout_url(fullnode))
                 elif fullnode == 'scilifelab':
                     self.assertEqual(driver.current_url, drv.get_node_post_logout_saml_url(fullnode))
                 elif fullnode == 'kau':
-                    self.assertEqual(driver.current_url, drv.get_node_post_logout_url(fullnode))
+                    if simpleLogoutUrl == True:
+                        self.assertEqual(driver.current_url, drv.get_node_post_logout_simple_url(fullnode))
+                    else:
+                        self.assertEqual(driver.current_url, drv.get_node_post_logout_url(fullnode))
                 else:
                     self.assertEqual(driver.current_url, drv.get_gss_post_logout_url())
                 driver.implicitly_wait(10) # seconds before quitting
