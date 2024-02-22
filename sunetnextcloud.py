@@ -88,6 +88,9 @@ class TestTarget(object):
     def get_node_post_logout_url(self, node):
         return 'https://' + self.getnodeprefix(node) + self.targetprefix + '.' + self.baseurl + self.indexsuffix + '/login?clear=1'
 
+    def get_node_post_logout_url_simple(self, node):
+        return 'https://' + self.getnodeprefix(node) + self.targetprefix + '.' + self.baseurl + self.indexsuffix + '/login'
+
     def get_node_post_logout_saml_url(self, node):
         return 'https://' + self.getnodeprefix(node) + self.targetprefix + '.' + self.baseurl + self.indexsuffix + '/apps/user_saml/saml/selectUserBackEnd?redirectUrl='
 
