@@ -19,13 +19,19 @@ from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.chrome.options import Options
 import os
+import yaml
 import time
 import logging
+
+expectedResultsFile = 'expected.yaml'
 
 class TestLoginSelenium(unittest.TestCase):
     logger = logging.getLogger(__name__)
     logging.basicConfig(format = '%(asctime)s - %(module)s.%(funcName)s - %(levelname)s: %(message)s',
                     datefmt = '%Y-%m-%d %H:%M:%S', level = logging.INFO)
+
+    with open(expectedResultsFile, "r") as stream:
+        expectedResults=yaml.safe_load(stream)
 
     def deleteCookies(self, driver):
         cookies = driver.get_cookies()
@@ -83,7 +89,7 @@ class TestLoginSelenium(unittest.TestCase):
         except TimeoutException:
             self.logger.info(f'Loading of app menu took too much time!')
 
-        files = driver.find_element(By.XPATH, '//a[@href="'+ '/index.php/apps/files/' +'"]')
+        files = driver.find_element(By.XPATH, '//a[@href="' + drv.indexsuffix + '/apps/files/' +'"]')
         files.click()
 
         try:
@@ -106,6 +112,14 @@ class TestLoginSelenium(unittest.TestCase):
     def test_node_login(self):
         delay = 30 # seconds
         drv = sunetnextcloud.TestTarget()
+        # The class name of the share icon changed in Nextcloud 28
+        version = self.expectedResults[drv.target]['status']['version']
+        if version.startswith('27'):
+            sharedClass = 'icon-shared'
+        else:
+            # This will select the first available sharing button
+            sharedClass = 'files-list__row-action-sharing-status'
+
         for fullnode in drv.fullnodes:
             with self.subTest(mynode=fullnode):
                 loginurl = drv.get_node_login_url(fullnode)
@@ -154,7 +168,7 @@ class TestLoginSelenium(unittest.TestCase):
                 currentUrl = driver.current_url
                 # self.assertEqual(dashboardUrl, currentUrl)                
 
-                files = driver.find_element(By.XPATH, '//a[@href="'+ '/index.php/apps/files/' +'"]')
+                files = driver.find_element(By.XPATH, '//a[@href="' + drv.indexsuffix + '/apps/files/' +'"]')
                 files.click()
 
                 try:
@@ -164,12 +178,12 @@ class TestLoginSelenium(unittest.TestCase):
                     self.logger.info(f'Loading of all files took too much time!')
 
                 try:
-                    wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'icon-shared')))
-                    sharefolder = driver.find_element(by=By.CLASS_NAME, value='icon-shared')
+                    wait.until(EC.presence_of_element_located((By.CLASS_NAME, sharedClass)))
+                    sharefolder = driver.find_element(by=By.CLASS_NAME, value=sharedClass)
                     sharefolder.click()
                     self.logger.info(f'Clicked on share folder')
                 except:
-                    self.logger.info(f'icon-shared not found')
+                    self.logger.info(f'{sharedClass} not found')
 
                 try:
                     wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'sharing-entry__title')))
@@ -185,7 +199,9 @@ class TestLoginSelenium(unittest.TestCase):
                 currentUrl = driver.current_url
                 self.logger.info(driver.current_url)
 
-                if fullnode == 'scilifelab':
+                if self.expectedResults['global']['testGss'] == False:
+                    self.assertEqual(driver.current_url, drv.get_node_post_logout_simple_url(fullnode))
+                elif fullnode == 'scilifelab':
                     self.assertEqual(driver.current_url, drv.get_node_post_logout_saml_url(fullnode))
                 elif fullnode == 'kau':
                     self.assertEqual(driver.current_url, drv.get_node_post_logout_url(fullnode))
@@ -314,7 +330,7 @@ class TestLoginSelenium(unittest.TestCase):
         requireTotp = False
         try:
             self.logger.info(f'Check if TOTP selection dialogue is visible')
-            totpselect = driver.find_element(By.XPATH, '//a[@href="'+ '/index.php/login/challenge/totp?redirect_url=/index.php/apps/dashboard/' +'"]')
+            totpselect = driver.find_element(By.XPATH, '//a[@href="' + drv.indexsuffix + '/login/challenge/totp?redirect_url=' + drv.indexsuffix + '/apps/dashboard/' +'"]')
             self.logger.warning(f'Found TOTP selection dialogue')
             requireTotp = True
             totpselect.click()
