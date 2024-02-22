@@ -53,8 +53,8 @@ test:
     installed: true
     maintenance: false
     needsDbUpgrade: false
-    version: '27.1.6.3'
-    versionstring: '27.1.6 Enterprise'
+    version: '28.0.2.6'
+    versionstring: '28.0.2 Enterprise'
     edition: ''
     productname: 'Nextcloud'
     extendedSupport: false
@@ -62,8 +62,8 @@ test:
     installed: true
     maintenance: false
     needsDbUpgrade: false
-    version: '27.1.6.3'
-    versionstring: '27.1.6 Enterprise'
+    version: '28.0.2.6'
+    versionstring: '28.0.2 Enterprise'
     edition: ''
     productname: 'Nextcloud'
     extendedSupport: false
