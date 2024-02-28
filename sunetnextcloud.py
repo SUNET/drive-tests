@@ -11,6 +11,7 @@ import yaml
 
 g_testtarget = os.environ.get('NextcloudTestTarget')
 g_testcustomers = os.environ.get('NextcloudTestCustomers')
+g_testbrowsers = os.environ.get('NextcloudTestBrowsers')
 g_expectedFile = 'expected.yaml'
 
 def get_value(env):
@@ -37,6 +38,7 @@ class TestTarget(object):
     allnodes = expectedResults['global']['allnodes']
     fullnodes = expectedResults['global']['fullnodes']
     multinodes = expectedResults['global']['multinodes']
+    browsers = expectedResults['global']['testBrowsers']
 
     target = 'test'
     platform = sys.platform
@@ -57,6 +59,10 @@ class TestTarget(object):
             self.allnodes = [g_testcustomers]
             self.fullnodes = self.allnodes
             self.multinodes = self.allnodes
+
+        # Override browsers to test from expected.yaml with value(s) in environment variable
+        if g_testbrowsers is not None:
+            self.browsers = g_testbrowsers.split(",")
 
     def getnodeprefix(self, node):
         if (node == 'gss' or node == 'none'):
@@ -88,7 +94,7 @@ class TestTarget(object):
     def get_node_post_logout_url(self, node):
         return 'https://' + self.getnodeprefix(node) + self.targetprefix + '.' + self.baseurl + self.indexsuffix + '/login?clear=1'
 
-    def get_node_post_logout_url_simple(self, node):
+    def get_node_post_logout_simple_url(self, node):
         return 'https://' + self.getnodeprefix(node) + self.targetprefix + '.' + self.baseurl + self.indexsuffix + '/login'
 
     def get_node_post_logout_saml_url(self, node):
