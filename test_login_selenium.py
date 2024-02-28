@@ -125,12 +125,6 @@ class TestLoginSelenium(unittest.TestCase):
             simpleLogoutUrl = True
             self.logger.info(f'We are on Nextcloud 28 and are therefore using the simple logout url')
 
-        # for browser in drv.browsers:
-        #     with self.subTest(mybrowser=browser):
-        #         for fullnode in drv.fullnodes:
-        #             with self.subTest(mynode=fullnode):
-        #                 self.logger.info(f'Testing with node {fullnode} browser {browser}')
-
         for browser in drv.browsers:
             with self.subTest(mybrowser=browser):
                 for fullnode in drv.fullnodes:
@@ -227,6 +221,8 @@ class TestLoginSelenium(unittest.TestCase):
                             self.assertEqual(driver.current_url, drv.get_node_post_logout_saml_url(fullnode))
                         elif fullnode == 'kau':
                             self.assertEqual(driver.current_url, drv.get_node_post_logout_url(fullnode))
+                        elif (self.expectedResults['global']['testGss'] == True) and (len(drv.allnodes) == 1):
+                            self.assertEqual(driver.current_url, drv.get_gss_post_logout_url())
                         elif (self.expectedResults['global']['testGss'] == False) | (len(drv.allnodes) == 1):
                             if simpleLogoutUrl == True:
                                 self.assertEqual(driver.current_url, drv.get_node_post_logout_simple_url(fullnode))
