@@ -39,6 +39,7 @@ class TestTarget(object):
     fullnodes = expectedResults['global']['fullnodes']
     multinodes = expectedResults['global']['multinodes']
     browsers = expectedResults['global']['testBrowsers']
+    singlenodetesting = False
 
     target = 'test'
     platform = sys.platform
@@ -56,6 +57,7 @@ class TestTarget(object):
             self.targetprefix = "." + self.testprefix
 
         if g_testcustomers in self.allnodes:
+            self.singlenodetesting = True
             self.allnodes = [g_testcustomers]
             self.fullnodes = self.allnodes
             self.multinodes = self.allnodes

@@ -25,9 +25,14 @@ class TestTests(unittest.TestCase):
         self.logger.info(f'{self._testMethodName}')
         drv = sunetnextcloud.TestTarget()
         # print(len(drv.fullnodes))
-
         testMissing = False
-        if os.path.exists(globalconfigfile):
+
+        if drv.singlenodetesting == True:
+            self.logger.info(f'We are only testing single nodes: {drv.allnodes}')
+            testMissing = False
+
+        if os.path.exists(globalconfigfile) and drv.singlenodetesting == False:
+            self.logger.info(f'Check if we are testing all nodes')
             with open(globalconfigfile, "r") as stream:
                 data=yaml.safe_load(stream)
                 allnodes=data['fullnodes'] + data['singlenodes']
