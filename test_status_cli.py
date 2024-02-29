@@ -18,7 +18,6 @@ import sunetnextcloud
 import os
 
 expectedResultsFile = 'expected.yaml'
-testThreadRunning = False
 testThreadsRunning = 0
 g_failedNodes = []
 logger = logging.getLogger(__name__)
@@ -72,24 +71,26 @@ class Status(threading.Thread):
         self.TestStatus = TestStatus
 
     def run(self):
-        global testThreadRunning
+        global testThreadsRunning
         global logger
         global expectedResults
-        testThreadRunning = True
-        logger.info(f'Status thread started for node {self.url}')
+        testThreadsRunning += 1
+        logger.info(f'Status thread {testThreadsRunning} started for node {self.url}')
 
         try:
             r=requests.get(self.url)
             self.TestStatus.assertEqual(r.status_code, 200)
             logger.info(f'Status tested: {self.url}')
         except:
+            g_failedNodes.append(self.url)
             logger.info('Status test failed')
-            testThreadRunning = False
-            self.TestStatus.assertTrue(False)
+            testThreadsRunning -= 1
             logger.info(r.text)
+            self.TestStatus.assertTrue(False)
+            return
 
         logger.info(f'Status thread done for node {self.url}')
-        testThreadRunning = False
+        testThreadsRunning -= 1
 
 class TestStatus(unittest.TestCase):
     def test_logger(self):
@@ -132,16 +133,25 @@ class TestStatus(unittest.TestCase):
         logger.info(f'GSS Status information tested')
 
     def test_status(self):
+        g_failedNodes = []
         drv = sunetnextcloud.TestTarget()
         for url in drv.get_allnode_status_urls():
             with self.subTest(myurl=url):
                 statusThread = Status(url, self)
                 statusThread.start()
 
-        while(testThreadRunning == True):
+        while(testThreadsRunning > 0):
             time.sleep(1)
 
+        if len(g_failedNodes) > 0:
+            logger.error(f'Status test failed for {len(g_failedNodes)} of {len(drv.allnodes)} nodes:')
+            for node in g_failedNodes:
+                logger.error(f'   {node}')
+            self.assertTrue(False)
+        
+
     def test_statusinfo(self):
+        g_failedNodes = []
         drv = sunetnextcloud.TestTarget()
         for url in drv.get_allnode_status_urls():
             with self.subTest(myurl=url):
@@ -152,7 +162,7 @@ class TestStatus(unittest.TestCase):
             time.sleep(1)
 
         if len(g_failedNodes) > 0:
-            logger.error(f'Test failed for nodes:')
+            logger.error(f'StatusInfo test failed for {len(g_failedNodes)} of {len(drv.allnodes)} nodes:')
             for node in g_failedNodes:
                 logger.error(f'   {node}')
             self.assertTrue(False)
