@@ -19,6 +19,8 @@ import os
 
 expectedResultsFile = 'expected.yaml'
 testThreadRunning = False
+testThreadsRunning = 0
+g_failedNodes = []
 logger = logging.getLogger(__name__)
 logging.basicConfig(format = '%(asctime)s - %(module)s.%(funcName)s - %(levelname)s: %(message)s',
                 datefmt = '%Y-%m-%d %H:%M:%S', level = logging.INFO)
@@ -32,12 +34,13 @@ class StatusInfo(threading.Thread):
         self.TestStatus = TestStatus
 
     def run(self):
-        global testThreadRunning
+        global testThreadsRunning
         global logger
         global expectedResults
-        testThreadRunning = True
+        global g_failedNodes
+        testThreadsRunning += 1
         drv = sunetnextcloud.TestTarget()
-        logger.info(f'Status thread started for node {self.url}')
+        logger.info(f'StatusInfo thread {testThreadsRunning} started for node {self.url}')
 
         r =requests.get(self.url)
         try:
@@ -51,13 +54,16 @@ class StatusInfo(threading.Thread):
             self.TestStatus.assertEqual(j["extendedSupport"], expectedResults[drv.target]['status']['extendedSupport'])
             logger.info(f'Status information tested: {self.url}')
         except:
+            g_failedNodes.append(self.url)
             logger.info(f'No valid JSON reply received for {self.url}')
-            testThreadRunning = False
-            self.TestStatus.assertTrue(False)
+            testThreadsRunning -= 1
             logger.info(r.text)
+            self.TestStatus.assertTrue(False)
+            return
 
         logger.info(f'Status thread done for node {self.url}')
-        testThreadRunning = False
+        testThreadsRunning -= 1
+        logger.info(f'StatusInfo threads remaining: {testThreadsRunning}')
 
 class Status(threading.Thread):
     def __init__(self, url, TestStatus):
@@ -142,8 +148,14 @@ class TestStatus(unittest.TestCase):
                 statusInfoThread = StatusInfo(url, self)
                 statusInfoThread.start()
 
-        while(testThreadRunning == True):
+        while(testThreadsRunning > 0):
             time.sleep(1)
+
+        if len(g_failedNodes) > 0:
+            logger.error(f'Test failed for nodes:')
+            for node in g_failedNodes:
+                logger.error(f'   {node}')
+            self.assertTrue(False)
 
     def test_metadata_gss(self):
         global logger
