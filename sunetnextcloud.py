@@ -9,9 +9,6 @@ import random
 import string
 import yaml
 
-g_testtarget = os.environ.get('NextcloudTestTarget')
-g_testcustomers = os.environ.get('NextcloudTestCustomers')
-g_testbrowsers = os.environ.get('NextcloudTestBrowsers')
 g_expectedFile = 'expected.yaml'
 
 def get_value(env):
@@ -48,23 +45,27 @@ class TestTarget(object):
         abspath = os.path.abspath(__file__)
         dname = os.path.dirname(abspath)
         os.chdir(dname)
-        print('Change working directory to :',dname)
-        if g_testtarget == "prod":
+        print(f'Change working directory to: {dname}; testing target: {target}')
+        sys.stdout.flush()
+        testtarget = target
+        testcustomers = os.environ.get('NextcloudTestCustomers')
+        testbrowsers = os.environ.get('NextcloudTestBrowsers')
+        if testtarget == "prod":
             self.target = "prod"
             self.targetprefix = ""
         else:
             self.target = "test"
             self.targetprefix = "." + self.testprefix
 
-        if g_testcustomers in self.allnodes:
+        if testcustomers in self.allnodes:
             self.singlenodetesting = True
-            self.allnodes = [g_testcustomers]
+            self.allnodes = [testcustomers]
             self.fullnodes = self.allnodes
             self.multinodes = self.allnodes
 
         # Override browsers to test from expected.yaml with value(s) in environment variable
-        if g_testbrowsers is not None:
-            self.browsers = g_testbrowsers.split(",")
+        if testbrowsers is not None:
+            self.browsers = testbrowsers.split(",")
 
     def getnodeprefix(self, node):
         if (node == 'gss' or node == 'none'):
