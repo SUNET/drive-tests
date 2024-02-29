@@ -133,7 +133,6 @@ class TestStatus(unittest.TestCase):
         logger.info(f'GSS Status information tested')
 
     def test_status(self):
-        g_failedNodes = []
         drv = sunetnextcloud.TestTarget()
         for url in drv.get_allnode_status_urls():
             with self.subTest(myurl=url):
@@ -151,7 +150,6 @@ class TestStatus(unittest.TestCase):
         
 
     def test_statusinfo(self):
-        g_failedNodes = []
         drv = sunetnextcloud.TestTarget()
         for url in drv.get_allnode_status_urls():
             with self.subTest(myurl=url):
