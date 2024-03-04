@@ -8,14 +8,23 @@ import sys
 import random
 import string
 import yaml
+import logging
 
 g_expectedFile = 'expected.yaml'
 
-def get_value(env):
+logger = logging.getLogger(__name__)
+logging.basicConfig(format = '%(asctime)s - %(module)s.%(funcName)s - %(levelname)s: %(message)s',
+                datefmt = '%Y-%m-%d %H:%M:%S', level = logging.INFO)
+
+def get_value(env, raiseException = True):
     value = os.environ.get(env)
     if value == None:
         msg = f'Environment variable {env} is not set!'
-        raise Exception(msg)
+        if raiseException == True:
+            raise Exception(msg)
+        else:
+            logger.error(msg)
+            pass
     return value
 
 class TestTarget(object):
@@ -185,7 +194,7 @@ class TestTarget(object):
     def get_webdav_root(self, username):
         return '/remote.php/dav/files/' + username + '/'
 
-    def get_ocsuser(self, node):
+    def get_ocsuser(self, node, raiseException = True):
         if self.platform == 'win32':
             usercmd = 'powershell -command "& { . ./NodeCredentials.ps1; Get-OcsUser ' + node + ' ' + self.target + ' }"'
             process = os.popen(usercmd)
@@ -194,11 +203,11 @@ class TestTarget(object):
             return user
         elif self.platform == 'linux':
             env = "NEXTCLOUD_OCS_USER_" + node.upper() + "_" + self.target.upper()
-            return get_value(env)
+            return get_value(env, raiseException)
         else:
             raise NotImplementedError
 
-    def get_seleniumuser(self, node):
+    def get_seleniumuser(self, node, raiseException = True):
         if self.platform == 'win32':
             usercmd = 'powershell -command "& { . ./NodeCredentials.ps1; Get-SeleniumUser ' + node + ' ' + self.target + ' }"'
             process = os.popen(usercmd)
@@ -207,11 +216,11 @@ class TestTarget(object):
             return user
         elif self.platform == 'linux':
             env = "NEXTCLOUD_SELENIUM_USER_" + node.upper() + "_" + self.target.upper()
-            return get_value(env)
+            return get_value(env, raiseException)
         else:
             raise NotImplementedError
 
-    def get_seleniummfauser(self, node):
+    def get_seleniummfauser(self, node, raiseException = True):
         if self.platform == 'win32':
             usercmd = 'powershell -command "& { . ./NodeCredentials.ps1; Get-SeleniumMfaUser ' + node + ' ' + self.target + ' }"'
             process = os.popen(usercmd)
@@ -220,7 +229,7 @@ class TestTarget(object):
             return user
         elif self.platform == 'linux':
             env = "NEXTCLOUD_SELENIUM_MFA_USER_" + node.upper() + "_" + self.target.upper()
-            return get_value(env)
+            return get_value(env, raiseException)
         else:
             raise NotImplementedError
 
@@ -237,7 +246,7 @@ class TestTarget(object):
         else:
             raise NotImplementedError
 
-    def get_ocsuserpassword(self, node):
+    def get_ocsuserpassword(self, node, raiseException = True):
         if self.platform == 'win32':
             pwdcmd = 'powershell -command "& { . ./NodeCredentials.ps1; Get-OcsPassword ' + node + ' ' + self.target + ' }"'
             process = os.popen(pwdcmd)
@@ -246,11 +255,11 @@ class TestTarget(object):
             return pwd
         elif self.platform == 'linux':
             env = "NEXTCLOUD_OCS_PASSWORD_" + node.upper() + "_" + self.target.upper()
-            return get_value(env)
+            return get_value(env, raiseException)
         else:
             raise NotImplementedError
 
-    def get_seleniumuserpassword(self, node):
+    def get_seleniumuserpassword(self, node, raiseException = True):
         if self.platform == 'win32':
             pwdcmd = 'powershell -command "& { . ./NodeCredentials.ps1; Get-SeleniumUserPassword ' + node + ' ' + self.target + ' }"'
             process = os.popen(pwdcmd)
@@ -259,11 +268,11 @@ class TestTarget(object):
             return pwd
         elif self.platform == 'linux':
             env = "NEXTCLOUD_SELENIUM_PASSWORD_" + node.upper() + "_" + self.target.upper()
-            return get_value(env)
+            return get_value(env, raiseException)
         else:
             raise NotImplementedError
 
-    def get_seleniummfauserpassword(self, node):
+    def get_seleniummfauserpassword(self, node, raiseException = True):
         if self.platform == 'win32':
             pwdcmd = 'powershell -command "& { . ./NodeCredentials.ps1; Get-SeleniumMfaUserPassword ' + node + ' ' + self.target + ' }"'
             process = os.popen(pwdcmd)
@@ -272,7 +281,7 @@ class TestTarget(object):
             return pwd
         elif self.platform == 'linux':
             env = "NEXTCLOUD_SELENIUM_MFA_PASSWORD_" + node.upper() + "_" + self.target.upper()
-            return get_value(env)
+            return get_value(env, raiseException)
         else:
             raise NotImplementedError
 
@@ -289,7 +298,7 @@ class TestTarget(object):
         else:
             raise NotImplementedError
 
-    def get_ocsuserapppassword(self, node):
+    def get_ocsuserapppassword(self, node, raiseException = True):
         if self.platform == 'win32':
             pwdcmd = 'powershell -command "& { . ./NodeCredentials.ps1; Get-OcsAppPassword ' + node + ' ' + self.target + ' }"'
             process = os.popen(pwdcmd)
@@ -298,11 +307,11 @@ class TestTarget(object):
             return pwd
         elif self.platform == 'linux':
             env = "NEXTCLOUD_OCS_APP_PASSWORD_" + node.upper() + "_" + self.target.upper()
-            return get_value(env)
+            return get_value(env, raiseException)
         else:
             raise NotImplementedError
 
-    def get_seleniumuserapppassword(self, node):
+    def get_seleniumuserapppassword(self, node, raiseException = True):
         if self.platform == 'win32':
             pwdcmd = 'powershell -command "& { . ./NodeCredentials.ps1; Get-SeleniumUserAppPassword ' + node + ' ' + self.target + ' }"'
             process = os.popen(pwdcmd)
@@ -311,11 +320,11 @@ class TestTarget(object):
             return pwd
         elif self.platform == 'linux':
             env = "NEXTCLOUD_SELENIUM_APP_PASSWORD_" + node.upper() + "_" + self.target.upper()
-            return get_value(env)
+            return get_value(env, raiseException)
         else:
             raise NotImplementedError
 
-    def get_seleniummfauserapppassword(self, node):
+    def get_seleniummfauserapppassword(self, node, raiseException = True):
         if self.platform == 'win32':
             pwdcmd = 'powershell -command "& { . ./NodeCredentials.ps1; Get-SeleniumMfaUserAppPassword ' + node + ' ' + self.target + ' }"'
             process = os.popen(pwdcmd)
@@ -324,11 +333,11 @@ class TestTarget(object):
             return pwd
         elif self.platform == 'linux':
             env = "NEXTCLOUD_SELENIUM_MFA_APP_PASSWORD_" + node.upper() + "_" + self.target.upper()
-            return get_value(env)
+            return get_value(env, raiseException)
         else:
             raise NotImplementedError
 
-    def get_seleniummfausertotpsecret(self, node):
+    def get_seleniummfausertotpsecret(self, node, raiseException = True):
         if self.platform == 'win32':
             pwdcmd = 'powershell -command "& { . ./NodeCredentials.ps1; Get-SeleniumMfaUserTotpSecret ' + node + ' ' + self.target + ' }"'
             process = os.popen(pwdcmd)
@@ -337,7 +346,7 @@ class TestTarget(object):
             return pwd
         elif self.platform == 'linux':
             env = "NEXTCLOUD_SELENIUM_MFA_SECRET_" + node.upper() + "_" + self.target.upper()
-            return get_value(env)
+            return get_value(env, raiseException)
         else:
             raise NotImplementedError
 

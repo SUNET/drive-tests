@@ -55,34 +55,42 @@ class TestTests(unittest.TestCase):
     def test_required_usercredentials(self):
         self.logger.info(f'{self._testMethodName}')
         drv = sunetnextcloud.TestTarget()
+        test_failed = False
         for fullnode in drv.fullnodes:
             with self.subTest(mynode=fullnode):
-                url = drv.get_ocs_capabilities_url(fullnode)
-                # print(self._testMethodName, url)
-                ocsuser = drv.get_ocsuser(fullnode)
+                ocsuser = drv.get_ocsuser(fullnode, False)
+                ocsuserpwd = drv.get_ocsuserpassword(fullnode, False)
+                ocsuserapppwd = drv.get_ocsuserapppassword(fullnode, False)
+                seleniumuser = drv.get_seleniumuser(fullnode, False)
+                seleniumuserpwd = drv.get_seleniumuserpassword(fullnode, False)
+                seleniumuserapppwd = drv.get_seleniumuserapppassword(fullnode, False)
+                seleniummfauser = drv.get_seleniummfauser(fullnode, False)
+                seleniummfauserpwd = drv.get_seleniummfauserpassword(fullnode, False)
+                seleniummfauserapppwd = drv.get_seleniummfauserapppassword(fullnode, False)
+                seleniummfausertotpsecret = drv.get_seleniummfausertotpsecret(fullnode, False)
+
                 if ocsuser is None:
-                    ocsuser = ''
-                ocsuserpwd = drv.get_ocsuserpassword(fullnode)
+                    test_failed = True
                 if ocsuserpwd is None:
-                    ocsuserpwd = ''
-                seleniumuser = drv.get_seleniumuser(fullnode)
+                    test_failed = True
+                if ocsuserapppwd is None:
+                    test_failed = True
                 if seleniumuser is None:
-                    seleniumuser = ''
-                seleniumuserpwd = drv.get_seleniumuserpassword(fullnode)
+                    test_failed = True
                 if seleniumuserpwd is None:
-                    seleniumuserpwd = ''
-                seleniumuserapppwd = drv.get_seleniumuserapppassword(fullnode)
+                    test_failed = True
                 if seleniumuserapppwd is None:
-                    seleniumuserapppwd = ''
+                    test_failed = True
+                if seleniummfauser is None:
+                    test_failed = True
+                if seleniummfauserpwd is None:
+                    test_failed = True
+                if seleniummfauserapppwd is None:
+                    test_failed = True
+                if seleniummfausertotpsecret is None:
+                    test_failed = True
 
-                # print(len(nodeuser))
-                # print(len(nodepwd))
-
-                self.assertGreater(len(ocsuser), 0)
-                self.assertGreater(len(ocsuserpwd), 0)
-                self.assertGreater(len(seleniumuser), 0)
-                self.assertGreater(len(seleniumuserpwd), 0)
-                self.assertGreater(len(seleniumuserapppwd), 0)
+        self.assertFalse(test_failed)
 
 if __name__ == '__main__':
     import xmlrunner
