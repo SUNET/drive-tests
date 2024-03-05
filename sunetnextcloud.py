@@ -53,12 +53,16 @@ class TestTarget(object):
     def __init__(self, target='test'):
         abspath = os.path.abspath(__file__)
         dname = os.path.dirname(abspath)
-        os.chdir(dname)
-        print(f'Change working directory to: {dname}; testing target: {target}')
-        sys.stdout.flush()
-        testtarget = target
         testcustomers = os.environ.get('NextcloudTestCustomers')
         testbrowsers = os.environ.get('NextcloudTestBrowsers')
+        tsttarget = os.environ.get('NextcloudTestTarget')
+        if tsttarget is not None:
+            testtarget = tsttarget
+        else:
+            testtarget = target
+        os.chdir(dname)
+        print(f'Change working directory to: {dname}; testing target: {testtarget}')
+        sys.stdout.flush()
         if testtarget == "prod":
             self.target = "prod"
             self.targetprefix = ""
