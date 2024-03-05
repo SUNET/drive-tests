@@ -242,6 +242,10 @@ class TestLoginSelenium(unittest.TestCase):
         if len(drv.allnodes) == 1:
             self.logger.info(f'Only testing {drv.allnodes[0]}, not testing eduid saml')
             return
+        
+        if drv.target == 'test':
+            self.logger.warning(f'We are not testing eduid saml login in test until the new login portal is ready')
+            return
 
         loginurl = drv.get_gss_url()
         self.logger.info(f'URL: {loginurl}')
@@ -266,6 +270,81 @@ class TestLoginSelenium(unittest.TestCase):
 
         wait.until(EC.presence_of_element_located((By.LINK_TEXT, loginLinkText))).click()
         driver.implicitly_wait(10)
+
+        wait.until(EC.presence_of_element_located((By.ID, 'dsclient')))
+        driver.implicitly_wait(10)
+        
+        wait.until(EC.presence_of_element_located((By.ID, 'searchinput'))).send_keys("eduid.se", Keys.RETURN)
+        driver.implicitly_wait(10)
+
+        wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'label-url'))).click()
+        driver.implicitly_wait(10)
+
+        wait.until(EC.presence_of_element_located((By.ID, 'username'))).send_keys(samluser)
+        self.logger.info(f'Email entered')
+        wait.until(EC.presence_of_element_located((By.ID, 'currentPassword'))).send_keys(samlpassword + Keys.ENTER)
+        self.logger.info(f'Password entered, proceeding')
+        # wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'login-form-button'))).click()
+
+        try:
+            wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'app-menu')))
+            self.logger.info(f'App menu is ready!')
+        except TimeoutException:
+            self.logger.info(f'Loading of app menu took too much time!')
+
+        driver.implicitly_wait(10) # seconds before quitting
+        dashboardUrl = drv.get_dashboard_url('extern')
+        currentUrl = driver.current_url
+        self.assertEqual(dashboardUrl, currentUrl)
+        self.logger.info(f'{driver.current_url}')
+
+        wait.until(EC.presence_of_element_located((By.ID, 'user-menu'))).click()
+        logoutLink = driver.find_element(By.PARTIAL_LINK_TEXT, 'Log out')
+        logoutLink.click()
+        self.logger.info(f'Logout complete')
+
+        currentUrl = driver.current_url
+        self.logger.info(driver.current_url)
+        self.assertEqual(driver.current_url, drv.get_gss_post_logout_url())
+        driver.implicitly_wait(10) # seconds before quitting
+
+        driver.implicitly_wait(10) # seconds before quitting
+
+    def test_portal_saml_eduid_nomfa(self):
+        delay = 30 # seconds
+        drv = sunetnextcloud.TestTarget()
+
+        if len(drv.allnodes) == 1:
+            self.logger.info(f'Only testing {drv.allnodes[0]}, not testing eduid saml')
+            return
+        
+        if drv.target == 'prod':
+            self.logger.warning(f'We are not testing eduid saml login in prod until the new login portal is ready')
+            return
+
+        loginurl = drv.get_node_login_url('extern', False)
+        self.logger.info(f'URL: {loginurl}')
+        samluser=drv.get_samlusername("eduidtest")
+        self.logger.info(f'Username: {samluser}')
+        samlpassword=drv.get_samluserpassword("eduidtest")
+        
+        try:
+            options = Options()
+            driver = webdriver.Chrome(options=options)
+        except:
+            self.logger.error(f'Error initializing Chrome driver')
+            self.assertTrue(False)
+        # driver2 = webdriver.Firefox()
+        self.deleteCookies(driver)
+        driver.maximize_window()        
+        driver.get(loginurl)
+
+        wait = WebDriverWait(driver, delay)
+
+        # loginLinkText = 'ACCESS THROUGH YOUR INSTITUTION'
+
+        # wait.until(EC.presence_of_element_located((By.LINK_TEXT, loginLinkText))).click()
+        # driver.implicitly_wait(10)
 
         wait.until(EC.presence_of_element_located((By.ID, 'dsclient')))
         driver.implicitly_wait(10)

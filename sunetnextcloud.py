@@ -104,9 +104,12 @@ class TestTarget(object):
         else:
             return 'https://drive.test.' + self.baseurl + self.indexsuffix + '/apps/user_saml/saml/selectUserBackEnd?redirectUrl='
 
-    def get_node_login_url(self, node):
-        return 'https://' + self.getnodeprefix(node) + self.targetprefix + '.' + self.baseurl + self.indexsuffix + '/login?redirect_url=&direct=1'
-
+    def get_node_login_url(self, node, direct = True):
+        if direct == True:
+            return 'https://' + self.getnodeprefix(node) + self.targetprefix + '.' + self.baseurl + self.indexsuffix + '/login?redirect_url=&direct=1'
+        else:
+            return 'https://' + self.getnodeprefix(node) + self.targetprefix + '.' + self.baseurl + self.indexsuffix
+        
     def get_node_post_logout_url(self, node):
         return 'https://' + self.getnodeprefix(node) + self.targetprefix + '.' + self.baseurl + self.indexsuffix + '/login?clear=1'
 
