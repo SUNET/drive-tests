@@ -333,50 +333,102 @@ class TestCollaboraSelenium(unittest.TestCase):
                     self.driver.implicitly_wait(10) # seconds before quitting
                     self.logger.info(self.driver.current_url)
                     
-                    wait.until(EC.presence_of_element_located((By.CLASS_NAME, self.homeIcon)))
+                    if self.version.startswith('27'):
+                        self.logger.info(f'Looking for home icon in {self.version}')
+                        try:
+                            wait.until(EC.presence_of_element_located((By.CLASS_NAME, self.homeIcon)))
+                        except:
+                            self.logger.error(f'Home icon in files app not found')
+                    else:
+                        self.logger.info(f'Looking for all files text in {self.version}')
+                        # //*[@id="app-content-vue"]/div[1]/div/nav/ul/li/a/span/span[2] "//h4/a[contains(text(),'SAP M')]"
+                        self.driver.find_element(By.XPATH, "//*[contains(text(), 'All files')]")
+                        self.logger.info(f'All files found!')
+
+                    self.logger.info(f'Looking for {testfolder} folder')
                     
                     try:
-                        wait.until(EC.presence_of_element_located((By.XPATH, f'//*[contains(@class, \'innernametext\') and text()=\'{testfolder}\']')))
-                        self.logger.info(f'{testfolder} folder found')
+                        if self.version.startswith('27'):
+                            wait.until(EC.presence_of_element_located((By.XPATH, f'//*[contains(@class, \'innernametext\') and text()=\'{testfolder}\']')))
+                            self.logger.info(f'{testfolder} folder found')
+                        else:
+                            self.driver.find_element(By.XPATH, f"//*[contains(text(), '{testfolder}')]")
+                            self.logger.info(f'{testfolder} folder found')
                     except:
                         self.logger.info(f'{testfolder} folder not found, creating')
-
                         wait.until(EC.presence_of_element_located((By.CLASS_NAME, self.addIcon))).click()
-                        wait.until(EC.presence_of_element_located((By.XPATH, "//*[contains(@class, 'displayname') and text()='New folder']"))).click()
-                        wait.until(EC.presence_of_element_located((By.XPATH, "//*[contains(@id, 'input-folder')]" ))).send_keys(testfolder + Keys.ENTER)
+                        time.sleep(1)
+
+                        if self.version.startswith('27'):
+                            wait.until(EC.presence_of_element_located((By.CLASS_NAME, self.addIcon))).click()
+                            wait.until(EC.presence_of_element_located((By.XPATH, "//*[contains(@class, 'displayname') and text()='New folder']"))).click()
+                            wait.until(EC.presence_of_element_located((By.XPATH, "//*[contains(@id, 'input-folder')]" ))).send_keys(testfolder + Keys.ENTER)
+                        else:
+                            self.logger.info(f'Creating {testfolder} on {self.version}')
+                            wait.until(EC.presence_of_element_located((By.XPATH, "//*[contains(@class, 'action-button__text') and text()='New folder']"))).click()
+                            wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, 'input[id^=\'input\']')))
+                            ActionChains(self.driver).key_down(Keys.CONTROL).send_keys('a').key_up(Keys.CONTROL).perform()
+                            ActionChains(self.driver).send_keys(f'SeleniumCollaboraTest{Keys.ENTER}').perform()
+                        time.sleep(1)
 
                     folderurl = self.drv.get_folder_url(collaboranode, testfolder)
                     self.driver.get(folderurl)
 
-                    # Sort file list so that new files are created at the beginning of the list
+                    # Check if the folder is empty
                     try:
-                        self.logger.info(f'Wait for folder to be sortable')
-                        wait.until(EC.presence_of_element_located((By.LINK_TEXT, testfolder)))
-                        wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'sort-indicator')))
+                        wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'empty-content__name')))
+                        isEmpty = True
+                        self.logger.info(f'Folder ist empty, creating new files')
                     except:
-                        self.logger.error(f'Unable to sort, save screenshot and continue...')
-                        screenshot = pyautogui.screenshot()
-                        screenshot.save("screenshots/" + collaboranode + "_test_collabora_document_" + g_filename + ".png")
-                        # self.assertTrue(False)
+                        isEmpty = False
+                        self.logger.info(f'Folder is not empty, adding new content')
 
-                    if (EC.presence_of_element_located((By.CLASS_NAME, 'icon-triangle-n'))):
-                        wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'sort-indicator'))).click
-                        self.logger.info(f'Change sorting to descending!')
+                    # Sort file list so that new files are created at the beginning of the list
+                    if isEmpty == False:
+                        try:
+                            self.logger.info(f'Wait for folder to be sortable')
+                            wait.until(EC.presence_of_element_located((By.LINK_TEXT, testfolder)))
+                            wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'sort-indicator')))
+                        except:
+                            self.logger.error(f'Unable to sort, save screenshot and continue...')
+                            screenshot = pyautogui.screenshot()
+                            screenshot.save("screenshots/" + collaboranode + "_test_collabora_document_" + g_filename + ".png")
+                            # self.assertTrue(False)
+
+                        if (EC.presence_of_element_located((By.CLASS_NAME, 'icon-triangle-n'))):
+                            wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'sort-indicator'))).click
+                            self.logger.info(f'Change sorting to descending!')
 
                     try:
                         wait.until(EC.presence_of_element_located((By.CLASS_NAME, self.addIcon))).click()
                         wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'icon-filetype-document'))).click()
-                        wait.until(EC.presence_of_element_located((By.XPATH, "//*[contains(@id, 'input-file')]"))).send_keys(g_filename + Keys.ENTER)
+                        if self.version.startswith('27'):
+                            # Write the filename in the menu
+                            wait.until(EC.presence_of_element_located((By.XPATH, "//*[contains(@id, 'input-file')]"))).send_keys(g_filename + Keys.ENTER)
+                        else:
+                            # Starting with Nextcloud 28, we have to rename the file
+                            self.logger.info('Renaming the file we just created')
+                            ActionChains(self.driver).key_down(Keys.CONTROL).send_keys('a').key_up(Keys.CONTROL).perform()
+                            ActionChains(self.driver).send_keys(f'{g_filename}.odt{Keys.ENTER}').perform()
+                            pass
                     except:
                         self.logger.error(f'Unable to create new file: {g_filename}, saving screenshot')
                         screenshot = pyautogui.screenshot()
                         screenshot.save("screenshots/" + collaboranode + g_filename + ".png")
                         self.assertTrue(False)
 
-
                     self.logger.info(f'Sleep for 3 seconds...')
                     time.sleep(3)
                     self.logger.info(f'Proceeding...')
+
+                    if self.version.startswith('28'):
+                        # This will hopefully get fixed by Nextcloud
+                        self.logger.info(f'We are on {self.version}, so we have to open {g_filename} manually')
+                        wait.until(EC.presence_of_element_located((By.PARTIAL_LINK_TEXT, g_filename)))
+                        self.logger.info(f'Element found, click on it')
+                        self.driver.find_element(By.PARTIAL_LINK_TEXT, g_filename).click()
+                        wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'modal-name')))
+                        time.sleep(3)
 
                     try:
                         self.logger.info(f'Waiting for collabora frame')
@@ -388,11 +440,6 @@ class TestCollaboraSelenium(unittest.TestCase):
                     except:
                         self.logger.error(f'Error writing to the document')
                         success = False
-
-                    # Do not close the document for the time-being until both environments are updated to v27; should be applied to all tests then
-                    # self.logger.info(f'Closing document...')
-                    # wait.until(EC.presence_of_element_located((By.ID, 'closebutton'))).click()
-                    # self.logger.info(f'And done...')
 
                     self.logger.info(f'Open the folder URL instead of closing the document')
                     self.driver.get(self.drv.get_folder_url(collaboranode,''))
