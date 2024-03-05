@@ -313,16 +313,17 @@ class TestLoginSelenium(unittest.TestCase):
     def test_portal_saml_eduid_nomfa(self):
         delay = 30 # seconds
         drv = sunetnextcloud.TestTarget()
+        node = 'swamid'
 
         if len(drv.allnodes) == 1:
             self.logger.info(f'Only testing {drv.allnodes[0]}, not testing eduid saml')
             return
         
-        if drv.target == 'prod':
-            self.logger.warning(f'We are not testing eduid saml login in prod until the new login portal is ready')
+        if drv.target == 'test':
+            self.logger.warning(f'We only test {node} in production right now')
             return
 
-        loginurl = drv.get_node_login_url('extern', False)
+        loginurl = drv.get_node_login_url(node, False)
         self.logger.info(f'URL: {loginurl}')
         samluser=drv.get_samlusername("eduidtest")
         self.logger.info(f'Username: {samluser}')
@@ -368,7 +369,7 @@ class TestLoginSelenium(unittest.TestCase):
             self.logger.info(f'Loading of app menu took too much time!')
 
         driver.implicitly_wait(10) # seconds before quitting
-        dashboardUrl = drv.get_dashboard_url('extern')
+        dashboardUrl = drv.get_dashboard_url(node)
         currentUrl = driver.current_url
         self.assertEqual(dashboardUrl, currentUrl)
         self.logger.info(f'{driver.current_url}')
@@ -380,7 +381,8 @@ class TestLoginSelenium(unittest.TestCase):
 
         currentUrl = driver.current_url
         self.logger.info(driver.current_url)
-        self.assertEqual(driver.current_url, drv.get_gss_post_logout_url())
+        # Assert portal logout url
+        self.assertTrue(driver.current_url.startswith('https://portal.drive.sunet.se/?SAMLRequest'))
         driver.implicitly_wait(10) # seconds before quitting
 
         driver.implicitly_wait(10) # seconds before quitting
