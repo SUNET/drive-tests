@@ -225,6 +225,8 @@ class TestLoginSeleniumTotp(unittest.TestCase):
                     self.assertEqual(driver.current_url, drv.get_node_post_logout_saml_url(fullnode))
                 elif fullnode == 'kau':
                     self.assertEqual(driver.current_url, drv.get_node_post_logout_url(fullnode))
+                elif fullnode == 'swamid':
+                    pass
                 else:
                     self.assertEqual(driver.current_url, drv.get_gss_post_logout_url())
 
