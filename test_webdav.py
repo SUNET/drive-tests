@@ -18,8 +18,8 @@ import sunetnextcloud
 
 g_maxCheck = 10
 g_webdav_timeout = 30
-g_testFolder = 'SeleniumCollaboraTest'
-g_stressTestFolder = 'SeleniumCollaboraStressTest'
+g_testFolder = 'WebDAVTest'
+g_stressTestFolder = 'WebDAVStressTest'
 g_sharedTestFolder = 'SharedFolder'
 g_personalBucket = 'selenium-personal'
 g_systemBucket = 'selenium-system'
@@ -334,7 +334,6 @@ class WebDAVPersonalBucketFolders(threading.Thread):
             self.TestWebDAV.assertEqual(client.list(g_personalBucket).count(f'{folder}/'), 1)
             client.clean(path)
             self.TestWebDAV.assertEqual(client.list(g_personalBucket).count(f'{folder}/'), 0)
-            # print(client.list(g_personalBucket))
         except:
             logger.info(f'Error in WebDAVPersonalBucketFolders thread done for node {self.name}')
             g_testPassed[fullnode] = False
