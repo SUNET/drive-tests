@@ -750,7 +750,7 @@ class TestCollaboraSelenium(unittest.TestCase):
 
                 try:
                     wait.until(EC.presence_of_element_located((By.CLASS_NAME, self.addIcon))).click()
-                    wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'icon-filetype-spreadsheet'))).click()
+                    wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'icon-filetype-presentation'))).click()
                     if self.version.startswith('27'):
                         # Write the filename in the menu
                         wait.until(EC.presence_of_element_located((By.XPATH, "//*[contains(@id, 'input-file')]"))).send_keys(g_filename + Keys.ENTER)
