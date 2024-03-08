@@ -249,6 +249,13 @@ class TestCollaboraSelenium(unittest.TestCase):
                 if self.version.startswith('28'):
                     # This will hopefully get fixed by Nextcloud
                     self.logger.info(f'We are on {self.version}, so we have to open {g_filename} manually')
+
+                    self.logger.info(f'Find the file in unified search')
+                    buttons = wait.until(EC.presence_of_all_elements_located((By.CLASS_NAME, 'unified-search__button')))
+                    buttons[0].click()
+                    wait.until(EC.presence_of_all_elements_located((By.CLASS_NAME, 'input-field__input')))
+                    ActionChains(self.driver).send_keys(g_filename).perform()
+
                     wait.until(EC.presence_of_element_located((By.PARTIAL_LINK_TEXT, g_filename)))
                     self.logger.info(f'Element found, click on it')
                     self.driver.find_element(By.PARTIAL_LINK_TEXT, g_filename).click()
@@ -425,6 +432,13 @@ class TestCollaboraSelenium(unittest.TestCase):
                         if self.version.startswith('28'):
                             # This will hopefully get fixed by Nextcloud
                             self.logger.info(f'We are on {self.version}, so we have to open {g_filename} manually')
+
+                            self.logger.info(f'Find the file in unified search')
+                            buttons = wait.until(EC.presence_of_all_elements_located((By.CLASS_NAME, 'unified-search__button')))
+                            buttons[0].click()
+                            wait.until(EC.presence_of_all_elements_located((By.CLASS_NAME, 'input-field__input')))
+                            ActionChains(self.driver).send_keys(g_filename).perform()
+
                             wait.until(EC.presence_of_element_located((By.PARTIAL_LINK_TEXT, g_filename)))
                             self.logger.info(f'Element found, click on it')
                             self.driver.find_element(By.PARTIAL_LINK_TEXT, g_filename).click()
@@ -599,6 +613,13 @@ class TestCollaboraSelenium(unittest.TestCase):
                 if self.version.startswith('28'):
                     # This will hopefully get fixed by Nextcloud
                     self.logger.info(f'We are on {self.version}, so we have to open {g_filename} manually')
+
+                    self.logger.info(f'Find the file in unified search')
+                    buttons = wait.until(EC.presence_of_all_elements_located((By.CLASS_NAME, 'unified-search__button')))
+                    buttons[0].click()
+                    wait.until(EC.presence_of_all_elements_located((By.CLASS_NAME, 'input-field__input')))
+                    ActionChains(self.driver).send_keys(g_filename).perform()
+                                     
                     wait.until(EC.presence_of_element_located((By.PARTIAL_LINK_TEXT, g_filename)))
                     self.logger.info(f'Element found, click on it')
                     self.driver.find_element(By.PARTIAL_LINK_TEXT, g_filename).click()
@@ -773,6 +794,13 @@ class TestCollaboraSelenium(unittest.TestCase):
                 if self.version.startswith('28'):
                     # This will hopefully get fixed by Nextcloud
                     self.logger.info(f'We are on {self.version}, so we have to open {g_filename} manually')
+
+                    self.logger.info(f'Find the file in unified search')
+                    buttons = wait.until(EC.presence_of_all_elements_located((By.CLASS_NAME, 'unified-search__button')))
+                    buttons[0].click()
+                    wait.until(EC.presence_of_all_elements_located((By.CLASS_NAME, 'input-field__input')))
+                    ActionChains(self.driver).send_keys(g_filename).perform()
+
                     wait.until(EC.presence_of_element_located((By.PARTIAL_LINK_TEXT, g_filename)))
                     self.logger.info(f'Element found, click on it')
                     self.driver.find_element(By.PARTIAL_LINK_TEXT, g_filename).click()
