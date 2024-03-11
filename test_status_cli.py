@@ -41,7 +41,12 @@ class StatusInfo(threading.Thread):
         drv = sunetnextcloud.TestTarget()
         logger.info(f'StatusInfo thread {testThreadsRunning} started for node {self.url}')
 
-        r =requests.get(self.url)
+        try:
+            r =requests.get(self.url)
+        except:
+            logger.info.error(f'Error getting data from {self.url}')
+            testThreadsRunning -= 1
+            return
         try:
             j = json.loads(r.text)
             self.TestStatus.assertEqual(j["maintenance"], expectedResults[drv.target]['status']['maintenance'])
