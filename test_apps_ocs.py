@@ -8,6 +8,7 @@ import sunetnextcloud
 import logging
 import time
 import threading
+import xmlrunner
 
 ocsheaders = { "OCS-APIRequest" : "true" } 
 expectedResultsFile = 'expected.yaml'
@@ -179,7 +180,7 @@ class NumberOfAppsOnNode(threading.Thread):
 class TestAppsOcs(unittest.TestCase):
     def test_logger(self):
         global logger
-        logger.info(f'self.logger.info test_logger')
+        logger.info(f'TestID: {self._testMethodName}')
         pass
 
     def test_number_of_apps_on_node(self):
@@ -187,6 +188,7 @@ class TestAppsOcs(unittest.TestCase):
 
         for fullnode in drv.fullnodes:
             with self.subTest(mynode=fullnode):
+                logger.info(f'TestID: {fullnode}')
                 numberOfAppsOnNodeThread = NumberOfAppsOnNode(fullnode, self)
                 numberOfAppsOnNodeThread.start()
 
@@ -199,6 +201,7 @@ class TestAppsOcs(unittest.TestCase):
 
         for fullnode in drv.fullnodes:
             with self.subTest(mynode=fullnode):
+                logger.info(f'TestID: {fullnode}')
                 InstalledAppsConfiguredThread = InstalledAppsConfigured(fullnode, self)
                 InstalledAppsConfiguredThread.start()
 
@@ -211,6 +214,7 @@ class TestAppsOcs(unittest.TestCase):
 
         for fullnode in drv.fullnodes:
             with self.subTest(mynode=fullnode):
+                logger.info(f'TestID: {fullnode}')
                 ConfiguredAppsInstalledThread = ConfiguredAppsInstalled(fullnode, self)
                 ConfiguredAppsInstalledThread.start()
 
@@ -218,6 +222,4 @@ class TestAppsOcs(unittest.TestCase):
             time.sleep(1)
 
 if __name__ == '__main__':
-    # unittest.main()
-    import xmlrunner
     unittest.main(testRunner=xmlrunner.XMLTestRunner(output='test-reports'))

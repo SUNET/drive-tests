@@ -13,6 +13,7 @@ import xmltodict
 import yaml
 import threading
 import time
+import xmlrunner
 
 import sunetnextcloud
 import os
@@ -100,11 +101,12 @@ class Status(threading.Thread):
 class TestStatus(unittest.TestCase):
     def test_logger(self):
         global logger
-        logger.info(f'self.logger.info test_logger')
+        logger.info(f'TestID: {self._testMethodName}')
         pass
 
     def test_status_gss(self):
         global logger
+        logger.info(f'TestID: {self._testMethodName}')
         drv = sunetnextcloud.TestTarget()
         if drv.testgss == False:
             logger.info('Not testing gss')
@@ -119,6 +121,7 @@ class TestStatus(unittest.TestCase):
     def test_statusinfo_gss(self):
         global logger
         global expectedResults
+        logger.info(f'TestID: {self._testMethodName}')
         drv = sunetnextcloud.TestTarget()
         if drv.testgss == False:
             logger.info('Not testing gss')
@@ -141,6 +144,7 @@ class TestStatus(unittest.TestCase):
         drv = sunetnextcloud.TestTarget()
         for url in drv.get_allnode_status_urls():
             with self.subTest(myurl=url):
+                logger.info(f'TestID: {url}')
                 statusThread = Status(url, self)
                 statusThread.start()
 
@@ -158,6 +162,7 @@ class TestStatus(unittest.TestCase):
         drv = sunetnextcloud.TestTarget()
         for url in drv.get_allnode_status_urls():
             with self.subTest(myurl=url):
+                logger.info(f'TestID: {url}')
                 statusInfoThread = StatusInfo(url, self)
                 statusInfoThread.start()
 
@@ -173,6 +178,7 @@ class TestStatus(unittest.TestCase):
     def test_metadata_gss(self):
         global logger
         global expectedResults
+        logger.info(f'TestID: {self._testMethodName}')
         drv = sunetnextcloud.TestTarget()
         if drv.testgss == False:
             logger.info('Not testing gss')
@@ -208,6 +214,7 @@ class TestStatus(unittest.TestCase):
     def test_collabora_nodes(self):
         global logger
         global expectedResults
+        logger.info(f'TestID: {self._testMethodName}')
         drv = sunetnextcloud.TestTarget()
         numCollaboraNodes = expectedResults[drv.target]['collabora']['nodes']
         logger.info(f'Collabora nodes: {numCollaboraNodes}')
@@ -219,6 +226,4 @@ class TestStatus(unittest.TestCase):
             self.assertEqual(expectedResults[drv.target]['collabora']['status'], r.text)
 
 if __name__ == '__main__':
-    import xmlrunner
-    # unittest.main()
     unittest.main(testRunner=xmlrunner.XMLTestRunner(output='test-reports'))

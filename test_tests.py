@@ -8,6 +8,7 @@ import os
 
 import sunetnextcloud
 import logging
+import xmlrunner
 
 opsbase='sunet-drive-ops/'
 globalconfigfile = opsbase + "/global/overlay/etc/hiera/data/common.yaml"
@@ -18,11 +19,11 @@ class TestTests(unittest.TestCase):
                     datefmt = '%Y-%m-%d %H:%M:%S', level = logging.INFO)
 
     def test_logger(self):
-        self.logger.info(f'self.logger.info test_logger')
+        self.logger.info(f'TestID: {self._testMethodName}')
         pass
 
     def test_allnodes_tested(self):
-        self.logger.info(f'{self._testMethodName}')
+        self.logger.info(f'TestID: {self._testMethodName}')
         drv = sunetnextcloud.TestTarget()
         # print(len(drv.fullnodes))
         testMissing = False
@@ -58,6 +59,7 @@ class TestTests(unittest.TestCase):
         test_failed = False
         for fullnode in drv.fullnodes:
             with self.subTest(mynode=fullnode):
+                self.logger.info(f'TestID: {fullnode}')
                 ocsuser = drv.get_ocsuser(fullnode, False)
                 ocsuserpwd = drv.get_ocsuserpassword(fullnode, False)
                 ocsuserapppwd = drv.get_ocsuserapppassword(fullnode, False)
@@ -93,6 +95,4 @@ class TestTests(unittest.TestCase):
         self.assertFalse(test_failed)
 
 if __name__ == '__main__':
-    import xmlrunner
-    # unittest.main()
     unittest.main(testRunner=xmlrunner.XMLTestRunner(output='test-reports'))

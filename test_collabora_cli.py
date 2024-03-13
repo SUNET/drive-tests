@@ -26,11 +26,12 @@ with open(expectedResultsFile, "r") as stream:
 class TestCollabora(unittest.TestCase):
     def test_logger(self):
         global logger
-        logger.info(f'self.logger.info test_logger')
+        logger.info(f'TestID: {self._testMethodName}')
         pass
 
     def test_collabora_capabilities(self):
         global logger
+        logger.info(f'TestID: {self._testMethodName}')
         drv = sunetnextcloud.TestTarget()
 
         numCollaboraNodes = expectedResults[drv.target]['collabora']['nodes']

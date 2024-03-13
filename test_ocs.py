@@ -11,6 +11,7 @@ import time
 import yaml
 import logging
 import threading
+import xmlrunner
 
 import sunetnextcloud
 
@@ -351,13 +352,14 @@ class UserLifeCycle(threading.Thread):
 
 class TestOcsCalls(unittest.TestCase):
     def test_logger(self):
-        logger.info(f'logger.info test_logger')
+        logger.info(f'TestID: {self._testMethodName}')
         pass
 
     def test_capabilities_nouser(self):
         drv = sunetnextcloud.TestTarget()
         for fullnode in drv.fullnodes:
             with self.subTest(mynode=fullnode):
+                logger.info(f'TestID: {fullnode}')
                 capabilitiesNoUserThread = CapabilitiesNoUser(fullnode, self)
                 capabilitiesNoUserThread.start()
 
@@ -368,6 +370,7 @@ class TestOcsCalls(unittest.TestCase):
         drv = sunetnextcloud.TestTarget()
         for fullnode in drv.fullnodes:
             with self.subTest(mynode=fullnode):
+                logger.info(f'TestID: {fullnode}')
                 capabilitiesThread = Capabilities(fullnode, self)
                 capabilitiesThread.start()
 
@@ -376,6 +379,7 @@ class TestOcsCalls(unittest.TestCase):
 
     def test_gssusers(self):
         drv = sunetnextcloud.TestTarget()
+        logger.info(f'TestID: {self._testMethodName}')
         if drv.testgss == False:
             logger.info(f'Not testing gss')
             return
@@ -401,6 +405,7 @@ class TestOcsCalls(unittest.TestCase):
         drv = sunetnextcloud.TestTarget()
         for fullnode in drv.fullnodes:
             with self.subTest(mynode=fullnode):
+                logger.info(f'TestID: {fullnode}')
                 nodeUsersThread = NodeUsers(fullnode, self)
                 nodeUsersThread.start()
 
@@ -412,6 +417,7 @@ class TestOcsCalls(unittest.TestCase):
         drv = sunetnextcloud.TestTarget()
         for fullnode in drv.fullnodes:
             with self.subTest(mynode=fullnode):
+                logger.info(f'TestID: {fullnode}')
                 userLifecycleThread = UserLifeCycle(fullnode, self)
                 userLifecycleThread.start()
 
@@ -422,6 +428,7 @@ class TestOcsCalls(unittest.TestCase):
         drv = sunetnextcloud.TestTarget()
         for fullnode in drv.fullnodes:
             with self.subTest(mynode=fullnode):
+                logger.info(f'TestID: {fullnode}')
                 appVersionsThread = AppVersions(fullnode, self)
                 appVersionsThread.start()
 
@@ -429,6 +436,4 @@ class TestOcsCalls(unittest.TestCase):
             time.sleep(1)
 
 if __name__ == '__main__':
-    import xmlrunner
-    # unittest.main()
     unittest.main(testRunner=xmlrunner.XMLTestRunner(output='test-reports'))
