@@ -41,12 +41,13 @@ class TestLoginSelenium(unittest.TestCase):
         self.logger.info(f'Cookies deleted: {cookies}')
 
     def test_logger(self):
-        self.logger.info(f'self.logger.info test_logger')
+        self.logger.info(f'TestID: {self._testMethodName}')
         pass
 
     def test_gss_login(self):
         delay = 30 # seconds
         drv = sunetnextcloud.TestTarget()
+        self.logger.info(f'TestID: {self._testMethodName}')
         if drv.testgss == False:
             self.logger.info('Not testing gss')
             return
@@ -129,7 +130,7 @@ class TestLoginSelenium(unittest.TestCase):
             with self.subTest(mybrowser=browser):
                 for fullnode in drv.fullnodes:
                     with self.subTest(mynode=fullnode):
-                        self.logger.info(f'Testing node {fullnode} with browser {browser}')
+                        self.logger.info(f'TestID: Testing node {fullnode} with browser {browser}')
                         loginurl = drv.get_node_login_url(fullnode)
                         self.logger.info(f'URL: {loginurl}')
                         nodeuser = drv.get_seleniumuser(fullnode)
@@ -236,6 +237,7 @@ class TestLoginSelenium(unittest.TestCase):
                         driver.quit()
 
     def test_saml_eduid_nomfa(self):
+        self.logger.info(f'TestID: {self._testMethodName}')
         delay = 30 # seconds
         drv = sunetnextcloud.TestTarget()
 
@@ -311,6 +313,7 @@ class TestLoginSelenium(unittest.TestCase):
         driver.implicitly_wait(10) # seconds before quitting
 
     def test_portal_saml_eduid_nomfa(self):
+        self.logger.info(f'TestID: {self._testMethodName}')
         delay = 30 # seconds
         drv = sunetnextcloud.TestTarget()
         node = 'swamid'
@@ -388,6 +391,7 @@ class TestLoginSelenium(unittest.TestCase):
         driver.implicitly_wait(10) # seconds before quitting
 
     def test_saml_su_nomfa(self):
+        self.logger.info(f'TestID: {self._testMethodName}')
         delay = 30 # seconds
         drv = sunetnextcloud.TestTarget()
         nodeName = 'su'

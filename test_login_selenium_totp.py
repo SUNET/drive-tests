@@ -41,10 +41,11 @@ class TestLoginSeleniumTotp(unittest.TestCase):
         self.logger.info(f'Cookies deleted: {cookies}')
 
     def test_logger(self):
-        self.logger.info(f'self.logger.info test_logger')
+        self.logger.info(f'TestID: {self._testMethodName}')
         pass
 
     def test_gss_login(self):
+        self.logger.info(f'TestID: {self._testMethodName}')
         delay = 30 # seconds
         drv = sunetnextcloud.TestTarget(g_testtarget)
         if drv.testgss == False:
@@ -122,6 +123,7 @@ class TestLoginSeleniumTotp(unittest.TestCase):
         drv = sunetnextcloud.TestTarget(g_testtarget)
         for fullnode in drv.fullnodes:
             with self.subTest(mynode=fullnode):
+                self.logger.info(f'TestID: {fullnode}')
                 loginurl = drv.get_node_login_url(fullnode)
                 self.logger.info(f'URL: {loginurl}')
                 nodeuser = drv.get_seleniummfauser(fullnode)

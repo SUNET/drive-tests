@@ -95,7 +95,7 @@ class TestCollaboraSelenium(unittest.TestCase):
         logger.error(f'Error initializing Chrome driver')
 
     def test_logger(self):
-        self.logger.info(f'self.logger.info test_logger')
+        self.logger.info(f'TestID: {self._testMethodName}')
         pass
 
     for collaboranode in drv.fullnodes:
@@ -110,6 +110,7 @@ class TestCollaboraSelenium(unittest.TestCase):
 
         for collaboranode in self.drv.fullnodes:
             with self.subTest(mynode=collaboranode):
+                self.logger.info(f'TestID: {collaboranode}')
                 # if g_isLoggedIn == False:
                 if g_loggedInNodes.get(collaboranode) == False:
                     nodelogin(collaboranode)
@@ -285,6 +286,7 @@ class TestCollaboraSelenium(unittest.TestCase):
         
         for collaboranode in self.drv.fullnodes:
             with self.subTest(mynode=collaboranode):
+                self.logger.info(f'TestID: {collaboranode}')
                 # if g_isLoggedIn == False:
                 if g_loggedInNodes.get(collaboranode) == False:
                     nodelogin(collaboranode)
@@ -312,7 +314,7 @@ class TestCollaboraSelenium(unittest.TestCase):
 
                 for testfolder in self.testfolders:
                     with self.subTest(myFolder=testfolder):
-                        self.logger.info(f'Testing folder {testfolder}')
+                        self.logger.info(f'TestID: {collaboranode} for folder {testfolder}')
 
                         try:
                             self.logger.info(f'Wait for {self.drv.indexsuffix}/apps/files/')
@@ -472,6 +474,7 @@ class TestCollaboraSelenium(unittest.TestCase):
         
         for collaboranode in self.drv.fullnodes:
             with self.subTest(mynode=collaboranode):
+                self.logger.info(f'TestID: {collaboranode}')
                 # if g_isLoggedIn == False:
                 if g_loggedInNodes.get(collaboranode) == False:
                     nodelogin(collaboranode)
@@ -654,6 +657,7 @@ class TestCollaboraSelenium(unittest.TestCase):
         
         for collaboranode in self.drv.fullnodes:
             with self.subTest(mynode=collaboranode):
+                self.logger.info(f'TestID: {collaboranode}')
                 # if g_isLoggedIn == False:
                 if g_loggedInNodes.get(collaboranode) == False:
                     nodelogin(collaboranode)
