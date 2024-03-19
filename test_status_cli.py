@@ -45,7 +45,7 @@ class StatusInfo(threading.Thread):
         try:
             r =requests.get(self.url)
         except:
-            logger.info.error(f'Error getting data from {self.url}')
+            logger.error(f'Error getting data from {self.url}')
             testThreadsRunning -= 1
             return
         try:
