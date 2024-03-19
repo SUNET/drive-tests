@@ -278,7 +278,9 @@ class WebDAVMakeSharingFolder(threading.Thread):
         client = Client(options)
 
         try:
+            logger.info(f'Before mkdir: {client.list()}')
             client.mkdir(g_sharedTestFolder)
+            logger.info(f'After mkdir: {client.list()}')
         except:
             logger.error(f'Error making folder {g_sharedTestFolder}')
             g_testPassed[fullnode] = False
