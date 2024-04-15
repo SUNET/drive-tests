@@ -247,22 +247,6 @@ class TestCollaboraSelenium(unittest.TestCase):
                 self.logger.info(f'Sleep for 3 seconds...')
                 time.sleep(3)
 
-                if self.version.startswith('28'):
-                    # This will hopefully get fixed by Nextcloud
-                    self.logger.info(f'We are on {self.version}, so we have to open {g_filename} manually')
-
-                    self.logger.info(f'Find the file in unified search')
-                    buttons = wait.until(EC.presence_of_all_elements_located((By.CLASS_NAME, 'unified-search__button')))
-                    buttons[0].click()
-                    wait.until(EC.presence_of_all_elements_located((By.CLASS_NAME, 'input-field__input')))
-                    ActionChains(self.driver).send_keys(g_filename).perform()
-
-                    wait.until(EC.presence_of_element_located((By.PARTIAL_LINK_TEXT, g_filename)))
-                    self.logger.info(f'Element found, click on it')
-                    self.driver.find_element(By.PARTIAL_LINK_TEXT, g_filename).click()
-                    wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'modal-name')))
-                    time.sleep(3)
-
                 self.logger.info(f'Can we type in the markup area?')
                 ActionChains(self.driver).send_keys(f'Lorem Ipsum! {Keys.ENTER} {g_filename}').perform()
                 time.sleep(3) # We give nextcloud a literal second to register the keystrokes before closing the document
@@ -435,22 +419,6 @@ class TestCollaboraSelenium(unittest.TestCase):
                         time.sleep(3)
                         self.logger.info(f'Proceeding...')
 
-                        # if self.version.startswith('28'):
-                        #     # This will hopefully get fixed by Nextcloud
-                        #     self.logger.info(f'We are on {self.version}, so we have to open {g_filename} manually')
-
-                        #     self.logger.info(f'Find the file in unified search')
-                        #     buttons = wait.until(EC.presence_of_all_elements_located((By.CLASS_NAME, 'unified-search__button')))
-                        #     buttons[0].click()
-                        #     wait.until(EC.presence_of_all_elements_located((By.CLASS_NAME, 'input-field__input')))
-                        #     ActionChains(self.driver).send_keys(g_filename).perform()
-
-                        #     wait.until(EC.presence_of_element_located((By.PARTIAL_LINK_TEXT, g_filename)))
-                        #     self.logger.info(f'Element found, click on it')
-                        #     self.driver.find_element(By.PARTIAL_LINK_TEXT, g_filename).click()
-                        #     wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'modal-name')))
-                        #     time.sleep(3)
-
                         try:
                             self.logger.info(f'Waiting for collabora frame')
                             wait.until(EC.frame_to_be_available_and_switch_to_it((By.CSS_SELECTOR, "iframe[id^='collaboraframe']")))
@@ -616,22 +584,6 @@ class TestCollaboraSelenium(unittest.TestCase):
                 self.logger.info(f'Sleep for 3 seconds...')
                 time.sleep(3)
                 self.logger.info(f'Proceeding...')
-
-                if self.version.startswith('28'):
-                    # This will hopefully get fixed by Nextcloud
-                    self.logger.info(f'We are on {self.version}, so we have to open {g_filename} manually')
-
-                    self.logger.info(f'Find the file in unified search')
-                    buttons = wait.until(EC.presence_of_all_elements_located((By.CLASS_NAME, 'unified-search__button')))
-                    buttons[0].click()
-                    wait.until(EC.presence_of_all_elements_located((By.CLASS_NAME, 'input-field__input')))
-                    ActionChains(self.driver).send_keys(g_filename).perform()
-                                     
-                    wait.until(EC.presence_of_element_located((By.PARTIAL_LINK_TEXT, g_filename)))
-                    self.logger.info(f'Element found, click on it')
-                    self.driver.find_element(By.PARTIAL_LINK_TEXT, g_filename).click()
-                    wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'modal-name')))
-                    time.sleep(3)
 
                 try:
                     self.logger.info(f'Waiting for collabora frame')
@@ -799,27 +751,11 @@ class TestCollaboraSelenium(unittest.TestCase):
                 time.sleep(3)
                 self.logger.info(f'Proceeding...')
 
-                if self.version.startswith('28'):
-                    # This will hopefully get fixed by Nextcloud
-                    self.logger.info(f'We are on {self.version}, so we have to open {g_filename} manually')
-
-                    self.logger.info(f'Find the file in unified search')
-                    buttons = wait.until(EC.presence_of_all_elements_located((By.CLASS_NAME, 'unified-search__button')))
-                    buttons[0].click()
-                    wait.until(EC.presence_of_all_elements_located((By.CLASS_NAME, 'input-field__input')))
-                    ActionChains(self.driver).send_keys(g_filename).perform()
-
-                    wait.until(EC.presence_of_element_located((By.PARTIAL_LINK_TEXT, g_filename)))
-                    self.logger.info(f'Element found, click on it')
-                    self.driver.find_element(By.PARTIAL_LINK_TEXT, g_filename).click()
-                    wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'modal-name')))
-                    time.sleep(3)
-
                 try:
                     self.logger.info(f'Waiting for collabora frame')
                     wait.until(EC.frame_to_be_available_and_switch_to_it((By.CSS_SELECTOR, "iframe[id^='collaboraframe']")))
                     self.logger.info(f'Collabora loaded... Let\'s type some text')
-                    time.sleep(1)
+                    time.sleep(3)
                     ActionChains(self.driver).send_keys(f'Lorem ipsum! {Keys.ENTER}{g_filename}').perform()
                     time.sleep(1)
                 except:
