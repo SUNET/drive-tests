@@ -319,11 +319,15 @@ class TestCollaboraSelenium(unittest.TestCase):
                         try:
                             self.logger.info(f'Wait for {self.drv.indexsuffix}/apps/files/')
                             wait.until(EC.presence_of_element_located((By.XPATH,'//a[@href="'+ self.drv.indexsuffix + '/apps/files/' +'"]')))
+                            self.logger.info(f'Get link for files app')
                             files = self.driver.find_element(by=By.XPATH, value='//a[@href="'+ self.drv.indexsuffix + '/apps/files/' +'"]')
+                            self.logger.info(f'Click on files app')
                             files.click()
                         except:
                             self.logger.warning(f'Wait for {self.drv.indexsuffix}/apps/files/ took too long')
                             success = False
+
+                        self.logger.info(f'Success: {success}')
                         self.assertTrue(success)
 
                         try:
@@ -431,21 +435,21 @@ class TestCollaboraSelenium(unittest.TestCase):
                         time.sleep(3)
                         self.logger.info(f'Proceeding...')
 
-                        if self.version.startswith('28'):
-                            # This will hopefully get fixed by Nextcloud
-                            self.logger.info(f'We are on {self.version}, so we have to open {g_filename} manually')
+                        # if self.version.startswith('28'):
+                        #     # This will hopefully get fixed by Nextcloud
+                        #     self.logger.info(f'We are on {self.version}, so we have to open {g_filename} manually')
 
-                            self.logger.info(f'Find the file in unified search')
-                            buttons = wait.until(EC.presence_of_all_elements_located((By.CLASS_NAME, 'unified-search__button')))
-                            buttons[0].click()
-                            wait.until(EC.presence_of_all_elements_located((By.CLASS_NAME, 'input-field__input')))
-                            ActionChains(self.driver).send_keys(g_filename).perform()
+                        #     self.logger.info(f'Find the file in unified search')
+                        #     buttons = wait.until(EC.presence_of_all_elements_located((By.CLASS_NAME, 'unified-search__button')))
+                        #     buttons[0].click()
+                        #     wait.until(EC.presence_of_all_elements_located((By.CLASS_NAME, 'input-field__input')))
+                        #     ActionChains(self.driver).send_keys(g_filename).perform()
 
-                            wait.until(EC.presence_of_element_located((By.PARTIAL_LINK_TEXT, g_filename)))
-                            self.logger.info(f'Element found, click on it')
-                            self.driver.find_element(By.PARTIAL_LINK_TEXT, g_filename).click()
-                            wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'modal-name')))
-                            time.sleep(3)
+                        #     wait.until(EC.presence_of_element_located((By.PARTIAL_LINK_TEXT, g_filename)))
+                        #     self.logger.info(f'Element found, click on it')
+                        #     self.driver.find_element(By.PARTIAL_LINK_TEXT, g_filename).click()
+                        #     wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'modal-name')))
+                        #     time.sleep(3)
 
                         try:
                             self.logger.info(f'Waiting for collabora frame')
