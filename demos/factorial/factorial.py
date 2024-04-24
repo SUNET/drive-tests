@@ -3,13 +3,14 @@ import sys
 from datetime import datetime
 import time
 
-sys.set_int_max_str_digits(2147483647)
-
-for x in range(3,7):
+starttime = datetime.now()
+for x in range(3,6):
     n = pow(10,x)
     for y in range(1,10):
-        starttime = datetime.now()
+        laptime = datetime.now()
         result = math.factorial(y*n)
-        runtime = datetime.now() - starttime
-        # print(f'Time to calculate {y*n}!:\t {runtime.total_seconds()}s\t The result has {int(math.log10(result))+1} digits')
-        print(f'Result of {y*n}!: {result}')
+        runtime = datetime.now() - laptime
+        print(f'Lap time of factorial({y*n}): {runtime.total_seconds()}')
+runtime = datetime.now() - starttime
+print(f'Total runtime: {runtime.total_seconds()}')
+print(f'Done...')
