@@ -167,6 +167,8 @@ class WebDAVMultiCheckAndRemove(threading.Thread):
         }
 
         client = Client(options)
+
+        # logger.info(f'HERE HERE HERE Client precheck: {client.list()}')
         
         count = 0
         try:
@@ -478,7 +480,14 @@ class WebDAVCreateMoveDelete(threading.Thread):
                 g_testThreadsRunning -= 1
                 return
 
-        os.remove(tmpfilename)
+        try:
+            os.remove(tmpfilename)
+        except:
+            logger.error(f'Error removing file')
+            g_testPassed[fullnode] = False
+            g_testThreadsRunning -= 1
+            return
+
         g_testPassed[fullnode] = True
         g_testThreadsRunning -= 1
 
