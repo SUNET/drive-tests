@@ -22,8 +22,8 @@ delay = 30
 loginurl = "https://dashboard.eduid.se"
 logger.info(f'Login url: {loginurl}')
 
-samluser=drv.get_samlusername("eduidtest")
-samlpassword=drv.get_samluserpassword("eduidtest")
+samluser=drv.get_samlusername("eduidtest")              # From environment variable NEXTCLOUD_SAML_USER_EDUIDTEST_TEST
+samlpassword=drv.get_samluserpassword("eduidtest")      # From environment variable NEXTCLOUD_SAML_PASSWORD_EDUIDTEST_TEST
 logger.info(f'Logging in with {samluser}')
 
 options = Options()
