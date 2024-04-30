@@ -321,13 +321,13 @@ apps:
     enabled: false
   globalsiteselector:
     prod:
-      version:  '2.4.5'
+      version:  2.4.5
       installed:  true
       enabled: true
       exceptdisabled:
         - kau
     test:
-      version:  '2.4.5'
+      version:  2.5.0
       installed:  true
       enabled: true
       exceptdisabled:
@@ -372,7 +372,7 @@ apps:
       exceptenabled:
         - scilifelab 
     test:
-      version: 5.2.6
+      version: 6.1.3
       installed:  true
       enabled: false
       exceptenabled:

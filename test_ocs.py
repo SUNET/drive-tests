@@ -17,7 +17,8 @@ import sunetnextcloud
 
 ocsheaders = { "OCS-APIRequest" : "true" } 
 expectedResultsFile = 'expected.yaml'
-testThreadRunning = False
+g_testPassed = {}
+g_testThreadsRunning = 0
 
 logger = logging.getLogger('TestLogger')
 logging.basicConfig(format = '%(asctime)s - %(module)s.%(funcName)s - %(levelname)s: %(message)s',
@@ -33,13 +34,16 @@ class AppVersions(threading.Thread):
         self.TestOcsCalls = TestOcsCalls
 
     def run(self):
-        global testThreadRunning
         global logger
         global expectedResults
-        testThreadRunning = True
+        global g_testPassed
+        global g_testThreadsRunning
+        g_testThreadsRunning +=1
         logger.info(f'AppVersion thread started for node {self.name}')
         drv = sunetnextcloud.TestTarget()
         fullnode = self.name
+        g_testPassed[fullnode] = False
+        logger.info(f'Setting passed for {fullnode} to {g_testPassed.get(fullnode)}')
 
         userSamlFound = False
         gssFound = False
@@ -64,8 +68,11 @@ class AppVersions(threading.Thread):
             # print(json.dumps(j, indent=4, sort_keys=True))
             apps = j["ocs"]["data"]["apps"]
         except:
-            logger.error(f'No JSON reply received')
+            logger.error(f'No or invalid JSON reply received')
             logger.error(r.text)
+            g_testPassed[fullnode] = False
+            g_testThreadsRunning -= 1
+            return
 
         if 'user_saml' in apps:
             userSamlFound = True
@@ -95,7 +102,8 @@ class AppVersions(threading.Thread):
             except:
                 logger.info(f'No JSON reply received')
                 logger.info(r.text)
-                testThreadRunning = False
+                g_testPassed[fullnode] = False
+                g_testThreadsRunning -= 1
                 return
 
             try:
@@ -103,8 +111,10 @@ class AppVersions(threading.Thread):
                 self.TestOcsCalls.assertEqual(j["ocs"]["data"]["id"], 'user_saml')
                 self.TestOcsCalls.assertEqual(j["ocs"]["data"]["version"], expectedResults['apps']['user_saml'][drv.target]['version'])
             except:
-                logger.error(f'Error with user_saml app')
-                testThreadRunning = False
+                logger.error(f'Error with user_saml app, version {j["ocs"]["data"]["version"]} != {expectedResults['apps']['user_saml'][drv.target]['version']}')
+                g_testPassed[fullnode] = False
+                g_testThreadsRunning -= 1
+                return
 
         # # global site selector check
         if gssFound:
@@ -128,7 +138,8 @@ class AppVersions(threading.Thread):
             except:
                 logger.info(f'No JSON reply received')
                 logger.info(r.text)
-                testThreadRunning = False
+                g_testPassed[fullnode] = False
+                g_testThreadsRunning -= 1
                 return
             
             try:
@@ -136,8 +147,9 @@ class AppVersions(threading.Thread):
                 self.TestOcsCalls.assertEqual(j["ocs"]["data"]["id"], 'globalsiteselector')
                 self.TestOcsCalls.assertEqual(j["ocs"]["data"]["version"], expectedResults['apps']['globalsiteselector'][drv.target]['version'])
             except:
-                logger.error(f'Error with GSS configuration')
-                testThreadRunning = False
+                logger.error(f'Error with GSS configuration, {j["ocs"]["data"]["version"]} != {expectedResults['apps']['globalsiteselector'][drv.target]['version']}')
+                g_testPassed[fullnode] = False
+                g_testThreadsRunning -= 1
                 return
 
         # Summary and test
@@ -145,8 +157,10 @@ class AppVersions(threading.Thread):
         logger.info(f'Gss app found: {gssFound}')
 
 
-        logger.info(f'AppVersion thread done for node {self.name}')
-        testThreadRunning = False
+        g_testPassed[fullnode] = True
+        g_testThreadsRunning -= 1
+        logger.info(f'AppVersion thread done for node {self.name}, test passed: {g_testPassed[fullnode]}')
+        return
 
 class NodeUsers(threading.Thread):
     def __init__(self, name, TestOcsCalls):
@@ -155,12 +169,15 @@ class NodeUsers(threading.Thread):
         self.TestOcsCalls = TestOcsCalls
 
     def run(self):
-        global testThreadRunning
         global logger
-        testThreadRunning = True
+        global g_testPassed
+        global g_testThreadsRunning
+        g_testThreadsRunning += 1
         logger.info(f'NodeUsers thread started for node {self.name}')
         drv = sunetnextcloud.TestTarget()
         fullnode = self.name
+        g_testPassed[fullnode] = False
+        logger.info(f'Setting passed for {fullnode} to {g_testPassed.get(fullnode)}')
 
         url = drv.get_add_user_url(fullnode)
         logger.info(f'{self.TestOcsCalls._testMethodName} {url}')
@@ -177,11 +194,14 @@ class NodeUsers(threading.Thread):
         except:
             logger.info("No JSON reply received")
             logger.info(r.text)
-            testThreadRunning = False
+            g_testPassed[fullnode] = False
+            g_testThreadsRunning -= 1
             return
 
-        logger.info(f'NodeUsers thread done for node {self.name}')
-        testThreadRunning = False
+        g_testPassed[fullnode] = True
+        g_testThreadsRunning -= 1
+        logger.info(f'NodeUsers thread done for node {self.name}, test passed: {g_testPassed[fullnode]}')
+        return
 
 class CapabilitiesNoUser(threading.Thread):
     def __init__(self, name, TestOcsCalls):
@@ -190,13 +210,16 @@ class CapabilitiesNoUser(threading.Thread):
         self.TestOcsCalls = TestOcsCalls
 
     def run(self):
-        global testThreadRunning
+        global g_testPassed
+        global g_testThreadsRunning
         global logger
         global expectedResults
-        testThreadRunning = True
+        g_testThreadsRunning += 1
         logger.info(f'Capabilities no user thread started for node {self.name}')
         drv = sunetnextcloud.TestTarget()
         fullnode = self.name
+        g_testPassed[fullnode] = False
+        logger.info(f'Setting passed for {fullnode} to {g_testPassed.get(fullnode)}')
 
         url = drv.get_ocs_capabilities_url(fullnode)
         logger.info(f'{self.TestOcsCalls._testMethodName} {url}')
@@ -206,7 +229,8 @@ class CapabilitiesNoUser(threading.Thread):
         except:
             logger.info("No JSON reply received")
             logger.info(r.text)
-            testThreadRunning = False
+            g_testPassed[fullnode] = False
+            g_testThreadsRunning -= 1
             return
 
         try:
@@ -216,13 +240,14 @@ class CapabilitiesNoUser(threading.Thread):
             self.TestOcsCalls.assertEqual(j["ocs"]["data"]["version"]["string"], expectedResults[drv.target]['ocs_capabilities']['ocs_data_version_string'])
         except:
             logger.error(f"Error with OCS capabilities assertion")
-            testThreadRunning = False
+            g_testPassed[fullnode] = False
+            g_testThreadsRunning -= 1
             return
 
-        testThreadRunning = False
-
-        logger.info(f'Capabilities no user thread done for node {self.name}')
-
+        g_testPassed[fullnode] = True
+        g_testThreadsRunning -= 1
+        logger.info(f'Capabilities no user thread done for node {self.name}, test passed: {g_testPassed[fullnode]}')
+        return
 
 class Capabilities(threading.Thread):
     def __init__(self, name, TestOcsCalls):
@@ -231,12 +256,15 @@ class Capabilities(threading.Thread):
         self.TestOcsCalls = TestOcsCalls
 
     def run(self):
-        global testThreadRunning
+        global g_testPassed
+        global g_testThreadsRunning
         global logger
-        testThreadRunning = True
+        g_testThreadsRunning += 1
         logger.info(f'Capabilities thread started for node {self.name}')
         drv = sunetnextcloud.TestTarget()
         fullnode = self.name
+        g_testPassed[fullnode] = False
+        logger.info(f'Setting passed for {fullnode} to {g_testPassed.get(fullnode)}')
 
         url = drv.get_ocs_capabilities_url(fullnode)
         logger.info(f'{self.TestOcsCalls._testMethodName} {url}')
@@ -249,13 +277,16 @@ class Capabilities(threading.Thread):
         except:
             logger.info("No JSON reply received")
             logger.info(r.text)
-            testThreadRunning = False
+            g_testPassed[fullnode] = False
+            g_testThreadsRunning -= 1
             return
 
         # TBD: Add assertion for GSS enabled
         # self.assertEqual(j["ocs"]["data"]["capabilities"]["globalscale"]["enabled"], ocsresult.ocs_data_capabilities_globalscale_enabled)
-        logger.info(f'Capabilities thread done for node {self.name}')
-        testThreadRunning = False
+        g_testPassed[fullnode] = True
+        g_testThreadsRunning -= 1
+        logger.info(f'Capabilities thread done for node {self.name}, test passed: {g_testPassed[fullnode]}')
+        return
 
 class UserLifeCycle(threading.Thread):
     def __init__(self, name, TestOcsCalls):
@@ -264,12 +295,15 @@ class UserLifeCycle(threading.Thread):
         self.TestOcsCalls = TestOcsCalls
 
     def run(self):
-        global testThreadRunning
+        global g_testPassed
+        global g_testThreadsRunning
         global expectedResults
-        testThreadRunning = True
+        g_testThreadsRunning += 1
         logger.info(f'User lifecycle thread started for node {self.name}')
         drv = sunetnextcloud.TestTarget()
         fullnode = self.name
+        g_testPassed[fullnode] = False
+        logger.info(f'Setting passed for {fullnode} to {g_testPassed.get(fullnode)}')
 
         session = requests.Session()
         url = drv.get_add_user_url(fullnode)
@@ -298,7 +332,8 @@ class UserLifeCycle(threading.Thread):
         except:
             logger.info("No JSON reply received")
             logger.info(r.text)
-            testThreadRunning = False
+            g_testPassed[fullnode] = False
+            g_testThreadsRunning -= 1
             return
 
         # self.assertEqual(j["ocs"]["meta"]["status"], expectedResults[drv.target]['ocs_capabilities']['ocs_meta_status'])
@@ -342,13 +377,16 @@ class UserLifeCycle(threading.Thread):
             self.TestOcsCalls.assertEqual(j["ocs"]["meta"]["statuscode"], expectedResults[drv.target]['ocs_capabilities']['ocs_meta_statuscode'])
             self.TestOcsCalls.assertEqual(j["ocs"]["meta"]["message"], expectedResults[drv.target]['ocs_capabilities']['ocs_meta_message'])
         except:
-            logger.info("No JSON reply received")
+            logger.info("No or invalid JSON reply received")
             logger.info(r.text)
-            testThreadRunning = False
+            g_testPassed[fullnode] = False
+            g_testThreadsRunning -= 1
             return
 
-        logger.info(f'User lifecycle thread done for node {self.name}')
-        testThreadRunning = False
+        g_testPassed[fullnode] = True
+        logger.info(f'User lifecycle thread done for node {self.name}, test passed: {g_testPassed[fullnode]}')
+        g_testThreadsRunning -= 1
+        return
 
 class TestOcsCalls(unittest.TestCase):
     def test_logger(self):
@@ -363,8 +401,12 @@ class TestOcsCalls(unittest.TestCase):
                 capabilitiesNoUserThread = CapabilitiesNoUser(fullnode, self)
                 capabilitiesNoUserThread.start()
 
-        while(testThreadRunning == True):
+        while(g_testThreadsRunning > 0):
             time.sleep(1)
+
+        for fullnode in drv.fullnodes:
+            with self.subTest(mynode=fullnode):
+                self.assertTrue(g_testPassed[fullnode])
 
     def test_capabilities(self):
         drv = sunetnextcloud.TestTarget()
@@ -374,8 +416,12 @@ class TestOcsCalls(unittest.TestCase):
                 capabilitiesThread = Capabilities(fullnode, self)
                 capabilitiesThread.start()
 
-        while(testThreadRunning == True):
+        while(g_testThreadsRunning > 0):
             time.sleep(1)
+
+        for fullnode in drv.fullnodes:
+            with self.subTest(mynode=fullnode):
+                self.assertTrue(g_testPassed[fullnode])
 
     def test_gssusers(self):
         drv = sunetnextcloud.TestTarget()
@@ -409,9 +455,12 @@ class TestOcsCalls(unittest.TestCase):
                 nodeUsersThread = NodeUsers(fullnode, self)
                 nodeUsersThread.start()
 
-        while(testThreadRunning == True):
+        while(g_testThreadsRunning > 0):
             time.sleep(1)
 
+        for fullnode in drv.fullnodes:
+            with self.subTest(mynode=fullnode):
+                self.assertTrue(g_testPassed[fullnode])
 
     def test_userlifecycle(self):
         drv = sunetnextcloud.TestTarget()
@@ -421,8 +470,12 @@ class TestOcsCalls(unittest.TestCase):
                 userLifecycleThread = UserLifeCycle(fullnode, self)
                 userLifecycleThread.start()
 
-        while(testThreadRunning == True):
+        while(g_testThreadsRunning > 0):
             time.sleep(1)
+
+        for fullnode in drv.fullnodes:
+            with self.subTest(mynode=fullnode):
+                self.assertTrue(g_testPassed[fullnode])
 
     def test_app_versions(self):
         drv = sunetnextcloud.TestTarget()
@@ -432,8 +485,12 @@ class TestOcsCalls(unittest.TestCase):
                 appVersionsThread = AppVersions(fullnode, self)
                 appVersionsThread.start()
 
-        while(testThreadRunning == True):
+        while(g_testThreadsRunning > 0):
             time.sleep(1)
+
+        for fullnode in drv.fullnodes:
+            with self.subTest(mynode=fullnode):
+                self.assertTrue(g_testPassed[fullnode])
 
 if __name__ == '__main__':
     unittest.main(testRunner=xmlrunner.XMLTestRunner(output='test-reports'))
