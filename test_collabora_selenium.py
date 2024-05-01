@@ -203,28 +203,30 @@ class TestCollaboraSelenium(unittest.TestCase):
 
                 # Check if the folder is empty
                 try:
-                    wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'empty-content__name')))
-                    isEmpty = True
-                    self.logger.info(f'Folder ist empty, creating new files')
-                except:
+                    # wait.until(EC.presence_of_element_located((By.XPATH, "//*[text()='Upload some content or sync with your devices!']")))
+                    if self.version.startswith('27'):
+                        wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'files-filestable')))
+                    else:
+                        wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'files-list__table')))
                     isEmpty = False
                     self.logger.info(f'Folder is not empty, adding new content')
+                except:
+                    self.logger.info(f'Folder is empty, creating new files')
+                    isEmpty = True
 
                 # Sort file list so that new files are created at the beginning of the list
                 if isEmpty == False:
                     try:
-                        self.logger.info(f'Wait for folder to be sortable')
-                        wait.until(EC.presence_of_element_located((By.LINK_TEXT, 'SeleniumCollaboraTest')))
-                        wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'sort-indicator')))
+                        if self.version.startswith('27'):
+                            wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'sort-indicator'))).click()
+                        else:
+                            wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'files-list__column-sort-button'))).click()
+                        self.logger.info(f'Changed sort order to descending')
                     except:
-                        self.logger.error(f'Unable to sort, save screenshot and continue...')
-                        screenshot = pyautogui.screenshot()
-                        screenshot.save("screenshots/" + collaboranode + "_test_markup_text_" + g_filename + ".png")
-                        # self.assertTrue(False)
+                        self.logger.warn(f'Unable to change sort order to descending')
 
-                    if (EC.presence_of_element_located((By.CLASS_NAME, 'icon-triangle-n'))):
-                        wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'sort-indicator'))).click
-                        self.logger.info(f'Change sorting to descending!')
+                # Should be replaced with presence check
+                time.sleep(3)
 
                 try:
                     wait.until(EC.presence_of_element_located((By.CLASS_NAME, self.addIcon))).click()
@@ -234,9 +236,13 @@ class TestCollaboraSelenium(unittest.TestCase):
                         wait.until(EC.presence_of_element_located((By.XPATH, "//*[contains(@id, 'input-file')]"))).send_keys(g_filename + Keys.ENTER)
                     else:
                         # Starting with Nextcloud 28, we have to rename the file
-                        self.logger.info('Renaming the file we just created')
+                        wait.until(EC.presence_of_element_located((By.XPATH, "//*[contains(text(), 'New document')]")))
+                        self.logger.info(f'Renaming the file we just created to {g_filename}.md')
                         ActionChains(self.driver).key_down(Keys.CONTROL).send_keys('a').key_up(Keys.CONTROL).perform()
-                        ActionChains(self.driver).send_keys(f'{g_filename}.md{Keys.ENTER}').perform()
+                        time.sleep(0.5)
+                        ActionChains(self.driver).send_keys(f'{g_filename}.md').perform()
+                        time.sleep(0.5)
+                        ActionChains(self.driver).send_keys(Keys.ENTER).perform()
                         pass
                 except:
                     self.logger.error(f'Unable to create new file: {g_filename}, saving screenshot')
@@ -374,40 +380,47 @@ class TestCollaboraSelenium(unittest.TestCase):
 
                         # Check if the folder is empty
                         try:
-                            wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'empty-content__name')))
-                            isEmpty = True
-                            self.logger.info(f'Folder ist empty, creating new files')
-                        except:
+                            # wait.until(EC.presence_of_element_located((By.XPATH, "//*[text()='Upload some content or sync with your devices!']")))
+                            if self.version.startswith('27'):
+                                wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'files-filestable')))
+                            else:
+                                wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'files-list__table')))
                             isEmpty = False
                             self.logger.info(f'Folder is not empty, adding new content')
+                        except:
+                            self.logger.info(f'Folder is empty, creating new files')
+                            isEmpty = True
 
                         # Sort file list so that new files are created at the beginning of the list
                         if isEmpty == False:
                             try:
-                                self.logger.info(f'Wait for folder to be sortable')
-                                wait.until(EC.presence_of_element_located((By.LINK_TEXT, testfolder)))
-                                wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'sort-indicator')))
+                                if self.version.startswith('27'):
+                                    wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'sort-indicator'))).click()
+                                else:
+                                    wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'files-list__column-sort-button'))).click()
+                                self.logger.info(f'Changed sort order to descending')
                             except:
-                                self.logger.error(f'Unable to sort, save screenshot and continue...')
-                                screenshot = pyautogui.screenshot()
-                                screenshot.save("screenshots/" + collaboranode + "_test_collabora_document_" + g_filename + ".png")
-                                # self.assertTrue(False)
+                                self.logger.warn(f'Unable to change sort order to descending')
 
-                            if (EC.presence_of_element_located((By.CLASS_NAME, 'icon-triangle-n'))):
-                                wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'sort-indicator'))).click
-                                self.logger.info(f'Change sorting to descending!')
+                        # Should be replaced with presence check
+                        time.sleep(3)
 
                         try:
                             wait.until(EC.presence_of_element_located((By.CLASS_NAME, self.addIcon))).click()
                             wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'icon-filetype-document'))).click()
+
                             if self.version.startswith('27'):
                                 # Write the filename in the menu
                                 wait.until(EC.presence_of_element_located((By.XPATH, "//*[contains(@id, 'input-file')]"))).send_keys(g_filename + Keys.ENTER)
                             else:
                                 # Starting with Nextcloud 28, we have to rename the file
-                                self.logger.info('Renaming the file we just created')
+                                wait.until(EC.presence_of_element_located((By.XPATH, "//*[contains(text(), 'New document')]")))
+                                self.logger.info(f'Renaming the file we just created to {g_filename}.odt')
                                 ActionChains(self.driver).key_down(Keys.CONTROL).send_keys('a').key_up(Keys.CONTROL).perform()
-                                ActionChains(self.driver).send_keys(f'{g_filename}.odt{Keys.ENTER}').perform()
+                                time.sleep(0.5)
+                                ActionChains(self.driver).send_keys(f'{g_filename}.odt').perform()
+                                time.sleep(0.5)
+                                ActionChains(self.driver).send_keys(Keys.ENTER).perform()
                                 pass
                         except:
                             self.logger.error(f'Unable to create new file: {g_filename}, saving screenshot')
@@ -538,30 +551,33 @@ class TestCollaboraSelenium(unittest.TestCase):
                 folderurl = self.drv.get_folder_url(collaboranode, "SeleniumCollaboraTest")
                 self.driver.get(folderurl)
 
+
                 # Check if the folder is empty
                 try:
-                    wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'empty-content__name')))
-                    isEmpty = True
-                    self.logger.info(f'Folder ist empty, creating new files')
-                except:
+                    # wait.until(EC.presence_of_element_located((By.XPATH, "//*[text()='Upload some content or sync with your devices!']")))
+                    if self.version.startswith('27'):
+                        wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'files-filestable')))
+                    else:
+                        wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'files-list__table')))
                     isEmpty = False
                     self.logger.info(f'Folder is not empty, adding new content')
+                except:
+                    self.logger.info(f'Folder is empty, creating new files')
+                    isEmpty = True
 
                 # Sort file list so that new files are created at the beginning of the list
                 if isEmpty == False:
                     try:
-                        self.logger.info(f'Wait for folder to be sortable')
-                        wait.until(EC.presence_of_element_located((By.LINK_TEXT, 'SeleniumCollaboraTest')))
-                        wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'sort-indicator')))
+                        if self.version.startswith('27'):
+                            wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'sort-indicator'))).click()
+                        else:
+                            wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'files-list__column-sort-button'))).click()
+                        self.logger.info(f'Changed sort order to descending')
                     except:
-                        self.logger.error(f'Unable to sort, save screenshot and continue...')
-                        screenshot = pyautogui.screenshot()
-                        screenshot.save("screenshots/" + collaboranode + "_test_markup_text_" + g_filename + ".png")
-                        # self.assertTrue(False)
+                        self.logger.warn(f'Unable to change sort order to descending')
 
-                    if (EC.presence_of_element_located((By.CLASS_NAME, 'icon-triangle-n'))):
-                        wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'sort-indicator'))).click
-                        self.logger.info(f'Change sorting to descending!')
+                # Should be replaced with presence check
+                time.sleep(3)
 
                 try:
                     wait.until(EC.presence_of_element_located((By.CLASS_NAME, self.addIcon))).click()
@@ -571,9 +587,13 @@ class TestCollaboraSelenium(unittest.TestCase):
                         wait.until(EC.presence_of_element_located((By.XPATH, "//*[contains(@id, 'input-file')]"))).send_keys(g_filename + Keys.ENTER)
                     else:
                         # Starting with Nextcloud 28, we have to rename the file
-                        self.logger.info('Renaming the file we just created')
+                        wait.until(EC.presence_of_element_located((By.XPATH, "//*[contains(text(), 'New document')]")))
+                        self.logger.info(f'Renaming the file we just created to {g_filename}.ods')
                         ActionChains(self.driver).key_down(Keys.CONTROL).send_keys('a').key_up(Keys.CONTROL).perform()
-                        ActionChains(self.driver).send_keys(f'{g_filename}.ods{Keys.ENTER}').perform()
+                        time.sleep(0.5)
+                        ActionChains(self.driver).send_keys(f'{g_filename}.ods').perform()
+                        time.sleep(0.5)
+                        ActionChains(self.driver).send_keys(Keys.ENTER).perform()
                         pass
                 except:
                     self.logger.error(f'Unable to create new file: {g_filename}, saving screenshot')
@@ -704,30 +724,33 @@ class TestCollaboraSelenium(unittest.TestCase):
                 folderurl = self.drv.get_folder_url(collaboranode, "SeleniumCollaboraTest")
                 self.driver.get(folderurl)
 
+
                 # Check if the folder is empty
                 try:
-                    wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'empty-content__name')))
-                    isEmpty = True
-                    self.logger.info(f'Folder ist empty, creating new files')
-                except:
+                    # wait.until(EC.presence_of_element_located((By.XPATH, "//*[text()='Upload some content or sync with your devices!']")))
+                    if self.version.startswith('27'):
+                        wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'files-filestable')))
+                    else:
+                        wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'files-list__table')))
                     isEmpty = False
                     self.logger.info(f'Folder is not empty, adding new content')
+                except:
+                    self.logger.info(f'Folder is empty, creating new files')
+                    isEmpty = True
 
                 # Sort file list so that new files are created at the beginning of the list
                 if isEmpty == False:
                     try:
-                        self.logger.info(f'Wait for folder to be sortable')
-                        wait.until(EC.presence_of_element_located((By.LINK_TEXT, 'SeleniumCollaboraTest')))
-                        wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'sort-indicator')))
+                        if self.version.startswith('27'):
+                            wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'sort-indicator'))).click()
+                        else:
+                            wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'files-list__column-sort-button'))).click()
+                        self.logger.info(f'Changed sort order to descending')
                     except:
-                        self.logger.error(f'Unable to sort, save screenshot and continue...')
-                        screenshot = pyautogui.screenshot()
-                        screenshot.save("screenshots/" + collaboranode + "_test_markup_text_" + g_filename + ".png")
-                        # self.assertTrue(False)
+                        self.logger.warn(f'Unable to change sort order to descending')
 
-                    if (EC.presence_of_element_located((By.CLASS_NAME, 'icon-triangle-n'))):
-                        wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'sort-indicator'))).click
-                        self.logger.info(f'Change sorting to descending!')
+                # Should be replaced with presence check
+                time.sleep(3)
 
                 try:
                     wait.until(EC.presence_of_element_located((By.CLASS_NAME, self.addIcon))).click()
@@ -737,9 +760,13 @@ class TestCollaboraSelenium(unittest.TestCase):
                         wait.until(EC.presence_of_element_located((By.XPATH, "//*[contains(@id, 'input-file')]"))).send_keys(g_filename + Keys.ENTER)
                     else:
                         # Starting with Nextcloud 28, we have to rename the file
-                        self.logger.info('Renaming the file we just created')
+                        wait.until(EC.presence_of_element_located((By.XPATH, "//*[contains(text(), 'New document')]")))
+                        self.logger.info(f'Renaming the file we just created to {g_filename}.odp')
                         ActionChains(self.driver).key_down(Keys.CONTROL).send_keys('a').key_up(Keys.CONTROL).perform()
-                        ActionChains(self.driver).send_keys(f'{g_filename}.odp{Keys.ENTER}').perform()
+                        time.sleep(0.5)
+                        ActionChains(self.driver).send_keys(f'{g_filename}.odp').perform()
+                        time.sleep(0.5)
+                        ActionChains(self.driver).send_keys(Keys.ENTER).perform()
                         pass
                 except:
                     self.logger.error(f'Unable to create new file: {g_filename}, saving screenshot')
