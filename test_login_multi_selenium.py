@@ -22,16 +22,28 @@ from selenium.webdriver.common.action_chains import ActionChains
 import os
 import time
 import logging
-import re
+import yaml
 
 # 'prod' for production environment, 'test' for test environment
 g_testtarget = os.environ.get('NextcloudTestTarget')
+g_expectedResultsFile = 'expected.yaml'
 g_filename=datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+g_drv={}
+g_version={}
 
 class TestLoginMultiSelenium(unittest.TestCase):
+    global g_drv, g_version
     logger = logging.getLogger(__name__)
     logging.basicConfig(format = '%(asctime)s - %(module)s.%(funcName)s - %(levelname)s: %(message)s',
                     datefmt = '%Y-%m-%d %H:%M:%S', level = logging.INFO)
+
+    with open(g_expectedResultsFile, "r") as stream:
+        expectedResults=yaml.safe_load(stream)
+
+    # Some class names of icons changed from Nextcloud 27 to 28
+    drv = sunetnextcloud.TestTarget(g_testtarget)
+    g_drv = drv
+    g_version = expectedResults[drv.target]['status']['version']
 
     def deleteCookies(self, driver):
         cookies = driver.get_cookies()
@@ -42,24 +54,24 @@ class TestLoginMultiSelenium(unittest.TestCase):
 
     def test_logger(self):
         self.logger.info(f'self.logger.info test_logger')
+        self.logger.info(f'Expecting Nextcloud version: {g_version}')
         pass
 
     def test_node_multi_login(self):
         delay = 30 # seconds
-        drv = sunetnextcloud.TestTarget(g_testtarget)
-        for fullnode in drv.fullnodes:
+        for fullnode in g_drv.fullnodes:
             with self.subTest(mynode=fullnode):
                 success = True
-                loginurl = drv.get_node_login_url(fullnode)
+                loginurl = g_drv.get_node_login_url(fullnode)
                 self.logger.info(f'URL: {loginurl}')
-                nodeuser = drv.get_seleniummfauser(fullnode)
+                nodeuser = g_drv.get_seleniummfauser(fullnode)
                 self.logger.info(f'Username: {nodeuser}')
-                nodepwd = drv.get_seleniummfauserpassword(fullnode)
-                nodeapppwd = drv.get_seleniummfauserapppassword(fullnode)
-                nodetotpsecret = drv.get_seleniummfausertotpsecret(fullnode)
+                nodepwd = g_drv.get_seleniummfauserpassword(fullnode)
+                nodeapppwd = g_drv.get_seleniummfauserapppassword(fullnode)
+                nodetotpsecret = g_drv.get_seleniummfausertotpsecret(fullnode)
 
                 # Create folder for testing using webdav
-                url = drv.get_webdav_url(fullnode, nodeuser)
+                url = g_drv.get_webdav_url(fullnode, nodeuser)
                 options = {
                 'webdav_hostname': url,
                 'webdav_login' : nodeuser,
@@ -109,11 +121,11 @@ class TestLoginMultiSelenium(unittest.TestCase):
 
                 if success == False:
                     self.logger.warning(f'Manually open dashboard in case loading of all files takes too much time')
-                    driver.get(drv.get_dashboard_url(fullnode))
+                    driver.get(g_drv.get_dashboard_url(fullnode))
                     success = True
 
                 # Check URLs after login
-                dashboardUrl = drv.get_dashboard_url(fullnode)
+                dashboardUrl = g_drv.get_dashboard_url(fullnode)
                 currentUrl = driver.current_url
                 # self.assertEqual(dashboardUrl, currentUrl)                
 
@@ -134,13 +146,22 @@ class TestLoginMultiSelenium(unittest.TestCase):
                 except TimeoutException:
                     self.logger.warning(f'Loading of all files took too much time!')
 
-                try:
-                    wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'icon-shared')))
-                    sharefolder = driver.find_element(by=By.CLASS_NAME, value='icon-shared')
-                    sharefolder.click()
-                    self.logger.info(f'Clicked on share folder')
-                except:
-                    self.logger.info(f'icon-shared not found')
+                if g_version.startswith('27'):
+                    try:
+                        wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'icon-shared')))
+                        sharefolder = driver.find_element(by=By.CLASS_NAME, value='icon-shared')
+                        sharefolder.click()
+                        self.logger.info(f'Clicked on share folder')
+                    except:
+                        self.logger.info(f'icon-shared not found')
+                else: # 28
+                    try:
+                        wait.until(EC.presence_of_element_located((By.XPATH, '//*[@title="Show sharing options"]')))
+                        sharefolder = driver.find_element(by=By.XPATH, value='//*[@title="Show sharing options"]')
+                        sharefolder.click()
+                        self.logger.info(f'Clicked on share folder')
+                    except:
+                        self.logger.info(f'icon-shared not found')
 
                 try:
                     wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'sharing-entry__title')))
@@ -157,13 +178,14 @@ class TestLoginMultiSelenium(unittest.TestCase):
                 self.logger.info(driver.current_url)
 
                 if fullnode == 'scilifelab':
-                    self.assertEqual(driver.current_url, drv.get_node_post_logout_saml_url(fullnode))
+                    self.assertEqual(driver.current_url, g_drv.get_node_post_logout_saml_url(fullnode))
                 elif fullnode == 'kau':
-                    self.assertEqual(driver.current_url, drv.get_node_post_logout_url(fullnode))
-                elif fullnode == 'swamid':
+                    self.assertEqual(driver.current_url, g_drv.get_node_post_logout_url(fullnode))
+                elif fullnode == 'swamid' or fullnode == 'extern' or fullnode == 'sunet':
+                    self.logger.info(f'Not checking logout URL for {fullnode}')
                     pass
                 else:
-                    self.assertEqual(driver.current_url, drv.get_gss_post_logout_url())
+                    self.assertEqual(driver.current_url, g_drv.get_gss_post_logout_url())
 
                 self.logger.info(f'{driver.current_url}')
 
@@ -172,14 +194,14 @@ class TestLoginMultiSelenium(unittest.TestCase):
                 self.deleteCookies(driver)
                 time.sleep(1)
 
-                loginurl = drv.get_node_login_url(fullnode)
+                loginurl = g_drv.get_node_login_url(fullnode)
                 self.logger.info(f'URL: {loginurl}')
-                nodeuser = drv.get_seleniumuser(fullnode)
+                nodeuser = g_drv.get_seleniumuser(fullnode)
                 self.logger.info(f'Username: {nodeuser}')
-                nodepwd = drv.get_seleniumuserpassword(fullnode)
+                nodepwd = g_drv.get_seleniumuserpassword(fullnode)
 
                 # Create folder for testing using webdav
-                url = drv.get_webdav_url(fullnode, nodeuser)
+                url = g_drv.get_webdav_url(fullnode, nodeuser)
                 options = {
                 'webdav_hostname': url,
                 'webdav_login' : nodeuser,
@@ -208,7 +230,7 @@ class TestLoginMultiSelenium(unittest.TestCase):
                     self.logger.warning(f'Loading of app menu took too much time!')
 
                 # Check URLs after login
-                dashboardUrl = drv.get_dashboard_url(fullnode)
+                dashboardUrl = g_drv.get_dashboard_url(fullnode)
                 currentUrl = driver.current_url
                 if currentUrl.endswith('/#/'):
                     dashboardUrl = dashboardUrl + '#/'
@@ -223,13 +245,22 @@ class TestLoginMultiSelenium(unittest.TestCase):
                 except TimeoutException:
                     self.logger.warning(f'Loading of all files took too much time!')
 
-                try:
-                    wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'icon-shared')))
-                    sharefolder = driver.find_element(by=By.CLASS_NAME, value='icon-shared')
-                    sharefolder.click()
-                    self.logger.info(f'Clicked on share folder')
-                except:
-                    self.logger.info(f'icon-shared not found')
+                if g_version.startswith('27'):
+                    try:
+                        wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'icon-shared')))
+                        sharefolder = driver.find_element(by=By.CLASS_NAME, value='icon-shared')
+                        sharefolder.click()
+                        self.logger.info(f'Clicked on share folder')
+                    except:
+                        self.logger.info(f'icon-shared not found')
+                else: # 28
+                    try:
+                        wait.until(EC.presence_of_element_located((By.XPATH, '//*[@title="Show sharing options"]')))
+                        sharefolder = driver.find_element(by=By.XPATH, value='//*[@title="Show sharing options"]')
+                        sharefolder.click()
+                        self.logger.info(f'Clicked on share folder')
+                    except:
+                        self.logger.info(f'icon-shared not found')
 
                 try:
                     wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'sharing-entry__title')))
@@ -246,13 +277,14 @@ class TestLoginMultiSelenium(unittest.TestCase):
                 self.logger.info(driver.current_url)
 
                 if fullnode == 'scilifelab':
-                    self.assertEqual(driver.current_url, drv.get_node_post_logout_saml_url(fullnode))
+                    self.assertEqual(driver.current_url, g_drv.get_node_post_logout_saml_url(fullnode))
                 elif fullnode == 'kau':
-                    self.assertEqual(driver.current_url, drv.get_node_post_logout_url(fullnode))
-                elif fullnode == 'swamid':
+                    self.assertEqual(driver.current_url, g_drv.get_node_post_logout_url(fullnode))
+                elif fullnode == 'swamid' or fullnode == 'extern' or fullnode == 'sunet':
+                    self.logger.info(f'Not checking logout URL for {fullnode}')
                     pass
                 else:
-                    self.assertEqual(driver.current_url, drv.get_gss_post_logout_url())
+                    self.assertEqual(driver.current_url, g_drv.get_gss_post_logout_url())
                 driver.implicitly_wait(10) # seconds before quitting                
 
 if __name__ == '__main__':
