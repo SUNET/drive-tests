@@ -33,10 +33,11 @@ logging.basicConfig(format = '%(asctime)s - %(module)s.%(funcName)s - %(levelnam
                 datefmt = '%Y-%m-%d %H:%M:%S', level = logging.INFO)
 
 class WebDAVDneCheck(threading.Thread):
-    def __init__(self, name, TestWebDAV):
+    def __init__(self, name, basicAuth, TestWebDAV):
         threading.Thread.__init__(self)
         self.name = name
         self.TestWebDAV = TestWebDAV
+        self.basicAuth = basicAuth
 
     def run(self):
         global logger
@@ -50,7 +51,13 @@ class WebDAVDneCheck(threading.Thread):
         logger.info(f'Setting passed for {fullnode} to {g_testPassed.get(fullnode)}')
         
         nodeuser = drv.get_seleniumuser(fullnode)
-        nodepwd = drv.get_seleniumuserpassword(fullnode)
+        if self.basicAuth == True:
+            logger.info(f'Testing with basic authentication')
+            nodepwd = drv.get_seleniumuserpassword(fullnode)
+        else:
+            logger.info(f'Testing with application password')
+            nodepwd = drv.get_seleniumuserapppassword(fullnode)
+
         url = drv.get_webdav_url(fullnode, nodeuser)
         logger.info(f'URL: {url}')
         options = {
@@ -497,7 +504,7 @@ class TestWebDAV(unittest.TestCase):
         logger.info(f'TestID: {self._testMethodName}')
         pass
 
-    def test_webdav_dne_check(self):
+    def test_webdav_dne_check_basic_auth(self):
         global logger
         global g_testThreadsRunning
         logger.info(f'test_webdav_dne_check')
@@ -505,7 +512,25 @@ class TestWebDAV(unittest.TestCase):
         for fullnode in drv.fullnodes:
             with self.subTest(mynode=fullnode):
                 logger.info(f'TestID: {fullnode}')
-                WebDAVDneCheckThread = WebDAVDneCheck(fullnode, self)
+                WebDAVDneCheckThread = WebDAVDneCheck(fullnode, True, self)
+                WebDAVDneCheckThread.start()
+
+        while(g_testThreadsRunning > 0):
+            time.sleep(1)
+
+        for fullnode in drv.fullnodes:
+            with self.subTest(mynode=fullnode):
+                self.assertTrue(g_testPassed[fullnode])
+
+    def test_webdav_dne_check_app_token(self):
+        global logger
+        global g_testThreadsRunning
+        logger.info(f'test_webdav_dne_check')
+        drv = sunetnextcloud.TestTarget()
+        for fullnode in drv.fullnodes:
+            with self.subTest(mynode=fullnode):
+                logger.info(f'TestID: {fullnode}')
+                WebDAVDneCheckThread = WebDAVDneCheck(fullnode, False, self)
                 WebDAVDneCheckThread.start()
 
         while(g_testThreadsRunning > 0):
