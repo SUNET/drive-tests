@@ -48,8 +48,8 @@ prod:
       hasTemplateSource: true
       hasZoteroSupport: true
       productName: "Collabora Online"
-      productVersion: "23.05.6.5"
-      productVersionHash: "84551c8"
+      productVersion: "23.05.10.1"
+      productVersionHash: "baa6eef"
 test:
   status:
     installed: true
