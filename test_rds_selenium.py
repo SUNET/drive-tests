@@ -358,10 +358,23 @@ class TestRDSSelenium(unittest.TestCase):
 
         try:
             self.logger.info(f'Wait maximum 60s for success info')
+            idElement = wait.until(EC.presence_of_element_located((By.XPATH, "//*[contains(text(), 'Project created with ID')]")))
+            self.logger.info(f'ID element found: {idElement.text}')
+
+            osfUrl = 'https://test.osf.io/' + idElement.text.replace('Project created with ID','').replace(' ','') + '/'
+            self.logger.info(f'OSF URL: {osfUrl}')
+
             WebDriverWait(driver, 60).until(EC.presence_of_element_located((By.XPATH, "//*[contains(text(), 'successfully published')]")))
             self.logger.info(f'Dataset successfully published!')
         except:
             self.logger.info(f'Error publishing dataset')
+
+        try:
+            self.logger.info(f'Try to get DOI string')
+            doiElement = wait.until(EC.presence_of_element_located((By.XPATH, "//*[contains(text(), 'Published project with DOI')]")))
+            self.logger.info(f'Project DOI: {doiElement.text.replace('Published project with DOI','').replace(' ','')}')
+        except:
+            self.logger.warning(f'Could not get DOI information')
 
         self.assertTrue(proceed)
 
