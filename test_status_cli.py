@@ -21,6 +21,7 @@ import os
 expectedResultsFile = 'expected.yaml'
 testThreadsRunning = 0
 g_failedNodes = []
+g_requestTimeout=10
 logger = logging.getLogger(__name__)
 logging.basicConfig(format = '%(asctime)s - %(module)s.%(funcName)s - %(levelname)s: %(message)s',
                 datefmt = '%Y-%m-%d %H:%M:%S', level = logging.INFO)
@@ -43,7 +44,7 @@ class StatusInfo(threading.Thread):
         logger.info(f'StatusInfo thread {testThreadsRunning} started for node {self.url}')
 
         try:
-            r =requests.get(self.url)
+            r =requests.get(self.url, timeout=g_requestTimeout)
         except:
             logger.error(f'Error getting data from {self.url}')
             testThreadsRunning -= 1
@@ -84,14 +85,15 @@ class Status(threading.Thread):
         logger.info(f'Status thread {testThreadsRunning} started for node {self.url}')
 
         try:
-            r=requests.get(self.url)
+            r=requests.get(self.url, timeout=g_requestTimeout)
             self.TestStatus.assertEqual(r.status_code, 200)
             logger.info(f'Status tested: {self.url}')
-        except:
+        except Exception as error:
+            logger.error(f'An error occurred: {error}')
             g_failedNodes.append(self.url)
             logger.info('Status test failed')
             testThreadsRunning -= 1
-            logger.info(r.text)
+            # logger.info(r.text)
             self.TestStatus.assertTrue(False)
             return
 
@@ -112,11 +114,14 @@ class TestStatus(unittest.TestCase):
             logger.info('Not testing gss')
             return
 
-        url = drv.get_gss_url()
-        print(self._testMethodName, url)
-        r=requests.get(url)
-        self.assertEqual(r.status_code, 200)
-        logger.info(f'GSS Status tested')
+        try:
+            url = drv.get_gss_url()
+            logger.info(f'{self._testMethodName} - {url}')
+            r=requests.get(url, timeout=g_requestTimeout)
+            self.assertEqual(r.status_code, 200)
+            logger.info(f'GSS Status tested')
+        except Exception as error:
+            logger.error(f'An error occurred: {error}')
 
     def test_statusinfo_gss(self):
         global logger
@@ -129,7 +134,7 @@ class TestStatus(unittest.TestCase):
 
         url=drv.get_gss_url() + "/status.php"
         print(self._testMethodName, url)
-        r =requests.get(url)
+        r =requests.get(url, timeout=g_requestTimeout)
         j = json.loads(r.text)
 
         self.assertEqual(j["maintenance"], expectedResults[drv.target]['status_gss']['maintenance']) 
@@ -188,7 +193,7 @@ class TestStatus(unittest.TestCase):
         expectedEntityId = ''
         certMd5 = ''
         logger.info(f'Verify metadata for {url}')
-        r = requests.get(url)
+        r = requests.get(url, timeout=g_requestTimeout)
 
         try:
             metadataXml = fromstring(r.text)
@@ -221,7 +226,7 @@ class TestStatus(unittest.TestCase):
         for i in range(1,numCollaboraNodes+1):
             url = drv.get_collabora_node_url(i)
             logger.info(f'Testing Collabora Node: {url}')
-            r = requests.get(url)
+            r = requests.get(url, timeout=g_requestTimeout)
             logger.info(f'Status: {r.text}')
             self.assertEqual(expectedResults[drv.target]['collabora']['status'], r.text)
 

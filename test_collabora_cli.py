@@ -15,6 +15,7 @@ import time
 import sunetnextcloud
 import os
 
+g_requestTimeout=10
 expectedResultsFile = 'expected.yaml'
 testThreadRunning = False
 logger = logging.getLogger(__name__)
@@ -40,7 +41,7 @@ class TestCollabora(unittest.TestCase):
             url=drv.get_collabora_capabilities_url(i)
             logger.info(f'Testing collabora server url: {url}')
 
-            r =requests.get(url)
+            r =requests.get(url, timeout=g_requestTimeout)
             j = json.loads(r.text)
 
             self.assertEqual(j['hasMobileSupport'], expectedResults[drv.target]['collabora']['capabilities']['hasMobileSupport']) 

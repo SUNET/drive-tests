@@ -19,6 +19,7 @@ ocsheaders = { "OCS-APIRequest" : "true" }
 expectedResultsFile = 'expected.yaml'
 g_testPassed = {}
 g_testThreadsRunning = 0
+g_requestTimeout = 10
 
 logger = logging.getLogger('TestLogger')
 logging.basicConfig(format = '%(asctime)s - %(module)s.%(funcName)s - %(levelname)s: %(message)s',
@@ -186,7 +187,7 @@ class NodeUsers(threading.Thread):
         url = url.replace("$USERNAME$", nodeuser)
         url = url.replace("$PASSWORD$", nodepwd)
 
-        r = requests.get(url, headers=ocsheaders)
+        r = requests.get(url, headers=ocsheaders, timeout=g_requestTimeout)
         try:
             j = json.loads(r.text)
             logger.info(json.dumps(j, indent=4, sort_keys=True))
@@ -223,7 +224,7 @@ class CapabilitiesNoUser(threading.Thread):
 
         url = drv.get_ocs_capabilities_url(fullnode)
         logger.info(f'{self.TestOcsCalls._testMethodName} {url}')
-        r=requests.get(url, headers=ocsheaders)
+        r=requests.get(url, headers=ocsheaders, timeout=g_requestTimeout)
         try:
             j = json.loads(r.text)
         except:
@@ -271,7 +272,7 @@ class Capabilities(threading.Thread):
         nodeuser = drv.get_ocsuser(fullnode)
         nodepwd = drv.get_ocsuserpassword(fullnode)
 
-        r=requests.get(url, headers=ocsheaders, auth = HTTPBasicAuth(nodeuser, nodepwd))
+        r=requests.get(url, headers=ocsheaders, auth = HTTPBasicAuth(nodeuser, nodepwd), timeout=g_requestTimeout)
         try:
             j = json.loads(r.text)
         except:
@@ -438,7 +439,7 @@ class TestOcsCalls(unittest.TestCase):
         url = url.replace("$USERNAME$", nodeuser)
         url = url.replace("$PASSWORD$", nodepwd)
 
-        r = requests.get(url, headers=ocsheaders)
+        r = requests.get(url, headers=ocsheaders, timeout=g_requestTimeout)
         try:
             j = json.loads(r.text)
             # logger.info(json.dumps(j, indent=4, sort_keys=True))
