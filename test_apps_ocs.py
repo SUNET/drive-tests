@@ -165,18 +165,17 @@ class NumberOfAppsOnNode(threading.Thread):
             
         try:
             numExpectedApps = expectedResults[drv.target]['ocsapps'][fullnode]
-            logger.info(f'Expected number of apps differs from default: {numExpectedApps}')
+            logger.info(f'Expected number of apps differs from default for {fullnode}: {numExpectedApps}')
         except:
             numExpectedApps = expectedResults[drv.target]['ocsapps']['default']
             logger.info(f'Expected number of apps: {numExpectedApps}')
-            testThreadRunning = False
-            return
 
         if len(nodeApps) != numExpectedApps:
-            logger.error(f'Number of apps {len(nodeApps)} != {numExpectedApps} for {self.name}')
+            logger.error(f'Fail: Number of apps {len(nodeApps)} != {numExpectedApps} for {self.name}')
             testThreadRunning = False
             return
         else:
+            logger.info(f'Pass: Number of apps {len(nodeApps)} == {numExpectedApps} for {self.name}')
             g_testPassed[fullnode] = True
 
         logger.info(f'Test number of apps done for node {self.name}')
