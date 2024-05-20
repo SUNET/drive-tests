@@ -13,6 +13,7 @@ import xmlrunner
 ocsheaders = { "OCS-APIRequest" : "true" } 
 expectedResultsFile = 'expected.yaml'
 testThreadRunning = False
+g_testPassed = {}
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(format = '%(asctime)s - %(module)s.%(funcName)s - %(levelname)s: %(message)s',
@@ -22,19 +23,17 @@ with open(expectedResultsFile, "r") as stream:
     expectedResults=yaml.safe_load(stream)
 
 class ConfiguredAppsInstalled(threading.Thread):
-    def __init__(self, name, TestAppsOcs):
+    def __init__(self, name):
         threading.Thread.__init__(self)
         self.name = name
-        self.TestAppsOcs = TestAppsOcs
 
     def run(self):
-        global testThreadRunning
-        global logger
+        global testThreadRunning, logger, g_testPassed
         testThreadRunning = True
         logger.info(f'ConfiguredAppsInstalled thread started for node {self.name}')
         drv = sunetnextcloud.TestTarget()
-        fullnode = self.name    
-
+        fullnode = self.name
+        g_testPassed[fullnode] = False
         session = requests.Session()
         nodeuser = drv.get_ocsuser(fullnode)
         nodepwd = drv.get_ocsuserapppassword(fullnode)
@@ -57,7 +56,7 @@ class ConfiguredAppsInstalled(threading.Thread):
             logger.warning(f'No JSON reply received on node {fullnode}')
             # self.logger.warning(r.text)
             testThreadRunning = False
-            self.TestAppsOcs.assertTrue(False)
+            return
 
         logger.info(f'Check if all apps configured in {expectedResultsFile} are installed on {fullnode}')
 
@@ -66,26 +65,28 @@ class ConfiguredAppsInstalled(threading.Thread):
             print()
             try:
                 pos = nodeApps.index(expectedApp)
-                logger.info(f'Found app at {pos}')    
+                logger.info(f'Found app at {pos}')
+                g_testPassed[fullnode] = True
             except:
                 logger.warning(f'App {expectedApp} NOT found on {fullnode}')
+                testThreadRunning = False
+                return
 
         logger.info(f'ConfiguredAppsInstalled thread done for node {self.name}')
         testThreadRunning = False
 
 class InstalledAppsConfigured(threading.Thread):
-    def __init__(self, name, TestAppsOcs):
+    def __init__(self, name):
         threading.Thread.__init__(self)
         self.name = name
-        self.TestAppsOcs = TestAppsOcs
 
     def run(self):
-        global testThreadRunning
-        global logger
+        global testThreadRunning, logger, g_testPassed
         testThreadRunning = True
         logger.info(f'InstalledAppsConfigured thread started for node {self.name}')
         drv = sunetnextcloud.TestTarget()
         fullnode = self.name
+        g_testPassed[fullnode] = False
 
         session = requests.Session()
         nodeuser = drv.get_ocsuser(fullnode)
@@ -109,31 +110,33 @@ class InstalledAppsConfigured(threading.Thread):
             logger.warning(f'No JSON reply received on {fullnode}')
             # self.logger.warning(r.text)
             testThreadRunning = False
-            self.TestAppsOcs.assertTrue(False)
+            return
 
         logger.info(f'Check if all installed apps on {fullnode} are found in {expectedResultsFile}')
         for nodeApp in nodeApps:
             try:
                 appInfo = expectedResults['apps'][nodeApp]
+                g_testPassed[fullnode] = True
             except:
                 logger.warning(f'{nodeApp} NOT found on {fullnode}')
+                testThreadRunning = False
+                return
 
         logger.info(f'InstalledAppsConfigured thread done for node {self.name}')
         testThreadRunning = False
 
 class NumberOfAppsOnNode(threading.Thread):
-    def __init__(self, name, TestAppsOcs):
+    def __init__(self, name):
         threading.Thread.__init__(self)
         self.name = name
-        self.TestAppsOcs = TestAppsOcs
 
     def run(self):
-        global testThreadRunning
-        global logger
+        global testThreadRunning, logger, g_testPassed
         testThreadRunning = True
         logger.info(f'NumberOfAppsOnNode thread started for node {self.name}')
         drv = sunetnextcloud.TestTarget()
         fullnode = self.name
+        g_testPassed[fullnode] = False
 
         session = requests.Session()
         nodeuser = drv.get_ocsuser(fullnode)
@@ -158,6 +161,7 @@ class NumberOfAppsOnNode(threading.Thread):
             logger.warning(f'No JSON reply received')
             logger.warning(r.text)
             testThreadRunning = False
+            return
             
         try:
             numExpectedApps = expectedResults[drv.target]['ocsapps'][fullnode]
@@ -166,13 +170,14 @@ class NumberOfAppsOnNode(threading.Thread):
             numExpectedApps = expectedResults[drv.target]['ocsapps']['default']
             logger.info(f'Expected number of apps: {numExpectedApps}')
             testThreadRunning = False
+            return
 
-        try:
-            self.TestAppsOcs.assertEqual(len(nodeApps), numExpectedApps)
-            logger.info(f'NumberOfAppsOnNode thread done for node {self.name}')
-        except:
-            logger.error(f'Error with number of apps for node {self.name}')
+        if len(nodeApps) != numExpectedApps:
+            logger.error(f'Number of apps {len(nodeApps)} != {numExpectedApps} for {self.name}')
             testThreadRunning = False
+            return
+        else:
+            g_testPassed[fullnode] = True
 
         logger.info(f'Test number of apps done for node {self.name}')
         testThreadRunning = False
@@ -189,11 +194,15 @@ class TestAppsOcs(unittest.TestCase):
         for fullnode in drv.fullnodes:
             with self.subTest(mynode=fullnode):
                 logger.info(f'TestID: {fullnode}')
-                numberOfAppsOnNodeThread = NumberOfAppsOnNode(fullnode, self)
+                numberOfAppsOnNodeThread = NumberOfAppsOnNode(fullnode)
                 numberOfAppsOnNodeThread.start()
 
         while(testThreadRunning == True):
             time.sleep(1)
+
+        for fullnode in drv.fullnodes:
+            with self.subTest(mynode=fullnode):
+                self.assertTrue(g_testPassed[fullnode])
 
     # Test if the apps installed on the node are found in the configuration file
     def test_installed_apps_configured(self):
@@ -202,11 +211,15 @@ class TestAppsOcs(unittest.TestCase):
         for fullnode in drv.fullnodes:
             with self.subTest(mynode=fullnode):
                 logger.info(f'TestID: {fullnode}')
-                InstalledAppsConfiguredThread = InstalledAppsConfigured(fullnode, self)
+                InstalledAppsConfiguredThread = InstalledAppsConfigured(fullnode)
                 InstalledAppsConfiguredThread.start()
 
         while(testThreadRunning == True):
             time.sleep(1)
+
+        for fullnode in drv.fullnodes:
+            with self.subTest(mynode=fullnode):
+                self.assertTrue(g_testPassed[fullnode])
 
     # Test if all configured/expected apps are installed on the node
     def test_configured_apps_installed(self):
@@ -215,11 +228,15 @@ class TestAppsOcs(unittest.TestCase):
         for fullnode in drv.fullnodes:
             with self.subTest(mynode=fullnode):
                 logger.info(f'TestID: {fullnode}')
-                ConfiguredAppsInstalledThread = ConfiguredAppsInstalled(fullnode, self)
+                ConfiguredAppsInstalledThread = ConfiguredAppsInstalled(fullnode)
                 ConfiguredAppsInstalledThread.start()
 
         while(testThreadRunning == True):
             time.sleep(1)
+
+        for fullnode in drv.fullnodes:
+            with self.subTest(mynode=fullnode):
+                self.assertTrue(g_testPassed[fullnode])
 
 if __name__ == '__main__':
     unittest.main(testRunner=xmlrunner.XMLTestRunner(output='test-reports'))
