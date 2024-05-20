@@ -12,6 +12,7 @@ import xmlrunner
 
 ocsheaders = { "OCS-APIRequest" : "true" } 
 expectedResultsFile = 'expected.yaml'
+g_testThreadsRunning = 0
 testThreadRunning = False
 g_testPassed = {}
 
@@ -28,8 +29,8 @@ class ConfiguredAppsInstalled(threading.Thread):
         self.name = name
 
     def run(self):
-        global testThreadRunning, logger, g_testPassed
-        testThreadRunning = True
+        global testThreadRunning, logger, g_testPassed, g_testThreadsRunning
+        g_testThreadsRunning += 1
         logger.info(f'ConfiguredAppsInstalled thread started for node {self.name}')
         drv = sunetnextcloud.TestTarget()
         fullnode = self.name
@@ -55,7 +56,7 @@ class ConfiguredAppsInstalled(threading.Thread):
         except:
             logger.warning(f'No JSON reply received on node {fullnode}')
             # self.logger.warning(r.text)
-            testThreadRunning = False
+            g_testThreadsRunning -= 1
             return
 
         logger.info(f'Check if all apps configured in {expectedResultsFile} are installed on {fullnode}')
@@ -69,11 +70,11 @@ class ConfiguredAppsInstalled(threading.Thread):
                 g_testPassed[fullnode] = True
             except:
                 logger.warning(f'App {expectedApp} NOT found on {fullnode}')
-                testThreadRunning = False
+                g_testThreadsRunning -= 1
                 return
 
         logger.info(f'ConfiguredAppsInstalled thread done for node {self.name}')
-        testThreadRunning = False
+        g_testThreadsRunning -= 1
 
 class InstalledAppsConfigured(threading.Thread):
     def __init__(self, name, app='all'):
@@ -82,8 +83,8 @@ class InstalledAppsConfigured(threading.Thread):
         self.app = app
 
     def run(self):
-        global testThreadRunning, logger, g_testPassed
-        testThreadRunning = True
+        global testThreadRunning, logger, g_testPassed, g_testThreadsRunning
+        g_testThreadsRunning += 1
         logger.info(f'InstalledAppsConfigured thread started for node {self.name}')
         drv = sunetnextcloud.TestTarget()
         fullnode = self.name
@@ -110,7 +111,7 @@ class InstalledAppsConfigured(threading.Thread):
         except:
             logger.warning(f'No JSON reply received on {fullnode}')
             # self.logger.warning(r.text)
-            testThreadRunning = False
+            g_testThreadsRunning -= 1
             return
 
         if self.app == 'all':
@@ -121,19 +122,22 @@ class InstalledAppsConfigured(threading.Thread):
                     g_testPassed[fullnode] = True
                 except:
                     logger.warning(f'{nodeApp} NOT found on {fullnode}')
-                    testThreadRunning = False
+                    g_testThreadsRunning -= 1
                     return
                 
         else: # Check if specific app is installed/active
             try:
+                installed = self.app in nodeApps
+                logger.info(f'App {self.app} is installed: {installed} on {fullnode}')
                 g_testPassed[fullnode] = self.app in nodeApps
             except:
                 logger.error(f'{self.app} NOT found on {fullnode}')
-                testThreadRunning = False
+                logger.info(f'Apps found are: {nodeApps}')
+                g_testThreadsRunning -= 1
                 return       
 
         logger.info(f'InstalledAppsConfigured thread done for node {self.name}')
-        testThreadRunning = False
+        g_testThreadsRunning -= 1
 
 class NumberOfAppsOnNode(threading.Thread):
     def __init__(self, name):
@@ -141,8 +145,8 @@ class NumberOfAppsOnNode(threading.Thread):
         self.name = name
 
     def run(self):
-        global testThreadRunning, logger, g_testPassed
-        testThreadRunning = True
+        global testThreadRunning, logger, g_testPassed, g_testThreadsRunning
+        g_testThreadsRunning += 1
         logger.info(f'NumberOfAppsOnNode thread started for node {self.name}')
         drv = sunetnextcloud.TestTarget()
         fullnode = self.name
@@ -170,7 +174,7 @@ class NumberOfAppsOnNode(threading.Thread):
         except:
             logger.warning(f'No JSON reply received')
             logger.warning(r.text)
-            testThreadRunning = False
+            g_testThreadsRunning -= 1
             return
             
         try:
@@ -182,14 +186,14 @@ class NumberOfAppsOnNode(threading.Thread):
 
         if len(nodeApps) != numExpectedApps:
             logger.error(f'Fail: Number of apps {len(nodeApps)} != {numExpectedApps} for {self.name}')
-            testThreadRunning = False
+            g_testThreadsRunning -= 1
             return
         else:
             logger.info(f'Pass: Number of apps {len(nodeApps)} == {numExpectedApps} for {self.name}')
             g_testPassed[fullnode] = True
 
         logger.info(f'Test number of apps done for node {self.name}')
-        testThreadRunning = False
+        g_testThreadsRunning -= 1
 
 class TestAppsOcs(unittest.TestCase):
     def test_logger(self):
@@ -206,7 +210,7 @@ class TestAppsOcs(unittest.TestCase):
                 numberOfAppsOnNodeThread = NumberOfAppsOnNode(fullnode)
                 numberOfAppsOnNodeThread.start()
 
-        while(testThreadRunning == True):
+        while(g_testThreadsRunning > 0):
             time.sleep(1)
 
         for fullnode in drv.fullnodes:
@@ -223,7 +227,7 @@ class TestAppsOcs(unittest.TestCase):
                 InstalledAppsConfiguredThread = InstalledAppsConfigured(fullnode)
                 InstalledAppsConfiguredThread.start()
 
-        while(testThreadRunning == True):
+        while(g_testThreadsRunning > 0):
             time.sleep(1)
 
         for fullnode in drv.fullnodes:
@@ -240,7 +244,7 @@ class TestAppsOcs(unittest.TestCase):
                 ConfiguredAppsInstalledThread = ConfiguredAppsInstalled(fullnode)
                 ConfiguredAppsInstalledThread.start()
 
-        while(testThreadRunning == True):
+        while(g_testThreadsRunning > 0):
             time.sleep(1)
 
         for fullnode in drv.fullnodes:
@@ -257,11 +261,12 @@ class TestAppsOcs(unittest.TestCase):
                 InstalledAppsConfiguredThread = InstalledAppsConfigured(fullnode, app='announcementcenter')
                 InstalledAppsConfiguredThread.start()
 
-        while(testThreadRunning == True):
+        while(g_testThreadsRunning > 0):
             time.sleep(1)
 
         for fullnode in drv.fullnodes:
             with self.subTest(mynode=fullnode):
+                logger.info(f'Passed: {g_testPassed[fullnode]} for {fullnode}')
                 self.assertTrue(g_testPassed[fullnode])
 
 if __name__ == '__main__':
