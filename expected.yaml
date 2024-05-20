@@ -78,7 +78,7 @@ test:
   cert_md5: '9dc0f8318dcda31e78308705449f1e2a'
   ocsapps: 
     default: 70
-    sunet: 70
+    sunet: 71
   collabora:
     nodes: 3
     status: 'OK'
