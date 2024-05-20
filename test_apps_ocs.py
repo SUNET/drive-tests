@@ -76,9 +76,10 @@ class ConfiguredAppsInstalled(threading.Thread):
         testThreadRunning = False
 
 class InstalledAppsConfigured(threading.Thread):
-    def __init__(self, name):
+    def __init__(self, name, app='all'):
         threading.Thread.__init__(self)
         self.name = name
+        self.app = app
 
     def run(self):
         global testThreadRunning, logger, g_testPassed
@@ -112,15 +113,24 @@ class InstalledAppsConfigured(threading.Thread):
             testThreadRunning = False
             return
 
-        logger.info(f'Check if all installed apps on {fullnode} are found in {expectedResultsFile}')
-        for nodeApp in nodeApps:
+        if self.app == 'all':
+            logger.info(f'Check if all installed apps on {fullnode} are found in {expectedResultsFile}')
+            for nodeApp in nodeApps:
+                try:
+                    appInfo = expectedResults['apps'][nodeApp]
+                    g_testPassed[fullnode] = True
+                except:
+                    logger.warning(f'{nodeApp} NOT found on {fullnode}')
+                    testThreadRunning = False
+                    return
+                
+        else: # Check if specific app is installed/active
             try:
-                appInfo = expectedResults['apps'][nodeApp]
-                g_testPassed[fullnode] = True
+                g_testPassed[fullnode] = self.app in nodeApps
             except:
-                logger.warning(f'{nodeApp} NOT found on {fullnode}')
+                logger.error(f'{self.app} NOT found on {fullnode}')
                 testThreadRunning = False
-                return
+                return       
 
         logger.info(f'InstalledAppsConfigured thread done for node {self.name}')
         testThreadRunning = False
@@ -229,6 +239,23 @@ class TestAppsOcs(unittest.TestCase):
                 logger.info(f'TestID: {fullnode}')
                 ConfiguredAppsInstalledThread = ConfiguredAppsInstalled(fullnode)
                 ConfiguredAppsInstalledThread.start()
+
+        while(testThreadRunning == True):
+            time.sleep(1)
+
+        for fullnode in drv.fullnodes:
+            with self.subTest(mynode=fullnode):
+                self.assertTrue(g_testPassed[fullnode])
+
+    # Test if the apps installed on the node are found in the configuration file
+    def test_app_announcementcenter(self):
+        drv = sunetnextcloud.TestTarget()
+
+        for fullnode in drv.fullnodes:
+            with self.subTest(mynode=fullnode):
+                logger.info(f'TestID: {fullnode}')
+                InstalledAppsConfiguredThread = InstalledAppsConfigured(fullnode, app='announcementcenter')
+                InstalledAppsConfiguredThread.start()
 
         while(testThreadRunning == True):
             time.sleep(1)
