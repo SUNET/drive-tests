@@ -77,10 +77,11 @@ class ConfiguredAppsInstalled(threading.Thread):
         g_testThreadsRunning -= 1
 
 class InstalledAppsConfigured(threading.Thread):
-    def __init__(self, name, app='all'):
+    def __init__(self, name, app='all', checkEnabled=False):
         threading.Thread.__init__(self)
         self.name = name
         self.app = app
+        self.checkEnabled = checkEnabled
 
     def run(self):
         global testThreadRunning, logger, g_testPassed, g_testThreadsRunning
@@ -98,9 +99,6 @@ class InstalledAppsConfigured(threading.Thread):
         logger.info(f'{url}')
         url = url.replace("$USERNAME$", nodeuser)
         url = url.replace("$PASSWORD$", nodepwd)
-
-        nodeuser = drv.get_ocsuser(fullnode)
-        nodepwd = drv.get_ocsuserpassword(fullnode)
 
         r=session.get(url, headers=ocsheaders)
         nodeApps = []
@@ -258,7 +256,7 @@ class TestAppsOcs(unittest.TestCase):
         for fullnode in drv.fullnodes:
             with self.subTest(mynode=fullnode):
                 logger.info(f'TestID: {fullnode}')
-                InstalledAppsConfiguredThread = InstalledAppsConfigured(fullnode, app='announcementcenter')
+                InstalledAppsConfiguredThread = InstalledAppsConfigured(fullnode, app='announcementcenter', checkEnabled=True)
                 InstalledAppsConfiguredThread.start()
 
         while(g_testThreadsRunning > 0):
