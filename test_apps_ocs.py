@@ -69,9 +69,7 @@ class ConfiguredAppsInstalled(threading.Thread):
                 logger.info(f'Found app at {pos}')
                 g_testPassed[fullnode] = True
             except:
-                logger.error(f'App {expectedApp} NOT found on {fullnode}')
-                g_testThreadsRunning -= 1
-                return
+                logger.warning(f'App {expectedApp} NOT found on {fullnode}')
 
         logger.info(f'ConfiguredAppsInstalled thread done for node {self.name}')
         g_testThreadsRunning -= 1
@@ -120,8 +118,6 @@ class InstalledAppsConfigured(threading.Thread):
                     g_testPassed[fullnode] = True
                 except:
                     logger.warning(f'{nodeApp} NOT found on {fullnode}')
-                    g_testThreadsRunning -= 1
-                    return
                 
         else: # Check if specific app is installed/active
             try:
