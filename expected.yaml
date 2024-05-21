@@ -223,6 +223,10 @@ apps:
     version:  8.0.2
     installed:  true
     enabled: true
+  security_guard:
+    version:  1.2.1
+    installed:  true
+    enabled: true
   serverinfo:
     version:  1.16.0
     installed:  true
