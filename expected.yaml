@@ -16,7 +16,7 @@ prod:
     maintenance: false
     needsDbUpgrade: false
     version: '28.0.5.2'
-    versionstring: '28.0.5.2 Enterprise'
+    versionstring: '28.0.5 Enterprise'
     edition: ''
     productname: 'Nextcloud'
     extendedSupport: false
@@ -25,7 +25,7 @@ prod:
     maintenance: false
     needsDbUpgrade: false
     version: '28.0.5.2'
-    versionstring: '28.0.5.2 Enterprise'
+    versionstring: '28.0.5 Enterprise'
     edition: ''
     productname: 'Nextcloud'
     extendedSupport: false
