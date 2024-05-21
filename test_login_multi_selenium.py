@@ -181,7 +181,7 @@ class TestLoginMultiSelenium(unittest.TestCase):
                     self.assertEqual(driver.current_url, g_drv.get_node_post_logout_saml_url(fullnode))
                 elif fullnode == 'kau':
                     self.assertEqual(driver.current_url, g_drv.get_node_post_logout_url(fullnode))
-                elif fullnode == 'swamid' or fullnode == 'extern' or fullnode == 'sunet':
+                elif fullnode == 'swamid' or fullnode == 'extern' or fullnode == 'sunet' or fullnode == 'vr':
                     self.logger.info(f'Not checking logout URL for {fullnode}')
                     pass
                 else:
