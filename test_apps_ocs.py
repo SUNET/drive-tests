@@ -47,12 +47,17 @@ class ConfiguredAppsInstalled(threading.Thread):
         nodeuser = drv.get_ocsuser(fullnode)
         nodepwd = drv.get_ocsuserpassword(fullnode)
 
-        r=session.get(url, headers=ocsheaders)
+        try:
+            r=session.get(url, headers=ocsheaders)
+        except:
+            logger.error(f'Error getting {url}')
+            g_testThreadsRunning -=1
+            return
         nodeApps = []
         try:
             j = json.loads(r.text)
-            # print(json.dumps(j, indent=4, sort_keys=True))
             nodeApps = j["ocs"]["data"]["apps"]
+            # print(json.dumps(j, indent=4, sort_keys=True))
         except:
             logger.warning(f'No JSON reply received on node {fullnode}')
             # self.logger.warning(r.text)
@@ -98,12 +103,18 @@ class InstalledAppsConfigured(threading.Thread):
         url = url.replace("$USERNAME$", nodeuser)
         url = url.replace("$PASSWORD$", nodepwd)
 
-        r=session.get(url, headers=ocsheaders)
+        try:
+            r=session.get(url, headers=ocsheaders)
+        except:
+            logger.error(f'Error getting {url}')
+            g_testThreadsRunning -=1
+            return
         nodeApps = []
         try:
             j = json.loads(r.text)
             # print(json.dumps(j, indent=4, sort_keys=True))
             nodeApps = j["ocs"]["data"]["apps"]
+            logger.info(f'Apps found on node {fullnode}: {json.dumps(j, indent=4, sort_keys=True)}')
         except:
             logger.warning(f'No JSON reply received on {fullnode}')
             # self.logger.warning(r.text)
@@ -158,7 +169,12 @@ class NumberOfAppsOnNode(threading.Thread):
         nodeuser = drv.get_ocsuser(fullnode)
         nodepwd = drv.get_ocsuserpassword(fullnode)
 
-        r=session.get(url, headers=ocsheaders)
+        try:
+            r=session.get(url, headers=ocsheaders)
+        except:
+            logger.error(f'Error getting {url}')
+            g_testThreadsRunning -=1
+            return
         nodeApps = []
         try:
             j = json.loads(r.text)
