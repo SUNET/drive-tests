@@ -69,7 +69,7 @@ class ConfiguredAppsInstalled(threading.Thread):
                 logger.info(f'Found app at {pos}')
                 g_testPassed[fullnode] = True
             except:
-                logger.warning(f'App {expectedApp} NOT found on {fullnode}')
+                logger.error(f'App {expectedApp} NOT found on {fullnode}')
                 g_testThreadsRunning -= 1
                 return
 
