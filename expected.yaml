@@ -80,6 +80,7 @@ test:
   ocsapps:
     default: 71
     sunet: 71
+    swamid: 70
   collabora:
     nodes: 3
     status: 'OK'
