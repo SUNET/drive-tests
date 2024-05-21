@@ -376,4 +376,60 @@ apps:
       installed:  true
       enabled: false
       exceptenabled:
-        - scilifelab 
+        - scilifelab
+  files_reminders:
+    version:
+    installed: true
+    enabled: false
+  integration_excalidraw:
+    version:
+    installed: true
+    enabled: false
+  maps:
+    version:
+    installed: true
+    enabled: false
+  tasks:
+    version:
+    installed: true
+    enabled: false
+  calendar:
+    version:
+    installed: true
+    enabled: false
+  integration_openai:
+    version:
+    installed: true
+    enabled: false
+  integration_jupyterhub:
+    version:
+    installed: true
+    enabled: false
+  collectives:
+    version:
+    installed: true
+    enabled: false
+  stepupauth:
+    version:
+    installed: true
+    enabled: false
+  polls:
+    version:
+    installed: true
+    enabled: false
+  assistant:
+    version:
+    installed: true
+    enabled: false
+  mfazones:
+    version:
+    installed: true
+    enabled: false
+  contacts:
+    version:
+    installed: true
+    enabled: false
+  forms:
+    version:
+    installed: true
+    enabled: false
