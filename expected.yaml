@@ -77,7 +77,7 @@ test:
     ocs_data_capabilities_globalscale_enabled: true
   cert_md5: '9dc0f8318dcda31e78308705449f1e2a'
   ocsapps: 
-    default: 70
+    default: 71
     sunet: 71
   collabora:
     nodes: 3
