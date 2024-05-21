@@ -127,10 +127,6 @@ apps:
     version: 7.6.0
     installed:  true
     enabled: true
-  dav:
-    version: 1.25.0
-    installed:  true
-    enabled: true
   federatedfilesharing:  
     version: 1.16.0
     installed: true
