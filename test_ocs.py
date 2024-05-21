@@ -192,7 +192,12 @@ class NodeUsers(threading.Thread):
         url = url.replace("$USERNAME$", nodeuser)
         url = url.replace("$PASSWORD$", nodepwd)
 
-        r = requests.get(url, headers=ocsheaders, timeout=g_requestTimeout)
+        try:
+            r = requests.get(url, headers=ocsheaders, timeout=g_requestTimeout)
+        except:
+            logger.error(f'Error getting {url}')
+            g_testThreadsRunning -= 1
+            return
         try:
             j = json.loads(r.text)
             logger.info(json.dumps(j, indent=4, sort_keys=True))
@@ -229,7 +234,12 @@ class CapabilitiesNoUser(threading.Thread):
 
         url = drv.get_ocs_capabilities_url(fullnode)
         logger.info(f'{self.TestOcsCalls._testMethodName} {url}')
-        r=requests.get(url, headers=ocsheaders, timeout=g_requestTimeout)
+        try:
+            r = requests.get(url, headers=ocsheaders, timeout=g_requestTimeout)
+        except:
+            logger.error(f'Error getting {url}')
+            g_testThreadsRunning -= 1
+            return
         try:
             j = json.loads(r.text)
         except:
@@ -277,7 +287,12 @@ class Capabilities(threading.Thread):
         nodeuser = drv.get_ocsuser(fullnode)
         nodepwd = drv.get_ocsuserpassword(fullnode)
 
-        r=requests.get(url, headers=ocsheaders, auth = HTTPBasicAuth(nodeuser, nodepwd), timeout=g_requestTimeout)
+        try:
+            r = requests.get(url, headers=ocsheaders, timeout=g_requestTimeout)
+        except:
+            logger.error(f'Error getting {url}')
+            g_testThreadsRunning -= 1
+            return
         try:
             j = json.loads(r.text)
             print(json.dumps(j, indent=4, sort_keys=True))
@@ -446,7 +461,10 @@ class TestOcsCalls(unittest.TestCase):
         url = url.replace("$USERNAME$", nodeuser)
         url = url.replace("$PASSWORD$", nodepwd)
 
-        r = requests.get(url, headers=ocsheaders, timeout=g_requestTimeout)
+        try:
+            r = requests.get(url, headers=ocsheaders, timeout=g_requestTimeout)
+        except:
+            logger.error(f'Error getting {url}')
         try:
             j = json.loads(r.text)
             # logger.info(json.dumps(j, indent=4, sort_keys=True))
