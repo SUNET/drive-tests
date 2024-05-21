@@ -61,7 +61,12 @@ class AppVersions(threading.Thread):
         nodeuser = drv.get_ocsuser(fullnode)
         nodepwd = drv.get_ocsuserpassword(fullnode)
 
-        r=session.get(url, headers=ocsheaders)
+        try:
+            r=session.get(url, headers=ocsheaders)
+        except:
+            logger.error(f'Error getting {url}')
+            g_testThreadsRunning -= 1
+            return
         nodeApps = []
         apps = []
         try:
@@ -275,6 +280,8 @@ class Capabilities(threading.Thread):
         r=requests.get(url, headers=ocsheaders, auth = HTTPBasicAuth(nodeuser, nodepwd), timeout=g_requestTimeout)
         try:
             j = json.loads(r.text)
+            print(json.dumps(j, indent=4, sort_keys=True))
+
         except:
             logger.info("No JSON reply received")
             logger.info(r.text)
