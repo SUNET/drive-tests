@@ -65,8 +65,8 @@ test:
     installed: true
     maintenance: false
     needsDbUpgrade: false
-    version: '28.0.5.2'
-    versionstring: '28.0.5 Enterprise'
+    version: '28.0.6.2'
+    versionstring: '28.0.6 Enterprise'
     edition: ''
     productname: 'Nextcloud'
     extendedSupport: false
