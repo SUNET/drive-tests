@@ -1,6 +1,5 @@
-""" Selenium tests for Sunet Drive
+""" Selenium demo to publish Berry Solar Cell dataset using Sunet Drive
 Author: Richard Freitag <freitag@sunet.se>
-Selenium tests to test Collabora on a local node
 """
 from datetime import datetime
 import xmlrunner
@@ -29,6 +28,18 @@ g_testtarget = os.environ.get('NextcloudTestTarget')
 g_rdsnodes = ["sunet"]
 expectedResultsFile = 'expected.yaml'
 connector = 'zenodo'    # 'zenodo' or 'osf'
+doifile = 'tncdoi.txt'
+
+# Change working directory to script location
+abspath = os.path.abspath(__file__)
+dname = os.path.dirname(abspath)
+os.chdir(dname)
+
+# Remove file containing doi
+try:
+    os.remove(doifile)
+except OSError:
+    pass
 
 def deleteCookies(driver):
     cookies = driver.get_cookies()
@@ -173,6 +184,7 @@ except:
 try:
     logger.info(f'Looking for active projects')
     wait.until(EC.presence_of_element_located((By.XPATH, "//*[contains(text(), 'Active Projects')]"))).click()
+    time.sleep(1)
 except:
     logger.error(f'Active Projects element not found')
     sys.exit()
@@ -180,6 +192,7 @@ except:
 try:
     logger.info(f'Create new project')
     wait.until(EC.presence_of_element_located((By.XPATH, "//*[contains(text(), 'new project')]"))).click()
+    time.sleep(1)
     # wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "button.v-btn"))).click()
 except:
     logger.error(f'New Project element not found')
@@ -212,6 +225,7 @@ try:
     logger.info(f'Choose source folder?')
     wait.until(EC.presence_of_element_located((By.XPATH, "//*[contains(text(), 'Choose source folder')]")))
     logger.error(f'Choose source folder!')
+    time.sleep(1)
     # wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "button.v-btn"))).click()
 except:
     logger.error(f'Choose source folder error!')
@@ -220,7 +234,7 @@ except:
 try:
     logger.info(f'Set sort order to newest first?')
     wait.until(EC.presence_of_element_located((By.XPATH, "//*[contains(text(), 'Modified')]"))).click()
-    logger.info(f'Set sort order to newest first!')
+    time.sleep(1)
     # wait.until(EC.presence_of_element_located((By.XPATH, "//*[contains(text(), 'Modified')]"))).click()
     # wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "button.v-btn"))).click()
 except:
@@ -231,6 +245,7 @@ except:
 try:
     logger.info(f'Select folder {target}')
     wait.until(EC.presence_of_element_located((By.XPATH, "//*[contains(text(), 'TNC24Demo')]"))).click()
+    time.sleep(1)
     # wait.until(EC.presence_of_element_located((By.XPATH, "//*[contains(text(), '{target}')]"))).click()
     # wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "button.v-btn"))).click()
 except:
@@ -240,7 +255,8 @@ except:
 try:
     logger.info(f'Click on Choose')
     wait.until(EC.presence_of_element_located((By.XPATH, "//*[contains(text(), ' Choose')]"))).click()
-    # wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "button.v-btn"))).click()
+    time.sleep(1)
+   # wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "button.v-btn"))).click()
 except:
     logger.error(f'{target} folder not found')
     sys.exit()
@@ -383,11 +399,15 @@ try:
 except:
     logger.info(f'Error publishing dataset')
 
-try:
-    logger.info(f'Try to get DOI string')
-    doiElement = wait.until(EC.presence_of_element_located((By.XPATH, "//*[contains(text(), 'Published project with DOI')]")))
-    logger.info(f'Project DOI: {doiElement.text.replace('Published project with DOI','').replace(' ','')}')
-except:
-    logger.warning(f'Could not get DOI information')
+# try:
+#     logger.info(f'Try to get DOI string')
+#     doiElement = wait.until(EC.presence_of_element_located((By.XPATH, "//*[contains(text(), 'Published project with DOI')]")))
+#     logger.info(f'Project DOI: {doiElement.text.replace('Published project with DOI','').replace(' ','')}')
+# except:
+#     logger.warning(f'Could not get DOI information')
+
+text_file = open(doifile, "w")
+text_file.write(publicationUrl)
+text_file.close()
 
 logger.info(f'End of test!')
