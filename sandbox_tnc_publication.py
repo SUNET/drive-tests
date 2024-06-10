@@ -67,6 +67,9 @@ nodepwd = os.environ.get('Nxpassword')
 nodeapppwd = os.environ.get('Nxapppassword')
 baseurl='https://sunet.drive.test.sunet.se'
 webdavurl = str(baseurl) + '/remote.php/dav/files/' + str(nodeuser) + '/'
+add_repositories_url = 'https://sunet.drive.test.sunet.se/index.php/apps/rds/'
+zenodouser = os.environ.get("ZENODO_TEST_USER")
+zenodopwd = os.environ.get("ZENODO_TEST_USER_PASSWORD")
 
 if nodeuser == None or nodepwd == None or nodeapppwd == None:
     logger.error(f'Please set all environment variables Nxuser, Nxpassword, Nxapppassword')
@@ -162,7 +165,7 @@ except TimeoutException:
     logger.info(f'Loading of app menu took too much time!')
 
 driver.implicitly_wait(10) # seconds before quitting
-dashboardUrl = drv.get_dashboard_url('su')
+dashboardUrl = drv.get_dashboard_url('sunet')
 currentUrl = driver.current_url
 
 try:
@@ -177,8 +180,42 @@ try:
     logger.info(f"Waiting for rds frame")
     wait.until(EC.frame_to_be_available_and_switch_to_it((By.ID, "rds-editor")))
     logger.info(f"RDS iframe loaded")
+    time.sleep(1)
 except:
     logger.error(f"RDS iframe not loaded")
+    sys.exit()
+
+try:
+
+    # Store the ID of the original window
+    logger.info(f'Save original window handle')
+    original_window = driver.current_window_handle
+    logger.info(f'Window handle: {original_window}')
+
+    wait.until(EC.presence_of_element_located((By.XPATH, "//*[contains(text(), 'Repositories')]"))).click()
+
+    elem = WebDriverWait(driver, delay).until(EC.presence_of_element_located((By.XPATH,"/html/body/div/div/div/main/div/div/main/div/div/div[2]/div[1]/div[2]/div/div[2]/div/button/span[1]/span"))) 
+    if elem.text == 'CONNECT':
+        elem.click()
+        time.sleep(1)
+
+        logger.info(f'Loop through until we find a new window handle')
+        for window_handle in driver.window_handles:
+            if window_handle != original_window:
+                driver.switch_to.window(window_handle)
+                break
+        logger.info(f'Done checking window handles')
+
+        wait.until(EC.presence_of_element_located((By.ID, 'email'))).send_keys(zenodouser)
+        wait.until(EC.presence_of_element_located((By.ID, 'password'))).send_keys(zenodopwd + Keys.ENTER)
+
+        # Allow connection
+        WebDriverWait(driver, 20).until(EC.element_to_be_clickable((By.CLASS_NAME, 'positive'))).click()
+        time.sleep(2)
+        logger.info(f'Switch back to original window')
+        driver.switch_to.window(original_window)
+except:
+    logger.error('Error checking repositories')
     sys.exit()
 
 try:
@@ -197,6 +234,28 @@ try:
 except:
     logger.error(f'New Project element not found')
     sys.exit()
+
+if connector == 'zenodo':
+    try:
+        logger.info(f'Select Zenodo Connector')
+        wait.until(EC.presence_of_element_located((By.XPATH, "//*[contains(text(), 'Zenodo')]"))).click()
+        # wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "button.v-btn"))).click()
+    except:
+        logger.error(f'Zenodo Connector not found')
+        sys.exit()
+elif connector == 'osf':
+    try:
+        logger.info(f'Select OSF Connector')
+        wait.until(EC.presence_of_element_located((By.XPATH, "//*[contains(text(), 'Open Science Framework')]"))).click()
+        # wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "button.v-btn"))).click()
+    except:
+        logger.error(f'OSF Connector not found')
+        sys.exit()
+else:
+    logger.error(f'Unknown connector: {connector}')
+    sys.exit()
+
+time.sleep(3)
 
 try:
     logger.info(f'Input project name')
@@ -267,28 +326,6 @@ try:
 except:
     logger.error(f"RDS iframe not loaded")
     sys.exit()
-
-if connector == 'zenodo':
-    try:
-        logger.info(f'Select Zenodo Connector')
-        wait.until(EC.presence_of_element_located((By.XPATH, "//*[contains(text(), 'Zenodo')]"))).click()
-        # wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "button.v-btn"))).click()
-    except:
-        logger.error(f'Zenodo Connector not found')
-        sys.exit()
-elif connector == 'osf':
-    try:
-        logger.info(f'Select OSF Connector')
-        wait.until(EC.presence_of_element_located((By.XPATH, "//*[contains(text(), 'Open Science Framework')]"))).click()
-        # wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "button.v-btn"))).click()
-    except:
-        logger.error(f'OSF Connector not found')
-        sys.exit()
-else:
-    logger.error(f'Unknown connector: {connector}')
-    sys.exit()
-
-time.sleep(3)
 
 try:
     logger.info(f'Continue (to describo)')
