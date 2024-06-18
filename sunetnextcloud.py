@@ -10,6 +10,11 @@ import string
 import yaml
 import logging
 
+# Change to local directory
+abspath = os.path.abspath(__file__)
+dname = os.path.dirname(abspath)
+os.chdir(dname)
+
 g_expectedFile = 'expected.yaml'
 
 logger = logging.getLogger(__name__)
@@ -183,20 +188,23 @@ class TestTarget(object):
     def get_fullnode_status_urls(self):
         nodeurls = []
         for node in self.fullnodes:
-            nodeurls.append("https://" + self.getnodeprefix(node) +  self.targetprefix + '.' + self.baseurl + "./status.php" )
+            nodeurls.append("https://" + self.getnodeprefix(node) +  self.targetprefix + '.' + self.baseurl + "/status.php" )
         return nodeurls
 
     def get_multinode_status_urls(self):
         nodeurls = []
         for node in self.multinodes:
-            nodeurls.append("https://" + self.getnodeprefix(node) +  self.targetprefix + '.' + self.baseurl + "./status.php" )
+            nodeurls.append("https://" + self.getnodeprefix(node) +  self.targetprefix + '.' + self.baseurl + "/status.php" )
         return nodeurls
 
     def get_allnode_status_urls(self):
         nodeurls = []
         for node in self.allnodes:
-            nodeurls.append("https://" + self.getnodeprefix(node) +  self.targetprefix + '.' + self.baseurl + "./status.php" )
+            nodeurls.append("https://" + self.getnodeprefix(node) +  self.targetprefix + '.' + self.baseurl + "/status.php" )
         return nodeurls
+
+    def get_node_status_url(self, node, id):
+        return 'https://node' + str(id) + '.' + self.getnodeprefix(node) +  self.targetprefix + '.' + self.baseurl + "/status.php"
 
     def get_webdav_root(self, username):
         return '/remote.php/dav/files/' + username + '/'
