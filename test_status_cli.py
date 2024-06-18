@@ -28,7 +28,7 @@ logging.basicConfig(format = '%(asctime)s - %(module)s.%(funcName)s - %(levelnam
 with open(expectedResultsFile, "r") as stream:
     expectedResults=yaml.safe_load(stream)
 
-class StatusInfo(threading.Thread):
+class FrontendStatusInfo(threading.Thread):
     def __init__(self, url, TestStatus):
         threading.Thread.__init__(self)
         self.url = url
@@ -41,7 +41,7 @@ class StatusInfo(threading.Thread):
         global g_failedNodes
         testThreadsRunning += 1
         drv = sunetnextcloud.TestTarget()
-        logger.info(f'StatusInfo thread {testThreadsRunning} started for node {self.url}')
+        logger.info(f'FrontendStatusInfo thread {testThreadsRunning} started for node {self.url}')
 
         try:
             r =requests.get(self.url, timeout=g_requestTimeout)
@@ -69,7 +69,7 @@ class StatusInfo(threading.Thread):
 
         logger.info(f'Status thread done for node {self.url}')
         testThreadsRunning -= 1
-        logger.info(f'StatusInfo threads remaining: {testThreadsRunning}')
+        logger.info(f'FrontendStatusInfo threads remaining: {testThreadsRunning}')
 
 class Status(threading.Thread):
     def __init__(self, url, TestStatus):
@@ -123,7 +123,7 @@ class TestStatus(unittest.TestCase):
         except Exception as error:
             logger.error(f'An error occurred: {error}')
 
-    def test_statusinfo_gss(self):
+    def test_frontend_statusinfo_gss(self):
         global logger
         global expectedResults
         logger.info(f'TestID: {self._testMethodName}')
@@ -163,19 +163,19 @@ class TestStatus(unittest.TestCase):
             self.assertTrue(False)
         
 
-    def test_statusinfo(self):
+    def test_frontend_statusinfo(self):
         drv = sunetnextcloud.TestTarget()
         for url in drv.get_allnode_status_urls():
             with self.subTest(myurl=url):
                 logger.info(f'TestID: {url}')
-                statusInfoThread = StatusInfo(url, self)
+                statusInfoThread = FrontendStatusInfo(url, self)
                 statusInfoThread.start()
 
         while(testThreadsRunning > 0):
             time.sleep(1)
 
         if len(g_failedNodes) > 0:
-            logger.error(f'StatusInfo test failed for {len(g_failedNodes)} of {len(drv.allnodes)} nodes:')
+            logger.error(f'FrontendStatusInfo test failed for {len(g_failedNodes)} of {len(drv.allnodes)} nodes:')
             for node in g_failedNodes:
                 logger.error(f'   {node}')
             self.assertTrue(False)
