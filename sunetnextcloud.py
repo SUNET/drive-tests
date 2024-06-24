@@ -111,7 +111,8 @@ class TestTarget(object):
 
     def get_node_login_url(self, node, direct = True):
         if direct == True:
-            return 'https://' + self.getnodeprefix(node) + self.targetprefix + '.' + self.baseurl + self.indexsuffix + '/login?redirect_url=&direct=1'
+            # return 'https://' + self.getnodeprefix(node) + self.targetprefix + '.' + self.baseurl + self.indexsuffix + '/login?redirect_url=&direct=1'
+            return 'https://' + self.getnodeprefix(node) + self.targetprefix + '.' + self.baseurl + self.indexsuffix + '/login?direct=1'
         else:
             return 'https://' + self.getnodeprefix(node) + self.targetprefix + '.' + self.baseurl + self.indexsuffix
 
