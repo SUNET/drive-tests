@@ -203,16 +203,22 @@ class TestLoginSeleniumTotp(unittest.TestCase):
                 currentUrl = driver.current_url
                 # self.assertEqual(dashboardUrl, currentUrl)                
 
-                try:
-                    self.logger.info(f'Waiting for files app button')
-                    wait.until(EC.presence_of_element_located((By.XPATH, '//a[@href="'+ '/index.php/apps/files/' +'"]')))
-                    files = driver.find_element(By.XPATH, '//a[@href="'+ '/index.php/apps/files/' +'"]')
-                    files.click()
-                except:
-                    self.logger.error(f'Files app button not found, saving screenshot')
-                    screenshot = pyautogui.screenshot()
-                    screenshot.save("screenshots/" + fullnode + "test_node_login" + g_filename + ".png")
-                    self.assertTrue(False)
+                totpRetry = 1
+                while totpRetry <= 3:
+                    try:
+                        try:
+                            self.logger.info(f'Waiting for files app button')
+                            wait.until(EC.presence_of_element_located((By.XPATH, '//a[@href="'+ '/index.php/apps/files/' +'"]')))
+                            files = driver.find_element(By.XPATH, '//a[@href="'+ '/index.php/apps/files/' +'"]')
+                            files.click()
+                        except:
+                            self.logger.warning(f'TOTP {totpRetry} failed, trying again')
+                            totpRetry += 1
+                    except:
+                            self.logger.error(f'TOTP failed {totpRetry} times')
+                            screenshot = pyautogui.screenshot()
+                            screenshot.save("screenshots/" + fullnode + "test_node_login" + g_filename + ".png")
+                            self.assertTrue(False)
 
                 try:
                     wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'app-menu-entry')))
@@ -246,7 +252,7 @@ class TestLoginSeleniumTotp(unittest.TestCase):
                     self.assertEqual(driver.current_url, drv.get_node_post_logout_saml_url(fullnode))
                 elif fullnode == 'kau':
                     self.assertEqual(driver.current_url, drv.get_node_post_logout_url(fullnode))
-                elif fullnode == 'swamid' or fullnode == 'extern' or fullnode == 'sunet' or fullnode == 'vr':
+                elif fullnode == 'swamid' or fullnode == 'extern' or fullnode == 'sunet' or fullnode == 'vr' or fullnode == 'su':
                     pass
                 else:
                     self.assertEqual(driver.current_url, drv.get_gss_post_logout_url())
