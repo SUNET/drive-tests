@@ -236,6 +236,143 @@ class TestLoginSelenium(unittest.TestCase):
                         driver.implicitly_wait(10) # seconds before quitting
                         driver.quit()
 
+    def test_portal_direct_login(self):
+        delay = 30 # seconds
+        drv = sunetnextcloud.TestTarget()
+        # The class name of the share icon changed in Nextcloud 28
+        version = self.expectedResults[drv.target]['status']['version']
+        self.logger.info(f'Expected Nextcloud version: {version}')
+        if version.startswith('27'):
+            sharedClass = 'icon-shared'
+            simpleLogoutUrl = False
+            self.logger.info(f'We are on Nextcloud 27 and are not using the simple logout url')
+        else:
+            # This will select the first available sharing button
+            sharedClass = 'files-list__row-action-sharing-status'
+            simpleLogoutUrl = True
+            self.logger.info(f'We are on Nextcloud 28 and are therefore using the simple logout url')
+
+        for browser in drv.browsers:
+            with self.subTest(mybrowser=browser):
+                for fullnode in drv.fullnodes:
+                    with self.subTest(mynode=fullnode):
+                        self.logger.info(f'TestID: Testing node {fullnode} with browser {browser}')
+                        loginurl = drv.get_portal_login_url()
+                        self.logger.info(f'URL: {loginurl}')
+                        nodeuser = drv.get_seleniumuser(fullnode)
+                        self.logger.info(f'Username: {nodeuser}')
+                        nodepwd = drv.get_seleniumuserpassword(fullnode)
+
+                        # Create folder for testing using webdav
+                        url = drv.get_webdav_url(fullnode, nodeuser)
+                        options = {
+                        'webdav_hostname': url,
+                        'webdav_login' : nodeuser,
+                        'webdav_password' : nodepwd 
+                        }
+
+                        client = Client(options)
+                        dir = 'SharedFolder'
+                        self.logger.info(f'Make and check directory: {dir}')
+                        client.mkdir(dir)
+                        self.assertEqual(client.list().count('SharedFolder/'), 1)
+
+                        try:
+                            if browser == 'chrome':
+                                options = Options()
+                                options.add_argument("--no-sandbox")
+                                options.add_argument("--disable-dev-shm-usage")
+                                options.add_argument("--disable-gpu")
+                                options.add_argument("--disable-extensions")
+                                driver = webdriver.Chrome(options=options)
+                            elif browser == 'firefox':
+                                driver = webdriver.Firefox()
+                            else:
+                                self.logger.error(f'Unknown browser {browser}')
+                                self.assertTrue(False)
+                        except:
+                            self.logger.error(f'Error initializing Chrome driver')
+                            self.assertTrue(False)
+                        driver.maximize_window()
+                        # driver2 = webdriver.Firefox()
+                        self.deleteCookies(driver)
+                        driver.get(loginurl)
+
+                        wait = WebDriverWait(driver, delay)
+                        wait.until(EC.presence_of_element_located((By.ID, 'site'))).send_keys(fullnode + Keys.ENTER)
+
+                        self.logger.info(f'Check direct login checkbox')
+
+                        wait.until(EC.presence_of_element_located((By.ID, 'direct_login'))).click()
+
+                        nodeloginurl = drv.get_node_login_url(fullnode, True)
+                        self.logger.info(f'Locating button for {nodeloginurl}')
+                        loginbutton = driver.find_element(By.XPATH, '//a[@href="' + nodeloginurl +'"]')
+                        loginbutton.click()
+
+                        wait.until(EC.presence_of_element_located((By.ID, 'user'))).send_keys(nodeuser)
+                        wait.until(EC.presence_of_element_located((By.ID, 'password'))).send_keys(nodepwd + Keys.ENTER)
+
+                        try:
+                            wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'app-menu')))
+                            self.logger.info(f'App menu is ready!')
+                        except TimeoutException:
+                            self.logger.info(f'Loading of app menu took too much time!')
+
+                        # Check URLs after login
+                        dashboardUrl = drv.get_dashboard_url(fullnode)
+                        currentUrl = driver.current_url
+                        # self.assertEqual(dashboardUrl, currentUrl)                
+
+                        files = driver.find_element(By.XPATH, '//a[@href="' + drv.indexsuffix + '/apps/files/' +'"]')
+                        files.click()
+
+                        try:
+                            wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'app-menu-entry')))
+                            self.logger.info(f'All files visible!')
+                        except TimeoutException:
+                            self.logger.info(f'Loading of all files took too much time!')
+
+                        try:
+                            wait.until(EC.presence_of_element_located((By.CLASS_NAME, sharedClass)))
+                            sharefolder = driver.find_element(by=By.CLASS_NAME, value=sharedClass)
+                            sharefolder.click()
+                            self.logger.info(f'Clicked on share folder')
+                        except:
+                            self.logger.info(f'{sharedClass} not found')
+
+                        try:
+                            wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'sharing-entry__title')))
+                            self.logger.info(f'Share link enabled!')
+                        except TimeoutException:
+                            self.logger.info(f'No share link present!')
+
+                        wait.until(EC.presence_of_element_located((By.ID, 'user-menu'))).click()
+                        logoutLink = driver.find_element(By.PARTIAL_LINK_TEXT, 'Log out')
+                        logoutLink.click()
+                        self.logger.info(f'Logout complete')
+
+                        currentUrl = driver.current_url
+                        self.logger.info(driver.current_url)
+
+                        if fullnode == 'scilifelab':
+                            self.assertEqual(driver.current_url, drv.get_node_post_logout_saml_url(fullnode))
+                        elif fullnode == 'kau':
+                            self.assertEqual(driver.current_url, drv.get_node_post_logout_url(fullnode))
+                        elif fullnode == 'swamid' or fullnode == 'extern' or fullnode == 'sunet' or fullnode == 'vr' or fullnode == 'su':
+                            pass
+                        elif (self.expectedResults['global']['testGss'] == True) and (len(drv.allnodes) == 1):
+                            self.assertEqual(driver.current_url, drv.get_gss_post_logout_url())
+                        elif (self.expectedResults['global']['testGss'] == False) | (len(drv.allnodes) == 1):
+                            if simpleLogoutUrl == True:
+                                self.assertEqual(driver.current_url, drv.get_node_post_logout_simple_url(fullnode))
+                            else:
+                                self.assertEqual(driver.current_url, drv.get_node_post_logout_url(fullnode))
+                        else:
+                            self.assertEqual(driver.current_url, drv.get_gss_post_logout_url())
+                        driver.implicitly_wait(10) # seconds before quitting
+                        driver.quit()
+
     def test_saml_eduid_nomfa(self):
         self.logger.info(f'TestID: {self._testMethodName}')
         delay = 30 # seconds
