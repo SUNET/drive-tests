@@ -53,6 +53,7 @@ prod:
       productVersion: "23.05.10.1"
       productVersionHash: "baa6eef"
 test:
+  portalnodes: [su,sunet,extern]
   status:
     installed: true
     maintenance: false
@@ -80,8 +81,6 @@ test:
   cert_md5: '9dc0f8318dcda31e78308705449f1e2a'
   ocsapps:
     default: 71
-    sunet: 71
-    swamid: 72
   collabora:
     nodes: 3
     status: 'OK'
