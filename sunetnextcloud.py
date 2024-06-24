@@ -114,7 +114,13 @@ class TestTarget(object):
             return 'https://' + self.getnodeprefix(node) + self.targetprefix + '.' + self.baseurl + self.indexsuffix + '/login?redirect_url=&direct=1'
         else:
             return 'https://' + self.getnodeprefix(node) + self.targetprefix + '.' + self.baseurl + self.indexsuffix
-        
+
+    def get_portal_login_url(self):
+        if self.target == "prod":
+            return 'https://portal.drive.' +  self.baseurl
+        else:
+            return 'https://portal.drive.test.' + self.baseurl
+
     def get_node_post_logout_url(self, node):
         return 'https://' + self.getnodeprefix(node) + self.targetprefix + '.' + self.baseurl + self.indexsuffix + '/login?clear=1'
 
