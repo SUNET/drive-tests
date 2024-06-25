@@ -536,6 +536,10 @@ class TestLoginSelenium(unittest.TestCase):
             if drv.allnodes[0] != nodeName:
                 self.logger.info(f'Only testing {drv.allnodes[0]}, not testing su saml')
                 return
+            
+        if drv.target == 'test':
+            self.logger.info(f'SU switched to portal login in test, we are not testing anything here')
+            return
 
         loginurl = drv.get_gss_url()
         self.logger.info(f'URL: {loginurl}')
