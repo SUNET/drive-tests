@@ -527,7 +527,7 @@ class TestLoginSelenium(unittest.TestCase):
 
         driver.implicitly_wait(10) # seconds before quitting
 
-    def test_saml_su_nomfa(self):
+    def test_saml_su(self):
         self.logger.info(f'TestID: {self._testMethodName}')
         delay = 30 # seconds
         drv = sunetnextcloud.TestTarget()
@@ -541,83 +541,97 @@ class TestLoginSelenium(unittest.TestCase):
             self.logger.info(f'SU switched to portal login in test, we are not testing anything here')
             return
 
-        loginurl = drv.get_gss_url()
-        self.logger.info(f'URL: {loginurl}')
-        samluser=drv.get_samlusername(nodeName)
-        self.logger.info(f'Username: {samluser}')
-        samlpassword=drv.get_samluserpassword(nodeName)
-        
-        try:
-            options = Options()
-            driver = webdriver.Chrome(options=options)
-        except:
-            self.logger.error(f'Error initializing Chrome driver')
-            self.assertTrue(False)
-        # driver2 = webdriver.Firefox()
-        self.deleteCookies(driver)
-        driver.maximize_window()        
-        driver.get(loginurl)
+        for browser in drv.browsers:
 
-        wait = WebDriverWait(driver, delay)
+            loginurl = drv.get_gss_url()
+            self.logger.info(f'URL: {loginurl}')
+            samluser=drv.get_samlusername(nodeName)
+            self.logger.info(f'Username: {samluser}')
+            samlpassword=drv.get_samluserpassword(nodeName)
 
-        loginLinkText = 'ACCESS THROUGH YOUR INSTITUTION'
+            try:
+                if browser == 'chrome':
+                    options = Options()
+                    options.add_argument("--no-sandbox")
+                    options.add_argument("--disable-dev-shm-usage")
+                    options.add_argument("--disable-gpu")
+                    options.add_argument("--disable-extensions")
+                    driver = webdriver.Chrome(options=options)
+                elif browser == 'firefox':
+                    driver = webdriver.Firefox()
+                else:
+                    self.logger.error(f'Unknown browser {browser}')
+                    self.assertTrue(False)
+            except:
+                self.logger.error(f'Error initializing driver for {browser}')
+                self.assertTrue(False)
 
-        wait.until(EC.presence_of_element_located((By.LINK_TEXT, loginLinkText))).click()
-        driver.implicitly_wait(10)
+            self.deleteCookies(driver)
+            driver.maximize_window()        
+            driver.get(loginurl)
 
-        wait.until(EC.presence_of_element_located((By.ID, 'dsclient')))
-        driver.implicitly_wait(10)
-        
-        wait.until(EC.presence_of_element_located((By.ID, 'searchinput'))).send_keys("su.se", Keys.RETURN)
-        driver.implicitly_wait(10)
+            wait = WebDriverWait(driver, delay)
 
-        wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'label-url'))).click()
-        driver.implicitly_wait(10)
+            loginLinkText = 'ACCESS THROUGH YOUR INSTITUTION'
 
-        wait.until(EC.presence_of_element_located((By.ID, 'username'))).send_keys(samluser)
-        wait.until(EC.presence_of_element_located((By.ID, 'password'))).send_keys(samlpassword + Keys.ENTER)
-        # wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'login-form-button'))).click()
+            wait.until(EC.presence_of_element_located((By.LINK_TEXT, loginLinkText))).click()
+            driver.implicitly_wait(10)
 
-        # Wait for TOTP screen
-        requireTotp = False
-        try:
-            self.logger.info(f'Check if TOTP selection dialogue is visible')
-            totpselect = driver.find_element(By.XPATH, '//a[@href="' + drv.indexsuffix + '/login/challenge/totp?redirect_url=' + drv.indexsuffix + '/apps/dashboard/' +'"]')
-            self.logger.warning(f'Found TOTP selection dialogue')
-            requireTotp = True
-            totpselect.click()
-        except:
-            self.logger.info(f'No need to select TOTP provider')
+            wait.until(EC.presence_of_element_located((By.ID, 'dsclient')))
+            driver.implicitly_wait(10)
+            
+            wait.until(EC.element_to_be_clickable((By.ID, 'searchinput'))).send_keys("su.se", Keys.RETURN)
+            driver.implicitly_wait(10)
 
-        if requireTotp:
-            nodetotpsecret = drv.get_samlusertotpsecret(nodeName)
-            totp = pyotp.TOTP(nodetotpsecret)
-            wait.until(EC.presence_of_element_located((By.XPATH, '//*[@id="body-login"]/div[1]/div/main/div/form/input'))).send_keys(totp.now() + Keys.ENTER)
+            driver.implicitly_wait(10)
 
-        try:
-            wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'app-menu')))
-            self.logger.info(f'App menu is ready!')
-        except TimeoutException:
-            self.logger.info(f'Loading of app menu took too much time!')
+            wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'label-url'))).click()
+            driver.implicitly_wait(10)
 
-        driver.implicitly_wait(10) # seconds before quitting
-        dashboardUrl = drv.get_dashboard_url('su')
-        currentUrl = driver.current_url
-        try:
-            self.assertEqual(dashboardUrl, currentUrl)
-        except:
-            self.assertEqual(dashboardUrl + '#/', currentUrl)
-            self.logger.warning(f'Dashboard URL contains trailing #, likely due to the tasks app')
-        self.logger.info(f'{driver.current_url}')
+            wait.until(EC.presence_of_element_located((By.ID, 'username'))).send_keys(samluser)
+            wait.until(EC.presence_of_element_located((By.ID, 'password'))).send_keys(samlpassword + Keys.ENTER)
+            # wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'login-form-button'))).click()
 
-        wait.until(EC.presence_of_element_located((By.ID, 'user-menu'))).click()
-        logoutLink = driver.find_element(By.PARTIAL_LINK_TEXT, 'Log out')
-        logoutLink.click()
-        self.logger.info(f'Logout complete')
-        currentUrl = driver.current_url
-        self.logger.info(driver.current_url)
-        self.assertEqual(driver.current_url, drv.get_gss_post_logout_url())
-        driver.implicitly_wait(10) # seconds before quitting
+            # Wait for TOTP screen
+            requireTotp = False
+            try:
+                self.logger.info(f'Check if TOTP selection dialogue is visible')
+                wait.until(EC.element_to_be_clickable((By.XPATH, '//a[@href="' + drv.indexsuffix + '/login/challenge/totp?redirect_url=' + drv.indexsuffix + '/apps/dashboard/' +'"]'))).click()
+                self.logger.info(f'Found and clicked on TOTP selection dialogue')
+                requireTotp = True
+            except:
+                self.logger.info(f'No need to select TOTP provider')
+                requireTotp = False
+
+            if requireTotp:
+                nodetotpsecret = drv.get_samlusertotpsecret(nodeName)
+                totp = pyotp.TOTP(nodetotpsecret)
+                wait.until(EC.presence_of_element_located((By.XPATH, '//*[@id="body-login"]/div[1]/div/main/div/form/input'))).send_keys(totp.now() + Keys.ENTER)
+
+            try:
+                wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'app-menu')))
+                self.logger.info(f'App menu is ready!')
+            except TimeoutException:
+                self.logger.info(f'Loading of app menu took too much time!')
+
+            driver.implicitly_wait(10) # seconds before quitting
+            dashboardUrl = drv.get_dashboard_url('su')
+            currentUrl = driver.current_url
+            try:
+                self.assertEqual(dashboardUrl, currentUrl)
+            except:
+                self.assertEqual(dashboardUrl + '#/', currentUrl)
+                self.logger.warning(f'Dashboard URL contains trailing #, likely due to the tasks app')
+            self.logger.info(f'{driver.current_url}')
+
+            wait.until(EC.presence_of_element_located((By.ID, 'user-menu'))).click()
+            logoutLink = driver.find_element(By.PARTIAL_LINK_TEXT, 'Log out')
+            logoutLink.click()
+            self.logger.info(f'Logout complete')
+            currentUrl = driver.current_url
+            self.logger.info(driver.current_url)
+            self.assertEqual(driver.current_url, drv.get_gss_post_logout_url())
+            driver.implicitly_wait(10) # seconds before quitting
 
     def test_portal_su_saml(self):
         self.logger.info(f'TestID: {self._testMethodName}')
@@ -674,17 +688,9 @@ class TestLoginSelenium(unittest.TestCase):
             loginbutton.click()
 
             wait = WebDriverWait(driver, delay)
-
-            # loginLinkText = 'ACCESS THROUGH YOUR INSTITUTION'
-
-            # wait.until(EC.presence_of_element_located((By.LINK_TEXT, loginLinkText))).click()
-            # driver.implicitly_wait(10)
-
             wait.until(EC.presence_of_element_located((By.ID, 'dsclient')))
             driver.implicitly_wait(10)
 
-
-            # wait.until(EC.presence_of_element_located((By.ID, 'searchinput'))).send_keys("su.se", Keys.RETURN)
             wait.until(EC.element_to_be_clickable((By.ID, 'searchinput'))).send_keys("su.se", Keys.RETURN)
             driver.implicitly_wait(10)
 
@@ -704,6 +710,7 @@ class TestLoginSelenium(unittest.TestCase):
                 requireTotp = True
             except:
                 self.logger.info(f'No need to select TOTP provider')
+                requireTotp = False
 
             if requireTotp:
                 nodetotpsecret = drv.get_samlusertotpsecret(nodeName)
