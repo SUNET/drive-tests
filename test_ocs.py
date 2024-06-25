@@ -200,8 +200,9 @@ class NodeUsers(threading.Thread):
             return
         try:
             j = json.loads(r.text)
-            logger.info(json.dumps(j, indent=4, sort_keys=True))
+            # logger.info(json.dumps(j, indent=4, sort_keys=True))
             users = j["ocs"]["data"]["users"]
+            logger.info(f'Received {len(users)} from {self.name}')
         except:
             logger.info("No JSON reply received")
             logger.info(r.text)
