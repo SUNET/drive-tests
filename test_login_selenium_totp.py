@@ -203,17 +203,17 @@ class TestLoginSeleniumTotp(unittest.TestCase):
                 currentUrl = driver.current_url
                 # self.assertEqual(dashboardUrl, currentUrl)                
 
-                totpRetry = 1
+                totpRetry = 0
                 while totpRetry <= 3:
                     try:
                         try:
-                            self.logger.info(f'Waiting for files app button')
+                            totpRetry += 1
+                            self.logger.info(f'Try {totpRetry} waiting for files app button')
                             wait.until(EC.presence_of_element_located((By.XPATH, '//a[@href="'+ '/index.php/apps/files/' +'"]')))
                             files = driver.find_element(By.XPATH, '//a[@href="'+ '/index.php/apps/files/' +'"]')
                             files.click()
                         except:
                             self.logger.warning(f'TOTP {totpRetry} failed, trying again')
-                            totpRetry += 1
                     except:
                             self.logger.error(f'TOTP failed {totpRetry} times')
                             screenshot = pyautogui.screenshot()
