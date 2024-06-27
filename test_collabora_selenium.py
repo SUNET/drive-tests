@@ -114,8 +114,8 @@ class TestCollaboraSelenium(unittest.TestCase):
         options.add_argument("--disable-extensions")
         driver = webdriver.Chrome(options=options)
         g_driver=driver
-    except:
-        logger.error(f'Error initializing Chrome driver')
+    except Exception as error:
+        logger.error(f'Error initializing Chrome driver: {error}')
 
     def test_logger(self):
         self.logger.info(f'TestID: {self._testMethodName}')
@@ -165,8 +165,8 @@ class TestCollaboraSelenium(unittest.TestCase):
                     wait.until(EC.presence_of_element_located((By.XPATH,'//a[@href="'+ self.drv.indexsuffix + '/apps/files/' +'"]')))
                     files = self.driver.find_element(by=By.XPATH, value='//a[@href="'+ self.drv.indexsuffix + '/apps/files/' +'"]')
                     files.click()
-                except:
-                    self.logger.warning(f'Wait for {self.drv.indexsuffix}/apps/files/ took too long')
+                except Exception as error:
+                    self.logger.warning(f'Wait for {self.drv.indexsuffix}/apps/files/ took too long: {error}')
                     success = False
                 self.assertTrue(success)
 
@@ -190,8 +190,9 @@ class TestCollaboraSelenium(unittest.TestCase):
                     self.logger.info(f'Looking for home icon in {self.version}')
                     try:
                         wait.until(EC.presence_of_element_located((By.CLASS_NAME, self.homeIcon)))
-                    except:
-                        self.logger.error(f'Home icon in files app not found')
+                    except Exception as error:
+                        self.logger.error(f'Home icon in files app not found: {error}')
+
                 else:
                     self.logger.info(f'Looking for all files text in {self.version}')
                     # //*[@id="app-content-vue"]/div[1]/div/nav/ul/li/a/span/span[2] "//h4/a[contains(text(),'SAP M')]"
@@ -207,8 +208,8 @@ class TestCollaboraSelenium(unittest.TestCase):
                     else:
                         self.driver.find_element(By.XPATH, "//*[contains(text(), 'SeleniumCollaboraTest')]")
                         self.logger.info(f'SeleniumCollaboraTest folder found')
-                except:
-                    self.logger.info(f'SeleniumCollaboraTest folder not found, creating')
+                except Exception as error:
+                    self.logger.info(f'SeleniumCollaboraTest folder not found, creating; {error}')
                     wait.until(EC.presence_of_element_located((By.CLASS_NAME, self.addIcon))).click()
                     time.sleep(1)
 
@@ -238,8 +239,8 @@ class TestCollaboraSelenium(unittest.TestCase):
                             wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'files-list__table')))
                         isEmpty = False
                         self.logger.info(f'Folder is not empty, adding new content')
-                    except:
-                        self.logger.info(f'Folder is empty, creating new files')
+                    except Exception as error:
+                        self.logger.info(f'Folder is empty, creating new files; {error}')
                         isEmpty = True
 
                     # Sort file list so that new files are created at the beginning of the list
@@ -250,8 +251,8 @@ class TestCollaboraSelenium(unittest.TestCase):
                             else:
                                 wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'files-list__column-sort-button'))).click()
                             self.logger.info(f'Changed sort order to descending')
-                        except:
-                            self.logger.warning(f'Unable to change sort order to descending')
+                        except Exception as error:
+                            self.logger.warning(f'Unable to change sort order to descending: {error}')
 
                     time.sleep(3)
                     try:
@@ -270,8 +271,8 @@ class TestCollaboraSelenium(unittest.TestCase):
                             time.sleep(0.5)
                             ActionChains(self.driver).send_keys(Keys.ENTER).perform()
                             pass
-                    except:
-                        self.logger.warning(f'Unable to create new file: {g_filename}, saving screenshot')
+                    except Exception as error:
+                        self.logger.warning(f'Unable to create new file: {g_filename}, saving screenshot: {error}')
                         screenshot = pyautogui.screenshot()
                         screenshot.save("screenshots/" + collaboranode + g_filename + ".png")
                         self.assertTrue(False)
@@ -292,8 +293,8 @@ class TestCollaboraSelenium(unittest.TestCase):
                 self.logger.info(f'Closing document...')
                 try:
                     wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'header-close'))).click()
-                except:
-                    self.logger.warning("Closing markup document failed")
+                except Exception as error:
+                    self.logger.warning("Closing markup document failed: {error}")
 
                 self.logger.info(f'Manually open home folder in case closing of document fails')
                 self.driver.get(self.drv.get_folder_url(collaboranode,''))
@@ -346,8 +347,8 @@ class TestCollaboraSelenium(unittest.TestCase):
                             files = self.driver.find_element(by=By.XPATH, value='//a[@href="'+ self.drv.indexsuffix + '/apps/files/' +'"]')
                             self.logger.info(f'Click on files app')
                             files.click()
-                        except:
-                            self.logger.warning(f'Wait for {self.drv.indexsuffix}/apps/files/ took too long')
+                        except Exception as error:
+                            self.logger.warning(f'Wait for {self.drv.indexsuffix}/apps/files/ took too long: {error}')
                             success = False
 
                         self.logger.info(f'Success: {success}')
@@ -374,8 +375,8 @@ class TestCollaboraSelenium(unittest.TestCase):
                             self.logger.info(f'Looking for home icon in {self.version}')
                             try:
                                 wait.until(EC.presence_of_element_located((By.CLASS_NAME, self.homeIcon)))
-                            except:
-                                self.logger.error(f'Home icon in files app not found')
+                            except Exception as error:
+                                self.logger.error(f'Home icon in files app not found: {error}')
                         else:
                             self.logger.info(f'Looking for all files text in {self.version}')
                             # //*[@id="app-content-vue"]/div[1]/div/nav/ul/li/a/span/span[2] "//h4/a[contains(text(),'SAP M')]"
@@ -391,8 +392,8 @@ class TestCollaboraSelenium(unittest.TestCase):
                             else:
                                 self.driver.find_element(By.XPATH, f"//*[contains(text(), '{testfolder}')]")
                                 self.logger.info(f'{testfolder} folder found')
-                        except:
-                            self.logger.info(f'{testfolder} folder not found, creating')
+                        except Exception as error:
+                            self.logger.info(f'{testfolder} folder not found, creating; Exception was: {error}')
                             wait.until(EC.presence_of_element_located((By.CLASS_NAME, self.addIcon))).click()
                             time.sleep(1)
 
@@ -425,8 +426,8 @@ class TestCollaboraSelenium(unittest.TestCase):
                                     wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'files-list__table')))
                                 isEmpty = False
                                 self.logger.info(f'Folder is not empty, adding new content')
-                            except:
-                                self.logger.info(f'Folder is empty, creating new files')
+                            except Exception as error:
+                                self.logger.info(f'Folder is empty, creating new files; Exception was: {error}')
                                 isEmpty = True
 
                             # Sort file list so that new files are created at the beginning of the list
@@ -437,8 +438,8 @@ class TestCollaboraSelenium(unittest.TestCase):
                                     else:
                                         wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'files-list__column-sort-button'))).click()
                                     self.logger.info(f'Changed sort order to descending')
-                                except:
-                                    self.logger.warning(f'Unable to change sort order to descending')
+                                except Exception as error:
+                                    self.logger.warning(f'Unable to change sort order to descending; Exception was {error}')
 
                             time.sleep(3)
                         
@@ -461,8 +462,8 @@ class TestCollaboraSelenium(unittest.TestCase):
                                     time.sleep(0.5)
                                     ActionChains(self.driver).send_keys(Keys.ENTER).perform()
                                     pass
-                            except:
-                                self.logger.warning(f'Unable to create new file: {g_filename}, saving screenshot')
+                            except Exception as error:
+                                self.logger.warning(f'Unable to create new file: {g_filename}, saving screenshot: {error}')
                                 screenshot = pyautogui.screenshot()
                                 screenshot.save("screenshots/" + collaboranode + g_filename + ".png")
                                 self.assertTrue(False)
@@ -485,8 +486,8 @@ class TestCollaboraSelenium(unittest.TestCase):
                             time.sleep(1)
                             ActionChains(self.driver).send_keys(f'Lorem Ipsum! {Keys.ENTER} {g_filename}').perform()
                             time.sleep(1)
-                        except:
-                            self.logger.error(f'Error writing to the document')
+                        except Exception as error:
+                            self.logger.error(f'Error writing to the document: {error}')
                             success = False
 
                         self.logger.info(f'Open the folder URL instead of closing the document')
@@ -537,8 +538,8 @@ class TestCollaboraSelenium(unittest.TestCase):
                     wait.until(EC.presence_of_element_located((By.XPATH,'//a[@href="'+ self.drv.indexsuffix + '/apps/files/' +'"]')))
                     files = self.driver.find_element(by=By.XPATH, value='//a[@href="'+ self.drv.indexsuffix + '/apps/files/' +'"]')
                     files.click()
-                except:
-                    self.logger.warning(f'Wait for {self.drv.indexsuffix}/apps/files/ took too long')
+                except Exception as error:
+                    self.logger.warning(f'Wait for {self.drv.indexsuffix}/apps/files/ took too long: {error}')
                     success = False
                 self.assertTrue(success)
 
@@ -563,8 +564,9 @@ class TestCollaboraSelenium(unittest.TestCase):
                     self.logger.info(f'Looking for home icon in {self.version}')
                     try:
                         wait.until(EC.presence_of_element_located((By.CLASS_NAME, self.homeIcon)))
-                    except:
-                        self.logger.error(f'Home icon in files app not found')
+                    except Exception as error:
+                        self.logger.error(f'Home icon in files app not found: {error}')
+
                 else:
                     self.logger.info(f'Looking for all files text in {self.version}')
                     # //*[@id="app-content-vue"]/div[1]/div/nav/ul/li/a/span/span[2] "//h4/a[contains(text(),'SAP M')]"
@@ -580,8 +582,8 @@ class TestCollaboraSelenium(unittest.TestCase):
                     else:
                         self.driver.find_element(By.XPATH, "//*[contains(text(), 'SeleniumCollaboraTest')]")
                         self.logger.info(f'SeleniumCollaboraTest folder found')
-                except:
-                    self.logger.info(f'SeleniumCollaboraTest folder not found, creating')
+                except Exception as error:
+                    self.logger.info(f'SeleniumCollaboraTest folder not found, creating; {error}')
                     wait.until(EC.presence_of_element_located((By.CLASS_NAME, self.addIcon))).click()
                     time.sleep(1)
 
@@ -610,8 +612,8 @@ class TestCollaboraSelenium(unittest.TestCase):
                             wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'files-list__table')))
                         isEmpty = False
                         self.logger.info(f'Folder is not empty, adding new content')
-                    except:
-                        self.logger.info(f'Folder is empty, creating new files')
+                    except Exception as error:
+                        self.logger.info(f'Folder is empty, creating new files: {error}')
                         isEmpty = True
 
                     # Sort file list so that new files are created at the beginning of the list
@@ -622,8 +624,8 @@ class TestCollaboraSelenium(unittest.TestCase):
                             else:
                                 wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'files-list__column-sort-button'))).click()
                             self.logger.info(f'Changed sort order to descending')
-                        except:
-                            self.logger.warning(f'Unable to change sort order to descending')
+                        except Exception as error:
+                            self.logger.warning(f'Unable to change sort order to descending: {error}')
 
                     time.sleep(3)
                     try:
@@ -642,8 +644,8 @@ class TestCollaboraSelenium(unittest.TestCase):
                             time.sleep(0.5)
                             ActionChains(self.driver).send_keys(Keys.ENTER).perform()
                             pass
-                    except:
-                        self.logger.error(f'Unable to create new file: {g_filename}, saving screenshot')
+                    except Exception as error:
+                        self.logger.error(f'Unable to create new file: {g_filename}, saving screenshot: {error}')
                         screenshot = pyautogui.screenshot()
                         screenshot.save("screenshots/" + collaboranode + g_filename + ".png")
                         self.assertTrue(False)
@@ -668,8 +670,8 @@ class TestCollaboraSelenium(unittest.TestCase):
                     ActionChains(self.driver).key_down(Keys.CONTROL).send_keys(Keys.LEFT).key_up(Keys.CONTROL).perform()
                     ActionChains(self.driver).send_keys(f'{g_filename}{Keys.ENTER}{Keys.SPACE}1{Keys.ENTER}{Keys.SPACE}2{Keys.ENTER}{Keys.SPACE}3{Keys.ENTER}{Keys.SPACE}4{Keys.ENTER}{Keys.SPACE}').perform()
                     time.sleep(1)
-                except:
-                    self.logger.error(f'Error writing to the document')
+                except Exception as error:
+                    self.logger.error(f'Error writing to the document: {error}')
                     success = False
 
                 self.logger.info(f'Open the folder URL instead of closing the document')
@@ -718,16 +720,16 @@ class TestCollaboraSelenium(unittest.TestCase):
                     wait.until(EC.presence_of_element_located((By.XPATH,'//a[@href="'+ self.drv.indexsuffix + '/apps/files/' +'"]')))
                     files = self.driver.find_element(by=By.XPATH, value='//a[@href="'+ self.drv.indexsuffix + '/apps/files/' +'"]')
                     files.click()
-                except:
-                    self.logger.warning(f'Wait for {self.drv.indexsuffix}/apps/files/ took too long')
+                except Exception as error:
+                    self.logger.warning(f'Wait for {self.drv.indexsuffix}/apps/files/ took too long: {error}')
                     success = False
                 self.assertTrue(success)
 
                 try:
                     wait.until(EC.presence_of_element_located((By.LINK_TEXT, 'All files')))
                     self.logger.info(f'All files visible!')
-                except TimeoutException:
-                    self.logger.warning(f'Loading of all files took too much time!')
+                except Exception as error:
+                    self.logger.warning(f'Loading of all files took too much time: {error}')
                     success = False
 
                 if success == False:
@@ -744,8 +746,8 @@ class TestCollaboraSelenium(unittest.TestCase):
                     self.logger.info(f'Looking for home icon in {self.version}')
                     try:
                         wait.until(EC.presence_of_element_located((By.CLASS_NAME, self.homeIcon)))
-                    except:
-                        self.logger.error(f'Home icon in files app not found')
+                    except Exception as error:
+                        self.logger.error(f'Home icon in files app not found: {error}')
                 else:
                     self.logger.info(f'Looking for all files text in {self.version}')
                     # //*[@id="app-content-vue"]/div[1]/div/nav/ul/li/a/span/span[2] "//h4/a[contains(text(),'SAP M')]"
@@ -761,8 +763,8 @@ class TestCollaboraSelenium(unittest.TestCase):
                     else:
                         self.driver.find_element(By.XPATH, "//*[contains(text(), 'SeleniumCollaboraTest')]")
                         self.logger.info(f'SeleniumCollaboraTest folder found')
-                except:
-                    self.logger.info(f'SeleniumCollaboraTest folder not found, creating')
+                except Exception as error:
+                    self.logger.info(f'SeleniumCollaboraTest folder not found, creating; {error}')
                     wait.until(EC.presence_of_element_located((By.CLASS_NAME, self.addIcon))).click()
                     time.sleep(1)
 
@@ -792,8 +794,8 @@ class TestCollaboraSelenium(unittest.TestCase):
                             wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'files-list__table')))
                         isEmpty = False
                         self.logger.info(f'Folder is not empty, adding new content')
-                    except:
-                        self.logger.info(f'Folder is empty, creating new files')
+                    except Exception as error:
+                        self.logger.info(f'Folder is empty, creating new files: {error}')
                         isEmpty = True
 
                     # Sort file list so that new files are created at the beginning of the list
@@ -804,8 +806,8 @@ class TestCollaboraSelenium(unittest.TestCase):
                             else:
                                 wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'files-list__column-sort-button'))).click()
                             self.logger.info(f'Changed sort order to descending')
-                        except:
-                            self.logger.warning(f'Unable to change sort order to descending')
+                        except Exception as error:
+                            self.logger.warning(f'Unable to change sort order to descending: {error}')
 
                     time.sleep(3)
                     try:
@@ -824,8 +826,8 @@ class TestCollaboraSelenium(unittest.TestCase):
                             time.sleep(0.5)
                             ActionChains(self.driver).send_keys(Keys.ENTER).perform()
                             pass
-                    except:
-                        self.logger.error(f'Unable to create new file: {g_filename}, saving screenshot')
+                    except Exception as error:
+                        self.logger.error(f'Unable to create new file: {g_filename}, saving screenshot: {error}')
                         screenshot = pyautogui.screenshot()
                         screenshot.save("screenshots/" + collaboranode + g_filename + ".png")
                         self.assertTrue(False)
@@ -848,8 +850,8 @@ class TestCollaboraSelenium(unittest.TestCase):
                     time.sleep(3)
                     ActionChains(self.driver).send_keys(f'Lorem ipsum! {Keys.ENTER}{g_filename}').perform()
                     time.sleep(1)
-                except:
-                    self.logger.error(f'Error writing to the document')
+                except Exception as error:
+                    self.logger.error(f'Error writing to the document: {error}')
                     success = False
 
                 self.logger.info(f'Open the folder URL instead of closing the document')
