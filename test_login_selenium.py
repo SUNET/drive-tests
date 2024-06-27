@@ -109,6 +109,8 @@ class TestLoginSelenium(unittest.TestCase):
         self.logger.info(driver.current_url)
         self.assertEqual(driver.current_url, drv.get_gss_post_logout_url())
         driver.implicitly_wait(10) # seconds before quitting
+        driver.close()
+        self.logger.info(f'And done...')
 
     def test_node_login(self):
         delay = 30 # seconds
@@ -446,8 +448,8 @@ class TestLoginSelenium(unittest.TestCase):
         self.logger.info(driver.current_url)
         self.assertEqual(driver.current_url, drv.get_gss_post_logout_url())
         driver.implicitly_wait(10) # seconds before quitting
-
-        driver.implicitly_wait(10) # seconds before quitting
+        driver.close()
+        self.logger.info(f'And done...')
 
     def test_portal_saml_eduid_nomfa(self):
         self.logger.info(f'TestID: {self._testMethodName}')
@@ -524,8 +526,8 @@ class TestLoginSelenium(unittest.TestCase):
         # Assert portal logout url
         self.assertTrue(driver.current_url.startswith('https://portal.drive.sunet.se/?SAMLRequest'))
         driver.implicitly_wait(10) # seconds before quitting
-
-        driver.implicitly_wait(10) # seconds before quitting
+        driver.close()
+        self.logger.info(f'And done...')
 
     def test_saml_su(self):
         self.logger.info(f'TestID: {self._testMethodName}')
@@ -632,6 +634,8 @@ class TestLoginSelenium(unittest.TestCase):
             self.logger.info(driver.current_url)
             self.assertEqual(driver.current_url, drv.get_gss_post_logout_url())
             driver.implicitly_wait(10) # seconds before quitting
+            driver.close()
+            self.logger.info(f'And done...')
 
     def test_portal_su_saml(self):
         self.logger.info(f'TestID: {self._testMethodName}')
@@ -741,6 +745,8 @@ class TestLoginSelenium(unittest.TestCase):
             self.logger.info(driver.current_url)
             # self.assertEqual(driver.current_url, drv.get_gss_post_logout_url())
             driver.implicitly_wait(10) # seconds before quitting
+            driver.close()
+            self.logger.info(f'And done...')
 
 if __name__ == '__main__':
     unittest.main(testRunner=xmlrunner.XMLTestRunner(output='test-reports'))

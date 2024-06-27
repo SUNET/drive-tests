@@ -122,6 +122,8 @@ class TestLoginSeleniumTotp(unittest.TestCase):
 
         driver.implicitly_wait(10) # seconds before quitting
         print(driver.current_url)
+        driver.close()
+        self.logger.info(f'And done...')
 
     def test_node_login(self):
         delay = 30 # seconds
@@ -259,6 +261,9 @@ class TestLoginSeleniumTotp(unittest.TestCase):
 
                 driver.implicitly_wait(10) # seconds before quitting
                 self.logger.info(f'{driver.current_url}')
+                driver.close()
+                self.logger.info(f'And done...')
+
 
 if __name__ == '__main__':
     # unittest.main()
