@@ -45,10 +45,11 @@ class FrontendStatusInfo(threading.Thread):
 
         try:
             r =requests.get(self.url, timeout=g_requestTimeout)
-        except:
-            logger.error(f'Error getting data from {self.url}')
+        except Exception as error:
+            logger.error(f'Error getting data from {self.url}: {error}')
             testThreadsRunning -= 1
             return
+        
         try:
             j = json.loads(r.text)
             self.TestStatus.assertEqual(j["maintenance"], expectedResults[drv.target]['status']['maintenance'])
@@ -59,9 +60,9 @@ class FrontendStatusInfo(threading.Thread):
             # self.assertEqual(j["productname"], statusResult.productname)
             self.TestStatus.assertEqual(j["extendedSupport"], expectedResults[drv.target]['status']['extendedSupport'])
             logger.info(f'Status information tested: {self.url}')
-        except:
+        except Exception as error:
             g_failedNodes.append(self.url)
-            logger.info(f'No valid JSON reply received for {self.url}')
+            logger.info(f'No valid JSON reply received for {self.url}: {error}')
             testThreadsRunning -= 1
             logger.info(r.text)
             self.TestStatus.assertTrue(False)
@@ -92,10 +93,11 @@ class NodeStatusInfo(threading.Thread):
             try:
                 logger.info(f'Getting status from: {url}')
                 r =requests.get(url, timeout=g_requestTimeout, verify=False)
-            except:
-                logger.error(f'Error getting data from {self.node}')
+            except Exception as error:
+                logger.error(f'Error getting data from {self.node}: {error}')
                 testThreadsRunning -= 1
                 return
+            
             try:
                 j = json.loads(r.text)
                 self.TestStatus.assertEqual(j["maintenance"], expectedResults[drv.target]['status']['maintenance'])
@@ -106,9 +108,9 @@ class NodeStatusInfo(threading.Thread):
                 # self.assertEqual(j["productname"], statusResult.productname)
                 self.TestStatus.assertEqual(j["extendedSupport"], expectedResults[drv.target]['status']['extendedSupport'])
                 logger.info(f'Status information tested: {url}')
-            except:
+            except Exception as error:
                 g_failedNodes.append(url)
-                logger.info(f'No valid JSON reply received for {url}')
+                logger.info(f'No valid JSON reply received for {url}: {error}')
                 testThreadsRunning -= 1
                 logger.info(r.text)
                 self.TestStatus.assertTrue(False)
@@ -300,8 +302,8 @@ class TestStatus(unittest.TestCase):
             j = json.loads(jsonString)
             certString = j["md:EntityDescriptor"]["md:SPSSODescriptor"]["md:KeyDescriptor"]["ds:KeyInfo"]["ds:X509Data"]["ds:X509Certificate"]
             certMd5 = hashlib.md5(certString.encode('utf-8')).hexdigest()
-        except:
-            logger.error(f'Metadata is not valid XML')
+        except Exception as error:
+            logger.error(f'Metadata is not valid XML: {error}')
 
         self.assertEqual(expectedEntityId, drv.get_gss_entity_id())
         self.assertEqual(certMd5, expectedResults[drv.target]['cert_md5'])
