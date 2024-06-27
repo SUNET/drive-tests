@@ -73,8 +73,8 @@ class WebDAVDneCheck(threading.Thread):
         for i in range(1,g_maxCheck):
             try:
                 result = client.check(dneName)
-            except:
-                logger.error(f'Error during client.check for {self.name}')
+            except Exception as error:
+                logger.error(f'Error during client.check for {self.name}: {error}')
                 g_testPassed[fullnode] = False
                 g_testThreadsRunning -= 1
                 return
@@ -83,8 +83,8 @@ class WebDAVDneCheck(threading.Thread):
                 logger.error(f'DNE check {i} for {dneName} should not return true')
             try:
                 self.TestWebDAV.assertFalse(result)
-            except:
-                logger.error(f'Error in WebDAVDneCheck thread done for node {self.name}')
+            except Exception as error:
+                logger.error(f'Error in WebDAVDneCheck thread done for node {self.name}: {error}')
                 g_testPassed[fullnode] = False
                 g_testThreadsRunning -= 1
                 return
@@ -136,8 +136,8 @@ class WebDAVList(threading.Thread):
                 }
                 client = Client(options)
                 logger.info(client.list())
-        except:
-            logger.error(f'Error in webdav listing')
+        except Exception as error:
+            logger.error(f'Error in webdav listing: {error}')
             g_testThreadsRunning -= 1
             g_testPassed[fullnode] = False
             return
@@ -190,13 +190,13 @@ class WebDAVMultiCheckAndRemove(threading.Thread):
                     if (client.clean(g_testFolder)):
                         logger.info(f'Folder removed {g_testFolder}')    
                 logger.warning(f'Multiple tries to remove folder: {count}')
-        except:
-            logger.warning(f'Error during iteration {count} of removing {g_testFolder}')
+        except Exception as error:
+            logger.warning(f'Error during iteration {count} of removing {g_testFolder}: {error}')
         
         try:
             self.TestWebDAV.assertFalse(client.check(g_testFolder))
-        except:
-            logger.warning(f'Error in WebDAVMultiCheckAndRemove for node {self.name}')
+        except Exception as error:
+            logger.warning(f'Error in WebDAVMultiCheckAndRemove for node {self.name}: {error}')
             g_testPassed[fullnode] = False
             g_testThreadsRunning -= 1
             return
@@ -247,8 +247,8 @@ class WebDAVCleanSeleniumFolders(threading.Thread):
                 client.clean(g_stressTestFolder)
             logger.info('Listing folder contents after removing the Selenium folders')
             logger.info(client.list())
-        except:
-            logger.error(f'Error in WebDAVCleanSeleniumFolders thread done for node {self.name}')
+        except Exception as error:
+            logger.error(f'Error in WebDAVCleanSeleniumFolders thread done for node {self.name}: {error}')
             g_testPassed[fullnode] = False
             g_testThreadsRunning -= 1
             return
@@ -290,16 +290,16 @@ class WebDAVMakeSharingFolder(threading.Thread):
             logger.info(f'Before mkdir: {client.list()}')
             client.mkdir(g_sharedTestFolder)
             logger.info(f'After mkdir: {client.list()}')
-        except:
-            logger.error(f'Error making folder {g_sharedTestFolder}')
+        except Exception as error:
+            logger.error(f'Error making folder {g_sharedTestFolder}: {error}')
             g_testPassed[fullnode] = False
             g_testThreadsRunning -= 1
             return
         
         try:
             self.TestWebDAV.assertEqual(client.list().count(f'{g_sharedTestFolder}/'), 1)
-        except:
-            logger.error(f'Error in WebDAVMakeSharingFolder thread done for node {self.name}')
+        except Exception as error:
+            logger.error(f'Error in WebDAVMakeSharingFolder thread done for node {self.name}: {error}')
             g_testPassed[fullnode] = False
             g_testThreadsRunning -= 1
             return
@@ -346,8 +346,8 @@ class WebDAVPersonalBucketFolders(threading.Thread):
             self.TestWebDAV.assertEqual(client.list(g_personalBucket).count(f'{folder}/'), 1)
             client.clean(path)
             self.TestWebDAV.assertEqual(client.list(g_personalBucket).count(f'{folder}/'), 0)
-        except:
-            logger.info(f'Error in WebDAVPersonalBucketFolders thread done for node {self.name}')
+        except Exception as error:
+            logger.info(f'Error in WebDAVPersonalBucketFolders thread done for node {self.name}: {error}')
             g_testPassed[fullnode] = False
             g_testThreadsRunning -= 1
             return
@@ -395,8 +395,8 @@ class WebDAVSystemBucketFolders(threading.Thread):
             client.clean(path)
             self.TestWebDAV.assertEqual(client.list(g_systemBucket).count(f'{folder}/'), 0)
             # print(client.list(g_personalBucket))
-        except:
-            logger.error(f'Error in WebDAVSystemBucketFolders thread done for node {self.name}')
+        except Exception as error:
+            logger.error(f'Error in WebDAVSystemBucketFolders thread done for node {self.name}: {error}')
             g_testPassed[fullnode] = False
             g_testThreadsRunning -= 1
             return
@@ -446,32 +446,34 @@ class WebDAVCreateMoveDelete(threading.Thread):
             targetfile=self.target + '/' + filename
             targetmvfile=self.target + '/' + mvfilename
             deleteoriginal=False
-        except:
-            logger.error(f'Error preparing webdav client')
+        except Exception as error:
+            logger.error(f'Error preparing webdav client: {error}')
             g_testThreadsRunning -= 1
             return
         
         try:
             logger.info(f'Uploading {tmpfilename} to {targetfile}')
             client.upload_sync(remote_path=targetfile, local_path=tmpfilename)
-        except:
-            logger.error(f'Error uploading file')
+        except Exception as error:
+            logger.error(f'Error uploading file: {error}')
             g_testPassed[fullnode] = False
             g_testThreadsRunning -= 1
             return
+        
         try:
             logger.info(f'moving {targetfile} to {targetmvfile}')
             client.move(remote_path_from=targetfile, remote_path_to=targetmvfile)
-        except:
-            logger.error(f'Error moving the file')
+        except Exception as error:
+            logger.error(f'Error moving the file: {error}')
             g_testPassed[fullnode] = False
             g_testThreadsRunning -= 1
             return
+
         try:
             logger.info(f'Removing file {targetmvfile}')
             client.clean(targetmvfile)
-        except:
-            logger.error(f'Error deleting the file')
+        except Exception as error:
+            logger.error(f'Error deleting the file: {error}')
             deleteoriginal=True
             g_testPassed[fullnode] = False
             g_testThreadsRunning -= 1
@@ -481,16 +483,16 @@ class WebDAVCreateMoveDelete(threading.Thread):
             try:
                 logger.info(f'Removing original file {targetfile}')
                 client.clean(targetfile)
-            except:
-                logger.error(f'Error deleting the original file')
+            except Exception as error:
+                logger.error(f'Error deleting the original file: {error}')
                 g_testPassed[fullnode] = False
                 g_testThreadsRunning -= 1
                 return
 
         try:
             os.remove(tmpfilename)
-        except:
-            logger.error(f'Error removing file')
+        except Exception as error:
+            logger.error(f'Error removing file: {error}')
             g_testPassed[fullnode] = False
             g_testThreadsRunning -= 1
             return
