@@ -338,6 +338,8 @@ class WebDAVPersonalBucketFolders(threading.Thread):
         client = Client(options)
 
         try:
+            folders = ''
+            cnt = -1
             self.TestWebDAV.assertEqual(client.list().count(f'{g_personalBucket}/'), 1)
             folder = 'test_webdav'
             path = g_personalBucket + '/' + folder
@@ -345,9 +347,13 @@ class WebDAVPersonalBucketFolders(threading.Thread):
             logger.info(client.list(path))
             self.TestWebDAV.assertEqual(client.list(g_personalBucket).count(f'{folder}/'), 1)
             client.clean(path)
-            self.TestWebDAV.assertEqual(client.list(g_personalBucket).count(f'{folder}/'), 0)
+            folders = client.list(g_personalBucket)
+            cnt = folders.count(f'{folder}/')
+            # self.TestWebDAV.assertEqual(client.list(g_personalBucket).count(f'{folder}/'), 0)
+            self.TestWebDAV.assertEqual(cnt, 0)
         except Exception as error:
             logger.info(f'Error in WebDAVPersonalBucketFolders thread done for node {self.name}: {error}')
+            logger.info(f'Folders: {folder}; Count: {cnt}')
             g_testPassed[fullnode] = False
             g_testThreadsRunning -= 1
             return
@@ -386,6 +392,8 @@ class WebDAVSystemBucketFolders(threading.Thread):
         client = Client(options)
 
         try:
+            folders = ''
+            cnt = -1
             self.TestWebDAV.assertEqual(client.list().count(f'{g_systemBucket}/'), 1)
             folder = 'test_webdav'
             path = g_systemBucket + '/' + folder
@@ -393,10 +401,13 @@ class WebDAVSystemBucketFolders(threading.Thread):
             logger.info(client.list(path))
             self.TestWebDAV.assertEqual(client.list(g_systemBucket).count(f'{folder}/'), 1)
             client.clean(path)
-            self.TestWebDAV.assertEqual(client.list(g_systemBucket).count(f'{folder}/'), 0)
+            folders = client.list(g_personalBucket)
+            cnt = folders.count(f'{folder}/')
+            self.TestWebDAV.assertEqual(cnt, 0)
             # print(client.list(g_personalBucket))
         except Exception as error:
             logger.error(f'Error in WebDAVSystemBucketFolders thread done for node {self.name}: {error}')
+            logger.info(f'Folders: {folder}; Count: {cnt}')
             g_testPassed[fullnode] = False
             g_testThreadsRunning -= 1
             return
