@@ -340,8 +340,8 @@ class WebDAVPersonalBucketFolders(threading.Thread):
         try:
             folders = ''
             cnt = -1
-            self.TestWebDAV.assertEqual(client.list().count(f'{g_personalBucket}/'), 1)
             folder = 'test_webdav'
+            self.TestWebDAV.assertEqual(client.list().count(f'{g_personalBucket}/'), 1)
             path = g_personalBucket + '/' + folder
             client.mkdir(path)
             logger.info(client.list(path))
