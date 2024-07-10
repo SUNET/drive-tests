@@ -391,11 +391,12 @@ class WebDAVSystemBucketFolders(threading.Thread):
 
         client = Client(options)
 
+        folders = ''
+        folder = 'test_webdav'
+
         try:
-            folders = ''
             cnt = -1
             self.TestWebDAV.assertEqual(client.list().count(f'{g_systemBucket}/'), 1)
-            folder = 'test_webdav'
             path = g_systemBucket + '/' + folder
             client.mkdir(path)
             logger.info(client.list(path))
