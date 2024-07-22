@@ -67,8 +67,8 @@ class TestLoginSelenium(unittest.TestCase):
         try:
             options = Options()
             driver = webdriver.Chrome(options=options)
-        except:
-            self.logger.error(f'Error initializing Chrome driver')
+        except Exception as e:
+            self.logger.error(f'Error initializing driver: {e}')
             self.assertTrue(False)
         # driver2 = webdriver.Firefox()
         self.deleteCookies(driver)
@@ -172,8 +172,8 @@ class TestLoginSelenium(unittest.TestCase):
                             else:
                                 self.logger.error(f'Unknown browser {browser}')
                                 self.assertTrue(False)
-                        except:
-                            self.logger.error(f'Error initializing Chrome driver')
+                        except Exception as e:
+                            self.logger.error(f'Error initializing driver for {browser}: {e}')
                             self.assertTrue(False)
                         driver.maximize_window()
                         # driver2 = webdriver.Firefox()
@@ -304,8 +304,8 @@ class TestLoginSelenium(unittest.TestCase):
                             else:
                                 self.logger.error(f'Unknown browser {browser}')
                                 self.assertTrue(False)
-                        except:
-                            self.logger.error(f'Error initializing Chrome driver')
+                        except Exception as e:
+                            self.logger.error(f'Error initializing driver for {browser}: {e}')
                             self.assertTrue(False)
                         driver.maximize_window()
                         # driver2 = webdriver.Firefox()
@@ -409,8 +409,8 @@ class TestLoginSelenium(unittest.TestCase):
         try:
             options = Options()
             driver = webdriver.Chrome(options=options)
-        except:
-            self.logger.error(f'Error initializing Chrome driver')
+        except Exception as e:
+            self.logger.error(f'Error initializing driver: {e}')
             self.assertTrue(False)
         # driver2 = webdriver.Firefox()
         self.deleteCookies(driver)
@@ -486,8 +486,8 @@ class TestLoginSelenium(unittest.TestCase):
         try:
             options = Options()
             driver = webdriver.Chrome(options=options)
-        except:
-            self.logger.error(f'Error initializing Chrome driver')
+        except Exception as e:
+            self.logger.error(f'Error initializing driver: {e}')
             self.assertTrue(False)
         # driver2 = webdriver.Firefox()
         self.deleteCookies(driver)
@@ -582,8 +582,8 @@ class TestLoginSelenium(unittest.TestCase):
                 else:
                     self.logger.error(f'Unknown browser {browser}')
                     self.assertTrue(False)
-            except:
-                self.logger.error(f'Error initializing driver for {browser}')
+            except Exception as e:
+                self.logger.error(f'Error initializing driver for {browser}: {e}')
                 self.assertTrue(False)
 
             self.deleteCookies(driver)
@@ -695,8 +695,8 @@ class TestLoginSelenium(unittest.TestCase):
                 else:
                     self.logger.error(f'Unknown browser {browser}')
                     self.assertTrue(False)
-            except:
-                self.logger.error(f'Error initializing Chrome driver')
+            except Exception as e:
+                self.logger.error(f'Error initializing driver for {browser}: {e}')
                 self.assertTrue(False)
 
             self.deleteCookies(driver)
