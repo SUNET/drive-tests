@@ -7,6 +7,7 @@ import unittest
 import sunetnextcloud
 from webdav3.client import Client
 import pyotp
+import platform
 
 import time
 
@@ -24,6 +25,7 @@ import time
 import logging
 
 expectedResultsFile = 'expected.yaml'
+geckodriver_path = "/snap/bin/geckodriver"
 
 class TestLoginSelenium(unittest.TestCase):
     logger = logging.getLogger(__name__)
@@ -162,7 +164,15 @@ class TestLoginSelenium(unittest.TestCase):
                                 options.add_argument("--disable-extensions")
                                 driver = webdriver.Chrome(options=options)
                             elif browser == 'firefox':
-                                driver = webdriver.Firefox()
+                                version = platform.uname().version
+                                self.logger.info(f'Uname: {version}')
+                                if 'Ubuntu' in version:
+                                    driver_service = webdriver.FirefoxService(executable_path=geckodriver_path)
+                                    driver = webdriver.Firefox(service=driver_service)
+                                    self.logger.info(f'Initialize firefox driver on Ubuntu platform')
+                                else:
+                                    self.logger.info(f'Initialize firefox driver on non-Ubuntu platform')
+                                    driver = webdriver.Firefox()
                             else:
                                 self.logger.error(f'Unknown browser {browser}')
                                 self.assertTrue(False)
@@ -288,7 +298,15 @@ class TestLoginSelenium(unittest.TestCase):
                                 options.add_argument("--disable-extensions")
                                 driver = webdriver.Chrome(options=options)
                             elif browser == 'firefox':
-                                driver = webdriver.Firefox()
+                                version = platform.uname().version
+                                self.logger.info(f'Uname: {version}')
+                                if 'Ubuntu' in version:
+                                    driver_service = webdriver.FirefoxService(executable_path=geckodriver_path)
+                                    driver = webdriver.Firefox(service=driver_service)
+                                    self.logger.info(f'Initialize firefox driver on Ubuntu platform')
+                                else:
+                                    self.logger.info(f'Initialize firefox driver on non-Ubuntu platform')
+                                    driver = webdriver.Firefox()
                             else:
                                 self.logger.error(f'Unknown browser {browser}')
                                 self.assertTrue(False)
@@ -560,7 +578,15 @@ class TestLoginSelenium(unittest.TestCase):
                     options.add_argument("--disable-extensions")
                     driver = webdriver.Chrome(options=options)
                 elif browser == 'firefox':
-                    driver = webdriver.Firefox()
+                    version = platform.uname().version
+                    self.logger.info(f'Uname: {version}')
+                    if 'Ubuntu' in version:
+                        driver_service = webdriver.FirefoxService(executable_path=geckodriver_path)
+                        driver = webdriver.Firefox(service=driver_service)
+                        self.logger.info(f'Initialize firefox driver on Ubuntu platform')
+                    else:
+                        self.logger.info(f'Initialize firefox driver on non-Ubuntu platform')
+                        driver = webdriver.Firefox()
                 else:
                     self.logger.error(f'Unknown browser {browser}')
                     self.assertTrue(False)
@@ -667,7 +693,15 @@ class TestLoginSelenium(unittest.TestCase):
                     options.add_argument("--disable-extensions")
                     driver = webdriver.Chrome(options=options)
                 elif browser == 'firefox':
-                    driver = webdriver.Firefox()
+                    version = platform.uname().version
+                    self.logger.info(f'Uname: {version}')
+                    if 'Ubuntu' in version:
+                        driver_service = webdriver.FirefoxService(executable_path=geckodriver_path)
+                        driver = webdriver.Firefox(service=driver_service)
+                        self.logger.info(f'Initialize firefox driver on Ubuntu platform')
+                    else:
+                        self.logger.info(f'Initialize firefox driver on non-Ubuntu platform')
+                        driver = webdriver.Firefox()
                 else:
                     self.logger.error(f'Unknown browser {browser}')
                     self.assertTrue(False)
