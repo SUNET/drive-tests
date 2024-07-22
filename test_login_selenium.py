@@ -163,9 +163,9 @@ class TestLoginSelenium(unittest.TestCase):
                                 driver = webdriver.Chrome(options=options)
                             elif browser == 'firefox':
                                 if os.path.isfile(geckodriver_path):
+                                    self.logger.info(f'Initialize firefox driver using snap geckodriver')
                                     driver_service = webdriver.FirefoxService(executable_path=geckodriver_path)
                                     driver = webdriver.Firefox(service=driver_service)
-                                    self.logger.info(f'Initialize firefox driver using snap geckodriver')
                                 else:
                                     self.logger.info(f'Initialize standard firefox driver')
                                     driver = webdriver.Firefox()
@@ -295,9 +295,9 @@ class TestLoginSelenium(unittest.TestCase):
                                 driver = webdriver.Chrome(options=options)
                             elif browser == 'firefox':
                                 if os.path.isfile(geckodriver_path):
+                                    self.logger.info(f'Initialize firefox driver using snap geckodriver')
                                     driver_service = webdriver.FirefoxService(executable_path=geckodriver_path)
                                     driver = webdriver.Firefox(service=driver_service)
-                                    self.logger.info(f'Initialize firefox driver using snap geckodriver')
                                 else:
                                     self.logger.info(f'Initialize standard firefox driver')
                                     driver = webdriver.Firefox()
@@ -573,9 +573,9 @@ class TestLoginSelenium(unittest.TestCase):
                     driver = webdriver.Chrome(options=options)
                 elif browser == 'firefox':
                     if os.path.isfile(geckodriver_path):
+                        self.logger.info(f'Initialize firefox driver using snap geckodriver')
                         driver_service = webdriver.FirefoxService(executable_path=geckodriver_path)
                         driver = webdriver.Firefox(service=driver_service)
-                        self.logger.info(f'Initialize firefox driver using snap geckodriver')
                     else:
                         self.logger.info(f'Initialize standard firefox driver')
                         driver = webdriver.Firefox()
@@ -686,9 +686,9 @@ class TestLoginSelenium(unittest.TestCase):
                     driver = webdriver.Chrome(options=options)
                 elif browser == 'firefox':
                     if os.path.isfile(geckodriver_path):
+                        self.logger.info(f'Initialize firefox driver using snap geckodriver')
                         driver_service = webdriver.FirefoxService(executable_path=geckodriver_path)
                         driver = webdriver.Firefox(service=driver_service)
-                        self.logger.info(f'Initialize firefox driver using snap geckodriver')
                     else:
                         self.logger.info(f'Initialize standard firefox driver')
                         driver = webdriver.Firefox()
