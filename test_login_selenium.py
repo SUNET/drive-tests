@@ -17,6 +17,7 @@ from selenium.webdriver.common.by import By
 from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.chrome.options import Options
+from selenium.webdriver import FirefoxOptions
 import os
 import yaml
 import time
@@ -162,13 +163,15 @@ class TestLoginSelenium(unittest.TestCase):
                                 options.add_argument("--disable-extensions")
                                 driver = webdriver.Chrome(options=options)
                             elif browser == 'firefox':
+                                options = FirefoxOptions()
+                                options.add_argument("--headless")
                                 if os.path.isfile(geckodriver_path):
                                     self.logger.info(f'Initialize firefox driver using snap geckodriver')
                                     driver_service = webdriver.FirefoxService(executable_path=geckodriver_path)
-                                    driver = webdriver.Firefox(service=driver_service)
+                                    driver = webdriver.Firefox(service=driver_service, options=options)
                                 else:
                                     self.logger.info(f'Initialize standard firefox driver')
-                                    driver = webdriver.Firefox()
+                                    driver = webdriver.Firefox(options=options)
                             else:
                                 self.logger.error(f'Unknown browser {browser}')
                                 self.assertTrue(False)
@@ -294,13 +297,15 @@ class TestLoginSelenium(unittest.TestCase):
                                 options.add_argument("--disable-extensions")
                                 driver = webdriver.Chrome(options=options)
                             elif browser == 'firefox':
+                                options = FirefoxOptions()
+                                options.add_argument("--headless")
                                 if os.path.isfile(geckodriver_path):
                                     self.logger.info(f'Initialize firefox driver using snap geckodriver')
                                     driver_service = webdriver.FirefoxService(executable_path=geckodriver_path)
-                                    driver = webdriver.Firefox(service=driver_service)
+                                    driver = webdriver.Firefox(service=driver_service, options=options)
                                 else:
                                     self.logger.info(f'Initialize standard firefox driver')
-                                    driver = webdriver.Firefox()
+                                    driver = webdriver.Firefox(options=options)
                             else:
                                 self.logger.error(f'Unknown browser {browser}')
                                 self.assertTrue(False)
@@ -572,13 +577,15 @@ class TestLoginSelenium(unittest.TestCase):
                     options.add_argument("--disable-extensions")
                     driver = webdriver.Chrome(options=options)
                 elif browser == 'firefox':
+                    options = FirefoxOptions()
+                    options.add_argument("--headless")
                     if os.path.isfile(geckodriver_path):
                         self.logger.info(f'Initialize firefox driver using snap geckodriver')
                         driver_service = webdriver.FirefoxService(executable_path=geckodriver_path)
-                        driver = webdriver.Firefox(service=driver_service)
+                        driver = webdriver.Firefox(service=driver_service, options=options)
                     else:
                         self.logger.info(f'Initialize standard firefox driver')
-                        driver = webdriver.Firefox()
+                        driver = webdriver.Firefox(options=options)
                 else:
                     self.logger.error(f'Unknown browser {browser}')
                     self.assertTrue(False)
@@ -685,13 +692,15 @@ class TestLoginSelenium(unittest.TestCase):
                     options.add_argument("--disable-extensions")
                     driver = webdriver.Chrome(options=options)
                 elif browser == 'firefox':
+                    options = FirefoxOptions()
+                    options.add_argument("--headless")
                     if os.path.isfile(geckodriver_path):
                         self.logger.info(f'Initialize firefox driver using snap geckodriver')
                         driver_service = webdriver.FirefoxService(executable_path=geckodriver_path)
-                        driver = webdriver.Firefox(service=driver_service)
+                        driver = webdriver.Firefox(service=driver_service, options=options)
                     else:
                         self.logger.info(f'Initialize standard firefox driver')
-                        driver = webdriver.Firefox()
+                        driver = webdriver.Firefox(options=options)
                 else:
                     self.logger.error(f'Unknown browser {browser}')
                     self.assertTrue(False)
