@@ -26,6 +26,10 @@ import logging
 expectedResultsFile = 'expected.yaml'
 geckodriver_path = "/snap/bin/geckodriver"
 
+use_driver_service = False
+if os.environ.get('SELENIUM_DRIVER_SERVICE') == True
+    use_driver_service = True
+
 class TestLoginSelenium(unittest.TestCase):
     logger = logging.getLogger(__name__)
     logging.basicConfig(format = '%(asctime)s - %(module)s.%(funcName)s - %(levelname)s: %(message)s',
@@ -163,15 +167,15 @@ class TestLoginSelenium(unittest.TestCase):
                                 options.add_argument("--disable-extensions")
                                 driver = webdriver.Chrome(options=options)
                             elif browser == 'firefox':
-                                options = FirefoxOptions()
-                                options.add_argument("--headless")
-                                if os.path.isfile(geckodriver_path):
-                                    self.logger.info(f'Initialize firefox driver using snap geckodriver')
+                                if use_driver_service == False:
+                                    self.logger.info(f'Initialize Firefox driver without driver service')
+                                    options = FirefoxOptions()
+                                    options.add_argument("--headless")
+                                    driver = webdriver.Firefox(options=options)
+                                else:
+                                    self.logger.info(f'Initialize Firefox driver using snap geckodriver and driver service')
                                     driver_service = webdriver.FirefoxService(executable_path=geckodriver_path)
                                     driver = webdriver.Firefox(service=driver_service, options=options)
-                                else:
-                                    self.logger.info(f'Initialize standard firefox driver')
-                                    driver = webdriver.Firefox(options=options)
                             else:
                                 self.logger.error(f'Unknown browser {browser}')
                                 self.assertTrue(False)
@@ -297,15 +301,15 @@ class TestLoginSelenium(unittest.TestCase):
                                 options.add_argument("--disable-extensions")
                                 driver = webdriver.Chrome(options=options)
                             elif browser == 'firefox':
-                                options = FirefoxOptions()
-                                options.add_argument("--headless")
-                                if os.path.isfile(geckodriver_path):
-                                    self.logger.info(f'Initialize firefox driver using snap geckodriver')
+                                if use_driver_service == False:
+                                    self.logger.info(f'Initialize Firefox driver without driver service')
+                                    options = FirefoxOptions()
+                                    options.add_argument("--headless")
+                                    driver = webdriver.Firefox(options=options)
+                                else:
+                                    self.logger.info(f'Initialize Firefox driver using snap geckodriver and driver service')
                                     driver_service = webdriver.FirefoxService(executable_path=geckodriver_path)
                                     driver = webdriver.Firefox(service=driver_service, options=options)
-                                else:
-                                    self.logger.info(f'Initialize standard firefox driver')
-                                    driver = webdriver.Firefox(options=options)
                             else:
                                 self.logger.error(f'Unknown browser {browser}')
                                 self.assertTrue(False)
@@ -577,15 +581,15 @@ class TestLoginSelenium(unittest.TestCase):
                     options.add_argument("--disable-extensions")
                     driver = webdriver.Chrome(options=options)
                 elif browser == 'firefox':
-                    options = FirefoxOptions()
-                    options.add_argument("--headless")
-                    if os.path.isfile(geckodriver_path):
-                        self.logger.info(f'Initialize firefox driver using snap geckodriver')
+                    if use_driver_service == False:
+                        self.logger.info(f'Initialize Firefox driver without driver service')
+                        options = FirefoxOptions()
+                        options.add_argument("--headless")
+                        driver = webdriver.Firefox(options=options)
+                    else:
+                        self.logger.info(f'Initialize Firefox driver using snap geckodriver and driver service')
                         driver_service = webdriver.FirefoxService(executable_path=geckodriver_path)
                         driver = webdriver.Firefox(service=driver_service, options=options)
-                    else:
-                        self.logger.info(f'Initialize standard firefox driver')
-                        driver = webdriver.Firefox(options=options)
                 else:
                     self.logger.error(f'Unknown browser {browser}')
                     self.assertTrue(False)
@@ -692,15 +696,15 @@ class TestLoginSelenium(unittest.TestCase):
                     options.add_argument("--disable-extensions")
                     driver = webdriver.Chrome(options=options)
                 elif browser == 'firefox':
-                    options = FirefoxOptions()
-                    options.add_argument("--headless")
-                    if os.path.isfile(geckodriver_path):
-                        self.logger.info(f'Initialize firefox driver using snap geckodriver')
+                    if use_driver_service == False:
+                        self.logger.info(f'Initialize Firefox driver without driver service')
+                        options = FirefoxOptions()
+                        options.add_argument("--headless")
+                        driver = webdriver.Firefox(options=options)
+                    else:
+                        self.logger.info(f'Initialize Firefox driver using snap geckodriver and driver service')
                         driver_service = webdriver.FirefoxService(executable_path=geckodriver_path)
                         driver = webdriver.Firefox(service=driver_service, options=options)
-                    else:
-                        self.logger.info(f'Initialize standard firefox driver')
-                        driver = webdriver.Firefox(options=options)
                 else:
                     self.logger.error(f'Unknown browser {browser}')
                     self.assertTrue(False)
