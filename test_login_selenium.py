@@ -27,7 +27,7 @@ expectedResultsFile = 'expected.yaml'
 geckodriver_path = "/snap/bin/geckodriver"
 
 use_driver_service = False
-if os.environ.get('SELENIUM_DRIVER_SERVICE') == True
+if os.environ.get('SELENIUM_DRIVER_SERVICE') == True:
     use_driver_service = True
 
 class TestLoginSelenium(unittest.TestCase):
