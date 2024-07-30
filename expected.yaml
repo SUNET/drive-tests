@@ -91,8 +91,8 @@ test:
       hasTemplateSource: true
       hasZoteroSupport: true
       productName: "Collabora Online"
-      productVersion: "23.05.10.1"
-      productVersionHash: "baa6eef"
+      productVersion: "24.04.4.5"
+      productVersionHash: "72c164e"
 storage:
     mainStorageLocation: 's3.sto4.safedc.net'
     backupStorageLocation: 's3.sto3.safedc.net'
