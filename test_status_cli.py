@@ -139,7 +139,7 @@ class FrontentStatus(threading.Thread):
             self.TestStatus.assertEqual(r.status_code, 200)
             logger.info(f'Status tested: {self.url}')
         except Exception as error:
-            logger.error(f'An error occurred: {error}')
+            logger.error(f'An error occurred for {self.url}: {error}')
             g_failedNodes.append(self.url)
             logger.info('Status test failed')
             testThreadsRunning -= 1
@@ -171,7 +171,7 @@ class TestStatus(unittest.TestCase):
             self.assertEqual(r.status_code, 200)
             logger.info(f'GSS Status tested')
         except Exception as error:
-            logger.error(f'An error occurred: {error}')
+            logger.error(f'An error occurred for gss: {error}')
 
     def test_frontend_statusinfo_gss(self):
         global logger
