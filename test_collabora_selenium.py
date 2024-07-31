@@ -485,9 +485,9 @@ class TestCollaboraSelenium(unittest.TestCase):
                             self.logger.info(f'Waiting for collabora frame')
                             wait.until(EC.frame_to_be_available_and_switch_to_it((By.CSS_SELECTOR, "iframe[id^='collaboraframe']")))
                             self.logger.info(f'Collabora loaded... Let\'s type some text')
-                            time.sleep(1)
+                            time.sleep(3)
                             ActionChains(self.driver).send_keys(f'Lorem Ipsum! {Keys.ENTER} {g_filename}').perform()
-                            time.sleep(1)
+                            time.sleep(3)
                         except Exception as error:
                             self.logger.error(f'Error writing to the document: {error}')
                             success = False
