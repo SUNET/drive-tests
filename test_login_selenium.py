@@ -25,6 +25,7 @@ import logging
 
 expectedResultsFile = 'expected.yaml'
 geckodriver_path = "/snap/bin/geckodriver"
+g_driver_timeout = 20
 
 use_driver_service = False
 if os.environ.get('SELENIUM_DRIVER_SERVICE') == 'True':
@@ -113,7 +114,7 @@ class TestLoginSelenium(unittest.TestCase):
         currentUrl = driver.current_url
         self.logger.info(driver.current_url)
         self.assertEqual(driver.current_url, drv.get_gss_post_logout_url())
-        driver.implicitly_wait(10) # seconds before quitting
+        driver.implicitly_wait(g_driver_timeout) # seconds before quitting
         driver.close()
         self.logger.info(f'And done...')
 
@@ -248,7 +249,7 @@ class TestLoginSelenium(unittest.TestCase):
                                 self.assertEqual(driver.current_url, drv.get_node_post_logout_url(fullnode))
                         else:
                             self.assertEqual(driver.current_url, drv.get_gss_post_logout_url())
-                        driver.implicitly_wait(10) # seconds before quitting
+                        driver.implicitly_wait(g_driver_timeout) # seconds before quitting
                         driver.quit()
 
     def test_portal_direct_login(self):
@@ -393,7 +394,7 @@ class TestLoginSelenium(unittest.TestCase):
                                 self.assertEqual(driver.current_url, drv.get_node_post_logout_url(fullnode))
                         else:
                             self.assertEqual(driver.current_url, drv.get_gss_post_logout_url())
-                        driver.implicitly_wait(10) # seconds before quitting
+                        driver.implicitly_wait(g_driver_timeout) # seconds before quitting
                         driver.quit()
 
     def test_saml_eduid_nomfa(self):
@@ -431,16 +432,16 @@ class TestLoginSelenium(unittest.TestCase):
         loginLinkText = 'ACCESS THROUGH YOUR INSTITUTION'
 
         wait.until(EC.presence_of_element_located((By.LINK_TEXT, loginLinkText))).click()
-        driver.implicitly_wait(10)
+        driver.implicitly_wait(g_driver_timeout)
 
         wait.until(EC.presence_of_element_located((By.ID, 'dsclient')))
-        driver.implicitly_wait(10)
+        driver.implicitly_wait(g_driver_timeout)
         
         wait.until(EC.presence_of_element_located((By.ID, 'searchinput'))).send_keys("eduid.se", Keys.RETURN)
-        driver.implicitly_wait(10)
+        driver.implicitly_wait(g_driver_timeout)
 
         wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'label-url'))).click()
-        driver.implicitly_wait(10)
+        driver.implicitly_wait(g_driver_timeout)
 
         wait.until(EC.presence_of_element_located((By.ID, 'username'))).send_keys(samluser)
         self.logger.info(f'Email entered')
@@ -454,7 +455,7 @@ class TestLoginSelenium(unittest.TestCase):
         except TimeoutException:
             self.logger.info(f'Loading of app menu took too much time!')
 
-        driver.implicitly_wait(10) # seconds before quitting
+        driver.implicitly_wait(g_driver_timeout) # seconds before quitting
         dashboardUrl = drv.get_dashboard_url('extern')
         currentUrl = driver.current_url
         self.assertEqual(dashboardUrl, currentUrl)
@@ -468,7 +469,7 @@ class TestLoginSelenium(unittest.TestCase):
         currentUrl = driver.current_url
         self.logger.info(driver.current_url)
         self.assertEqual(driver.current_url, drv.get_gss_post_logout_url())
-        driver.implicitly_wait(10) # seconds before quitting
+        driver.implicitly_wait(g_driver_timeout) # seconds before quitting
         driver.close()
         self.logger.info(f'And done...')
 
@@ -508,16 +509,16 @@ class TestLoginSelenium(unittest.TestCase):
         # loginLinkText = 'ACCESS THROUGH YOUR INSTITUTION'
 
         # wait.until(EC.presence_of_element_located((By.LINK_TEXT, loginLinkText))).click()
-        # driver.implicitly_wait(10)
+        # driver.implicitly_wait(g_driver_timeout)
 
         wait.until(EC.presence_of_element_located((By.ID, 'dsclient')))
-        driver.implicitly_wait(10)
+        driver.implicitly_wait(g_driver_timeout)
         
         wait.until(EC.presence_of_element_located((By.ID, 'searchinput'))).send_keys("eduid.se", Keys.RETURN)
-        driver.implicitly_wait(10)
+        driver.implicitly_wait(g_driver_timeout)
 
         wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'label-url'))).click()
-        driver.implicitly_wait(10)
+        driver.implicitly_wait(g_driver_timeout)
 
         wait.until(EC.presence_of_element_located((By.ID, 'username'))).send_keys(samluser)
         self.logger.info(f'Email entered')
@@ -531,7 +532,7 @@ class TestLoginSelenium(unittest.TestCase):
         except TimeoutException:
             self.logger.info(f'Loading of app menu took too much time!')
 
-        driver.implicitly_wait(10) # seconds before quitting
+        driver.implicitly_wait(g_driver_timeout) # seconds before quitting
         dashboardUrl = drv.get_dashboard_url(node)
         currentUrl = driver.current_url
         self.assertEqual(dashboardUrl, currentUrl)
@@ -546,7 +547,7 @@ class TestLoginSelenium(unittest.TestCase):
         self.logger.info(driver.current_url)
         # Assert portal logout url
         self.assertTrue(driver.current_url.startswith('https://portal.drive.sunet.se/?SAMLRequest'))
-        driver.implicitly_wait(10) # seconds before quitting
+        driver.implicitly_wait(g_driver_timeout) # seconds before quitting
         driver.close()
         self.logger.info(f'And done...')
 
@@ -606,18 +607,18 @@ class TestLoginSelenium(unittest.TestCase):
             loginLinkText = 'ACCESS THROUGH YOUR INSTITUTION'
 
             wait.until(EC.presence_of_element_located((By.LINK_TEXT, loginLinkText))).click()
-            driver.implicitly_wait(10)
+            driver.implicitly_wait(g_driver_timeout)
 
             wait.until(EC.presence_of_element_located((By.ID, 'dsclient')))
-            driver.implicitly_wait(10)
+            driver.implicitly_wait(g_driver_timeout)
             
             wait.until(EC.element_to_be_clickable((By.ID, 'searchinput'))).send_keys("su.se", Keys.RETURN)
-            driver.implicitly_wait(10)
+            driver.implicitly_wait(g_driver_timeout)
 
-            driver.implicitly_wait(10)
+            driver.implicitly_wait(g_driver_timeout)
 
             wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'label-url'))).click()
-            driver.implicitly_wait(10)
+            driver.implicitly_wait(g_driver_timeout)
 
             wait.until(EC.presence_of_element_located((By.ID, 'username'))).send_keys(samluser)
             wait.until(EC.presence_of_element_located((By.ID, 'password'))).send_keys(samlpassword + Keys.ENTER)
@@ -645,7 +646,7 @@ class TestLoginSelenium(unittest.TestCase):
             except TimeoutException:
                 self.logger.info(f'Loading of app menu took too much time!')
 
-            driver.implicitly_wait(10) # seconds before quitting
+            driver.implicitly_wait(g_driver_timeout) # seconds before quitting
             dashboardUrl = drv.get_dashboard_url('su')
             currentUrl = driver.current_url
             try:
@@ -662,7 +663,7 @@ class TestLoginSelenium(unittest.TestCase):
             currentUrl = driver.current_url
             self.logger.info(driver.current_url)
             self.assertEqual(driver.current_url, drv.get_gss_post_logout_url())
-            driver.implicitly_wait(10) # seconds before quitting
+            driver.implicitly_wait(g_driver_timeout) # seconds before quitting
             driver.close()
             self.logger.info(f'And done...')
 
@@ -730,13 +731,13 @@ class TestLoginSelenium(unittest.TestCase):
 
             wait = WebDriverWait(driver, delay)
             wait.until(EC.presence_of_element_located((By.ID, 'dsclient')))
-            driver.implicitly_wait(10)
+            driver.implicitly_wait(g_driver_timeout)
 
             wait.until(EC.element_to_be_clickable((By.ID, 'searchinput'))).send_keys("su.se", Keys.RETURN)
-            driver.implicitly_wait(10)
+            driver.implicitly_wait(g_driver_timeout)
 
             wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'label-url'))).click()
-            driver.implicitly_wait(10)
+            driver.implicitly_wait(g_driver_timeout)
 
             wait.until(EC.presence_of_element_located((By.ID, 'username'))).send_keys(samluser)
             wait.until(EC.presence_of_element_located((By.ID, 'password'))).send_keys(samlpassword + Keys.ENTER)
@@ -764,7 +765,7 @@ class TestLoginSelenium(unittest.TestCase):
             except TimeoutException:
                 self.logger.info(f'Loading of app menu took too much time!')
 
-            driver.implicitly_wait(10) # seconds before quitting
+            driver.implicitly_wait(g_driver_timeout) # seconds before quitting
             dashboardUrl = drv.get_dashboard_url('su')
             currentUrl = driver.current_url
             # try:
@@ -781,7 +782,7 @@ class TestLoginSelenium(unittest.TestCase):
             currentUrl = driver.current_url
             self.logger.info(driver.current_url)
             # self.assertEqual(driver.current_url, drv.get_gss_post_logout_url())
-            driver.implicitly_wait(10) # seconds before quitting
+            driver.implicitly_wait(g_driver_timeout) # seconds before quitting
             driver.close()
             self.logger.info(f'And done...')
 
