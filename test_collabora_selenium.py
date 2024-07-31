@@ -257,7 +257,8 @@ class TestCollaboraSelenium(unittest.TestCase):
                     time.sleep(3)
                     try:
                         wait.until(EC.presence_of_element_located((By.CLASS_NAME, self.addIcon))).click()
-                        wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'icon-filetype-text'))).click()
+                        # wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'icon-filetype-text'))).click()
+                        wait.until(EC.presence_of_element_located((By.XPATH, "//*[contains(text(), 'New text file')]"))).click()
                         if self.version.startswith('27'):
                             # Write the filename in the menu
                             wait.until(EC.presence_of_element_located((By.XPATH, "//*[contains(@id, 'input-file')]"))).send_keys(g_filename + Keys.ENTER)
@@ -294,7 +295,7 @@ class TestCollaboraSelenium(unittest.TestCase):
                 try:
                     wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'header-close'))).click()
                 except Exception as error:
-                    self.logger.warning("Closing markup document failed: {error}")
+                    self.logger.warning(f"Closing markup document failed: {error}")
 
                 self.logger.info(f'Manually open home folder in case closing of document fails')
                 self.driver.get(self.drv.get_folder_url(collaboranode,''))
@@ -447,7 +448,8 @@ class TestCollaboraSelenium(unittest.TestCase):
                                 self.logger.info(f'Click on add icon')
                                 wait.until(EC.presence_of_element_located((By.CLASS_NAME, self.addIcon))).click()
                                 self.logger.info(f'Click on add document')
-                                wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'icon-filetype-document'))).click()
+                                # wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'icon-filetype-document'))).click()
+                                wait.until(EC.presence_of_element_located((By.XPATH, "//*[contains(text(), 'New document')]"))).click()
 
                                 if self.version.startswith('27'):
                                     # Write the filename in the menu
@@ -630,7 +632,8 @@ class TestCollaboraSelenium(unittest.TestCase):
                     time.sleep(3)
                     try:
                         wait.until(EC.presence_of_element_located((By.CLASS_NAME, self.addIcon))).click()
-                        wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'icon-filetype-spreadsheet'))).click()
+                        # wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'icon-filetype-spreadsheet'))).click()
+                        wait.until(EC.presence_of_element_located((By.XPATH, "//*[contains(text(), 'New spreadsheet')]"))).click()
                         if self.version.startswith('27'):
                             # Write the filename in the menu
                             wait.until(EC.presence_of_element_located((By.XPATH, "//*[contains(@id, 'input-file')]"))).send_keys(g_filename + Keys.ENTER)
@@ -812,7 +815,8 @@ class TestCollaboraSelenium(unittest.TestCase):
                     time.sleep(3)
                     try:
                         wait.until(EC.presence_of_element_located((By.CLASS_NAME, self.addIcon))).click()
-                        wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'icon-filetype-presentation'))).click()
+                        # wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'icon-filetype-presentation'))).click()
+                        wait.until(EC.presence_of_element_located((By.XPATH, "//*[contains(text(), 'New presentation')]"))).click()
                         if self.version.startswith('27'):
                             # Write the filename in the menu
                             wait.until(EC.presence_of_element_located((By.XPATH, "//*[contains(@id, 'input-file')]"))).send_keys(g_filename + Keys.ENTER)
