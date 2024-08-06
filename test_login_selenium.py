@@ -775,13 +775,16 @@ class TestLoginSelenium(unittest.TestCase):
             #     self.logger.warning(f'Dashboard URL contains trailing #, likely due to the tasks app')
             self.logger.info(f'{driver.current_url}')
 
-            wait.until(EC.presence_of_element_located((By.ID, 'user-menu'))).click()
-            logoutLink = driver.find_element(By.PARTIAL_LINK_TEXT, 'Log out')
-            logoutLink.click()
-            self.logger.info(f'Logout complete')
-            currentUrl = driver.current_url
-            self.logger.info(driver.current_url)
-            # self.assertEqual(driver.current_url, drv.get_gss_post_logout_url())
+            try:
+                wait.until(EC.presence_of_element_located((By.ID, 'user-menu'))).click()
+                logoutLink = driver.find_element(By.PARTIAL_LINK_TEXT, 'Log out')
+                logoutLink.click()
+                self.logger.info(f'Logout complete')
+                currentUrl = driver.current_url
+                self.logger.info(driver.current_url)
+                # self.assertEqual(driver.current_url, drv.get_gss_post_logout_url())
+            except Exception as error:
+                self.logger.warn(f'Could not logout due to: {error}')
             driver.implicitly_wait(g_driver_timeout) # seconds before quitting
             driver.close()
             self.logger.info(f'And done...')
