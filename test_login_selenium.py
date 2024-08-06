@@ -7,6 +7,7 @@ import unittest
 import sunetnextcloud
 from webdav3.client import Client
 import pyotp
+import pyautogui
 import time
 
 from selenium import webdriver
@@ -22,9 +23,11 @@ import os
 import yaml
 import time
 import logging
+from datetime import datetime
 
 expectedResultsFile = 'expected.yaml'
 geckodriver_path = "/snap/bin/geckodriver"
+g_filename=datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 g_driver_timeout = 20
 
 use_driver_service = False
@@ -785,6 +788,8 @@ class TestLoginSelenium(unittest.TestCase):
                 # self.assertEqual(driver.current_url, drv.get_gss_post_logout_url())
             except Exception as error:
                 self.logger.warn(f'Could not logout due to: {error}')
+                screenshot = pyautogui.screenshot()
+                screenshot.save("screenshots/" + "test_portal_su_saml" + g_filename + ".png")
             driver.implicitly_wait(g_driver_timeout) # seconds before quitting
             driver.close()
             self.logger.info(f'And done...')
