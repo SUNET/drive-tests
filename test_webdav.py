@@ -73,6 +73,8 @@ class WebDAVDneCheck(threading.Thread):
         for i in range(1,g_maxCheck):
             try:
                 result = client.check(dneName)
+                if result == True:
+                    logger.warning(f'File {dneName} exists: {result}')
             except Exception as error:
                 logger.error(f'Error during client.check for {self.name}: {error}')
                 g_testPassed[fullnode] = False
@@ -491,8 +493,12 @@ class WebDAVCreateMoveDelete(threading.Thread):
 
         if deleteoriginal:
             try:
-                logger.info(f'Removing original file {targetfile}')
-                client.clean(targetfile)
+                logger.info(f'Check if the original file {targetfile} exists')
+                result = client.check(targetfile)
+                logger.info(f'File {targetfile} exists: {result}')
+                if result == True:
+                    logger.info(f'Removing original file {targetfile}')
+                    client.clean(targetfile)
                 g_testPassed[fullnode] = True
             except Exception as error:
                 logger.error(f'Error deleting the original file: {error}')
