@@ -787,7 +787,7 @@ class TestLoginSelenium(unittest.TestCase):
                 self.logger.info(driver.current_url)
                 # self.assertEqual(driver.current_url, drv.get_gss_post_logout_url())
             except Exception as error:
-                self.logger.warn(f'Could not logout due to: {error}')
+                self.logger.warning(f'Could not logout due to: {error}')
                 screenshot = pyautogui.screenshot()
                 screenshot.save("screenshots/" + "test_portal_su_saml" + g_filename + ".png")
             driver.implicitly_wait(g_driver_timeout) # seconds before quitting

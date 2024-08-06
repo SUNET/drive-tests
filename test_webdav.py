@@ -485,7 +485,7 @@ class WebDAVCreateMoveDelete(threading.Thread):
             logger.info(f'Removing file {targetmvfile}')
             client.clean(targetmvfile)
         except Exception as error:
-            logger.warn(f'Error deleting the file, will try again: {error}')
+            logger.warning(f'Error deleting the file, will try again: {error}')
             deleteoriginal=True
             g_testPassed[fullnode] = False
             g_testThreadsRunning -= 1
