@@ -125,7 +125,7 @@ class WebDAVList(threading.Thread):
 
         try:
             for user in range(3):
-                logger.warning(f'Testing user: {nodeuser[user]}')
+                logger.info(f'Testing user: {nodeuser[user]}')
                 url = drv.get_webdav_url(fullnode, nodeuser[user])
                 logger.info(f'URL: {url}')
                 options = {
@@ -186,7 +186,7 @@ class WebDAVMultiCheckAndRemove(threading.Thread):
                     logger.info(f'Folder does not exist: {g_testFolder}')
                     break
                 else:
-                    logger.warning(f'Removing folder {g_testFolder}')
+                    logger.info(f'Removing folder {g_testFolder}')
                     if (client.clean(g_testFolder)):
                         logger.info(f'Folder removed {g_testFolder}')    
                 logger.warning(f'Multiple tries to remove folder: {count}')
@@ -196,7 +196,7 @@ class WebDAVMultiCheckAndRemove(threading.Thread):
         try:
             self.TestWebDAV.assertFalse(client.check(g_testFolder))
         except Exception as error:
-            logger.warning(f'Error in WebDAVMultiCheckAndRemove for node {self.name}: {error}')
+            logger.error(f'Error in WebDAVMultiCheckAndRemove for node {self.name}: {error}')
             g_testPassed[fullnode] = False
             g_testThreadsRunning -= 1
             return
