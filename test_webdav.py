@@ -474,42 +474,46 @@ class WebDAVCreateMoveDelete(threading.Thread):
             g_testThreadsRunning -= 1
             return
         
-        try:
-            logger.info(f'moving {targetfile} to {targetmvfile}')
-            client.move(remote_path_from=targetfile, remote_path_to=targetmvfile)
-        except Exception as error:
-            logger.error(f'Error moving the file: {error}')
-            g_testPassed[fullnode] = False
-            g_testThreadsRunning -= 1
-            return
-
-        try:
-            logger.info(f'Removing file {targetmvfile}')
-            client.clean(targetmvfile)
-        except Exception as error:
-            logger.warning(f'Error deleting the file, will try again: {error}')
-            deleteoriginal=True
-            g_testPassed[fullnode] = False
-
-        if deleteoriginal:
+        fileMoved = False
+        moveCount = 0
+        while fileMoved == False:
             try:
-                logger.info(f'Check if the original file {targetfile} exists')
-                result = client.check(targetfile)
-                logger.info(f'File {targetfile} exists: {result}')
-                if result == True:
-                    logger.info(f'Removing original file {targetfile}')
-                    client.clean(targetfile)
-                g_testPassed[fullnode] = True
+                logger.info(f'moving {targetfile} to {targetmvfile}')
+                client.move(remote_path_from=targetfile, remote_path_to=targetmvfile)
+                fileMoved = True
+                break
             except Exception as error:
-                logger.error(f'Error deleting the original file: {error}')
+                logger.warning(f'Retry to move the file due to: {error}')
+                moveCount += 1
+
+            if moveCount >= 3:
+                logger.error(f'Error moving file {targetfile} after {moveCount} tries')
+                g_testPassed[fullnode] = False
+                g_testThreadsRunning -= 1
+                return
+
+        fileDeleted = False
+        deleteCount = 0
+        while fileDeleted == False:
+            try:
+                logger.info(f'Removing file {targetmvfile}')
+                client.clean(targetmvfile)
+                fileDeleted = True
+            except Exception as error:
+                logger.warning(f'Retry to delete the file due to: {error}')
+                deleteCount += 1
+
+            if deleteCount >= 3:
+                logger.error(f'Error deleting file {targetmvfile} after {deleteCount} tries')
                 g_testPassed[fullnode] = False
                 g_testThreadsRunning -= 1
                 return
 
         try:
+            logger.info(f'Removing local temp file: {tmpfilename}')
             os.remove(tmpfilename)
         except Exception as error:
-            logger.error(f'Error removing file: {error}')
+            logger.error(f'Error removing the local temp file file: {error}')
             g_testPassed[fullnode] = False
             g_testThreadsRunning -= 1
             return
