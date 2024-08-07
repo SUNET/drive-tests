@@ -214,6 +214,7 @@ class TestLoginSeleniumTotp(unittest.TestCase):
                             wait.until(EC.presence_of_element_located((By.XPATH, '//a[@href="'+ '/index.php/apps/files/' +'"]')))
                             files = driver.find_element(By.XPATH, '//a[@href="'+ '/index.php/apps/files/' +'"]')
                             files.click()
+                            break
                         except:
                             self.logger.warning(f'TOTP {totpRetry} failed, trying again')
                     except:
@@ -242,10 +243,22 @@ class TestLoginSeleniumTotp(unittest.TestCase):
                 except TimeoutException:
                     self.logger.info(f'No share link present!')
 
-                wait.until(EC.presence_of_element_located((By.ID, 'user-menu'))).click()
-                logoutLink = driver.find_element(By.PARTIAL_LINK_TEXT, 'Log out')
-                logoutLink.click()
-                self.logger.info(f'Logout complete')
+                logoutComplete = False
+                logoutCount = 0
+                while logoutComplete == False:
+                    try:
+                        wait.until(EC.presence_of_element_located((By.ID, 'user-menu'))).click()
+                        logoutLink = driver.find_element(By.PARTIAL_LINK_TEXT, 'Log out')
+                        logoutLink.click()
+                        self.logger.info(f'Logout complete')
+                        logoutComplete = True
+                        break
+                    except Exception as error:
+                        logoutCount += 1
+                        self.logger.warning(f'Unable to logout due to {error}')
+                        if logoutCount >= 3:
+                            self.logger.error(f'Unable to logout after {logoutCount}')
+                            break
 
                 currentUrl = driver.current_url
                 self.logger.info(driver.current_url)
