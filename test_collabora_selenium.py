@@ -228,8 +228,13 @@ class TestCollaboraSelenium(unittest.TestCase):
                 fileCreated = False
 
                 retryCount = 0
-                while fileCreated == False & retryCount < g_collaboraRetryCount:
+                while fileCreated == False:
                     retryCount += 1
+                    if retryCount >= g_collaboraRetryCount:
+                        self.logger.error(f'File {g_filename}.md has not been created after {retryCount}')
+                        self.assertTrue(False)
+                        break
+
                     # Check if the folder is empty
                     try:
                         # wait.until(EC.presence_of_element_located((By.XPATH, "//*[text()='Upload some content or sync with your devices!']")))
@@ -416,8 +421,13 @@ class TestCollaboraSelenium(unittest.TestCase):
                         fileCreated = False
 
                         retryCount = 0
-                        while fileCreated == False & retryCount < g_collaboraRetryCount:
+                        while fileCreated == False:
                             retryCount += 1
+                            if retryCount >= g_collaboraRetryCount:
+                                self.logger.error(f'File {g_filename} has not been created after {retryCount}')
+                                self.assertTrue(False)
+                                break
+
                             # Check if the folder is empty
                             try:
                                 # wait.until(EC.presence_of_element_located((By.XPATH, "//*[text()='Upload some content or sync with your devices!']")))
@@ -603,8 +613,13 @@ class TestCollaboraSelenium(unittest.TestCase):
 
                 fileCreated = False
                 retryCount = 0
-                while fileCreated == False & retryCount < g_collaboraRetryCount:
+                while fileCreated == False:
                     retryCount += 1
+                    if retryCount >= g_collaboraRetryCount:
+                        self.logger.error(f'File {g_filename} has not been created after {retryCount}')
+                        self.assertTrue(False)
+                        break
+
                     # Check if the folder is empty
                     try:
                         # wait.until(EC.presence_of_element_located((By.XPATH, "//*[text()='Upload some content or sync with your devices!']")))
@@ -786,8 +801,13 @@ class TestCollaboraSelenium(unittest.TestCase):
                 fileCreated = False
 
                 retryCount = 0
-                while fileCreated == False & retryCount < g_collaboraRetryCount:
+                while fileCreated == False:
                     retryCount += 1
+                    if retryCount >= g_collaboraRetryCount:
+                        self.logger.error(f'File {g_filename} has not been created after {retryCount}')
+                        self.assertTrue(False)
+                        break
+
                     # Check if the folder is empty
                     try:
                         # wait.until(EC.presence_of_element_located((By.XPATH, "//*[text()='Upload some content or sync with your devices!']")))
