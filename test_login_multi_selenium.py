@@ -101,28 +101,37 @@ class TestLoginMultiSelenium(unittest.TestCase):
                 wait.until(EC.presence_of_element_located((By.ID, 'password'))).send_keys(nodepwd + Keys.ENTER)
 
                 # Wait for TOTP screen
-                try:
-                    self.logger.info(f'Check if TOTP selection dialogue is visible')
-                    totpselect = driver.find_element(By.XPATH, '//a[@href="'+ '/index.php/login/challenge/totp' +'"]')
-                    self.logger.warning(f'Found TOTP selection dialogue')
-                    totpselect.click()
-                except:
-                    self.logger.info(f'No need to select TOTP provider')
+                loggedIn = False
+                logonTries = 0
+                while loggedIn == False:
+                    logonTries += 1
+                    try:
+                        self.logger.info(f'Check if TOTP selection dialogue is visible')
+                        totpselect = driver.find_element(By.XPATH, '//a[@href="'+ '/index.php/login/challenge/totp' +'"]')
+                        self.logger.warning(f'Found TOTP selection dialogue')
+                        totpselect.click()
+                    except:
+                        self.logger.info(f'No need to select TOTP provider')
 
-                totp = pyotp.TOTP(nodetotpsecret)
-                wait.until(EC.presence_of_element_located((By.XPATH, '//*[@id="body-login"]/div[1]/div/main/div/form/input'))).send_keys(totp.now() + Keys.ENTER)
+                    totp = pyotp.TOTP(nodetotpsecret)
+                    wait.until(EC.presence_of_element_located((By.XPATH, '//*[@id="body-login"]/div[1]/div/main/div/form/input'))).send_keys(totp.now() + Keys.ENTER)
 
-                try:
-                    wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'app-menu')))
-                    self.logger.info(f'App menu is ready!')
-                except TimeoutException:
-                    self.logger.warning(f'Loading of app menu took too much time!')
-                    success = False
+                    try:
+                        wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'app-menu')))
+                        self.logger.info(f'App menu is ready!')
+                        loggedIn = True
+                    except TimeoutException:
+                        self.logger.warning(f'Loading of app menu took too much time!')
+                    
+                    if logonTries >= 3:
+                        self.logger.error(f'Unable to log on after {logonTries} tries')
+                        self.assertTrue(False)
+                        return
 
-                if success == False:
-                    self.logger.warning(f'Manually open dashboard in case loading of all files takes too much time')
-                    driver.get(g_drv.get_dashboard_url(fullnode))
-                    success = True
+                # if success == False:
+                #     self.logger.warning(f'Manually open dashboard in case loading of all files takes too much time')
+                #     driver.get(g_drv.get_dashboard_url(fullnode))
+                #     success = True
 
                 # Check URLs after login
                 dashboardUrl = g_drv.get_dashboard_url(fullnode)
