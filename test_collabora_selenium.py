@@ -503,7 +503,9 @@ class TestCollaboraSelenium(unittest.TestCase):
                             ActionChains(self.driver).send_keys(f'Lorem Ipsum! {Keys.ENTER} {g_filename}').perform()
                             time.sleep(3)
                         except Exception as error:
-                            self.logger.error(f'Error writing to the document: {error}')
+                            self.logger.error(f'Error writing to the document, saving screenshot: {error}')
+                            screenshot = pyautogui.screenshot()
+                            screenshot.save("screenshots/" + collaboranode + g_filename + ".png")
                             success = False
 
                         self.logger.info(f'Open the folder URL instead of closing the document')
@@ -695,7 +697,9 @@ class TestCollaboraSelenium(unittest.TestCase):
                     ActionChains(self.driver).send_keys(f'{g_filename}{Keys.ENTER}{Keys.SPACE}1{Keys.ENTER}{Keys.SPACE}2{Keys.ENTER}{Keys.SPACE}3{Keys.ENTER}{Keys.SPACE}4{Keys.ENTER}{Keys.SPACE}').perform()
                     time.sleep(1)
                 except Exception as error:
-                    self.logger.error(f'Error writing to the document: {error}')
+                    self.logger.error(f'Error writing to the document, saving screenshot: {error}')
+                    screenshot = pyautogui.screenshot()
+                    screenshot.save("screenshots/" + collaboranode + g_filename + ".png")
                     success = False
 
                 self.logger.info(f'Open the folder URL instead of closing the document')
@@ -883,7 +887,9 @@ class TestCollaboraSelenium(unittest.TestCase):
                     ActionChains(self.driver).send_keys(f'Lorem ipsum! {Keys.ENTER}{g_filename}').perform()
                     time.sleep(1)
                 except Exception as error:
-                    self.logger.error(f'Error writing to the document: {error}')
+                    self.logger.error(f'Error writing to the document, saving screenshot: {error}')
+                    screenshot = pyautogui.screenshot()
+                    screenshot.save("screenshots/" + collaboranode + g_filename + ".png")
                     success = False
 
                 self.logger.info(f'Open the folder URL instead of closing the document')
