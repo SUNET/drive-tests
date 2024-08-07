@@ -231,7 +231,9 @@ class TestCollaboraSelenium(unittest.TestCase):
                 while fileCreated == False:
                     retryCount += 1
                     if retryCount >= g_collaboraRetryCount:
-                        self.logger.error(f'File {g_filename}.md has not been created after {retryCount}')
+                        self.logger.error(f'File {g_filename}.md has not been created after {retryCount} tries, saving screenshot')
+                        screenshot = pyautogui.screenshot()
+                        screenshot.save("screenshots/" + collaboranode + g_filename + ".png")
                         self.assertTrue(False)
                         break
 
@@ -424,7 +426,9 @@ class TestCollaboraSelenium(unittest.TestCase):
                         while fileCreated == False:
                             retryCount += 1
                             if retryCount >= g_collaboraRetryCount:
-                                self.logger.error(f'File {g_filename} has not been created after {retryCount}')
+                                self.logger.error(f'File {g_filename} has not been created after {retryCount} tries, saving screenshot')
+                                screenshot = pyautogui.screenshot()
+                                screenshot.save("screenshots/" + collaboranode + g_filename + ".png")
                                 self.assertTrue(False)
                                 break
 
@@ -616,7 +620,9 @@ class TestCollaboraSelenium(unittest.TestCase):
                 while fileCreated == False:
                     retryCount += 1
                     if retryCount >= g_collaboraRetryCount:
-                        self.logger.error(f'File {g_filename} has not been created after {retryCount}')
+                        self.logger.error(f'File {g_filename} has not been created after {retryCount} tries, saving screenshot')
+                        screenshot = pyautogui.screenshot()
+                        screenshot.save("screenshots/" + collaboranode + g_filename + ".png")
                         self.assertTrue(False)
                         break
 
@@ -804,7 +810,9 @@ class TestCollaboraSelenium(unittest.TestCase):
                 while fileCreated == False:
                     retryCount += 1
                     if retryCount >= g_collaboraRetryCount:
-                        self.logger.error(f'File {g_filename} has not been created after {retryCount}')
+                        self.logger.error(f'File {g_filename} has not been created after {retryCount} tries, saving screenshot')
+                        screenshot = pyautogui.screenshot()
+                        screenshot.save("screenshots/" + collaboranode + g_filename + ".png")
                         self.assertTrue(False)
                         break
 
