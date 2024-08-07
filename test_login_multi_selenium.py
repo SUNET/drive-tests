@@ -128,11 +128,6 @@ class TestLoginMultiSelenium(unittest.TestCase):
                         self.assertTrue(False)
                         return
 
-                # if success == False:
-                #     self.logger.warning(f'Manually open dashboard in case loading of all files takes too much time')
-                #     driver.get(g_drv.get_dashboard_url(fullnode))
-                #     success = True
-
                 # Check URLs after login
                 dashboardUrl = g_drv.get_dashboard_url(fullnode)
                 currentUrl = driver.current_url
@@ -144,16 +139,22 @@ class TestLoginMultiSelenium(unittest.TestCase):
                     files = driver.find_element(By.XPATH, '//a[@href="'+ '/index.php/apps/files/' +'"]')
                     files.click()
                 except:
-                    self.logger.error(f'Files app button not found, saving screenshot')
-                    screenshot = pyautogui.screenshot()
-                    screenshot.save("screenshots/" + fullnode + "test_node_multi_login" + g_filename + ".png")
-                    self.assertTrue(False)
+                    self.logger.warning(f'Files app button not found, do we have to totp again?')
+
+                    totpselect = driver.find_element(By.XPATH, '//a[@href="'+ '/index.php/login/challenge/totp' +'"]')
+                    self.logger.warning(f'Found TOTP selection dialogue')
+                    totpselect.click()
+                    totp = pyotp.TOTP(nodetotpsecret)
+                    wait.until(EC.presence_of_element_located((By.XPATH, '//*[@id="body-login"]/div[1]/div/main/div/form/input'))).send_keys(totp.now() + Keys.ENTER)
 
                 try:
                     wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'app-menu-entry')))
                     self.logger.info(f'All files visible!')
                 except TimeoutException:
                     self.logger.warning(f'Loading of all files took too much time!')
+                    screenshot = pyautogui.screenshot()
+                    screenshot.save("screenshots/" + fullnode + "test_node_multi_login" + g_filename + ".png")
+                    self.assertTrue(False)
 
                 if g_version.startswith('27'):
                     try:
