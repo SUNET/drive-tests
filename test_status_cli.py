@@ -120,6 +120,52 @@ class NodeStatusInfo(threading.Thread):
         testThreadsRunning -= 1
         logger.info(f'NodeStatusInfo threads remaining: {testThreadsRunning}')
 
+class StatusInfo(threading.Thread):
+    def __init__(self, node, TestStatus):
+        threading.Thread.__init__(self)
+        self.node = node
+        self.TestStatus = TestStatus
+
+    def run(self):
+        global testThreadsRunning
+        global logger
+        global expectedResults
+        global g_failedNodes
+        testThreadsRunning += 1
+        drv = sunetnextcloud.TestTarget()
+        logger.info(f'StatusInfo thread {testThreadsRunning} started for node {self.node}')
+
+        url = drv.get_status_url(self.node)
+        try:
+            logger.info(f'Getting status from: {url}')
+            r =requests.get(url, timeout=g_requestTimeout)
+        except Exception as error:
+            logger.error(f'Error getting data from {self.node}: {error}')
+            testThreadsRunning -= 1
+            return
+        
+        try:
+            j = json.loads(r.text)
+            self.TestStatus.assertEqual(j["maintenance"], expectedResults[drv.target]['status']['maintenance'])
+            self.TestStatus.assertEqual(j["needsDbUpgrade"], expectedResults[drv.target]['status']['needsDbUpgrade'])
+            self.TestStatus.assertEqual(j["version"], expectedResults[drv.target]['status']['version'])
+            self.TestStatus.assertEqual(j["versionstring"], expectedResults[drv.target]['status']['versionstring'])
+            self.TestStatus.assertEqual(j["edition"], expectedResults[drv.target]['status']['edition'])
+            # self.assertEqual(j["productname"], statusResult.productname)
+            self.TestStatus.assertEqual(j["extendedSupport"], expectedResults[drv.target]['status']['extendedSupport'])
+            logger.info(f'Status information tested: {url}')
+        except Exception as error:
+            g_failedNodes.append(url)
+            logger.info(f'No valid JSON reply received for {url}: {error}')
+            testThreadsRunning -= 1
+            logger.info(r.text)
+            self.TestStatus.assertTrue(False)
+            return
+
+        logger.info(f'Status thread done for node {url}')
+        testThreadsRunning -= 1
+        logger.info(f'NodeStatusInfo threads remaining: {testThreadsRunning}')
+
 # Test frontend status for code 200, no content check
 class FrontentStatus(threading.Thread):
     def __init__(self, url, TestStatus):
@@ -262,6 +308,24 @@ class TestStatus(unittest.TestCase):
             with self.subTest(myurl=node):
                 logger.info(f'TestID: {node}')
                 statusInfoThread = NodeStatusInfo(node, self)
+                statusInfoThread.start()
+
+        while(testThreadsRunning > 0):
+            time.sleep(1)
+
+        if len(g_failedNodes) > 0:
+            logger.error(f'NodeStatusInfo test failed for {len(g_failedNodes)} of {len(drv.allnodes)} nodes:')
+            for node in g_failedNodes:
+                logger.error(f'   {node}')
+            self.assertTrue(False)
+
+# Test status.php for all nodes
+    def test_statusinfo(self):
+        drv = sunetnextcloud.TestTarget()
+        for node in expectedResults['global']['allnodes']:
+            with self.subTest(myurl=node):
+                logger.info(f'TestID: {node}')
+                statusInfoThread = StatusInfo(node, self)
                 statusInfoThread.start()
 
         while(testThreadsRunning > 0):

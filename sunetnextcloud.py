@@ -210,6 +210,9 @@ class TestTarget(object):
             nodeurls.append("https://" + self.getnodeprefix(node) +  self.targetprefix + '.' + self.baseurl + "/status.php" )
         return nodeurls
 
+    def get_status_url(self, node):
+        return 'https://' + self.getnodeprefix(node) +  self.targetprefix + '.' + self.baseurl + "/status.php"
+
     def get_node_status_url(self, node, id):
         return 'https://node' + str(id) + '.' + self.getnodeprefix(node) +  self.targetprefix + '.' + self.baseurl + "/status.php"
 
