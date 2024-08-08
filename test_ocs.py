@@ -296,7 +296,7 @@ class Capabilities(threading.Thread):
             return
         try:
             j = json.loads(r.text)
-            print(json.dumps(j, indent=4, sort_keys=True))
+            logger.info(f'Node capabilities: {json.dumps(j, indent=4, sort_keys=True)}')
 
         except:
             logger.info("No JSON reply received")
