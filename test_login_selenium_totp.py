@@ -257,7 +257,9 @@ class TestLoginSeleniumTotp(unittest.TestCase):
                         logoutCount += 1
                         self.logger.warning(f'Unable to logout due to {error}')
                         if logoutCount >= 3:
-                            self.logger.error(f'Unable to logout after {logoutCount}')
+                            self.logger.error(f'Unable to logout after {logoutCount} attempts, saving screenshot')
+                            screenshot = pyautogui.screenshot()
+                            screenshot.save("screenshots/" + fullnode + "test_node_login" + g_filename + ".png")
                             break
 
                 currentUrl = driver.current_url
