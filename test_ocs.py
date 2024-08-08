@@ -348,8 +348,8 @@ class UserLifeCycle(threading.Thread):
             j = json.loads(r.text)
             logger.info(json.dumps(j, indent=4, sort_keys=True))
 
-            if (j["ocs"]["meta"]["statuscode"] == 996):
-                logger.info(f'Create cli user after internal server error {cliuser}')
+            if (j["ocs"]["meta"]["statuscode"] != 100):
+                logger.info(f'Retry to create cli user {cliuser} after error {j["ocs"]["meta"]["statuscode"]}')
                 r = session.post(url, headers=ocsheaders, data=data)
                 j = json.loads(r.text)
                 logger.info(json.dumps(j, indent=4, sort_keys=True))
@@ -373,8 +373,8 @@ class UserLifeCycle(threading.Thread):
             j = json.loads(r.text)
             logger.info(json.dumps(j, indent=4, sort_keys=True))
 
-            if (j["ocs"]["meta"]["statuscode"] == 996):
-                logger.info(f'Disable cli user after internal server error {cliuser}')
+            if (j["ocs"]["meta"]["statuscode"] != 100):
+                logger.info(f'Retry to disable cli user {cliuser} after error {j["ocs"]["meta"]["statuscode"]}')
                 r = session.put(disableuserurl, headers=ocsheaders)
                 j = json.loads(r.text)
                 logger.info(json.dumps(j, indent=4, sort_keys=True))
@@ -391,8 +391,8 @@ class UserLifeCycle(threading.Thread):
             j = json.loads(r.text)
             logger.info(json.dumps(j, indent=4, sort_keys=True))
 
-            if (j["ocs"]["meta"]["statuscode"] == 996):
-                logger.info(f'Delete cli user after internal server error {cliuser}')
+            if (j["ocs"]["meta"]["statuscode"] != 100):
+                logger.info(f'Retry to delete cli user after {cliuser} after error {j["ocs"]["meta"]["statuscode"]}')
                 r = session.delete(userurl, headers=ocsheaders)
                 j = json.loads(r.text)
                 logger.info(json.dumps(j, indent=4, sort_keys=True))
