@@ -132,7 +132,7 @@ class TestTarget(object):
         return 'https://' + self.getnodeprefix(node) + self.targetprefix + '.' + self.baseurl + self.indexsuffix + '/apps/user_saml/saml/selectUserBackEnd?redirectUrl='
 
     def get_ocs_capabilities_url(self, node):
-        return 'https://' + self.getnodeprefix(node) + self.targetprefix + '.' + self.baseurl + '/ocs/v1.php/cloud/capabilities?format=json'
+        return 'https://' + self.getnodeprefix(node) + self.targetprefix + '.' + self.baseurl + '/ocs/v2.php/cloud/capabilities?format=json'
 
     def get_all_apps_url(self, node):
         return 'https://$USERNAME$:$PASSWORD$@' + self.getnodeprefix(node) + self.targetprefix + '.' + self.baseurl + '/ocs/v2.php/cloud/apps?format=json'
