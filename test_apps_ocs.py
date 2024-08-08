@@ -279,5 +279,22 @@ class TestAppsOcs(unittest.TestCase):
                 logger.info(f'Passed: {g_testPassed[fullnode]} for {fullnode}')
                 self.assertTrue(g_testPassed[fullnode])
 
+    def test_app_security_guard(self):
+        drv = sunetnextcloud.TestTarget()
+
+        for fullnode in drv.fullnodes:
+            with self.subTest(mynode=fullnode):
+                logger.info(f'TestID: {fullnode}')
+                InstalledAppsConfiguredThread = InstalledAppsConfigured(fullnode, app='security_guard', checkEnabled=True)
+                InstalledAppsConfiguredThread.start()
+
+        while(g_testThreadsRunning > 0):
+            time.sleep(1)
+
+        for fullnode in drv.fullnodes:
+            with self.subTest(mynode=fullnode):
+                logger.info(f'Passed: {g_testPassed[fullnode]} for {fullnode}')
+                self.assertTrue(g_testPassed[fullnode])
+
 if __name__ == '__main__':
     unittest.main(testRunner=xmlrunner.XMLTestRunner(output='test-reports'))
