@@ -32,7 +32,8 @@ prod:
     extendedSupport: false
   ocs_capabilities:
     ocs_meta_status: 'ok'
-    ocs_meta_statuscode: 200
+    ocs_meta_statuscode: 100
+    ocs_meta_statuscode_2: 200
     ocs_meta_message: 'OK'
     ocs_data_version_string: '28.0.6 Enterprise'
     ocs_data_capabilities_globalscale_enabled: true
@@ -74,7 +75,8 @@ test:
     extendedSupport: false
   ocs_capabilities:
     ocs_meta_status: 'ok'
-    ocs_meta_statuscode: 200
+    ocs_meta_statuscode: 100
+    ocs_meta_statuscode_2: 200
     ocs_meta_message: 'OK'
     ocs_data_version_string: '29.0.4 Enterprise'
     ocs_data_capabilities_globalscale_enabled: true
