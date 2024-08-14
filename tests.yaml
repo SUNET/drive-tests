@@ -22,3 +22,5 @@ node:
   - test_login_selenium_totp.py
   - test_login_multi_selenium.py
   - test_collabora_selenium.py
+performance:
+  - test_performance_ocs.py

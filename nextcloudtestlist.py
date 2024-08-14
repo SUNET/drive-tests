@@ -6,7 +6,7 @@ import yaml
 configFile = 'tests.yaml'
 parser = argparse.ArgumentParser(description="List test files to be executed for given test type",
                                  formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-parser.add_argument('type', choices = ['acceptance', 'selenium', 'seleniumtotp', 'collabora', 'node'], help="Type")
+parser.add_argument('type', choices = ['acceptance', 'selenium', 'seleniumtotp', 'collabora', 'node', 'performance'], help="Type")
 args = parser.parse_args()
 config = vars(args)
 
