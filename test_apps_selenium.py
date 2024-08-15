@@ -1,96 +1,169 @@
 """ Selenium tests for Sunet Drive
 Author: Richard Freitag <freitag@sunet.se>
-Selenium tests to test apps in Sunet Drive
+Selenium tests to log on to a Sunet Drive node, and performing various operations to ensure basic operation of a node
 """
-from datetime import datetime
 import xmlrunner
 import unittest
 import sunetnextcloud
+from webdav3.client import Client
+import pyotp
 import pyautogui
+import time
 
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
-from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
 from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.common.action_chains import ActionChains
+from selenium.webdriver.chrome.options import Options
+from selenium.webdriver import FirefoxOptions
 import os
+import yaml
 import time
+import logging
+from datetime import datetime
 
-# 'prod' for production environment, 'test' for test environment
+expectedResultsFile = 'expected.yaml'
+geckodriver_path = "/snap/bin/geckodriver"
+g_filename=datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+g_expectedResultsFile = 'expected.yaml'
 g_testtarget = os.environ.get('NextcloudTestTarget')
-g_appnodes_test = ["sunet"]
-g_appnodes_prod = ["sunet"]
+g_driver_timeout = 20
+g_wait={}
+g_driver={}
+g_logger={}
+g_drv={}
+g_loggedInNodes={}
 
-g_apps_test = ['rds', 'jupyter']
-g_apps_prod = []
+use_driver_service = False
+if os.environ.get('SELENIUM_DRIVER_SERVICE') == 'True':
+    use_driver_service = True
 
 
-class TestAppsSelenium(unittest.TestCase):
-    def test_rds_app(self):
+def deleteCookies():
+    cookies = g_driver.get_cookies()
+    # g_logger.info(f'Deleting all cookies: {cookies}')
+    g_logger.info(f'Deleting all cookies.')
+    g_driver.delete_all_cookies()
+    cookies = g_driver.get_cookies()
+    # g_logger.info(f'Cookies deleted: {cookies}')
+    g_logger.info(f'Cookies deleted.')
+
+def nodelogin(nextcloudnode):
+    global g_wait
+    deleteCookies()
+    g_logger.info(f'Logging in to {nextcloudnode}')
+    loginurl = g_drv.get_node_login_url(nextcloudnode)
+    g_logger.info(f'Login url: {loginurl}')
+    nodeuser = g_drv.get_seleniumuser(nextcloudnode)
+    nodepwd = g_drv.get_seleniumuserpassword(nextcloudnode)
+    g_isLoggedIn = True
+    g_loggedInNodes[nextcloudnode] = True
+
+    g_driver.maximize_window()
+    actions = ActionChains(g_driver)
+    # driver2 = webdriver.Firefox()
+    g_driver.get(loginurl)
+
+    g_wait.until(EC.presence_of_element_located((By.ID, 'user'))).send_keys(nodeuser)
+    g_wait.until(EC.presence_of_element_located((By.ID, 'password'))).send_keys(nodepwd + Keys.ENTER)
+
+    return
+
+class TestLoginSelenium(unittest.TestCase):
+    global g_loggedInNodes, g_logger, g_drv, g_wait, g_driver
+    drv = sunetnextcloud.TestTarget(g_testtarget)
+    g_drv=drv
+    logger = logging.getLogger(__name__)
+    g_logger = logger
+    logging.basicConfig(format = '%(asctime)s - %(module)s.%(funcName)s - %(levelname)s: %(message)s',
+                    datefmt = '%Y-%m-%d %H:%M:%S', level = logging.INFO)
+    
+    with open(g_expectedResultsFile, "r") as stream:
+        expectedResults=yaml.safe_load(stream)
+
+    # Some class names of icons changed from Nextcloud 27 to 28
+    version = expectedResults[drv.target]['status']['version']
+    if version.startswith('27'):
+        homeIcon = 'icon-home'
+        addIcon = 'icon-add'
+    else:
+        homeIcon = 'home-icon'
+        addIcon = 'plus-icon'
+
+    try:
+        options = Options()
+        options.add_argument("--no-sandbox")
+        options.add_argument("--disable-dev-shm-usage")
+        options.add_argument("--disable-gpu")
+        options.add_argument("--disable-extensions")
+        driver = webdriver.Chrome(options=options)
+        g_driver=driver
+    except Exception as error:
+        logger.error(f'Error initializing Chrome driver: {error}')
+
+    def test_logger(self):
+        self.logger.info(f'TestID: {self._testMethodName}')
+        pass
+
+    for nextcloudnode in drv.fullnodes:
+        g_loggedInNodes[nextcloudnode] = False
+
+
+    def test_logger(self):
+        self.logger.info(f'TestID: {self._testMethodName}')
+        pass
+
+    def test_app_shortcuts(self):
         delay = 30 # seconds
-        drv = sunetnextcloud.TestTarget(g_testtarget)
-        if g_testtarget == 'prod':
-            nodestotest = g_appnodes_prod
-            appstotest = g_apps_prod
+
+        global g_isLoggedIn, g_loggedInNodes, g_wait
+        wait = WebDriverWait(self.driver, delay)
+        g_wait = wait
+
+        # The class name of the share icon changed in Nextcloud 28
+        version = self.expectedResults[g_drv.target]['status']['version']
+        self.logger.info(f'Expected Nextcloud version: {version}')
+        if version.startswith('27'):
+            sharedClass = 'icon-shared'
+            simpleLogoutUrl = False
+            self.logger.info(f'We are on Nextcloud 27 and are not using the simple logout url')
         else:
-            nodestotest = g_appnodes_test
-            appstotest = g_apps_test
+            # This will select the first available sharing button
+            sharedClass = 'files-list__row-action-sharing-status'
+            simpleLogoutUrl = True
+            self.logger.info(f'We are on Nextcloud 28 and are therefore using the simple logout url')
 
-        
+        for fullnode in g_drv.fullnodes:
+            with self.subTest(mynode=fullnode):
+                self.logger.info(f'TestID: Testing node {fullnode}')
+                nodelogin(fullnode)
 
 
-        for appnode in nodestotest:
-            with self.subTest(mynode=appnode):
-                loginurl = drv.get_node_login_url(appnode)
-                print("Login url: ", loginurl)
-                nodeuser = drv.get_seleniumuser(appnode)
-                nodepwd = drv.get_seleniumuserpassword(appnode)
-                
-                try:
-                    options = Options()
-                    driver = webdriver.Chrome(options=options)
-                except:
-                    self.logger.error(f'Error initializing Chrome driver')
-                    self.assertTrue(False)
-                
-                driver.maximize_window()
-                actions = ActionChains(driver)
-                # driver2 = webdriver.Firefox()
-                driver.get(loginurl)
-
-                wait = WebDriverWait(driver, delay)
-                wait.until(EC.presence_of_element_located((By.ID, 'user'))).send_keys(nodeuser)
-                wait.until(EC.presence_of_element_located((By.ID, 'password'))).send_keys(nodepwd + Keys.ENTER)
-
+                self.logger.info('Waiting for app menu')
                 try:
                     wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'app-menu')))
-                    print("Page is ready!")
-                    proceed = True
+                    self.logger.info(f'App menu is ready!')
                 except TimeoutException:
-                    print("Loading took too much time!")
-                    proceed = False
-                self.assertTrue(proceed)
+                    self.logger.warning(f'Loading of app menu took too much time!')
+                    success = False
 
-                for app in appstotest:
-                    appurl = '/index.php/apps/' + app + '/'
-                    try:
-                        rdsAppButton = driver.find_element(by=By.XPATH, value='//a[@href="'+ appurl +'"]')
-                        rdsAppButton.click()
-                        print("App {0} loaded".format(app))
-                        proceed = True
-                    except TimeoutException:
-                        print("Loading {0} took too much time!".format(app))
-                        proceed = False
+                defaultApps = self.expectedResults[g_drv.target]['defaultapps']
+                optionalApps = self.expectedResults[g_drv.target]['optionalapps']
+                try:
+                    for appentry in self.driver.find_elements(By.CLASS_NAME, "app-menu-entry"):
+                        appid = appentry.get_attribute("data-app-id")
+                        if appid in defaultApps or appid in optionalApps:
+                            self.logger.info(f'Installed app {appid} expected!')
+                        else:
+                            self.logger.warning(f'Unexpected app on node: {appid}')
+                            self.assertTrue(False)
+                except Exception as error:
+                    self.logger.warning(f'No app menu entries found: {error}')
 
-                    self.assertTrue(proceed)
-                    time.sleep(3)
-
-                print('End of test!')
-                time.sleep(5)
+                self.logger.info(f'And done...')
 
 if __name__ == '__main__':
-    # unittest.main()
     unittest.main(testRunner=xmlrunner.XMLTestRunner(output='test-reports'))

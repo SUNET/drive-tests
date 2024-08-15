@@ -12,6 +12,8 @@ global:
   testBrowsers: [chrome,firefox]
 prod:
   portalnodes: []
+  defaultapps: [dashboard,files,photos,activity,contacts,calendar,announcementcenter,collectives,polls,forms,tasks]
+  optionalapps: [rds,integration_jupyterhub]
   status:
     installed: true
     maintenance: false
@@ -55,6 +57,8 @@ prod:
       productVersionHash: "baa6eef"
 test:
   portalnodes: [su,sunet,extern]
+  defaultapps: [dashboard,files,photos,activity,contacts,calendar,announcementcenter,collectives,polls,forms,tasks]
+  optionalapps: [rds,integration_jupyterhub]
   status:
     installed: true
     maintenance: false
