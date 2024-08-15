@@ -72,7 +72,7 @@ def nodelogin(nextcloudnode):
 
     return
 
-class TestLoginSelenium(unittest.TestCase):
+class TestAppsSelenium(unittest.TestCase):
     global g_loggedInNodes, g_logger, g_drv, g_wait, g_driver
     drv = sunetnextcloud.TestTarget(g_testtarget)
     g_drv=drv
