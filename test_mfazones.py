@@ -426,7 +426,7 @@ class TestMfaZonesSelenium(unittest.TestCase):
                     g_logger.info(f'Expected fail. Unable to list content of an active MFA zone.')
                     error_message = str(e)
                     if "failed with code 403" in error_message:
-                        g_logger.info(f'Expected 403 error has occurred')
+                        g_logger.info(f'Expected 403 has occurred')
                         self.assertTrue(True)
                     else:
                         g_logger.error(f'Unexpected error on node {fullnode}: {error_message}')
