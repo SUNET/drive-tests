@@ -241,6 +241,33 @@ class TestMfaZonesSelenium(unittest.TestCase):
                 prepareOcsMFaShares(fullnode)
         pass
 
+    def test_mfa_webdav_folders(self):
+        for fullnode in g_drv.fullnodes:
+            with self.subTest(mynode=fullnode):
+                self.logger.info(f'TestID: Testing node {fullnode}')
+
+                # Make sure test folder exists
+                nodeuser = g_drv.get_seleniummfauser(fullnode)
+                self.logger.info(f'Username: {nodeuser}')
+                nodeapppwd = g_drv.get_seleniummfauserapppassword(fullnode)
+
+                # Create folder for testing using webdav
+                url = g_drv.get_webdav_url(fullnode, nodeuser)
+                options = {
+                'webdav_hostname': url,
+                'webdav_login' : nodeuser,
+                'webdav_password' : nodeapppwd 
+                }
+
+                client = Client(options)
+                dir = 'MfaTestFolder'
+                try:
+                    client.list(dir)
+                    self.logger.info(f'Folder good on node {fullnode}')
+                except:
+                    self.logger.error(f'Folder locked on node {fullnode}')
+                    self.assertTrue(False)
+
     def test_mfazones_no_mfauser(self):
         delay = 30 # seconds
 
