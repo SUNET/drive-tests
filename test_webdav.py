@@ -461,7 +461,7 @@ class WebDAVCreateMoveDelete(threading.Thread):
             targetmvfile=self.target + '/' + mvfilename
             deleteoriginal=False
         except Exception as error:
-            logger.error(f'Error preparing webdav client: {error}')
+            logger.error(f'Error preparing webdav client for {fullnode}: {error}')
             g_testThreadsRunning -= 1
             return
         
