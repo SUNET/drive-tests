@@ -18,6 +18,7 @@ import json
 import pyotp
 import pyautogui
 import time
+import traceback
 
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
@@ -401,41 +402,48 @@ class TestMfaZonesSelenium(unittest.TestCase):
 
                     wait.until(EC.presence_of_element_located((By.ID, 'have-mfa')))
                     haveMfa = g_driver.find_element(by=By.ID, value='checkbox-radio-switch-mfa')
-                    g_logger.info(f'Have MFA location: {haveMfa.location}')
-
-                    # List files before activating MFA Zone
-                    try:
-                        g_logger.info(f'List folder before MFA Zone: {client.list(dir)}')
-                    except Exception as e:
-                        g_logger.error(f'Error before activating MFA zone: {e}')
-                        self.assertTrue(False)
-                        return
-
-                    # Activate MFA Zone and ensure we cannot access the files via WebDAV
-                    try:
-                        actions.move_to_element(haveMfa)
-                        actions.move_by_offset(50, 10).click().perform()
-                        g_logger.info(f'List after activating MFA Zone: {client.list(dir)}')
-                        g_logger.error(f'We should not be able to list folders in an active MFA zone!')
-                        self.assertTrue(False)
-                    except Exception as e:
-                        g_logger.info(f'Expected fail. Unable to list content of an active MFA zone. {e}')
-                        self.assertTrue(True)
-
-                    # Deactivate MFA Zone again
-                    try:
-                        actions.click().perform()
-                        g_logger.info(f'List after deactivating MFA Zone again: {client.list(dir)}')
-                    except Exception as e:
-                        g_logger.error(f'Error after deactivating MFA zone: {e}')
-                        self.assertTrue(False)
-                        return
-
-                    g_logger.info(f'Deactivate MFA zone')
                 except Exception as e:
-                    self.logger.error(f'Error for node {fullnode}: {e}')
+                    g_logger.error(f'Unable to locate mfa zone menus: {e}')
+
+
+
+                # List files before activating MFA Zone
+                try:
+                    g_logger.info(f'List folder before MFA Zone: {client.list(dir)}')
+                except Exception as e:
+                    g_logger.error(f'Error before activating MFA zone: {e}')
+                    self.assertTrue(False)
                     return
 
+                # Activate MFA Zone and ensure we cannot access the files via WebDAV
+                try:
+                    actions.move_to_element(haveMfa)
+                    actions.move_by_offset(50, 10).click().perform()
+                    g_logger.info(f'List after activating MFA Zone: {client.list(dir)}')
+                    g_logger.error(f'We should not be able to list folders in an active MFA zone!')
+                    self.assertTrue(False)
+                except Exception as e:
+                    g_logger.info(f'Expected fail. Unable to list content of an active MFA zone.')
+                    error_message = str(e)
+                    if "failed with code 403" in error_message:
+                        g_logger.info(f'Expected 403 error has occurred')
+                        self.assertTrue(True)
+                    else:
+                        g_logger.error(f'Unexpected error has occurred: {error_message}')
+                        self.assertTrue(False)
+
+                # Deactivate MFA Zone again
+                try:
+                    actions.click().perform()
+                    # Wait 3 seconds for MFA zone to be deactivated
+                    time.sleep(3)
+                    g_logger.info(f'List after deactivating MFA Zone again: {client.list(dir)}')
+                except Exception as e:
+                    g_logger.error(f'Error after deactivating MFA zone: {e}')
+                    self.assertTrue(False)
+                    return
+
+                g_logger.info(f'Deactivate MFA zone')
 
                 self.logger.info(f'Subtest done for {fullnode}')
 
