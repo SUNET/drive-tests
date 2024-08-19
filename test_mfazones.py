@@ -411,7 +411,7 @@ class TestMfaZonesSelenium(unittest.TestCase):
                 try:
                     g_logger.info(f'List folder before MFA Zone: {client.list(dir)}')
                 except Exception as e:
-                    g_logger.error(f'Error before activating MFA zone: {e}')
+                    g_logger.error(f'Error before activating MFA zone on node {fullnode}: {e}')
                     self.assertTrue(False)
                     return
 
@@ -429,7 +429,7 @@ class TestMfaZonesSelenium(unittest.TestCase):
                         g_logger.info(f'Expected 403 error has occurred')
                         self.assertTrue(True)
                     else:
-                        g_logger.error(f'Unexpected error has occurred: {error_message}')
+                        g_logger.error(f'Unexpected error on node {fullnode}: {error_message}')
                         self.assertTrue(False)
 
                 # Deactivate MFA Zone again
