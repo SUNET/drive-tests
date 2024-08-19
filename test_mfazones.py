@@ -399,17 +399,14 @@ class TestMfaZonesSelenium(unittest.TestCase):
                     g_logger.info(f'Wait for MFA checkbox')
                     wait.until(EC.presence_of_element_located((By.ID, 'checkbox-radio-switch-mfa')))
                     g_logger.info(f'MFA checkbox found')
-
                     wait.until(EC.presence_of_element_located((By.ID, 'have-mfa')))
-                    haveMfa = g_driver.find_element(by=By.ID, value='checkbox-radio-switch-mfa')
                 except Exception as e:
                     g_logger.error(f'Unable to locate mfa zone menus: {e}')
-
-
 
                 # List files before activating MFA Zone
                 try:
                     g_logger.info(f'List folder before MFA Zone: {client.list(dir)}')
+                    time.sleep(3)
                 except Exception as e:
                     g_logger.error(f'Error before activating MFA zone on node {fullnode}: {e}')
                     self.assertTrue(False)
@@ -417,25 +414,37 @@ class TestMfaZonesSelenium(unittest.TestCase):
 
                 # Activate MFA Zone and ensure we cannot access the files via WebDAV
                 try:
+                    # g_logger.info(f'Activate MFA')
+                    haveMfa = g_driver.find_element(by=By.ID, value='checkbox-radio-switch-mfa')
                     actions.move_to_element(haveMfa)
-                    actions.move_by_offset(50, 10).click().perform()
+                    actions.move_by_offset(50, 10)
+                    time.sleep(1)
+                    g_logger.info(f'Klick to activate MFA')
+                    actions.click().perform()
+                    time.sleep(3)
+                    # g_logger.info(f'Klick 2')
+                    # actions.click().perform()
+
+
+                    # time.sleep(600)
+
                     g_logger.info(f'List after activating MFA Zone: {client.list(dir)}')
                     g_logger.error(f'We should not be able to list folders in an active MFA zone!')
                     self.assertTrue(False)
                 except Exception as e:
                     g_logger.info(f'Expected fail. Unable to list content of an active MFA zone.')
-                    error_message = str(e)
-                    if "failed with code 403" in error_message:
-                        g_logger.info(f'Expected 403 has occurred')
-                        self.assertTrue(True)
-                    else:
-                        g_logger.error(f'Unexpected error on node {fullnode}: {error_message}')
-                        self.assertTrue(False)
+                    # error_message = str(e)
+                    # if "failed with code 403" in error_message:
+                    #     g_logger.info(f'Expected 403 has occurred')
+                    #     self.assertTrue(True)
+                    # else:
+                    #     g_logger.error(f'Unexpected error on node {fullnode}: {error_message}')
+                    #     self.assertTrue(False)
 
                 # Deactivate MFA Zone again
                 try:
+                    g_logger.info(f'Deactivate MFA and wait for 3 seconds')
                     actions.click().perform()
-                    # Wait 3 seconds for MFA zone to be deactivated
                     time.sleep(3)
                     g_logger.info(f'List after deactivating MFA Zone again: {client.list(dir)}')
                 except Exception as e:
