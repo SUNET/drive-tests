@@ -88,6 +88,16 @@ test:
   ocsapps:
     default: 72
     extern: 73
+    vr: 73
+    su: 73
+    sunet: 73
+    hh: 73
+    scilifelab: 73
+    ltu: 73
+    kau: 73
+    gih: 73
+    mdu: 73
+    lnu: 73
   collabora:
     nodes: 3
     status: 'OK'
