@@ -167,6 +167,12 @@ class TestTarget(object):
     def get_file_unlock_curl(self, node, username, filename):
         return 'curl -X UNLOCK --url https://' + username + ':$PASSWORD$@' + self.getnodeprefix(node) + self.targetprefix + '.' + self.baseurl + '/remote.php/dav/files/' + username + '/' + filename + ' --header \'X-User-Lock: 1\''
 
+    def get_shares_url(self, node):
+        return 'https://$USERNAME$:$PASSWORD$@' + self.getnodeprefix(node) + self.targetprefix + '.' + self.baseurl + '/ocs/v2.php/apps/files_sharing/api/v1/shares?format=json'
+
+    def get_delete_share_url(self, node, id):
+        return 'https://$USERNAME$:$PASSWORD$@' + self.getnodeprefix(node) + self.targetprefix + '.' + self.baseurl + '/ocs/v2.php/apps/files_sharing/api/v1/shares/' + id
+
     def get_serverinfo_url(self, node):
         return 'https://' + self.getnodeprefix(node) + self.targetprefix + '.' + self.baseurl + '/ocs/v2.php/apps/serverinfo/api/v1/info?format=json'
 
