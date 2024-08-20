@@ -343,7 +343,13 @@ class UserLifeCycle(threading.Thread):
         data = { 'userid': cliuser, 'password': clipwd}
 
         logger.info(f'Create cli user {cliuser}')
-        r = session.post(url, headers=ocsheaders, data=data)
+        try:
+            r = session.post(url, headers=ocsheaders, data=data)
+        except:
+            logger.error(f'Error posting to create cli user')
+            g_testPassed[fullnode] = False
+            g_testThreadsRunning -= 1
+            return
         try:
             j = json.loads(r.text)
             logger.info(json.dumps(j, indent=4, sort_keys=True))
