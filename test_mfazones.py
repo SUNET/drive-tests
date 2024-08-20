@@ -479,8 +479,6 @@ class TestMfaZonesSelenium(unittest.TestCase):
                     self.assertTrue(False)
                     return
 
-                g_logger.info(f'Deactivate MFA zone')
-
                 self.logger.info(f'Subtest done for {fullnode}')
 
 if __name__ == '__main__':
