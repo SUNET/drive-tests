@@ -95,7 +95,7 @@ def prepareOcsMFaShares(nextcloudnode):
                 logger.info(f'Creating subfolder {subfolder}')
                 client.mkdir(subfolder)
     except Exception as e:
-        logger.error(f'Error creating subfolder {subfolder}')        
+        logger.error(f'Error creating subfolder {subfolder}: {e}')        
 
     sharesUrl = g_drv.get_shares_url(nextcloudnode)
     logger.info(f'Preparing shares: {sharesUrl}')
