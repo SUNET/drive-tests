@@ -266,6 +266,7 @@ class TestMfaZonesSelenium(unittest.TestCase):
             self.assertTrue(False)
 
     def test_mfa_webdav_folders(self):
+        failedNodes = []
         for fullnode in g_drv.fullnodes:
             with self.subTest(mynode=fullnode):
                 self.logger.info(f'TestID: Testing node {fullnode}')
@@ -288,9 +289,17 @@ class TestMfaZonesSelenium(unittest.TestCase):
                 try:
                     client.list(dir)
                     self.logger.info(f'Folder good on node {fullnode}')
-                except:
-                    self.logger.error(f'Folder locked on node {fullnode}')
-                    self.assertTrue(False)
+                except Exception as e:
+                    error_message=str(e)
+                    if "403" in error_message:
+                        self.logger.info(f'Expected 403')
+                    else:
+                        self.logger.error(f'Folder locked on node {fullnode}')
+                        failedNodes.append(fullnode)
+        for node in failedNodes:
+            self.logger.error(f'Locked on node {node}')
+        if len(failedNodes)>0:
+            self.assertTrue(False)
 
     def test_mfa_webdav_shared_folders(self):
         failedNodes = []
