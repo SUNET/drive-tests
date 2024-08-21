@@ -177,19 +177,29 @@ def nodelogin(nextcloudnode,user='selenium'):
     g_wait.until(EC.presence_of_element_located((By.ID, 'password'))).send_keys(nodepwd + Keys.ENTER)
 
     if user == 'selenium_mfa':
-        # Wait for TOTP screen
+        # Try totp to save some time
         try:
-            g_logger.info(f'Check if TOTP selection dialogue is visible')
-            g_wait.until(EC.presence_of_element_located((By.XPATH, '//a[@href="'+ '/index.php/login/challenge/totp' +'"]')))
-            totpselect = g_driver.find_element(By.XPATH, '//a[@href="'+ '/index.php/login/challenge/totp' +'"]')
-            g_logger.warning(f'Found TOTP selection dialogue')
-            totpselect.click()
+            totp = pyotp.TOTP(nodetotpsecret)
+            time.sleep(3)
+            g_wait.until(EC.presence_of_element_located((By.XPATH, '//*[@id="body-login"]/div[1]/div/main/div/form/input'))).send_keys(totp.now() + Keys.ENTER)
+            checkForTotp=False
         except:
-            g_logger.info(f'No need to select TOTP provider')
+            checkForTotp=True
 
-        totp = pyotp.TOTP(nodetotpsecret)
-        time.sleep(3)
-        g_wait.until(EC.presence_of_element_located((By.XPATH, '//*[@id="body-login"]/div[1]/div/main/div/form/input'))).send_keys(totp.now() + Keys.ENTER)
+        # Wait for TOTP screen
+        if checkForTotp:
+            try:
+                g_logger.info(f'Check if TOTP selection dialogue is visible')
+                g_wait.until(EC.presence_of_element_located((By.XPATH, '//a[@href="'+ '/index.php/login/challenge/totp' +'"]')))
+                totpselect = g_driver.find_element(By.XPATH, '//a[@href="'+ '/index.php/login/challenge/totp' +'"]')
+                g_logger.warning(f'Found TOTP selection dialogue')
+                totpselect.click()
+            except:
+                g_logger.info(f'No need to select TOTP provider')
+
+            totp = pyotp.TOTP(nodetotpsecret)
+            time.sleep(3)
+            g_wait.until(EC.presence_of_element_located((By.XPATH, '//*[@id="body-login"]/div[1]/div/main/div/form/input'))).send_keys(totp.now() + Keys.ENTER)
     return
 
 class TestMfaZonesSelenium(unittest.TestCase):
@@ -463,24 +473,24 @@ class TestMfaZonesSelenium(unittest.TestCase):
                     g_logger.info(f'Klick to activate MFA')
                     actions.click().perform()
                     time.sleep(3)
-                    # g_logger.info(f'Klick 2')
-                    # actions.click().perform()
-
-
-                    # time.sleep(600)
-
-                    g_logger.info(f'List after activating MFA Zone: {client.list(dir)}')
+                    content=client.list(dir)
+                    g_logger.info(f'List after activating MFA Zone: {content}')
                     g_logger.error(f'We should not be able to list folders in an active MFA zone!')
                     self.assertTrue(False)
                 except Exception as e:
-                    g_logger.info(f'Expected fail. Unable to list content of an active MFA zone.')
-                    # error_message = str(e)
-                    # if "failed with code 403" in error_message:
-                    #     g_logger.info(f'Expected 403 has occurred')
-                    #     self.assertTrue(True)
-                    # else:
-                    #     g_logger.error(f'Unexpected error on node {fullnode}: {error_message}')
-                    #     self.assertTrue(False)
+                    g_logger.info(f'Check if this exception is expected or not')
+                    error_message = str(e)
+                    if "failed with code 403" in error_message:
+                        g_logger.info(f'Expected 403 has occurred')
+                        self.assertTrue(True)
+                    elif "False is not true" in error_message:
+                        g_logger.error(f'MFA Zones do not seem to work on webdav for {fullnode}: {error_message}')
+                        self.assertTrue(False)
+                        return
+                    else:
+                        g_logger.error(f'Unexpected error on {fullnode}: {error_message}')
+                        self.assertTrue(False)
+                        return
 
                 # Deactivate MFA Zone again
                 try:
