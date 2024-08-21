@@ -575,6 +575,19 @@ class TestMfaZonesSelenium(unittest.TestCase):
                     self.logger.error(f'Error for node {fullnode}: {e}')
                     return
 
+                # Check if folder already has MFA so we can deactivate it before the first test
+                try:
+                    g_logger.info(f'List folder before MFA Zone: {client.list(dir)}')
+                    deactivateMfaBeforeStart=False
+                except Exception as e:
+                    error_message = str(e)
+                    if "403" in error_message:
+                        deactivateMfaBeforeStart=True
+                    else:
+                        g_logger.error(f'Error checking MFA zone for {fullnode}: {e}')
+                        self.assertTrue(False)
+                        return
+
                 # Find by checkbox ID and click it twice to activate/deactivate
                 try:
                     g_logger.info(f'Wait for MFA checkbox')
@@ -583,6 +596,19 @@ class TestMfaZonesSelenium(unittest.TestCase):
                     wait.until(EC.presence_of_element_located((By.ID, 'have-mfa')))
                 except Exception as e:
                     g_logger.error(f'Unable to locate mfa zone menus: {e}')
+
+                # Click to deactivate MFA Zone if it is already enabled
+                if deactivateMfaBeforeStart:
+                    try:
+                        haveMfa = g_driver.find_element(by=By.ID, value='checkbox-radio-switch-mfa')
+                        actions.move_to_element(haveMfa)
+                        actions.move_by_offset(50, 10)
+                        time.sleep(1)
+                        g_logger.info(f'Klick to deactivate MFA')
+                        actions.click().perform()
+                        time.sleep(3)
+                    except Exception as e:
+                        g_logger.error(f'Error deactivating previously activated MFA zone: {e}')
 
                 # List files before activating MFA Zone
                 try:
