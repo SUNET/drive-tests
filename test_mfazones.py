@@ -51,6 +51,7 @@ g_driver={}
 g_logger={}
 g_drv={}
 g_loggedInNodes={}
+g_failedNodes = []
 
 use_driver_service = False
 if os.environ.get('SELENIUM_DRIVER_SERVICE') == 'True':
@@ -84,7 +85,9 @@ def prepareOcsMFaShares(nextcloudnode):
         else:
             logger.info(f'Main test folder {mainfolder} already exists')
     except Exception as e:
-        logger.error(f'Error checking or creating folder {mainfolder}')
+        logger.error(f'Error checking or creating folder {mainfolder}: {e}')
+        g_failedNodes.append(nextcloudnode)
+        return
 
     try:
         subfolder = ''
@@ -96,6 +99,8 @@ def prepareOcsMFaShares(nextcloudnode):
                 client.mkdir(subfolder)
     except Exception as e:
         logger.error(f'Error creating subfolder {subfolder}: {e}')        
+        g_failedNodes.append(nextcloudnode)
+        return
 
     sharesUrl = g_drv.get_shares_url(nextcloudnode)
     logger.info(f'Preparing shares: {sharesUrl}')
@@ -108,6 +113,8 @@ def prepareOcsMFaShares(nextcloudnode):
         r=session.get(sharesUrl, headers=ocsheaders)
     except:
         logger.error(f'Error getting {sharesUrl}')
+        g_failedNodes.append(nextcloudnode)
+        return
 
     j = json.loads(r.text)
     logger.info(json.dumps(j, indent=4, sort_keys=True))
@@ -235,12 +242,18 @@ class TestMfaZonesSelenium(unittest.TestCase):
         self.logger.info(f'TestID: {self._testMethodName}')
 
     def test_prepared_mfa_folders(self):
-        global g_drv
+        global g_drv, g_failedNodes
+        g_failedNodes = []
         for fullnode in g_drv.fullnodes:
             with self.subTest(mynode=fullnode):
                 self.logger.info(f'TestID: {self._testMethodName} - {fullnode}')
                 prepareOcsMFaShares(fullnode)
-        pass
+
+        self.logger.info(f'Preparing folders failed for {len(g_failedNodes)} nodes')
+        for node in g_failedNodes:
+            self.logger.info(f'{node}')
+        if len(g_failedNodes) > 0:
+            self.assertTrue(False)
 
     def test_mfa_webdav_folders(self):
         for fullnode in g_drv.fullnodes:
