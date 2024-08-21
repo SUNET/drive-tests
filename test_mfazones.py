@@ -87,9 +87,9 @@ def prepareOcsMFaShares(nextcloudnode):
         logger.error(f'Error checking or creating folder {mainfolder}')
 
     try:
+        subfolder = mainfolder + '/' + folder
         logger.info(client.list(mainfolder))
         for folder in subfolders:
-            subfolder = mainfolder + '/' + folder
             if not client.check(subfolder):
                 logger.info(f'Creating subfolder {subfolder}')
                 client.mkdir(subfolder)
