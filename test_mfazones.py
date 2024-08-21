@@ -292,6 +292,136 @@ class TestMfaZonesSelenium(unittest.TestCase):
                     self.logger.error(f'Folder locked on node {fullnode}')
                     self.assertTrue(False)
 
+    def test_mfa_webdav_shared_folders(self):
+        failedNodes = []
+        passedNodes = []
+        for fullnode in g_drv.fullnodes:
+            with self.subTest(mynode=fullnode):
+                self.logger.info(f'TestID: Testing node {fullnode}')
+
+                # Make sure test folder exists
+                nodeuser = g_drv.get_seleniummfauser(fullnode)
+                self.logger.info(f'Username: {nodeuser}')
+                nodeapppwd = g_drv.get_seleniummfauserapppassword(fullnode)
+
+                # Create folder for testing using webdav
+                url = g_drv.get_webdav_url(fullnode, nodeuser)
+                self.logger.info(f'URL: {url}')
+                options = {
+                'webdav_hostname': url,
+                'webdav_login' : nodeuser,
+                'webdav_password' : nodeapppwd 
+                }
+
+                client = Client(options)
+                nonMfaFolder = 'OcsTestFolder_NonMfaShared'
+                mfaFolder = 'OcsTestFolder_MfaShared'
+
+                # List non mfa folder, this should succeed
+                try:
+                    client.list(nonMfaFolder)
+                    self.logger.info(f'Folder {nonMfaFolder} good on node {fullnode}')
+                    self.assertTrue(True)
+                except Exception as e:
+                    self.logger.info(f'Error listing non mfa shared folder: {e}')
+                    failedNodes.append(fullnode)
+
+                # List mfa folder, which should result in a 403 exception
+                try:
+                    client.list(mfaFolder)
+                    self.logger.error(f'Folder {mfaFolder} on node {fullnode} should not be listed')
+                    self.assertTrue(False)
+                except Exception as e:
+                    self.logger.info(f'Check if this is an expected exception or not')
+                    error_message = str(e)
+                    if "failed with code 403" in error_message:
+                        g_logger.info(f'Expected 403 has occurred')
+                        self.assertTrue(True)
+                        passedNodes.append(fullnode)
+                    elif "False is not true" in error_message:
+                        g_logger.error(f'MFA Zones do not seem to work on webdav for {fullnode}: {error_message}')
+                        failedNodes.append(fullnode)
+                        self.assertTrue(False)
+                    else:
+                        g_logger.error(f'Unexpected error on {fullnode}: {error_message}')
+                        failedNodes.append(fullnode)
+                        self.assertTrue(False)
+
+        for node in passedNodes:
+            self.logger.info(f'Passed for {node}')
+
+        for node in failedNodes:
+            self.logger.error(f'Failed for {node}')
+        if len(g_failedNodes) > 0:
+            self.assertTrue(False)
+
+        self.logger.info(f'And done...')
+
+    def test_nonmfa_webdav_shared_folders(self):
+        failedNodes = []
+        passedNodes = []
+        for fullnode in g_drv.fullnodes:
+            with self.subTest(mynode=fullnode):
+                self.logger.info(f'TestID: Testing node {fullnode}')
+
+                # Make sure test folder exists
+                nodeuser = g_drv.get_seleniumuser(fullnode)
+                self.logger.info(f'Username: {nodeuser}')
+                nodeapppwd = g_drv.get_seleniumuserapppassword(fullnode)
+
+                # Create folder for testing using webdav
+                url = g_drv.get_webdav_url(fullnode, nodeuser)
+                self.logger.info(f'URL: {url}')
+                options = {
+                'webdav_hostname': url,
+                'webdav_login' : nodeuser,
+                'webdav_password' : nodeapppwd 
+                }
+
+                client = Client(options)
+                nonMfaFolder = 'OcsTestFolder_NonMfaShared'
+                mfaFolder = 'OcsTestFolder_MfaShared'
+
+                # List non mfa folder, this should succeed
+                try:
+                    client.list(nonMfaFolder)
+                    self.logger.info(f'Folder {nonMfaFolder} good on node {fullnode}')
+                    self.assertTrue(True)
+                except Exception as e:
+                    self.logger.info(f'Error listing non mfa shared folder: {e}')
+                    failedNodes.append(fullnode)
+
+                # List mfa folder, which should result in a 403 exception
+                try:
+                    client.list(mfaFolder)
+                    self.logger.error(f'Folder {mfaFolder} on node {fullnode} should not be listed')
+                    self.assertTrue(False)
+                except Exception as e:
+                    self.logger.info(f'Check if this is an expected exception or not')
+                    error_message = str(e)
+                    if "failed with code 403" in error_message:
+                        g_logger.info(f'Expected 403 has occurred')
+                        self.assertTrue(True)
+                        passedNodes.append(fullnode)
+                    elif "False is not true" in error_message:
+                        g_logger.error(f'MFA Zones do not seem to work on webdav for {fullnode}: {error_message}')
+                        failedNodes.append(fullnode)
+                        self.assertTrue(False)
+                    else:
+                        g_logger.error(f'Unexpected error on {fullnode}: {error_message}')
+                        failedNodes.append(fullnode)
+                        self.assertTrue(False)
+
+        for node in passedNodes:
+            self.logger.info(f'Passed for {node}')
+
+        for node in failedNodes:
+            self.logger.error(f'Failed for {node}')
+        if len(g_failedNodes) > 0:
+            self.assertTrue(False)
+
+        self.logger.info(f'And done...')
+
     def test_mfazones_no_mfauser(self):
         delay = 30 # seconds
 
