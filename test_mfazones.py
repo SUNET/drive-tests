@@ -252,9 +252,12 @@ class TestMfaZonesSelenium(unittest.TestCase):
         self.logger.info(f'TestID: {self._testMethodName}')
 
     def test_prepared_mfa_folders(self):
-        global g_drv, g_failedNodes
+        global g_drv, g_failedNodes, g_testtarget
         g_failedNodes = []
         for fullnode in g_drv.fullnodes:
+            if g_testtarget=='prod' and fullnode == 'su':
+                self.logger.info(f'We are not testing su in prod right now')
+                return
             with self.subTest(mynode=fullnode):
                 self.logger.info(f'TestID: {self._testMethodName} - {fullnode}')
                 prepareOcsMFaShares(fullnode)
@@ -266,8 +269,12 @@ class TestMfaZonesSelenium(unittest.TestCase):
             self.assertTrue(False)
 
     def test_mfa_webdav_folders(self):
+        global g_testtarget
         failedNodes = []
         for fullnode in g_drv.fullnodes:
+            if g_testtarget=='prod' and fullnode == 'su':
+                self.logger.info(f'We are not testing su in prod right now')
+                return
             with self.subTest(mynode=fullnode):
                 self.logger.info(f'TestID: Testing node {fullnode}')
 
@@ -302,9 +309,13 @@ class TestMfaZonesSelenium(unittest.TestCase):
             self.assertTrue(False)
 
     def test_mfa_webdav_shared_folders(self):
+        global g_testtarget
         failedNodes = []
         passedNodes = []
         for fullnode in g_drv.fullnodes:
+            if g_testtarget=='prod' and fullnode == 'su':
+                self.logger.info(f'We are not testing su in prod right now')
+                return
             with self.subTest(mynode=fullnode):
                 self.logger.info(f'TestID: Testing node {fullnode}')
 
@@ -367,9 +378,13 @@ class TestMfaZonesSelenium(unittest.TestCase):
         self.logger.info(f'And done...')
 
     def test_nonmfa_webdav_shared_folders(self):
+        global g_testtarget
         failedNodes = []
         passedNodes = []
         for fullnode in g_drv.fullnodes:
+            if g_testtarget=='prod' and fullnode == 'su':
+                self.logger.info(f'We are not testing su in prod right now')
+                return
             with self.subTest(mynode=fullnode):
                 self.logger.info(f'TestID: Testing node {fullnode}')
 
@@ -434,7 +449,7 @@ class TestMfaZonesSelenium(unittest.TestCase):
     def test_mfazones_no_mfauser(self):
         delay = 30 # seconds
 
-        global g_isLoggedIn, g_loggedInNodes, g_wait
+        global g_isLoggedIn, g_loggedInNodes, g_wait, g_testtarget
         wait = WebDriverWait(self.driver, delay)
         g_wait = wait
 
@@ -452,6 +467,9 @@ class TestMfaZonesSelenium(unittest.TestCase):
             self.logger.info(f'We are on Nextcloud 28 and are therefore using the simple logout url')
 
         for fullnode in g_drv.fullnodes:
+            if g_testtarget=='prod' and fullnode == 'su':
+                self.logger.info(f'We are not testing su in prod right now')
+                return
             with self.subTest(mynode=fullnode):
                 self.logger.info(f'TestID: Testing node {fullnode}')
                 nodelogin(fullnode) #No-MFA user
@@ -504,7 +522,7 @@ class TestMfaZonesSelenium(unittest.TestCase):
     def test_mfazones_mfauser(self):
         delay = 30 # seconds
 
-        global g_isLoggedIn, g_loggedInNodes, g_wait
+        global g_isLoggedIn, g_loggedInNodes, g_wait, g_testtarget
         wait = WebDriverWait(self.driver, delay)
         g_wait = wait
 
@@ -522,6 +540,9 @@ class TestMfaZonesSelenium(unittest.TestCase):
             self.logger.info(f'We are on Nextcloud 28 and are therefore using the simple logout url')
 
         for fullnode in g_drv.fullnodes:
+            if g_testtarget=='prod' and fullnode == 'su':
+                self.logger.info(f'We are not testing su in prod right now')
+                return
             with self.subTest(mynode=fullnode):
                 self.logger.info(f'TestID: Testing node {fullnode}')
                 actions = ActionChains(g_driver)
