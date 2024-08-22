@@ -257,7 +257,7 @@ class TestMfaZonesSelenium(unittest.TestCase):
         for fullnode in g_drv.fullnodes:
             if g_testtarget=='prod' and fullnode == 'su':
                 self.logger.info(f'We are not testing su in prod right now')
-                return
+                continue
             with self.subTest(mynode=fullnode):
                 self.logger.info(f'TestID: {self._testMethodName} - {fullnode}')
                 prepareOcsMFaShares(fullnode)
@@ -274,7 +274,7 @@ class TestMfaZonesSelenium(unittest.TestCase):
         for fullnode in g_drv.fullnodes:
             if g_testtarget=='prod' and fullnode == 'su':
                 self.logger.info(f'We are not testing su in prod right now')
-                return
+                continue
             with self.subTest(mynode=fullnode):
                 self.logger.info(f'TestID: Testing node {fullnode}')
 
@@ -315,7 +315,7 @@ class TestMfaZonesSelenium(unittest.TestCase):
         for fullnode in g_drv.fullnodes:
             if g_testtarget=='prod' and fullnode == 'su':
                 self.logger.info(f'We are not testing su in prod right now')
-                return
+                continue
             with self.subTest(mynode=fullnode):
                 self.logger.info(f'TestID: Testing node {fullnode}')
 
@@ -384,7 +384,7 @@ class TestMfaZonesSelenium(unittest.TestCase):
         for fullnode in g_drv.fullnodes:
             if g_testtarget=='prod' and fullnode == 'su':
                 self.logger.info(f'We are not testing su in prod right now')
-                return
+                continue
             with self.subTest(mynode=fullnode):
                 self.logger.info(f'TestID: Testing node {fullnode}')
 
@@ -469,7 +469,7 @@ class TestMfaZonesSelenium(unittest.TestCase):
         for fullnode in g_drv.fullnodes:
             if g_testtarget=='prod' and fullnode == 'su':
                 self.logger.info(f'We are not testing su in prod right now')
-                return
+                continue
             with self.subTest(mynode=fullnode):
                 self.logger.info(f'TestID: Testing node {fullnode}')
                 nodelogin(fullnode) #No-MFA user
@@ -542,7 +542,7 @@ class TestMfaZonesSelenium(unittest.TestCase):
         for fullnode in g_drv.fullnodes:
             if g_testtarget=='prod' and fullnode == 'su':
                 self.logger.info(f'We are not testing su in prod right now')
-                return
+                continue
             with self.subTest(mynode=fullnode):
                 self.logger.info(f'TestID: Testing node {fullnode}')
                 actions = ActionChains(g_driver)
