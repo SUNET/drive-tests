@@ -70,9 +70,6 @@ class TestLoginSeleniumTotp(unittest.TestCase):
         nodepwd = drv.get_seleniummfauserpassword(fullnode)
         nodeapppwd = drv.get_seleniummfauserapppassword(fullnode)
         nodetotpsecret = drv.get_seleniummfausertotpsecret(fullnode)
-
-        # nodeuser = drv.get_seleniumuser(fullnode)
-        # nodepwd = drv.get_seleniumuserpassword(fullnode)
         
         try:
             options = Options()
@@ -98,7 +95,7 @@ class TestLoginSeleniumTotp(unittest.TestCase):
             self.logger.info(f'No need to select TOTP provider')
 
         totp = pyotp.TOTP(nodetotpsecret)
-        wait.until(EC.presence_of_element_located((By.XPATH, '//*[@id="body-login"]/div[1]/div/main/div/form/input'))).send_keys(totp.now() + Keys.ENTER)
+        wait.until(EC.presence_of_element_located((By.XPATH, '//*//input[@placeholder="Authentication code"]'))).send_keys(totp.now() + Keys.ENTER)
 
         # Check URL after login
         dashboardUrl = drv.get_dashboard_url(fullnode)
@@ -192,7 +189,7 @@ class TestLoginSeleniumTotp(unittest.TestCase):
                     self.logger.info(f'No need to select TOTP provider')
 
                 totp = pyotp.TOTP(nodetotpsecret)
-                wait.until(EC.presence_of_element_located((By.XPATH, '//*[@id="body-login"]/div[1]/div/main/div/form/input'))).send_keys(totp.now() + Keys.ENTER)
+                wait.until(EC.presence_of_element_located((By.XPATH, '//*//input[@placeholder="Authentication code"]'))).send_keys(totp.now() + Keys.ENTER)
 
                 try:
                     wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'app-menu')))
@@ -230,7 +227,7 @@ class TestLoginSeleniumTotp(unittest.TestCase):
                     self.logger.info(f'Loading of all files took too much time!')
 
                 try:
-                    wait.until(EC.presence_of_element_located((By.CLASS_NAME, sharedClass)))
+                    wait.until(EC.element_to_be_clickable((By.CLASS_NAME, sharedClass)))
                     sharefolder = driver.find_element(by=By.CLASS_NAME, value=sharedClass)
                     sharefolder.click()
                     self.logger.info(f'Clicked on share folder')
@@ -247,7 +244,7 @@ class TestLoginSeleniumTotp(unittest.TestCase):
                 logoutCount = 0
                 while logoutComplete == False:
                     try:
-                        wait.until(EC.presence_of_element_located((By.ID, 'user-menu'))).click()
+                        wait.until(EC.element_to_be_clickable((By.ID, 'user-menu'))).click()
                         logoutLink = driver.find_element(By.PARTIAL_LINK_TEXT, 'Log out')
                         logoutLink.click()
                         self.logger.info(f'Logout complete')
@@ -278,7 +275,6 @@ class TestLoginSeleniumTotp(unittest.TestCase):
                 self.logger.info(f'{driver.current_url}')
                 driver.close()
                 self.logger.info(f'And done...')
-
 
 if __name__ == '__main__':
     # unittest.main()
