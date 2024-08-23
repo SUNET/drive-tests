@@ -574,8 +574,13 @@ class TestMfaZonesSelenium(unittest.TestCase):
                 except TimeoutException:
                     self.logger.info(f'Loading of app menu took too much time!')
 
-                files = g_driver.find_element(By.XPATH, '//a[@href="' + g_drv.indexsuffix + '/apps/files/' +'"]')
-                files.click()
+                try:
+                    wait.until(EC.element_to_be_clickable((By.XPATH, '//a[@href="' + g_drv.indexsuffix + '/apps/files/' +'"]')))
+                    files = g_driver.find_element(By.XPATH, '//a[@href="' + g_drv.indexsuffix + '/apps/files/' +'"]')
+                    files.click()
+                except:
+                    self.logger.error(f'Files app icon not found')
+                    self.assertTrue(False)
 
                 try:
                     myElem = wait.until(EC.presence_of_element_located((By.LINK_TEXT, 'All files')))
