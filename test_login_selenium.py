@@ -85,8 +85,8 @@ class TestLoginSelenium(unittest.TestCase):
         driver.get(loginurl)
 
         wait = WebDriverWait(driver, delay)
-        wait.until(EC.presence_of_element_located((By.ID, 'user'))).send_keys(nodeuser)
-        wait.until(EC.presence_of_element_located((By.ID, 'password'))).send_keys(nodepwd + Keys.ENTER)
+        wait.until(EC.element_to_be_clickable((By.ID, 'user'))).send_keys(nodeuser)
+        wait.until(EC.element_to_be_clickable((By.ID, 'password'))).send_keys(nodepwd + Keys.ENTER)
 
         # Check URL after login
         dashboardUrl = drv.get_dashboard_url(fullnode)
@@ -192,8 +192,8 @@ class TestLoginSelenium(unittest.TestCase):
                         driver.get(loginurl)
 
                         wait = WebDriverWait(driver, delay)
-                        wait.until(EC.presence_of_element_located((By.ID, 'user'))).send_keys(nodeuser)
-                        wait.until(EC.presence_of_element_located((By.ID, 'password'))).send_keys(nodepwd + Keys.ENTER)
+                        wait.until(EC.element_to_be_clickable((By.ID, 'user'))).send_keys(nodeuser)
+                        wait.until(EC.element_to_be_clickable((By.ID, 'password'))).send_keys(nodepwd + Keys.ENTER)
 
                         try:
                             wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'app-menu')))
@@ -326,7 +326,7 @@ class TestLoginSelenium(unittest.TestCase):
                         driver.get(loginurl)
 
                         wait = WebDriverWait(driver, delay)
-                        wait.until(EC.presence_of_element_located((By.ID, 'site'))).send_keys(fullnode + Keys.ENTER)
+                        wait.until(EC.element_to_be_clickable((By.ID, 'site'))).send_keys(fullnode + Keys.ENTER)
 
                         self.logger.info(f'Check direct login checkbox')
 
@@ -337,8 +337,8 @@ class TestLoginSelenium(unittest.TestCase):
                         loginbutton = driver.find_element(By.XPATH, '//a[@href="' + nodeloginurl +'"]')
                         loginbutton.click()
 
-                        wait.until(EC.presence_of_element_located((By.ID, 'user'))).send_keys(nodeuser)
-                        wait.until(EC.presence_of_element_located((By.ID, 'password'))).send_keys(nodepwd + Keys.ENTER)
+                        wait.until(EC.element_to_be_clickable((By.ID, 'user'))).send_keys(nodeuser)
+                        wait.until(EC.element_to_be_clickable((By.ID, 'password'))).send_keys(nodepwd + Keys.ENTER)
 
                         try:
                             wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'app-menu')))
@@ -440,15 +440,15 @@ class TestLoginSelenium(unittest.TestCase):
         wait.until(EC.presence_of_element_located((By.ID, 'dsclient')))
         driver.implicitly_wait(g_driver_timeout)
         
-        wait.until(EC.presence_of_element_located((By.ID, 'searchinput'))).send_keys("eduid.se", Keys.RETURN)
+        wait.until(EC.element_to_be_clickable((By.ID, 'searchinput'))).send_keys("eduid.se", Keys.RETURN)
         driver.implicitly_wait(g_driver_timeout)
 
         wait.until(EC.element_to_be_clickable((By.CLASS_NAME, 'label-url'))).click()
         driver.implicitly_wait(g_driver_timeout)
 
-        wait.until(EC.presence_of_element_located((By.ID, 'username'))).send_keys(samluser)
+        wait.until(EC.element_to_be_clickable((By.ID, 'username'))).send_keys(samluser)
         self.logger.info(f'Email entered')
-        wait.until(EC.presence_of_element_located((By.ID, 'currentPassword'))).send_keys(samlpassword + Keys.ENTER)
+        wait.until(EC.element_to_be_clickable((By.ID, 'currentPassword'))).send_keys(samlpassword + Keys.ENTER)
         self.logger.info(f'Password entered, proceeding')
         # wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'login-form-button'))).click()
 
@@ -512,15 +512,15 @@ class TestLoginSelenium(unittest.TestCase):
         wait.until(EC.presence_of_element_located((By.ID, 'dsclient')))
         driver.implicitly_wait(g_driver_timeout)
         
-        wait.until(EC.presence_of_element_located((By.ID, 'searchinput'))).send_keys("eduid.se", Keys.RETURN)
+        wait.until(EC.element_to_be_clickable((By.ID, 'searchinput'))).send_keys("eduid.se", Keys.RETURN)
         driver.implicitly_wait(g_driver_timeout)
 
         wait.until(EC.element_to_be_clickable((By.CLASS_NAME, 'label-url'))).click()
         driver.implicitly_wait(g_driver_timeout)
 
-        wait.until(EC.presence_of_element_located((By.ID, 'username'))).send_keys(samluser)
+        wait.until(EC.element_to_be_clickable((By.ID, 'username'))).send_keys(samluser)
         self.logger.info(f'Email entered')
-        wait.until(EC.presence_of_element_located((By.ID, 'currentPassword'))).send_keys(samlpassword + Keys.ENTER)
+        wait.until(EC.element_to_be_clickable((By.ID, 'currentPassword'))).send_keys(samlpassword + Keys.ENTER)
         self.logger.info(f'Password entered, proceeding')
 
         try:
@@ -609,7 +609,7 @@ class TestLoginSelenium(unittest.TestCase):
             wait.until(EC.presence_of_element_located((By.ID, 'dsclient')))
             driver.implicitly_wait(g_driver_timeout)
             
-            wait.until(EC.presence_of_element_located((By.ID, 'searchinput'))).send_keys("su.se", Keys.RETURN)
+            wait.until(EC.element_to_be_clickable((By.ID, 'searchinput'))).send_keys("su.se", Keys.RETURN)
             driver.implicitly_wait(g_driver_timeout)
 
             driver.implicitly_wait(g_driver_timeout)
@@ -617,8 +617,8 @@ class TestLoginSelenium(unittest.TestCase):
             wait.until(EC.element_to_be_clickable((By.CLASS_NAME, 'label-url'))).click()
             driver.implicitly_wait(g_driver_timeout)
 
-            wait.until(EC.presence_of_element_located((By.ID, 'username'))).send_keys(samluser)
-            wait.until(EC.presence_of_element_located((By.ID, 'password'))).send_keys(samlpassword + Keys.ENTER)
+            wait.until(EC.element_to_be_clickable((By.ID, 'username'))).send_keys(samluser)
+            wait.until(EC.element_to_be_clickable((By.ID, 'password'))).send_keys(samlpassword + Keys.ENTER)
 
             # Wait for TOTP screen
             requireTotp = False
@@ -638,7 +638,7 @@ class TestLoginSelenium(unittest.TestCase):
                     self.logger.warning(f'We already used this TOTP, so we wait until it changes')
                     time.sleep(10)
 
-                wait.until(EC.presence_of_element_located((By.XPATH, '//*//input[@placeholder="Authentication code"]'))).send_keys(totp.now() + Keys.ENTER)
+                wait.until(EC.element_to_be_clickable((By.XPATH, '//*//input[@placeholder="Authentication code"]'))).send_keys(totp.now() + Keys.ENTER)
                 self.logger.info(f'TOTP entered')
 
             try:
@@ -646,10 +646,9 @@ class TestLoginSelenium(unittest.TestCase):
                 self.logger.info(f'App menu is ready!')
             except TimeoutException:
                 self.logger.warning(f'Loading of app menu took too much time! Try TOTP again')
-                wait.until(EC.presence_of_element_located((By.XPATH, '//*//input[@placeholder="Authentication code"]'))).send_keys(totp.now() + Keys.ENTER)
-                self.logger.info(f'TOTP entered again')
-                time.sleep(1)
-                pass
+                wait.until(EC.element_to_be_clickable((By.XPATH, '//*//input[@placeholder="Authentication code"]'))).send_keys(totp.now() + Keys.ENTER)
+                self.logger.info(f'TOTP entered again, wait for the app menu')
+                wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'app-menu')))
 
             driver.implicitly_wait(g_driver_timeout) # seconds before quitting
             dashboardUrl = drv.get_dashboard_url('su')
@@ -744,8 +743,8 @@ class TestLoginSelenium(unittest.TestCase):
             wait.until(EC.element_to_be_clickable((By.CLASS_NAME, 'label-url'))).click()
             driver.implicitly_wait(g_driver_timeout)
 
-            wait.until(EC.presence_of_element_located((By.ID, 'username'))).send_keys(samluser)
-            wait.until(EC.presence_of_element_located((By.ID, 'password'))).send_keys(samlpassword + Keys.ENTER)
+            wait.until(EC.element_to_be_clickable((By.ID, 'username'))).send_keys(samluser)
+            wait.until(EC.element_to_be_clickable((By.ID, 'password'))).send_keys(samlpassword + Keys.ENTER)
 
             # Wait for TOTP screen
             requireTotp = False
@@ -761,7 +760,7 @@ class TestLoginSelenium(unittest.TestCase):
             if requireTotp:
                 nodetotpsecret = drv.get_samlusertotpsecret(nodeName)
                 totp = pyotp.TOTP(nodetotpsecret)
-                wait.until(EC.presence_of_element_located((By.XPATH, '//*//input[@placeholder="Authentication code"]'))).send_keys(totp.now() + Keys.ENTER)
+                wait.until(EC.element_to_be_clickable((By.XPATH, '//*//input[@placeholder="Authentication code"]'))).send_keys(totp.now() + Keys.ENTER)
 
             try:
                 wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'app-menu')))

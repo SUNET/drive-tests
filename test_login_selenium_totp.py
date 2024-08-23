@@ -82,8 +82,8 @@ class TestLoginSeleniumTotp(unittest.TestCase):
         driver.get(loginurl)
 
         wait = WebDriverWait(driver, delay)
-        wait.until(EC.presence_of_element_located((By.ID, 'user'))).send_keys(nodeuser)
-        wait.until(EC.presence_of_element_located((By.ID, 'password'))).send_keys(nodepwd + Keys.ENTER)
+        wait.until(EC.element_to_be_clickable((By.ID, 'user'))).send_keys(nodeuser)
+        wait.until(EC.element_to_be_clickable((By.ID, 'password'))).send_keys(nodepwd + Keys.ENTER)
 
         # Wait for TOTP screen
         try:
@@ -95,7 +95,7 @@ class TestLoginSeleniumTotp(unittest.TestCase):
             self.logger.info(f'No need to select TOTP provider')
 
         totp = pyotp.TOTP(nodetotpsecret)
-        wait.until(EC.presence_of_element_located((By.XPATH, '//*//input[@placeholder="Authentication code"]'))).send_keys(totp.now() + Keys.ENTER)
+        wait.until(EC.element_to_be_clickable((By.XPATH, '//*//input[@placeholder="Authentication code"]'))).send_keys(totp.now() + Keys.ENTER)
 
         # Check URL after login
         dashboardUrl = drv.get_dashboard_url(fullnode)
@@ -176,8 +176,8 @@ class TestLoginSeleniumTotp(unittest.TestCase):
                 driver.get(loginurl)
 
                 wait = WebDriverWait(driver, delay)
-                wait.until(EC.presence_of_element_located((By.ID, 'user'))).send_keys(nodeuser)
-                wait.until(EC.presence_of_element_located((By.ID, 'password'))).send_keys(nodepwd + Keys.ENTER)
+                wait.until(EC.element_to_be_clickable((By.ID, 'user'))).send_keys(nodeuser)
+                wait.until(EC.element_to_be_clickable((By.ID, 'password'))).send_keys(nodepwd + Keys.ENTER)
 
                 # Wait for TOTP screen
                 try:
@@ -189,7 +189,7 @@ class TestLoginSeleniumTotp(unittest.TestCase):
                     self.logger.info(f'No need to select TOTP provider')
 
                 totp = pyotp.TOTP(nodetotpsecret)
-                wait.until(EC.presence_of_element_located((By.XPATH, '//*//input[@placeholder="Authentication code"]'))).send_keys(totp.now() + Keys.ENTER)
+                wait.until(EC.element_to_be_clickable((By.XPATH, '//*//input[@placeholder="Authentication code"]'))).send_keys(totp.now() + Keys.ENTER)
 
                 try:
                     wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'app-menu')))
