@@ -569,7 +569,7 @@ class TestLoginSelenium(unittest.TestCase):
             return
 
         for browser in drv.browsers:
-
+            totp = 0
             loginurl = drv.get_gss_url()
             self.logger.info(f'URL: {loginurl}')
             samluser=drv.get_samlusername(nodeName)
@@ -588,7 +588,7 @@ class TestLoginSelenium(unittest.TestCase):
                     if use_driver_service == False:
                         self.logger.info(f'Initialize Firefox driver without driver service')
                         options = FirefoxOptions()
-                        options.add_argument("--headless")
+                        # options.add_argument("--headless")
                         driver = webdriver.Firefox(options=options)
                     else:
                         self.logger.info(f'Initialize Firefox driver using snap geckodriver and driver service')
@@ -641,13 +641,34 @@ class TestLoginSelenium(unittest.TestCase):
             if requireTotp:
                 nodetotpsecret = drv.get_samlusertotpsecret(nodeName)
                 totp = pyotp.TOTP(nodetotpsecret)
-                wait.until(EC.presence_of_element_located((By.XPATH, '//*[@id="body-login"]/div[1]/div/main/div/form/input'))).send_keys(totp.now() + Keys.ENTER)
+                while totp == pyotp.TOTP(nodetotpsecret):
+                    self.logger.warning(f'We already used this TOTP, so we wait until it changes')
+                    time.sleep(10)
+
+                # wait.until(EC.presence_of_element_located((By.XPATH, '//*[@id="body-login"]/div[1]/div/main/div/form/input'))).send_keys(totp.now() + Keys.ENTER)
+                wait.until(EC.presence_of_element_located((By.XPATH, '//*//input[@placeholder="Authentication code"]'))).send_keys(totp.now() + Keys.ENTER)
+                self.logger.info(f'TOTP entered')
+
+                # try:
+                #     totpInput = driver.find_element((By.XPATH,'//*[@id="body-login"]/div[1]/div/main/div/form/input'))
+                #     self.logger.warning(f'TOTP failed and has to be entered again')
+                #     totpInput.send_keys(totp.now() + Keys.ENTER)
+                # except:
+                #     self.logger.info(f'No need tot try TOTP again')
 
             try:
                 wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'app-menu')))
                 self.logger.info(f'App menu is ready!')
             except TimeoutException:
-                self.logger.info(f'Loading of app menu took too much time!')
+                self.logger.warning(f'Loading of app menu took too much time! Try TOTP again')
+                wait.until(EC.presence_of_element_located((By.XPATH, '//*//input[@placeholder="Authentication code"]'))).send_keys(totp.now() + Keys.ENTER)
+                self.logger.info(f'TOTP entered again')
+                time.sleep(1)
+                pass
+
+                # totpInput = driver.find_element((By.XPATH,"//*//input[@placeholder='Authentication code']"))
+                # self.logger.warning(f'TOTP failed and has to be entered again')
+                # totpInput.send_keys(totp.now() + Keys.ENTER)
 
             driver.implicitly_wait(g_driver_timeout) # seconds before quitting
             dashboardUrl = drv.get_dashboard_url('su')
@@ -659,7 +680,7 @@ class TestLoginSelenium(unittest.TestCase):
                 self.logger.warning(f'Dashboard URL contains trailing #, likely due to the tasks app')
             self.logger.info(f'{driver.current_url}')
 
-            wait.until(EC.presence_of_element_located((By.ID, 'user-menu'))).click()
+            wait.until(EC.element_to_be_clickable((By.ID, 'user-menu'))).click()
             logoutLink = driver.find_element(By.PARTIAL_LINK_TEXT, 'Log out')
             logoutLink.click()
             self.logger.info(f'Logout complete')
