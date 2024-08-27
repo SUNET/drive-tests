@@ -231,14 +231,15 @@ class TestLoginSelenium(unittest.TestCase):
 
                         try:
                             wait.until(EC.element_to_be_clickable((By.ID, 'user-menu'))).click()
-                            logoutLink = driver.find_element(By.PARTIAL_LINK_TEXT, 'Log out')
-                            logoutLink.click()
+                            self.logger.info(f'user-menu clicked')
+                            wait.until(EC.element_to_be_clickable((By.PARTIAL_LINK_TEXT, 'Log out'))).click()
                             self.logger.info(f'Logout complete')
+                            time.sleep(1)
                         except Exception as e:
                             self.logger.error(f'Unable to log out: {e}')
 
                         currentUrl = driver.current_url
-                        self.logger.info(currentUrl)
+                        self.logger.info(f'Logout url: {currentUrl}')
 
                         if fullnode == 'scilifelab':
                             self.assertEqual(currentUrl, drv.get_node_post_logout_saml_url(fullnode))
