@@ -478,7 +478,9 @@ class TestMfaZonesSelenium(unittest.TestCase):
                     myElem = wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'app-menu')))
                     self.logger.info(f'App menu is ready!')
                 except TimeoutException:
-                    self.logger.info(f'Loading of app menu took too much time!')
+                    self.logger.info(f'Loading of app menu took too much time, saving screenshot')
+                    screenshot = pyautogui.screenshot()
+                    screenshot.save("screenshots/" + fullnode + g_filename + ".png")
 
                 files = g_driver.find_element(By.XPATH, '//a[@href="' + g_drv.indexsuffix + '/apps/files/' +'"]')
                 files.click()
@@ -572,7 +574,9 @@ class TestMfaZonesSelenium(unittest.TestCase):
                     myElem = wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'app-menu')))
                     self.logger.info(f'App menu is ready!')
                 except TimeoutException:
-                    self.logger.info(f'Loading of app menu took too much time!')
+                    self.logger.info(f'Loading of app menu took too much time, saving screenshot')
+                    screenshot = pyautogui.screenshot()
+                    screenshot.save("screenshots/" + fullnode + g_filename + ".png")
 
                 try:
                     wait.until(EC.element_to_be_clickable((By.XPATH, '//a[@href="' + g_drv.indexsuffix + '/apps/files/' +'"]')))
