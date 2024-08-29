@@ -220,7 +220,7 @@ class TestCollaboraSelenium(unittest.TestCase):
                         isEmpty = False
                         self.logger.info(f'Folder is not empty, adding new content')
                     except Exception as error:
-                        self.logger.info(f'Folder is empty, creating new files; {error}')
+                        self.logger.info(f'Folder seems empty, creating new files')
                         isEmpty = True
 
                     # Sort file list so that new files are created at the beginning of the list
@@ -258,6 +258,14 @@ class TestCollaboraSelenium(unittest.TestCase):
                         self.driver.refresh()
                         time.sleep(3)
 
+                    # If it is the first entry in the list, we have to reload the page to get it to load
+                    try:
+                        if isEmpty:
+                            self.logger.info(f'Reload page to open new document')
+                            self.driver.refresh()
+                    except Exception as e:
+                        self.logger.error(f'Error: {e}')
+                        
                 self.logger.info(f'Sleep for 3 seconds...')
                 time.sleep(3)
 
@@ -387,7 +395,7 @@ class TestCollaboraSelenium(unittest.TestCase):
                                 isEmpty = False
                                 self.logger.info(f'Folder is not empty, adding new content')
                             except Exception as error:
-                                self.logger.info(f'Folder is empty, creating new files; Exception was: {error}')
+                                self.logger.info(f'Folder seems empty, creating new files;')
                                 isEmpty = True
 
                             # Sort file list so that new files are created at the beginning of the list
@@ -428,8 +436,15 @@ class TestCollaboraSelenium(unittest.TestCase):
                                 self.driver.refresh()
                                 time.sleep(3)
 
+                            # If it is the first entry in the list, we have to reload the page to get it to load
+                            try:
+                                if isEmpty:
+                                    self.logger.info(f'Reload page to open new document')
+                                    self.driver.refresh()
+                            except Exception as e:
+                                self.logger.error(f'Error: {e}')
+
                         self.logger.info(f'Sleep for 3 seconds...')
-                        time.sleep(3)
                         self.logger.info(f'Proceeding...')
 
                         try:
@@ -555,7 +570,7 @@ class TestCollaboraSelenium(unittest.TestCase):
                         isEmpty = False
                         self.logger.info(f'Folder is not empty, adding new content')
                     except Exception as error:
-                        self.logger.info(f'Folder is empty, creating new files: {error}')
+                        self.logger.info(f'Folder seems empty, creating new files.')
                         isEmpty = True
 
                     # Sort file list so that new files are created at the beginning of the list
@@ -592,6 +607,14 @@ class TestCollaboraSelenium(unittest.TestCase):
                         self.logger.warning(f'File {g_filename}.ods has not been created in try {retryCount}, refresh page and retry')
                         self.driver.refresh()
                         time.sleep(3)
+
+                    # If it is the first entry in the list, we have to reload the page to get it to load
+                    try:
+                        if isEmpty:
+                            self.logger.info(f'Reload page to open new document')
+                            self.driver.refresh()
+                    except Exception as e:
+                        self.logger.error(f'Error: {e}')
 
                 self.logger.info(f'Sleep for 3 seconds...')
                 time.sleep(3)
@@ -720,7 +743,7 @@ class TestCollaboraSelenium(unittest.TestCase):
                         isEmpty = False
                         self.logger.info(f'Folder is not empty, adding new content')
                     except Exception as error:
-                        self.logger.info(f'Folder is empty, creating new files: {error}')
+                        self.logger.info(f'Folder seems empty, creating new files.')
                         isEmpty = True
 
                     # Sort file list so that new files are created at the beginning of the list
@@ -756,6 +779,14 @@ class TestCollaboraSelenium(unittest.TestCase):
                         self.logger.warning(f'File {g_filename}.odp has not been created in try {retryCount}, refresh page and retry')
                         self.driver.refresh()
                         time.sleep(3)
+
+                    # If it is the first entry in the list, we have to reload the page to get it to load
+                    try:
+                        if isEmpty:
+                            self.logger.info(f'Reload page to open new document')
+                            self.driver.refresh()
+                    except Exception as e:
+                        self.logger.error(f'Error: {e}')
 
                 self.logger.info(f'Sleep for 3 seconds...')
                 time.sleep(3)
