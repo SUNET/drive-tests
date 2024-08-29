@@ -62,7 +62,6 @@ def nodelogin(collaboranode):
 
     g_wait.until(EC.presence_of_element_located((By.ID, 'user'))).send_keys(nodeuser)
     g_wait.until(EC.presence_of_element_located((By.ID, 'password'))).send_keys(nodepwd + Keys.ENTER)
-
     return
 
 def checkFile(node, foldername, filename):
@@ -99,12 +98,8 @@ class TestCollaboraSelenium(unittest.TestCase):
 
     # Some class names of icons changed from Nextcloud 27 to 28
     version = expectedResults[drv.target]['status']['version']
-    if version.startswith('27'):
-        homeIcon = 'icon-home'
-        addIcon = 'icon-add'
-    else:
-        homeIcon = 'home-icon'
-        addIcon = 'plus-icon'
+    homeIcon = 'home-icon'
+    addIcon = 'plus-icon'
 
     try:
         options = Options()
@@ -186,41 +181,25 @@ class TestCollaboraSelenium(unittest.TestCase):
 
                 self.driver.implicitly_wait(10) # seconds before quitting
                 self.logger.info(self.driver.current_url)
-                if self.version.startswith('27'):
-                    self.logger.info(f'Looking for home icon in {self.version}')
-                    try:
-                        wait.until(EC.presence_of_element_located((By.CLASS_NAME, self.homeIcon)))
-                    except Exception as error:
-                        self.logger.error(f'Home icon in files app not found: {error}')
-
-                else:
-                    self.logger.info(f'Looking for all files text in {self.version}')
-                    # //*[@id="app-content-vue"]/div[1]/div/nav/ul/li/a/span/span[2] "//h4/a[contains(text(),'SAP M')]"
-                    self.driver.find_element(By.XPATH, "//*[contains(text(), 'All files')]")
-                    self.logger.info(f'All files found!')
+                self.logger.info(f'Looking for all files text in {self.version}')
+                # //*[@id="app-content-vue"]/div[1]/div/nav/ul/li/a/span/span[2] "//h4/a[contains(text(),'SAP M')]"
+                self.driver.find_element(By.XPATH, "//*[contains(text(), 'All files')]")
+                self.logger.info(f'All files found!')
 
                 self.logger.info(f'Looking for SeleniumCollaboraTest folder')
 
                 try:
-                    if self.version.startswith('27'):
-                        self.driver.find_element(By.XPATH, "//*[contains(@class, 'innernametext') and text()='SeleniumCollaboraTest']")
-                        self.logger.info(f'SeleniumCollaboraTest folder found')
-                    else:
-                        self.driver.find_element(By.XPATH, "//*[contains(text(), 'SeleniumCollaboraTest')]")
-                        self.logger.info(f'SeleniumCollaboraTest folder found')
+                    self.driver.find_element(By.XPATH, "//*[contains(text(), 'SeleniumCollaboraTest')]")
+                    self.logger.info(f'SeleniumCollaboraTest folder found')
                 except Exception as error:
                     self.logger.info(f'SeleniumCollaboraTest folder not found, creating; {error}')
                     wait.until(EC.presence_of_element_located((By.CLASS_NAME, self.addIcon))).click()
                     time.sleep(1)
 
-                    if self.version.startswith('27'):
-                        wait.until(EC.presence_of_element_located((By.XPATH, "//*[contains(@class, 'displayname') and text()='New folder']"))).click()
-                        wait.until(EC.presence_of_element_located((By.XPATH, "//*[contains(@id, 'input-folder')]" ))).send_keys('SeleniumCollaboraTest' + Keys.ENTER)
-                    else:
-                        wait.until(EC.presence_of_element_located((By.XPATH, "//*[contains(@class, 'action-button__text') and text()='New folder']"))).click()
-                        wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, 'input[id^=\'input\']')))
-                        ActionChains(self.driver).key_down(Keys.CONTROL).send_keys('a').key_up(Keys.CONTROL).perform()
-                        ActionChains(self.driver).send_keys(f'SeleniumCollaboraTest{Keys.ENTER}').perform()
+                    wait.until(EC.presence_of_element_located((By.XPATH, "//*[contains(@class, 'action-button__text') and text()='New folder']"))).click()
+                    wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, 'input[id^=\'input\']')))
+                    ActionChains(self.driver).key_down(Keys.CONTROL).send_keys('a').key_up(Keys.CONTROL).perform()
+                    ActionChains(self.driver).send_keys(f'SeleniumCollaboraTest{Keys.ENTER}').perform()
                     time.sleep(1)
                 folderurl = self.drv.get_folder_url(collaboranode, "SeleniumCollaboraTest")
                 self.driver.get(folderurl)
@@ -239,11 +218,7 @@ class TestCollaboraSelenium(unittest.TestCase):
 
                     # Check if the folder is empty
                     try:
-                        # wait.until(EC.presence_of_element_located((By.XPATH, "//*[text()='Upload some content or sync with your devices!']")))
-                        if self.version.startswith('27'):
-                            wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'files-filestable')))
-                        else:
-                            wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'files-list__table')))
+                        wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'files-list__table')))
                         isEmpty = False
                         self.logger.info(f'Folder is not empty, adding new content')
                     except Exception as error:
@@ -253,10 +228,7 @@ class TestCollaboraSelenium(unittest.TestCase):
                     # Sort file list so that new files are created at the beginning of the list
                     if isEmpty == False:
                         try:
-                            if self.version.startswith('27'):
-                                wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'sort-indicator'))).click()
-                            else:
-                                wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'files-list__column-sort-button'))).click()
+                            wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'files-list__column-sort-button'))).click()
                             self.logger.info(f'Changed sort order to descending')
                         except Exception as error:
                             self.logger.warning(f'Unable to change sort order to descending: {error}')
@@ -266,19 +238,15 @@ class TestCollaboraSelenium(unittest.TestCase):
                         wait.until(EC.presence_of_element_located((By.CLASS_NAME, self.addIcon))).click()
                         # wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'icon-filetype-text'))).click()
                         wait.until(EC.presence_of_element_located((By.XPATH, "//*[contains(text(), 'New text file')]"))).click()
-                        if self.version.startswith('27'):
-                            # Write the filename in the menu
-                            wait.until(EC.presence_of_element_located((By.XPATH, "//*[contains(@id, 'input-file')]"))).send_keys(g_filename + Keys.ENTER)
-                        else:
-                            # Starting with Nextcloud 28, we have to rename the file
-                            wait.until(EC.presence_of_element_located((By.XPATH, "//*[contains(text(), 'New document')]")))
-                            self.logger.info(f'Renaming the file we just created to {g_filename}.md')
-                            ActionChains(self.driver).key_down(Keys.CONTROL).send_keys('a').key_up(Keys.CONTROL).perform()
-                            time.sleep(0.5)
-                            ActionChains(self.driver).send_keys(f'{g_filename}.md').perform()
-                            time.sleep(0.5)
-                            ActionChains(self.driver).send_keys(Keys.ENTER).perform()
-                            pass
+
+                        # Starting with Nextcloud 28, we have to rename the file
+                        wait.until(EC.presence_of_element_located((By.XPATH, "//*[contains(text(), 'New document')]")))
+                        self.logger.info(f'Renaming the file we just created to {g_filename}.md')
+                        ActionChains(self.driver).key_down(Keys.CONTROL).send_keys('a').key_up(Keys.CONTROL).perform()
+                        time.sleep(0.5)
+                        ActionChains(self.driver).send_keys(f'{g_filename}.md').perform()
+                        time.sleep(0.5)
+                        ActionChains(self.driver).send_keys(Keys.ENTER).perform()
                     except Exception as error:
                         self.logger.warning(f'Unable to create new file: {g_filename}, saving screenshot: {error}')
                         screenshot = pyautogui.screenshot()
@@ -378,43 +346,26 @@ class TestCollaboraSelenium(unittest.TestCase):
 
                         self.driver.implicitly_wait(10) # seconds before quitting
                         self.logger.info(self.driver.current_url)
-                        
-                        if self.version.startswith('27'):
-                            self.logger.info(f'Looking for home icon in {self.version}')
-                            try:
-                                wait.until(EC.presence_of_element_located((By.CLASS_NAME, self.homeIcon)))
-                            except Exception as error:
-                                self.logger.error(f'Home icon in files app not found: {error}')
-                        else:
-                            self.logger.info(f'Looking for all files text in {self.version}')
-                            # //*[@id="app-content-vue"]/div[1]/div/nav/ul/li/a/span/span[2] "//h4/a[contains(text(),'SAP M')]"
-                            self.driver.find_element(By.XPATH, "//*[contains(text(), 'All files')]")
-                            self.logger.info(f'All files found!')
+                        self.logger.info(f'Looking for all files text in {self.version}')
+                        # //*[@id="app-content-vue"]/div[1]/div/nav/ul/li/a/span/span[2] "//h4/a[contains(text(),'SAP M')]"
+                        self.driver.find_element(By.XPATH, "//*[contains(text(), 'All files')]")
+                        self.logger.info(f'All files found!')
 
                         self.logger.info(f'Looking for {testfolder} folder')
                         
                         try:
-                            if self.version.startswith('27'):
-                                wait.until(EC.presence_of_element_located((By.XPATH, f'//*[contains(@class, \'innernametext\') and text()=\'{testfolder}\']')))
-                                self.logger.info(f'{testfolder} folder found')
-                            else:
-                                self.driver.find_element(By.XPATH, f"//*[contains(text(), '{testfolder}')]")
-                                self.logger.info(f'{testfolder} folder found')
+                            self.driver.find_element(By.XPATH, f"//*[contains(text(), '{testfolder}')]")
+                            self.logger.info(f'{testfolder} folder found')
                         except Exception as error:
                             self.logger.info(f'{testfolder} folder not found, creating; Exception was: {error}')
                             wait.until(EC.presence_of_element_located((By.CLASS_NAME, self.addIcon))).click()
                             time.sleep(1)
 
-                            if self.version.startswith('27'):
-                                wait.until(EC.presence_of_element_located((By.CLASS_NAME, self.addIcon))).click()
-                                wait.until(EC.presence_of_element_located((By.XPATH, "//*[contains(@class, 'displayname') and text()='New folder']"))).click()
-                                wait.until(EC.presence_of_element_located((By.XPATH, "//*[contains(@id, 'input-folder')]" ))).send_keys(testfolder + Keys.ENTER)
-                            else:
-                                self.logger.info(f'Creating {testfolder} on {self.version}')
-                                wait.until(EC.presence_of_element_located((By.XPATH, "//*[contains(@class, 'action-button__text') and text()='New folder']"))).click()
-                                wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, 'input[id^=\'input\']')))
-                                ActionChains(self.driver).key_down(Keys.CONTROL).send_keys('a').key_up(Keys.CONTROL).perform()
-                                ActionChains(self.driver).send_keys(f'SeleniumCollaboraTest{Keys.ENTER}').perform()
+                            self.logger.info(f'Creating {testfolder} on {self.version}')
+                            wait.until(EC.presence_of_element_located((By.XPATH, "//*[contains(@class, 'action-button__text') and text()='New folder']"))).click()
+                            wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, 'input[id^=\'input\']')))
+                            ActionChains(self.driver).key_down(Keys.CONTROL).send_keys('a').key_up(Keys.CONTROL).perform()
+                            ActionChains(self.driver).send_keys(f'SeleniumCollaboraTest{Keys.ENTER}').perform()
                             time.sleep(1)
 
                         folderurl = self.drv.get_folder_url(collaboranode, testfolder)
@@ -434,11 +385,7 @@ class TestCollaboraSelenium(unittest.TestCase):
 
                             # Check if the folder is empty
                             try:
-                                # wait.until(EC.presence_of_element_located((By.XPATH, "//*[text()='Upload some content or sync with your devices!']")))
-                                if self.version.startswith('27'):
-                                    wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'files-filestable')))
-                                else:
-                                    wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'files-list__table')))
+                                wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'files-list__table')))
                                 isEmpty = False
                                 self.logger.info(f'Folder is not empty, adding new content')
                             except Exception as error:
@@ -448,10 +395,7 @@ class TestCollaboraSelenium(unittest.TestCase):
                             # Sort file list so that new files are created at the beginning of the list
                             if isEmpty == False:
                                 try:
-                                    if self.version.startswith('27'):
-                                        wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'sort-indicator'))).click()
-                                    else:
-                                        wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'files-list__column-sort-button'))).click()
+                                    wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'files-list__column-sort-button'))).click()
                                     self.logger.info(f'Changed sort order to descending')
                                 except Exception as error:
                                     self.logger.warning(f'Unable to change sort order to descending; Exception was {error}')
@@ -465,19 +409,14 @@ class TestCollaboraSelenium(unittest.TestCase):
                                 # wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'icon-filetype-document'))).click()
                                 wait.until(EC.presence_of_element_located((By.XPATH, "//*[contains(text(), 'New document')]"))).click()
 
-                                if self.version.startswith('27'):
-                                    # Write the filename in the menu
-                                    wait.until(EC.presence_of_element_located((By.XPATH, "//*[contains(@id, 'input-file')]"))).send_keys(g_filename + Keys.ENTER)
-                                else:
-                                    # Starting with Nextcloud 28, we have to rename the file
-                                    wait.until(EC.presence_of_element_located((By.XPATH, "//*[contains(text(), 'New document')]")))
-                                    self.logger.info(f'Renaming the file we just created to {g_filename}.odt')
-                                    ActionChains(self.driver).key_down(Keys.CONTROL).send_keys('a').key_up(Keys.CONTROL).perform()
-                                    time.sleep(0.5)
-                                    ActionChains(self.driver).send_keys(f'{g_filename}.odt').perform()
-                                    time.sleep(0.5)
-                                    ActionChains(self.driver).send_keys(Keys.ENTER).perform()
-                                    pass
+                                # Starting with Nextcloud 28, we have to rename the file
+                                wait.until(EC.presence_of_element_located((By.XPATH, "//*[contains(text(), 'New document')]")))
+                                self.logger.info(f'Renaming the file we just created to {g_filename}.odt')
+                                ActionChains(self.driver).key_down(Keys.CONTROL).send_keys('a').key_up(Keys.CONTROL).perform()
+                                time.sleep(0.5)
+                                ActionChains(self.driver).send_keys(f'{g_filename}.odt').perform()
+                                time.sleep(0.5)
+                                ActionChains(self.driver).send_keys(Keys.ENTER).perform()
                             except Exception as error:
                                 self.logger.warning(f'Unable to create new file: {g_filename}, saving screenshot: {error}')
                                 screenshot = pyautogui.screenshot()
@@ -578,41 +517,25 @@ class TestCollaboraSelenium(unittest.TestCase):
                 self.driver.implicitly_wait(10) # seconds before quitting
                 self.logger.info(self.driver.current_url)
                 
-                if self.version.startswith('27'):
-                    self.logger.info(f'Looking for home icon in {self.version}')
-                    try:
-                        wait.until(EC.presence_of_element_located((By.CLASS_NAME, self.homeIcon)))
-                    except Exception as error:
-                        self.logger.error(f'Home icon in files app not found: {error}')
-
-                else:
-                    self.logger.info(f'Looking for all files text in {self.version}')
-                    # //*[@id="app-content-vue"]/div[1]/div/nav/ul/li/a/span/span[2] "//h4/a[contains(text(),'SAP M')]"
-                    self.driver.find_element(By.XPATH, "//*[contains(text(), 'All files')]")
-                    self.logger.info(f'All files found!')                
+                self.logger.info(f'Looking for all files text in {self.version}')
+                # //*[@id="app-content-vue"]/div[1]/div/nav/ul/li/a/span/span[2] "//h4/a[contains(text(),'SAP M')]"
+                self.driver.find_element(By.XPATH, "//*[contains(text(), 'All files')]")
+                self.logger.info(f'All files found!')                
 
                 self.logger.info(f'Looking for SeleniumCollaboraTest folder')
                 
                 try:
-                    if self.version.startswith('27'):
-                        self.driver.find_element(By.XPATH, "//*[contains(@class, 'innernametext') and text()='SeleniumCollaboraTest']")
-                        self.logger.info(f'SeleniumCollaboraTest folder found')
-                    else:
-                        self.driver.find_element(By.XPATH, "//*[contains(text(), 'SeleniumCollaboraTest')]")
-                        self.logger.info(f'SeleniumCollaboraTest folder found')
+                    self.driver.find_element(By.XPATH, "//*[contains(text(), 'SeleniumCollaboraTest')]")
+                    self.logger.info(f'SeleniumCollaboraTest folder found')
                 except Exception as error:
                     self.logger.info(f'SeleniumCollaboraTest folder not found, creating; {error}')
                     wait.until(EC.presence_of_element_located((By.CLASS_NAME, self.addIcon))).click()
                     time.sleep(1)
 
-                    if self.version.startswith('27'):
-                        wait.until(EC.presence_of_element_located((By.XPATH, "//*[contains(@class, 'displayname') and text()='New folder']"))).click()
-                        wait.until(EC.presence_of_element_located((By.XPATH, "//*[contains(@id, 'input-folder')]" ))).send_keys('SeleniumCollaboraTest' + Keys.ENTER)
-                    else:
-                        wait.until(EC.presence_of_element_located((By.XPATH, "//*[contains(@class, 'action-button__text') and text()='New folder']"))).click()
-                        wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, 'input[id^=\'input\']')))
-                        ActionChains(self.driver).key_down(Keys.CONTROL).send_keys('a').key_up(Keys.CONTROL).perform()
-                        ActionChains(self.driver).send_keys(f'SeleniumCollaboraTest{Keys.ENTER}').perform()
+                    wait.until(EC.presence_of_element_located((By.XPATH, "//*[contains(@class, 'action-button__text') and text()='New folder']"))).click()
+                    wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, 'input[id^=\'input\']')))
+                    ActionChains(self.driver).key_down(Keys.CONTROL).send_keys('a').key_up(Keys.CONTROL).perform()
+                    ActionChains(self.driver).send_keys(f'SeleniumCollaboraTest{Keys.ENTER}').perform()
                     time.sleep(1)
                 folderurl = self.drv.get_folder_url(collaboranode, "SeleniumCollaboraTest")
                 self.driver.get(folderurl)
@@ -630,11 +553,7 @@ class TestCollaboraSelenium(unittest.TestCase):
 
                     # Check if the folder is empty
                     try:
-                        # wait.until(EC.presence_of_element_located((By.XPATH, "//*[text()='Upload some content or sync with your devices!']")))
-                        if self.version.startswith('27'):
-                            wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'files-filestable')))
-                        else:
-                            wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'files-list__table')))
+                        wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'files-list__table')))
                         isEmpty = False
                         self.logger.info(f'Folder is not empty, adding new content')
                     except Exception as error:
@@ -644,10 +563,7 @@ class TestCollaboraSelenium(unittest.TestCase):
                     # Sort file list so that new files are created at the beginning of the list
                     if isEmpty == False:
                         try:
-                            if self.version.startswith('27'):
-                                wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'sort-indicator'))).click()
-                            else:
-                                wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'files-list__column-sort-button'))).click()
+                            wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'files-list__column-sort-button'))).click()
                             self.logger.info(f'Changed sort order to descending')
                         except Exception as error:
                             self.logger.warning(f'Unable to change sort order to descending: {error}')
@@ -657,19 +573,15 @@ class TestCollaboraSelenium(unittest.TestCase):
                         wait.until(EC.presence_of_element_located((By.CLASS_NAME, self.addIcon))).click()
                         # wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'icon-filetype-spreadsheet'))).click()
                         wait.until(EC.presence_of_element_located((By.XPATH, "//*[contains(text(), 'New spreadsheet')]"))).click()
-                        if self.version.startswith('27'):
-                            # Write the filename in the menu
-                            wait.until(EC.presence_of_element_located((By.XPATH, "//*[contains(@id, 'input-file')]"))).send_keys(g_filename + Keys.ENTER)
-                        else:
-                            # Starting with Nextcloud 28, we have to rename the file
-                            wait.until(EC.presence_of_element_located((By.XPATH, "//*[contains(text(), 'New document')]")))
-                            self.logger.info(f'Renaming the file we just created to {g_filename}.ods')
-                            ActionChains(self.driver).key_down(Keys.CONTROL).send_keys('a').key_up(Keys.CONTROL).perform()
-                            time.sleep(0.5)
-                            ActionChains(self.driver).send_keys(f'{g_filename}.ods').perform()
-                            time.sleep(0.5)
-                            ActionChains(self.driver).send_keys(Keys.ENTER).perform()
-                            pass
+
+                        # Starting with Nextcloud 28, we have to rename the file
+                        wait.until(EC.presence_of_element_located((By.XPATH, "//*[contains(text(), 'New document')]")))
+                        self.logger.info(f'Renaming the file we just created to {g_filename}.ods')
+                        ActionChains(self.driver).key_down(Keys.CONTROL).send_keys('a').key_up(Keys.CONTROL).perform()
+                        time.sleep(0.5)
+                        ActionChains(self.driver).send_keys(f'{g_filename}.ods').perform()
+                        time.sleep(0.5)
+                        ActionChains(self.driver).send_keys(Keys.ENTER).perform()
                     except Exception as error:
                         self.logger.error(f'Unable to create new file: {g_filename}, saving screenshot: {error}')
                         screenshot = pyautogui.screenshot()
@@ -769,41 +681,25 @@ class TestCollaboraSelenium(unittest.TestCase):
 
                 self.driver.implicitly_wait(10) # seconds before quitting
                 self.logger.info(self.driver.current_url)
-                
-                if self.version.startswith('27'):
-                    self.logger.info(f'Looking for home icon in {self.version}')
-                    try:
-                        wait.until(EC.presence_of_element_located((By.CLASS_NAME, self.homeIcon)))
-                    except Exception as error:
-                        self.logger.error(f'Home icon in files app not found: {error}')
-                else:
-                    self.logger.info(f'Looking for all files text in {self.version}')
-                    # //*[@id="app-content-vue"]/div[1]/div/nav/ul/li/a/span/span[2] "//h4/a[contains(text(),'SAP M')]"
-                    self.driver.find_element(By.XPATH, "//*[contains(text(), 'All files')]")
-                    self.logger.info(f'All files found!')                
+                self.logger.info(f'Looking for all files text in {self.version}')
+                # //*[@id="app-content-vue"]/div[1]/div/nav/ul/li/a/span/span[2] "//h4/a[contains(text(),'SAP M')]"
+                self.driver.find_element(By.XPATH, "//*[contains(text(), 'All files')]")
+                self.logger.info(f'All files found!')                
 
                 self.logger.info(f'Looking for SeleniumCollaboraTest folder')
                 
                 try:
-                    if self.version.startswith('27'):
-                        self.driver.find_element(By.XPATH, "//*[contains(@class, 'innernametext') and text()='SeleniumCollaboraTest']")
-                        self.logger.info(f'SeleniumCollaboraTest folder found')
-                    else:
-                        self.driver.find_element(By.XPATH, "//*[contains(text(), 'SeleniumCollaboraTest')]")
-                        self.logger.info(f'SeleniumCollaboraTest folder found')
+                    self.driver.find_element(By.XPATH, "//*[contains(text(), 'SeleniumCollaboraTest')]")
+                    self.logger.info(f'SeleniumCollaboraTest folder found')
                 except Exception as error:
                     self.logger.info(f'SeleniumCollaboraTest folder not found, creating; {error}')
                     wait.until(EC.presence_of_element_located((By.CLASS_NAME, self.addIcon))).click()
                     time.sleep(1)
 
-                    if self.version.startswith('27'):
-                        wait.until(EC.presence_of_element_located((By.XPATH, "//*[contains(@class, 'displayname') and text()='New folder']"))).click()
-                        wait.until(EC.presence_of_element_located((By.XPATH, "//*[contains(@id, 'input-folder')]" ))).send_keys('SeleniumCollaboraTest' + Keys.ENTER)
-                    else:
-                        wait.until(EC.presence_of_element_located((By.XPATH, "//*[contains(@class, 'action-button__text') and text()='New folder']"))).click()
-                        wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, 'input[id^=\'input\']')))
-                        ActionChains(self.driver).key_down(Keys.CONTROL).send_keys('a').key_up(Keys.CONTROL).perform()
-                        ActionChains(self.driver).send_keys(f'SeleniumCollaboraTest{Keys.ENTER}').perform()
+                    wait.until(EC.presence_of_element_located((By.XPATH, "//*[contains(@class, 'action-button__text') and text()='New folder']"))).click()
+                    wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, 'input[id^=\'input\']')))
+                    ActionChains(self.driver).key_down(Keys.CONTROL).send_keys('a').key_up(Keys.CONTROL).perform()
+                    ActionChains(self.driver).send_keys(f'SeleniumCollaboraTest{Keys.ENTER}').perform()
                     time.sleep(1)
                 folderurl = self.drv.get_folder_url(collaboranode, "SeleniumCollaboraTest")
                 self.driver.get(folderurl)
@@ -822,11 +718,7 @@ class TestCollaboraSelenium(unittest.TestCase):
 
                     # Check if the folder is empty
                     try:
-                        # wait.until(EC.presence_of_element_located((By.XPATH, "//*[text()='Upload some content or sync with your devices!']")))
-                        if self.version.startswith('27'):
-                            wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'files-filestable')))
-                        else:
-                            wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'files-list__table')))
+                        wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'files-list__table')))
                         isEmpty = False
                         self.logger.info(f'Folder is not empty, adding new content')
                     except Exception as error:
@@ -836,10 +728,7 @@ class TestCollaboraSelenium(unittest.TestCase):
                     # Sort file list so that new files are created at the beginning of the list
                     if isEmpty == False:
                         try:
-                            if self.version.startswith('27'):
-                                wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'sort-indicator'))).click()
-                            else:
-                                wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'files-list__column-sort-button'))).click()
+                            wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'files-list__column-sort-button'))).click()
                             self.logger.info(f'Changed sort order to descending')
                         except Exception as error:
                             self.logger.warning(f'Unable to change sort order to descending: {error}')
@@ -847,21 +736,16 @@ class TestCollaboraSelenium(unittest.TestCase):
                     time.sleep(3)
                     try:
                         wait.until(EC.presence_of_element_located((By.CLASS_NAME, self.addIcon))).click()
-                        # wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'icon-filetype-presentation'))).click()
                         wait.until(EC.presence_of_element_located((By.XPATH, "//*[contains(text(), 'New presentation')]"))).click()
-                        if self.version.startswith('27'):
-                            # Write the filename in the menu
-                            wait.until(EC.presence_of_element_located((By.XPATH, "//*[contains(@id, 'input-file')]"))).send_keys(g_filename + Keys.ENTER)
-                        else:
-                            # Starting with Nextcloud 28, we have to rename the file
-                            wait.until(EC.presence_of_element_located((By.XPATH, "//*[contains(text(), 'New document')]")))
-                            self.logger.info(f'Renaming the file we just created to {g_filename}.odp')
-                            ActionChains(self.driver).key_down(Keys.CONTROL).send_keys('a').key_up(Keys.CONTROL).perform()
-                            time.sleep(0.5)
-                            ActionChains(self.driver).send_keys(f'{g_filename}.odp').perform()
-                            time.sleep(0.5)
-                            ActionChains(self.driver).send_keys(Keys.ENTER).perform()
-                            pass
+
+                        # Starting with Nextcloud 28, we have to rename the file
+                        wait.until(EC.presence_of_element_located((By.XPATH, "//*[contains(text(), 'New document')]")))
+                        self.logger.info(f'Renaming the file we just created to {g_filename}.odp')
+                        ActionChains(self.driver).key_down(Keys.CONTROL).send_keys('a').key_up(Keys.CONTROL).perform()
+                        time.sleep(0.5)
+                        ActionChains(self.driver).send_keys(f'{g_filename}.odp').perform()
+                        time.sleep(0.5)
+                        ActionChains(self.driver).send_keys(Keys.ENTER).perform()
                     except Exception as error:
                         self.logger.error(f'Unable to create new file: {g_filename}, saving screenshot: {error}')
                         screenshot = pyautogui.screenshot()
