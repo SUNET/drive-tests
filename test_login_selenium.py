@@ -115,8 +115,8 @@ class TestLoginSelenium(unittest.TestCase):
         self.logger.info(f'Logout complete')
 
         currentUrl = driver.current_url
-        self.logger.info(driver.current_url)
-        self.assertEqual(driver.current_url, drv.get_gss_post_logout_url())
+        self.logger.info(currentUrl)
+        self.assertEqual(currentUrl, drv.get_gss_post_logout_url())
         driver.implicitly_wait(g_driver_timeout) # seconds before quitting
         driver.close()
         self.logger.info(f'And done...')
@@ -384,23 +384,23 @@ class TestLoginSelenium(unittest.TestCase):
                         self.logger.info(f'Logout complete')
 
                         currentUrl = driver.current_url
-                        self.logger.info(driver.current_url)
+                        self.logger.info(currentUrl)
 
                         if fullnode == 'scilifelab':
-                            self.assertEqual(driver.current_url, drv.get_node_post_logout_saml_url(fullnode))
+                            self.assertEqual(currentUrl, drv.get_node_post_logout_saml_url(fullnode))
                         elif fullnode == 'kau':
-                            self.assertEqual(driver.current_url, drv.get_node_post_logout_url(fullnode))
+                            self.assertEqual(currentUrl, drv.get_node_post_logout_url(fullnode))
                         elif fullnode == 'swamid' or fullnode == 'extern' or fullnode == 'sunet' or fullnode == 'vr' or fullnode == 'su':
                             pass
                         elif (self.expectedResults['global']['testGss'] == True) and (len(drv.allnodes) == 1):
-                            self.assertEqual(driver.current_url, drv.get_gss_post_logout_url())
+                            self.assertEqual(currentUrl, drv.get_gss_post_logout_url())
                         elif (self.expectedResults['global']['testGss'] == False) | (len(drv.allnodes) == 1):
                             if simpleLogoutUrl == True:
-                                self.assertEqual(driver.current_url, drv.get_node_post_logout_simple_url(fullnode))
+                                self.assertEqual(currentUrl, drv.get_node_post_logout_simple_url(fullnode))
                             else:
-                                self.assertEqual(driver.current_url, drv.get_node_post_logout_url(fullnode))
+                                self.assertEqual(currentUrl, drv.get_node_post_logout_url(fullnode))
                         else:
-                            self.assertEqual(driver.current_url, drv.get_gss_post_logout_url())
+                            self.assertEqual(currentUrl, drv.get_gss_post_logout_url())
                         driver.implicitly_wait(g_driver_timeout) # seconds before quitting
                         driver.quit()
 
@@ -466,7 +466,7 @@ class TestLoginSelenium(unittest.TestCase):
         dashboardUrl = drv.get_dashboard_url('extern')
         currentUrl = driver.current_url
         self.assertEqual(dashboardUrl, currentUrl)
-        self.logger.info(f'{driver.current_url}')
+        self.logger.info(f'{currentUrl}')
 
         wait.until(EC.element_to_be_clickable((By.ID, 'user-menu'))).click()
         logoutLink = driver.find_element(By.PARTIAL_LINK_TEXT, 'Log out')
@@ -474,8 +474,8 @@ class TestLoginSelenium(unittest.TestCase):
         self.logger.info(f'Logout complete')
 
         currentUrl = driver.current_url
-        self.logger.info(driver.current_url)
-        self.assertEqual(driver.current_url, drv.get_gss_post_logout_url())
+        self.logger.info(currentUrl)
+        self.assertEqual(currentUrl, drv.get_gss_post_logout_url())
         driver.implicitly_wait(g_driver_timeout) # seconds before quitting
         driver.close()
         self.logger.info(f'And done...')
@@ -537,7 +537,7 @@ class TestLoginSelenium(unittest.TestCase):
         dashboardUrl = drv.get_dashboard_url(node)
         currentUrl = driver.current_url
         self.assertEqual(dashboardUrl, currentUrl)
-        self.logger.info(f'{driver.current_url}')
+        self.logger.info(f'{currentUrl}')
 
         wait.until(EC.element_to_be_clickable((By.ID, 'user-menu'))).click()
         logoutLink = driver.find_element(By.PARTIAL_LINK_TEXT, 'Log out')
@@ -545,9 +545,9 @@ class TestLoginSelenium(unittest.TestCase):
         self.logger.info(f'Logout complete')
 
         currentUrl = driver.current_url
-        self.logger.info(driver.current_url)
+        self.logger.info(currentUrl)
         # Assert portal logout url
-        self.assertTrue(driver.current_url.startswith('https://portal.drive.sunet.se/?SAMLRequest'))
+        self.assertTrue(currentUrl.startswith('https://portal.drive.sunet.se/?SAMLRequest'))
         driver.implicitly_wait(g_driver_timeout) # seconds before quitting
         driver.close()
         self.logger.info(f'And done...')
@@ -662,15 +662,15 @@ class TestLoginSelenium(unittest.TestCase):
             except:
                 self.assertEqual(dashboardUrl + '#/', currentUrl)
                 self.logger.warning(f'Dashboard URL contains trailing #, likely due to the tasks app')
-            self.logger.info(f'{driver.current_url}')
+                self.logger.info(f'{currentUrl}')
 
             wait.until(EC.element_to_be_clickable((By.ID, 'user-menu'))).click()
             logoutLink = driver.find_element(By.PARTIAL_LINK_TEXT, 'Log out')
             logoutLink.click()
             self.logger.info(f'Logout complete')
             currentUrl = driver.current_url
-            self.logger.info(driver.current_url)
-            self.assertEqual(driver.current_url, drv.get_gss_post_logout_url())
+            self.logger.info(currentUrl)
+            self.assertEqual(currentUrl, drv.get_gss_post_logout_url())
             driver.implicitly_wait(g_driver_timeout) # seconds before quitting
             driver.close()
             self.logger.info(f'And done...')
@@ -775,12 +775,7 @@ class TestLoginSelenium(unittest.TestCase):
             driver.implicitly_wait(g_driver_timeout) # seconds before quitting
             dashboardUrl = drv.get_dashboard_url('su')
             currentUrl = driver.current_url
-            # try:
-            #     self.assertEqual(dashboardUrl, currentUrl)
-            # except:
-            #     self.assertEqual(dashboardUrl + '#/', currentUrl)
-            #     self.logger.warning(f'Dashboard URL contains trailing #, likely due to the tasks app')
-            self.logger.info(f'{driver.current_url}')
+            self.logger.info(f'{currentUrl}')
 
             try:
                 wait.until(EC.element_to_be_clickable((By.ID, 'user-menu'))).click()
@@ -788,7 +783,7 @@ class TestLoginSelenium(unittest.TestCase):
                 logoutLink.click()
                 self.logger.info(f'Logout complete')
                 currentUrl = driver.current_url
-                self.logger.info(driver.current_url)
+                self.logger.info(f'{currentUrl}')
                 # self.assertEqual(driver.current_url, drv.get_gss_post_logout_url())
             except Exception as error:
                 self.logger.warning(f'Could not logout due to: {error}')
