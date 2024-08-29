@@ -305,10 +305,11 @@ class TestStatus(unittest.TestCase):
     def test_node_statusinfo(self):
         drv = sunetnextcloud.TestTarget()
         for node in expectedResults['global']['redundantnodes']:
-            with self.subTest(myurl=node):
-                logger.info(f'TestID: {node}')
-                statusInfoThread = NodeStatusInfo(node, self)
-                statusInfoThread.start()
+            if node in drv.allnodes:
+                with self.subTest(myurl=node):
+                    logger.info(f'TestID: {node}')
+                    statusInfoThread = NodeStatusInfo(node, self)
+                    statusInfoThread.start()
 
         while(testThreadsRunning > 0):
             time.sleep(1)
@@ -323,10 +324,11 @@ class TestStatus(unittest.TestCase):
     def test_statusinfo(self):
         drv = sunetnextcloud.TestTarget()
         for node in expectedResults['global']['allnodes']:
-            with self.subTest(myurl=node):
-                logger.info(f'TestID: {node}')
-                statusInfoThread = StatusInfo(node, self)
-                statusInfoThread.start()
+            if node in drv.allnodes:
+                with self.subTest(myurl=node):
+                    logger.info(f'TestID: {node}')
+                    statusInfoThread = StatusInfo(node, self)
+                    statusInfoThread.start()
 
         while(testThreadsRunning > 0):
             time.sleep(1)
