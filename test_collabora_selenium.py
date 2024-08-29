@@ -157,9 +157,7 @@ class TestCollaboraSelenium(unittest.TestCase):
 
                 try:
                     self.logger.info(f'Wait for {self.drv.indexsuffix}/apps/files/')
-                    wait.until(EC.presence_of_element_located((By.XPATH,'//a[@href="'+ self.drv.indexsuffix + '/apps/files/' +'"]')))
-                    files = self.driver.find_element(by=By.XPATH, value='//a[@href="'+ self.drv.indexsuffix + '/apps/files/' +'"]')
-                    files.click()
+                    wait.until(EC.element_to_be_clickable((By.XPATH,'//a[@href="'+ self.drv.indexsuffix + '/apps/files/' +'"]'))).click()
                 except Exception as error:
                     self.logger.warning(f'Wait for {self.drv.indexsuffix}/apps/files/ took too long: {error}')
                     success = False
@@ -193,10 +191,10 @@ class TestCollaboraSelenium(unittest.TestCase):
                     self.logger.info(f'SeleniumCollaboraTest folder found')
                 except Exception as error:
                     self.logger.info(f'SeleniumCollaboraTest folder not found, creating; {error}')
-                    wait.until(EC.presence_of_element_located((By.CLASS_NAME, self.addIcon))).click()
+                    wait.until(EC.element_to_be_clickable((By.CLASS_NAME, self.addIcon))).click()
                     time.sleep(1)
 
-                    wait.until(EC.presence_of_element_located((By.XPATH, "//*[contains(@class, 'action-button__text') and text()='New folder']"))).click()
+                    wait.until(EC.element_to_be_clickable((By.XPATH, "//*[contains(@class, 'action-button__text') and text()='New folder']"))).click()
                     wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, 'input[id^=\'input\']')))
                     ActionChains(self.driver).key_down(Keys.CONTROL).send_keys('a').key_up(Keys.CONTROL).perform()
                     ActionChains(self.driver).send_keys(f'SeleniumCollaboraTest{Keys.ENTER}').perform()
@@ -228,16 +226,16 @@ class TestCollaboraSelenium(unittest.TestCase):
                     # Sort file list so that new files are created at the beginning of the list
                     if isEmpty == False:
                         try:
-                            wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'files-list__column-sort-button'))).click()
+                            wait.until(EC.element_to_be_clickable((By.CLASS_NAME, 'files-list__column-sort-button'))).click()
                             self.logger.info(f'Changed sort order to descending')
                         except Exception as error:
                             self.logger.warning(f'Unable to change sort order to descending: {error}')
 
                     time.sleep(3)
                     try:
-                        wait.until(EC.presence_of_element_located((By.CLASS_NAME, self.addIcon))).click()
+                        wait.until(EC.element_to_be_clickable((By.CLASS_NAME, self.addIcon))).click()
                         # wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'icon-filetype-text'))).click()
-                        wait.until(EC.presence_of_element_located((By.XPATH, "//*[contains(text(), 'New text file')]"))).click()
+                        wait.until(EC.element_to_be_clickable((By.XPATH, "//*[contains(text(), 'New text file')]"))).click()
 
                         # Starting with Nextcloud 28, we have to rename the file
                         wait.until(EC.presence_of_element_located((By.XPATH, "//*[contains(text(), 'New document')]")))
@@ -268,7 +266,7 @@ class TestCollaboraSelenium(unittest.TestCase):
                 time.sleep(3) # We give nextcloud a literal second to register the keystrokes before closing the document
                 self.logger.info(f'Closing document...')
                 try:
-                    wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'header-close'))).click()
+                    wait.until(EC.element_to_be_clickable((By.CLASS_NAME, 'header-close'))).click()
                 except Exception as error:
                     self.logger.warning(f"Closing markup document failed: {error}")
 
@@ -317,12 +315,12 @@ class TestCollaboraSelenium(unittest.TestCase):
                         self.logger.info(f'TestID: {collaboranode} for folder {testfolder}')
 
                         try:
-                            self.logger.info(f'Wait for {self.drv.indexsuffix}/apps/files/')
-                            wait.until(EC.presence_of_element_located((By.XPATH,'//a[@href="'+ self.drv.indexsuffix + '/apps/files/' +'"]')))
-                            self.logger.info(f'Get link for files app')
-                            files = self.driver.find_element(by=By.XPATH, value='//a[@href="'+ self.drv.indexsuffix + '/apps/files/' +'"]')
-                            self.logger.info(f'Click on files app')
-                            files.click()
+                            self.logger.info(f'Wait for {self.drv.indexsuffix}/apps/files/ and click')
+                            wait.until(EC.element_to_be_clickable((By.XPATH,'//a[@href="'+ self.drv.indexsuffix + '/apps/files/' +'"]'))).click()
+                            # self.logger.info(f'Get link for files app')
+                            # files = self.driver.find_element(by=By.XPATH, value='//a[@href="'+ self.drv.indexsuffix + '/apps/files/' +'"]')
+                            # self.logger.info(f'Click on files app')
+                            # files.click()
                         except Exception as error:
                             self.logger.warning(f'Wait for {self.drv.indexsuffix}/apps/files/ took too long: {error}')
                             success = False
@@ -358,11 +356,11 @@ class TestCollaboraSelenium(unittest.TestCase):
                             self.logger.info(f'{testfolder} folder found')
                         except Exception as error:
                             self.logger.info(f'{testfolder} folder not found, creating; Exception was: {error}')
-                            wait.until(EC.presence_of_element_located((By.CLASS_NAME, self.addIcon))).click()
+                            wait.until(EC.element_to_be_clickable((By.CLASS_NAME, self.addIcon))).click()
                             time.sleep(1)
 
                             self.logger.info(f'Creating {testfolder} on {self.version}')
-                            wait.until(EC.presence_of_element_located((By.XPATH, "//*[contains(@class, 'action-button__text') and text()='New folder']"))).click()
+                            wait.until(EC.element_to_be_clickable((By.XPATH, "//*[contains(@class, 'action-button__text') and text()='New folder']"))).click()
                             wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, 'input[id^=\'input\']')))
                             ActionChains(self.driver).key_down(Keys.CONTROL).send_keys('a').key_up(Keys.CONTROL).perform()
                             ActionChains(self.driver).send_keys(f'SeleniumCollaboraTest{Keys.ENTER}').perform()
@@ -395,7 +393,7 @@ class TestCollaboraSelenium(unittest.TestCase):
                             # Sort file list so that new files are created at the beginning of the list
                             if isEmpty == False:
                                 try:
-                                    wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'files-list__column-sort-button'))).click()
+                                    wait.until(EC.element_to_be_clickable((By.CLASS_NAME, 'files-list__column-sort-button'))).click()
                                     self.logger.info(f'Changed sort order to descending')
                                 except Exception as error:
                                     self.logger.warning(f'Unable to change sort order to descending; Exception was {error}')
@@ -404,10 +402,10 @@ class TestCollaboraSelenium(unittest.TestCase):
                         
                             try:
                                 self.logger.info(f'Click on add icon')
-                                wait.until(EC.presence_of_element_located((By.CLASS_NAME, self.addIcon))).click()
+                                wait.until(EC.element_to_be_clickable((By.CLASS_NAME, self.addIcon))).click()
                                 self.logger.info(f'Click on add document')
                                 # wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'icon-filetype-document'))).click()
-                                wait.until(EC.presence_of_element_located((By.XPATH, "//*[contains(text(), 'New document')]"))).click()
+                                wait.until(EC.element_to_be_clickable((By.XPATH, "//*[contains(text(), 'New document')]"))).click()
 
                                 # Starting with Nextcloud 28, we have to rename the file
                                 wait.until(EC.presence_of_element_located((By.XPATH, "//*[contains(text(), 'New document')]")))
@@ -492,9 +490,9 @@ class TestCollaboraSelenium(unittest.TestCase):
 
                 try:
                     self.logger.info(f'Wait for {self.drv.indexsuffix}/apps/files/')
-                    wait.until(EC.presence_of_element_located((By.XPATH,'//a[@href="'+ self.drv.indexsuffix + '/apps/files/' +'"]')))
-                    files = self.driver.find_element(by=By.XPATH, value='//a[@href="'+ self.drv.indexsuffix + '/apps/files/' +'"]')
-                    files.click()
+                    wait.until(EC.element_to_be_clickable((By.XPATH,'//a[@href="'+ self.drv.indexsuffix + '/apps/files/' +'"]'))).click()
+                    # files = self.driver.find_element(by=By.XPATH, value='//a[@href="'+ self.drv.indexsuffix + '/apps/files/' +'"]')
+                    # files.click()
                 except Exception as error:
                     self.logger.warning(f'Wait for {self.drv.indexsuffix}/apps/files/ took too long: {error}')
                     success = False
@@ -529,10 +527,10 @@ class TestCollaboraSelenium(unittest.TestCase):
                     self.logger.info(f'SeleniumCollaboraTest folder found')
                 except Exception as error:
                     self.logger.info(f'SeleniumCollaboraTest folder not found, creating; {error}')
-                    wait.until(EC.presence_of_element_located((By.CLASS_NAME, self.addIcon))).click()
+                    wait.until(EC.element_to_be_clickable((By.CLASS_NAME, self.addIcon))).click()
                     time.sleep(1)
 
-                    wait.until(EC.presence_of_element_located((By.XPATH, "//*[contains(@class, 'action-button__text') and text()='New folder']"))).click()
+                    wait.until(EC.element_to_be_clickable((By.XPATH, "//*[contains(@class, 'action-button__text') and text()='New folder']"))).click()
                     wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, 'input[id^=\'input\']')))
                     ActionChains(self.driver).key_down(Keys.CONTROL).send_keys('a').key_up(Keys.CONTROL).perform()
                     ActionChains(self.driver).send_keys(f'SeleniumCollaboraTest{Keys.ENTER}').perform()
@@ -563,16 +561,16 @@ class TestCollaboraSelenium(unittest.TestCase):
                     # Sort file list so that new files are created at the beginning of the list
                     if isEmpty == False:
                         try:
-                            wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'files-list__column-sort-button'))).click()
+                            wait.until(EC.element_to_be_clickable((By.CLASS_NAME, 'files-list__column-sort-button'))).click()
                             self.logger.info(f'Changed sort order to descending')
                         except Exception as error:
                             self.logger.warning(f'Unable to change sort order to descending: {error}')
 
                     time.sleep(3)
                     try:
-                        wait.until(EC.presence_of_element_located((By.CLASS_NAME, self.addIcon))).click()
+                        wait.until(EC.element_to_be_clickable((By.CLASS_NAME, self.addIcon))).click()
                         # wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'icon-filetype-spreadsheet'))).click()
-                        wait.until(EC.presence_of_element_located((By.XPATH, "//*[contains(text(), 'New spreadsheet')]"))).click()
+                        wait.until(EC.element_to_be_clickable((By.XPATH, "//*[contains(text(), 'New spreadsheet')]"))).click()
 
                         # Starting with Nextcloud 28, we have to rename the file
                         wait.until(EC.presence_of_element_located((By.XPATH, "//*[contains(text(), 'New document')]")))
@@ -657,9 +655,9 @@ class TestCollaboraSelenium(unittest.TestCase):
 
                 try:
                     self.logger.info(f'Wait for {self.drv.indexsuffix}/apps/files/')
-                    wait.until(EC.presence_of_element_located((By.XPATH,'//a[@href="'+ self.drv.indexsuffix + '/apps/files/' +'"]')))
-                    files = self.driver.find_element(by=By.XPATH, value='//a[@href="'+ self.drv.indexsuffix + '/apps/files/' +'"]')
-                    files.click()
+                    wait.until(EC.element_to_be_clickable((By.XPATH,'//a[@href="'+ self.drv.indexsuffix + '/apps/files/' +'"]'))).click()
+                    # files = self.driver.find_element(by=By.XPATH, value='//a[@href="'+ self.drv.indexsuffix + '/apps/files/' +'"]')
+                    # files.click()
                 except Exception as error:
                     self.logger.warning(f'Wait for {self.drv.indexsuffix}/apps/files/ took too long: {error}')
                     success = False
@@ -693,10 +691,10 @@ class TestCollaboraSelenium(unittest.TestCase):
                     self.logger.info(f'SeleniumCollaboraTest folder found')
                 except Exception as error:
                     self.logger.info(f'SeleniumCollaboraTest folder not found, creating; {error}')
-                    wait.until(EC.presence_of_element_located((By.CLASS_NAME, self.addIcon))).click()
+                    wait.until(EC.element_to_be_clickable((By.CLASS_NAME, self.addIcon))).click()
                     time.sleep(1)
 
-                    wait.until(EC.presence_of_element_located((By.XPATH, "//*[contains(@class, 'action-button__text') and text()='New folder']"))).click()
+                    wait.until(EC.element_to_be_clickable((By.XPATH, "//*[contains(@class, 'action-button__text') and text()='New folder']"))).click()
                     wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, 'input[id^=\'input\']')))
                     ActionChains(self.driver).key_down(Keys.CONTROL).send_keys('a').key_up(Keys.CONTROL).perform()
                     ActionChains(self.driver).send_keys(f'SeleniumCollaboraTest{Keys.ENTER}').perform()
@@ -728,15 +726,15 @@ class TestCollaboraSelenium(unittest.TestCase):
                     # Sort file list so that new files are created at the beginning of the list
                     if isEmpty == False:
                         try:
-                            wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'files-list__column-sort-button'))).click()
+                            wait.until(EC.element_to_be_clickable((By.CLASS_NAME, 'files-list__column-sort-button'))).click()
                             self.logger.info(f'Changed sort order to descending')
                         except Exception as error:
                             self.logger.warning(f'Unable to change sort order to descending: {error}')
 
                     time.sleep(3)
                     try:
-                        wait.until(EC.presence_of_element_located((By.CLASS_NAME, self.addIcon))).click()
-                        wait.until(EC.presence_of_element_located((By.XPATH, "//*[contains(text(), 'New presentation')]"))).click()
+                        wait.until(EC.element_to_be_clickable((By.CLASS_NAME, self.addIcon))).click()
+                        wait.until(EC.element_to_be_clickable((By.XPATH, "//*[contains(text(), 'New presentation')]"))).click()
 
                         # Starting with Nextcloud 28, we have to rename the file
                         wait.until(EC.presence_of_element_located((By.XPATH, "//*[contains(text(), 'New document')]")))
