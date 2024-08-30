@@ -583,14 +583,14 @@ class TestMfaZonesSelenium(unittest.TestCase):
                     files = g_driver.find_element(By.XPATH, '//a[@href="' + g_drv.indexsuffix + '/apps/files/' +'"]')
                     files.click()
                 except:
-                    self.logger.error(f'Files app icon not found')
+                    self.logger.error(f'Files app icon not found, current url is {g_driver.current_url}')
                     self.assertTrue(False)
 
                 try:
-                    myElem = wait.until(EC.presence_of_element_located((By.LINK_TEXT, 'All files')))
+                    wait.until(EC.presence_of_element_located((By.LINK_TEXT, 'All files')))
                     self.logger.info(f'All files visible!')
                 except TimeoutException:
-                    self.logger.info(f'Loading of all files took too much time!')
+                    self.logger.info(f'Loading of all files took too much time, current url is {g_driver.current_url}')
 
                 # Right click on MFA test folder
                 try:
