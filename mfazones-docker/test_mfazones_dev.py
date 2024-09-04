@@ -367,9 +367,24 @@ class TestMfaZonesSelenium(unittest.TestCase):
         client = Client(options)
         client.verify = False
         dir = 'MfaTestFolder'
-        g_logger.info(f'Make and check directory: {dir}')
-        client.mkdir(dir)
-        self.assertEqual(client.list().count(dir + '/'), 1)
+        dirExists = False
+        dirIsMfaZone = False
+
+        try:
+            client.list(dir)
+            dirExists = True
+        except Exception as e:
+            error_message = str(e)
+            if "failed with code 403" in error_message:
+                g_logger.info(f'Expected 403 has occurred')
+                dirIsMfaZone = True
+            elif "not found" in error_message:
+                dirExists = False
+
+        if dirExists == False:
+            g_logger.info(f'Make and check directory: {dir}')
+            client.mkdir(dir)
+            self.assertEqual(client.list().count(dir + '/'), 1)
 
         # Log in to the node
         nodelogin('localhost', user=user)
@@ -407,6 +422,17 @@ class TestMfaZonesSelenium(unittest.TestCase):
         except Exception as e:
             g_logger.error(f'Error for node localhost: {e}')
             return
+
+        if dirIsMfaZone:
+            try:
+                g_logger.info(f'Deactivating preexisting MFA Zone')
+                wait.until(EC.presence_of_element_located((By.XPATH, '//*[@id="tab-button-mfazone"]')))
+                g_driver.implicitly_wait(g_driver_timeout)
+                mfaZone = g_driver.find_element(By.XPATH, '//*[@id="tab-button-mfazone"]')
+                mfaZone.click()
+            except Exception as e:
+                g_logger.error(f'Error for node localhost: {e}')
+                return
 
         # Click on MFA Zone
         try:
