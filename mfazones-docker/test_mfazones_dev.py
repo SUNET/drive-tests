@@ -55,7 +55,7 @@ g_drv={}
 g_loggedInNodes={}
 g_failedNodes = []
 
-g_mfawait = os.environ.get('MFA_WAIT')  
+g_mfawait = int(os.environ.get('MFA_WAIT'))
 
 use_driver_service = False
 if os.environ.get('SELENIUM_DRIVER_SERVICE') == 'True':
@@ -531,7 +531,7 @@ class TestMfaZonesSelenium(unittest.TestCase):
 
         # Deactivate MFA Zone again
         try:
-            g_logger.info(f'Deactivate MFA and wait for 3 seconds')
+            g_logger.info(f'Deactivate MFA and wait for {g_mfawait} seconds')
             actions.click().perform()
             time.sleep(g_mfawait)
 
