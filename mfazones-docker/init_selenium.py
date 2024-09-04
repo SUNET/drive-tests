@@ -27,31 +27,32 @@ envFile = '.env.yaml'
 # g_drv = sunetnextcloud.TestTarget(envFile)
 g_webdav_timeout = 30
 g_driver_timeout = 20
+g_mfaZoneConfigured = False
 
 mfaUsers=['admin','mfauser']
 allUsers=mfaUsers[:]
 allUsers.append('nomfauser')
 g_filename=datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 
-envVariables = dict()
-envVariables[f'global'] = dict()
-envVariables[f'global']['baseUrl'] = 'localhost:8443'
+g_envVariables = dict()
+g_envVariables[f'global'] = dict()
+g_envVariables[f'global']['baseUrl'] = 'localhost:8443'
 for user in allUsers:
-    envVariables[f'MFA_NEXTCLOUD_{user.upper()}']               = user
-    envVariables[f'MFA_NEXTCLOUD_{user.upper()}_PASSWORD']      = user+'password'
-    envVariables[f'MFA_NEXTCLOUD_{user.upper()}_SECRET']        = ''
-    envVariables[f'MFA_NEXTCLOUD_{user.upper()}_APP_PASSWORD']  = ''
+    g_envVariables[f'MFA_NEXTCLOUD_{user.upper()}']               = user
+    g_envVariables[f'MFA_NEXTCLOUD_{user.upper()}_PASSWORD']      = user+'password'
+    g_envVariables[f'MFA_NEXTCLOUD_{user.upper()}_SECRET']        = ''
+    g_envVariables[f'MFA_NEXTCLOUD_{user.upper()}_APP_PASSWORD']  = ''
 
 ocsheaders = { "OCS-APIRequest" : "true" } 
 
 try:
     with open(envFile, "r") as stream:
-        envVariables=yaml.safe_load(stream)
+        g_envVariables=yaml.safe_load(stream)
 except:
     with open(envFile, "w") as stream:
-        yaml.dump(envVariables, stream, default_flow_style=False)
+        yaml.dump(g_envVariables, stream, default_flow_style=False)
     with open(envFile, "r") as stream:
-        envVariables=yaml.safe_load(stream)
+        g_envVariables=yaml.safe_load(stream)
 
 userTotpConfigured = False
 
@@ -86,7 +87,7 @@ def delete_cookies(driver):
     driver.delete_all_cookies()    
 
 def prepareOcsMFaShares():
-    global g_logger, envVariables
+    global g_logger, g_envVariables, g_mfaZoneConfigured
     logger = g_logger
     logger.info(f'Prepare OCS Shares for localhost')
     mainfolder = 'OcsMfaTestfolder'
@@ -95,10 +96,10 @@ def prepareOcsMFaShares():
     users = ['mfauser','nomfauser'] # Users to test
 
     user = 'admin'
-    nodeuser        = envVariables[f'MFA_NEXTCLOUD_{user.upper()}']
-    nodepassword    = envVariables[f'MFA_NEXTCLOUD_{user.upper()}_PASSWORD']
-    nodetotpsecret  = envVariables[f'MFA_NEXTCLOUD_{user.upper()}_SECRET']
-    nodeapppwd      = envVariables[f'MFA_NEXTCLOUD_{user.upper()}_APP_PASSWORD']
+    nodeuser        = g_envVariables[f'MFA_NEXTCLOUD_{user.upper()}']
+    nodepassword    = g_envVariables[f'MFA_NEXTCLOUD_{user.upper()}_PASSWORD']
+    nodetotpsecret  = g_envVariables[f'MFA_NEXTCLOUD_{user.upper()}_SECRET']
+    nodeapppwd      = g_envVariables[f'MFA_NEXTCLOUD_{user.upper()}_APP_PASSWORD']
 
     url = get_webdav_url(username=user)
 
@@ -165,6 +166,18 @@ def prepareOcsMFaShares():
             logger.info(f'Create share: {data}')
             r = session.post(sharesUrl, headers=ocsheaders, data=data, verify=False)
 
+    # Check if the mfa zone is already active
+    subfolder = mainfolder + '/OcsTestFolder_MfaShared'
+    g_mfaZoneConfigured = False
+    try:
+        logger.info(f'Listing {subfolder}')
+        logger.info(f'{client.list(subfolder)}')
+    except Exception as e:
+        logger.info(f'Check if this is an expected exception or not')
+        error_message = str(e)
+        if "failed with code 403" in error_message:
+            g_mfaZoneConfigured = True
+            g_logger.info(f'Expected 403 has occurred, mfa zone configured: {g_mfaZoneConfigured}')
     return
 
 try:
@@ -179,14 +192,14 @@ except Exception as e:
 
 for user in mfaUsers:
     prefix = user.upper()
-    userMfaSecret = envVariables[f'MFA_NEXTCLOUD_{prefix}_SECRET']
+    userMfaSecret = g_envVariables[f'MFA_NEXTCLOUD_{prefix}_SECRET']
     if len(userMfaSecret) > 0:
         userTotpConfigured = True
     else:
         g_logger.warning(f'TOTP secret for {user} not set')
 
-    nodeuser=envVariables[f'MFA_NEXTCLOUD_{prefix}']
-    nodepwd=envVariables[f'MFA_NEXTCLOUD_{prefix}_PASSWORD']
+    nodeuser=g_envVariables[f'MFA_NEXTCLOUD_{prefix}']
+    nodepwd=g_envVariables[f'MFA_NEXTCLOUD_{prefix}_PASSWORD']
 
     delete_cookies(driver)
     driver.get(get_node_login_url())
@@ -204,9 +217,9 @@ for user in mfaUsers:
             otpInfo = driver.find_element(By.CLASS_NAME,"setup-confirmation__secret")
             otpSecret = otpInfo.text.replace('Your new TOTP secret is: ','')
             g_logger.info(f'OTP Secret found: {otpSecret}')
-            envVariables[f'MFA_NEXTCLOUD_{prefix}_SECRET'] = otpSecret
+            g_envVariables[f'MFA_NEXTCLOUD_{prefix}_SECRET'] = otpSecret
             with open(envFile, "w") as stream:
-                yaml.dump(envVariables, stream, default_flow_style=False)
+                yaml.dump(g_envVariables, stream, default_flow_style=False)
 
             g_totp = pyotp.TOTP(otpSecret)
             otp = g_totp.now()
@@ -253,9 +266,9 @@ for user in mfaUsers:
         appPassword = pyperclip.paste()
         g_logger.info(f'App password generated: {appPassword}')
 
-        envVariables[f'MFA_NEXTCLOUD_{prefix}_APP_PASSWORD'] = appPassword
+        g_envVariables[f'MFA_NEXTCLOUD_{prefix}_APP_PASSWORD'] = appPassword
         with open(envFile, "w") as stream:
-            yaml.dump(envVariables, stream, default_flow_style=False)
+            yaml.dump(g_envVariables, stream, default_flow_style=False)
 
     except Exception as e:
         screenshot = pyautogui.screenshot()
@@ -263,7 +276,6 @@ for user in mfaUsers:
         g_logger.error(f'Error creating app password for {user}: {e}')
         sys.exit()
 
-    # We prepare the OCS shares from the admin account
     if user == 'admin':
         g_logger.info(f'Prepare OCS Shares for {user}')
         prepareOcsMFaShares()
@@ -271,47 +283,51 @@ for user in mfaUsers:
         dir = 'OcsTestFolder_MfaShared'      
 
         # Right click on MFA test folder
-        actions = ActionChains(driver)
-        try:
-            wait.until(EC.presence_of_element_located((By.XPATH, f"//*[@class='files-list__row-name-' and text()='{dir}']")))
-            mfaFolder = driver.find_element(By.XPATH, f"//*[@class='files-list__row-name-' and text()='{dir}']")
-            actions.context_click(mfaFolder).perform()
-            time.sleep(1)
-            wait.until(EC.presence_of_element_located((By.XPATH, "//*[contains(text(), 'Open details')]"))).click()
-            # driver.find_element((By.XPATH, "//*[contains(text(), 'MfaTestFolder')]")).context_click()
-        except Exception as e:
-            screenshot = pyautogui.screenshot()
-            screenshot.save("screenshots/" + "init_selenium" + g_filename + ".png")
-            g_logger.error(f'Error for node localhost: {e}')
-            sys.exit()
+        if g_mfaZoneConfigured == True:
+            g_logger.info(f'Skip MFA Zone preparation since it has already been prepared')
+        else:
+            actions = ActionChains(driver)
+            try:
+                wait.until(EC.presence_of_element_located((By.XPATH, f"//*[@class='files-list__row-name-' and text()='{dir}']")))
+                mfaFolder = driver.find_element(By.XPATH, f"//*[@class='files-list__row-name-' and text()='{dir}']")
+                actions.context_click(mfaFolder).perform()
+                time.sleep(1)
+                wait.until(EC.presence_of_element_located((By.XPATH, "//*[contains(text(), 'Open details')]"))).click()
+                # driver.find_element((By.XPATH, "//*[contains(text(), 'MfaTestFolder')]")).context_click()
+            except Exception as e:
+                screenshot = pyautogui.screenshot()
+                screenshot.save("screenshots/" + "init_selenium" + g_filename + ".png")
+                g_logger.error(f'Error for node localhost: {e}')
+                sys.exit()
 
-        # Click on MFA Zone
-        try:
-            wait.until(EC.presence_of_element_located((By.XPATH, '//*[@id="tab-button-mfazone"]')))
-            driver.implicitly_wait(g_driver_timeout)
-            mfaZone = driver.find_element(By.XPATH, '//*[@id="tab-button-mfazone"]')
-            mfaZone.click()
-            haveMfa = driver.find_element(by=By.ID, value='checkbox-radio-switch-mfa')
-            actions.move_to_element(haveMfa)
-            actions.move_by_offset(50, 10)
-            time.sleep(1)
-            g_logger.info(f'Klick to activate MFA')
-            actions.click().perform()
-            time.sleep(3)
+            # Click on MFA Zone
+            try:
+                wait.until(EC.presence_of_element_located((By.XPATH, '//*[@id="tab-button-mfazone"]')))
+                driver.implicitly_wait(g_driver_timeout)
+                mfaZone = driver.find_element(By.XPATH, '//*[@id="tab-button-mfazone"]')
+                mfaZone.click()
+                haveMfa = driver.find_element(by=By.ID, value='checkbox-radio-switch-mfa')
+                actions.move_to_element(haveMfa)
+                actions.move_by_offset(50, 10)
+                time.sleep(1)
+                g_logger.info(f'Klick to activate MFA')
+                actions.click().perform()
+                time.sleep(3)
 
-        except Exception as e:
-            screenshot = pyautogui.screenshot()
-            screenshot.save("screenshots/" + "init_selenium" + g_filename + ".png")
-            g_logger.error(f'Error for node localhost: {e}')
-            sys.exit()
+            except Exception as e:
+                screenshot = pyautogui.screenshot()
+                screenshot.save("screenshots/" + "init_selenium" + g_filename + ".png")
+                g_logger.error(f'Error for node localhost: {e}')
+                sys.exit()
 
     try:
+        driver.get(get_node_login_url())
         wait.until(EC.element_to_be_clickable((By.ID, 'user-menu'))).click()
         logoutLink = driver.find_element(By.PARTIAL_LINK_TEXT, 'Log out')
         logoutLink.click()
         g_logger.info(f'Logout complete')
     except Exception as e:
-        g_logger.error(f'Error logging out user {user}')
+        g_logger.error(f'Error logging out user {user}: {e}')
 
     g_totp = None
     g_logger.info(f'Prepare MFA for {user} done')
