@@ -13,13 +13,19 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 
+# sys.path.append("..")
+# import sunetnextcloud
+
 envFile = '.env.yaml'
+# g_drv = sunetnextcloud.TestTarget(envFile)
 
 mfaUsers=['admin','mfauser']
 allUsers=mfaUsers[:]
-allUsers.append('nomfa')
+allUsers.append('nomfauser')
 
 data = dict()
+data[f'global'] = dict()
+data[f'global']['baseUrl'] = 'localhost:8443'
 for user in allUsers:
     data[f'MFA_NEXTCLOUD_{user.upper()}']               = user
     data[f'MFA_NEXTCLOUD_{user.upper()}_PASSWORD']      = user+'password'
@@ -51,6 +57,9 @@ def get_node_login_url(node='localhost:8443', direct=True):
 
 def get_security_settings_url(node='localhost:8443'):
     return 'https://' + node + '/settings/user/security'
+
+def get_webdav_url(node='localhost:8443', username=''):
+    return 'https://' + node + '/remote.php/dav/files/' + username + '/'
 
 def delete_cookies(driver):
     global g_logger
