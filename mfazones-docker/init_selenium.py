@@ -6,8 +6,8 @@ import pyotp
 import yaml
 import pyperclip
 import pyautogui
-import datetime
 
+from datetime import datetime
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.support.ui import WebDriverWait
