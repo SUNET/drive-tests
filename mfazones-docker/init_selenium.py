@@ -5,6 +5,8 @@ import logging
 import pyotp
 import yaml
 import pyperclip
+import pyautogui
+import datetime
 
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
@@ -29,6 +31,7 @@ g_driver_timeout = 20
 mfaUsers=['admin','mfauser']
 allUsers=mfaUsers[:]
 allUsers.append('nomfauser')
+g_filename=datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 
 envVariables = dict()
 envVariables[f'global'] = dict()
@@ -209,6 +212,8 @@ for user in mfaUsers:
             wait.until(EC.element_to_be_clickable((By.XPATH, '//*//input[@placeholder="Authentication code"]'))).send_keys(otp + Keys.ENTER)
 
         except Exception as e:
+            screenshot = pyautogui.screenshot()
+            screenshot.save("screenshots/" + "init_selenium" + g_filename + ".png")
             g_logger.error(f'{e}')
 
     # Wait for TOTP screen
