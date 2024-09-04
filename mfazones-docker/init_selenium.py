@@ -171,6 +171,7 @@ try:
     options = Options()
     options.add_argument('ignore-certificate-errors')
     driver = webdriver.Chrome(options=options)
+    driver.maximize_window()
     wait = WebDriverWait(driver, g_delay)
 except Exception as e:
     g_logger.error(f'Error initializing Chrome driver: {e}')
