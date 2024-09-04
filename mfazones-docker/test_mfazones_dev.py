@@ -483,6 +483,10 @@ class TestMfaZonesSelenium(unittest.TestCase):
         try:
             g_logger.info(f'List folder before MFA Zone: {client.list(dir)}')
             time.sleep(3)
+
+            screenshot = pyautogui.screenshot()
+            screenshot.save("screenshots/" + '__debug__01_active' + g_filename + ".png")
+
         except Exception as e:
             g_logger.error(f'Error before activating MFA zone on node localhost: {e}')
             self.assertTrue(False)
@@ -498,6 +502,10 @@ class TestMfaZonesSelenium(unittest.TestCase):
             g_logger.info(f'Klick to activate MFA')
             actions.click().perform()
             time.sleep(3)
+
+            screenshot = pyautogui.screenshot()
+            screenshot.save("screenshots/" + '__debug__02_mfainactive' + g_filename + ".png")
+
             content=client.list(dir)
             g_logger.info(f'List after activating MFA Zone: {content}')
             g_logger.error(f'We should not be able to list folders in an active MFA zone!')
