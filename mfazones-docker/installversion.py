@@ -13,13 +13,6 @@ logging.basicConfig(format = '%(asctime)s - %(module)s.%(funcName)s - %(levelnam
 
 envFile = '.env.yaml'
 
-try:
-    with open(envFile, "r") as stream:
-        envVariables=yaml.safe_load(stream)
-except:
-    logger.error(f'Error opening {envFile}')
-    sys.exit()
-
 parser = argparse.ArgumentParser(description="Install specific release of MFA Zones app into local docker container",
                                  formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 parser.add_argument('version', help="<version>")

@@ -11,9 +11,9 @@ import yaml
 import logging
 
 # Change to local directory
-abspath = os.path.abspath(__file__)
-dname = os.path.dirname(abspath)
-os.chdir(dname)
+# abspath = os.path.abspath(__file__)
+# dname = os.path.dirname(abspath)
+# os.chdir(dname)
 
 g_expectedFile = 'expected.yaml'
 
@@ -55,18 +55,29 @@ class TestTarget(object):
     target = 'test'
     platform = sys.platform
 
-    def __init__(self, target='test'):
+    def __init__(self, target=None):
         abspath = os.path.abspath(__file__)
         dname = os.path.dirname(abspath)
+        logger.info(f'Working directory is {dname}')
         testcustomers = os.environ.get('NextcloudTestCustomers')
         testbrowsers = os.environ.get('NextcloudTestBrowsers')
-        tsttarget = os.environ.get('NextcloudTestTarget')
-        if tsttarget is not None:
-            testtarget = tsttarget
-        else:
+        envtarget = os.environ.get('NextcloudTestTarget')
+
+
+        if target is not None:
+            logger.info(f'Test target initialized by caller: {target}')
             testtarget = target
-        os.chdir(dname)
-        print(f'Change working directory to: {dname}; testing target: {testtarget}')
+        elif envtarget is not None:
+            logger.info(f'Test target initialized by environment variable: {envtarget}')
+            testtarget = envtarget
+        else:
+            logger.warning(f'Test target initialized by default value: test')
+            testtarget = 'test'
+
+        if testtarget not in ['prod','test','dev']:
+            logger.error(f'Unsupported test target: {target}, exiting...')
+            sys.exit()
+
         sys.stdout.flush()
         if testtarget == "prod":
             self.target = "prod"
@@ -111,7 +122,6 @@ class TestTarget(object):
 
     def get_node_login_url(self, node, direct = True):
         if direct == True:
-            # return 'https://' + self.getnodeprefix(node) + self.targetprefix + '.' + self.baseurl + self.indexsuffix + '/login?redirect_url=&direct=1'
             return 'https://' + self.getnodeprefix(node) + self.targetprefix + '.' + self.baseurl + self.indexsuffix + '/login?direct=1'
         else:
             return 'https://' + self.getnodeprefix(node) + self.targetprefix + '.' + self.baseurl + self.indexsuffix
