@@ -58,88 +58,6 @@ use_driver_service = False
 if os.environ.get('SELENIUM_DRIVER_SERVICE') == 'True':
     use_driver_service = True
 
-def prepareOcsMFaShares(nextcloudnode):
-    global g_logger, g_drv
-    logger = g_logger
-    logger.info(f'Prepare OCS Shares for {nextcloudnode}')
-    mainfolder = 'OcsMfaTestfolder'
-    subfolders = ['OcsTestFolder_NonMfaShared', 'OcsTestFolder_MfaShared']
-    users = ['_selenium_' + nextcloudnode, '_selenium_' + nextcloudnode + '_mfa']
-    nodeuser = g_drv.get_ocsuser(nextcloudnode)
-    nodepwd = g_drv.get_ocsuserapppassword(nextcloudnode)
-    url = g_drv.get_webdav_url(nextcloudnode, nodeuser)
-
-    logger.info(f'URL: {url}')
-    options = {
-    'webdav_hostname': url,
-    'webdav_login' : nodeuser,
-    'webdav_password' : nodepwd, 
-    'webdav_timeout': g_webdav_timeout
-    }
-    client = Client(options)
-
-    try:
-        logger.info(client.list())    
-        if not client.check(mainfolder):
-            logger.info(f'Creating main test folder: {mainfolder}')
-            client.mkdir(mainfolder)
-        else:
-            logger.info(f'Main test folder {mainfolder} already exists')
-    except Exception as e:
-        logger.error(f'Error checking or creating folder {mainfolder}: {e}')
-        g_failedNodes.append(nextcloudnode)
-        return
-
-    try:
-        subfolder = ''
-        logger.info(client.list(mainfolder))
-        for folder in subfolders:
-            subfolder = mainfolder + '/' + folder
-            if not client.check(subfolder):
-                logger.info(f'Creating subfolder {subfolder}')
-                client.mkdir(subfolder)
-    except Exception as e:
-        logger.error(f'Error creating subfolder {subfolder}: {e}')        
-        g_failedNodes.append(nextcloudnode)
-        return
-
-    sharesUrl = g_drv.get_shares_url(nextcloudnode)
-    logger.info(f'Preparing shares: {sharesUrl}')
-
-    sharesUrl = sharesUrl.replace("$USERNAME$", nodeuser)
-    sharesUrl = sharesUrl.replace("$PASSWORD$", nodepwd)
-
-    session = requests.Session()
-    try:
-        r=session.get(sharesUrl, headers=ocsheaders)
-    except:
-        logger.error(f'Error getting {sharesUrl}')
-        g_failedNodes.append(nextcloudnode)
-        return
-
-    j = json.loads(r.text)
-    logger.info(json.dumps(j, indent=4, sort_keys=True))
-
-    numShares = len(j["ocs"]["data"])
-    logger.info(f'{numShares} shares found!')
-
-    for folder in subfolders:
-        subfolder = mainfolder + '/' + folder
-        for user in users:
-            data = {'shareType': 0, 'path': subfolder, 'shareWith': user}
-            logger.info(f'Create share: {data}')
-            r = session.post(sharesUrl, headers=ocsheaders, data=data)
-
-    # for share in j["ocs"]["data"]:
-    #     shareId = share["id"]
-    #     deleteShareUrl = g_drv.get_delete_share_url(nextcloudnode, shareId)
-    #     logger.info(f'Delete share: {deleteShareUrl}')
-    #     deleteShareUrl = deleteShareUrl.replace("$USERNAME$", nodeuser)
-    #     deleteShareUrl = deleteShareUrl.replace("$PASSWORD$", nodepwd)
-    #     r = session.delete(deleteShareUrl, headers=ocsheaders)
-
-    return
-
 def get_node_login_url(node='localhost:8443', direct=True):
     if direct == True:
         return 'https://' + node + '/login?direct=1'
@@ -151,6 +69,9 @@ def get_security_settings_url(node='localhost:8443'):
 
 def get_webdav_url(node='localhost:8443', username=''):
     return 'https://' + node + '/remote.php/dav/files/' + username + '/'
+
+def get_shares_url(node='localhost:8443'):
+    return 'https://$USERNAME$:$PASSWORD$@' + node + '/ocs/v2.php/apps/files_sharing/api/v1/shares?format=json'
 
 def delete_cookies(driver):
     global g_logger
@@ -169,17 +90,6 @@ def nodelogin(nextcloudnode='localhost:8443',user='selenium'):
     nodepassword    = g_envConfig[f'MFA_NEXTCLOUD_{user.upper()}_PASSWORD']
     nodetotpsecret  = g_envConfig[f'MFA_NEXTCLOUD_{user.upper()}_SECRET']
     nodeapppwd      = g_envConfig[f'MFA_NEXTCLOUD_{user.upper()}_APP_PASSWORD']
-
-    # if user == 'selenium':
-    #     nodeuser = g_drv.get_seleniumuser(nextcloudnode)
-    #     nodepwd = g_drv.get_seleniumuserpassword(nextcloudnode)
-    # elif user == 'selenium_mfa':
-    #     nodeuser = g_drv.get_seleniummfauser(nextcloudnode)
-    #     nodepwd = g_drv.get_seleniummfauserpassword(nextcloudnode)
-    #     nodetotpsecret = g_drv.get_seleniummfausertotpsecret(nextcloudnode)
-    # else:
-    #     g_logger.error(f'Unknown user type {user}')
-    #     return
 
     g_isLoggedIn = True
     g_loggedInNodes[nextcloudnode] = True
@@ -259,7 +169,110 @@ class TestMfaZonesSelenium(unittest.TestCase):
         logger.error(f'Error initializing driver: {error}')
 
     def test_logger(self):
-        self.logger.info(f'TestID: {self._testMethodName}')
+        g_logger.info(f'TestID: {self._testMethodName}')
+
+    def test_mfa_webdav_shared_folders(self):
+        g_logger.info(f'TestID: Testing node localhost')
+
+        # Make sure test folder exists
+        user = 'mfauser'
+        nodeuser        = g_envConfig[f'MFA_NEXTCLOUD_{user.upper()}']
+        nodepassword    = g_envConfig[f'MFA_NEXTCLOUD_{user.upper()}_PASSWORD']
+        nodetotpsecret  = g_envConfig[f'MFA_NEXTCLOUD_{user.upper()}_SECRET']
+        nodeapppwd      = g_envConfig[f'MFA_NEXTCLOUD_{user.upper()}_APP_PASSWORD']
+
+        # Create folder for testing using webdav
+        url = get_webdav_url(username=nodeuser)
+        g_logger.info(f'URL: {url}')
+        options = {
+        'webdav_hostname': url,
+        'webdav_login' : nodeuser,
+        'webdav_password' : nodeapppwd 
+        }
+
+        client = Client(options)
+        client.verify = False
+        nonMfaFolder = 'OcsTestFolder_NonMfaShared'
+        mfaFolder = 'OcsTestFolder_MfaShared'
+
+        # List non mfa folder, this should succeed
+        try:
+            client.list(nonMfaFolder)
+            g_logger.info(f'Folder {nonMfaFolder} good on node localhost')
+            self.assertTrue(True)
+        except Exception as e:
+            g_logger.info(f'Error listing non mfa shared folder: {e}')
+
+        # List mfa folder, which should result in a 403 exception
+        try:
+            client.list(mfaFolder)
+            g_logger.error(f'Folder {mfaFolder} on node localhost should not be listed')
+            self.assertTrue(False)
+        except Exception as e:
+            g_logger.info(f'Check if this is an expected exception or not')
+            error_message = str(e)
+            if "failed with code 403" in error_message:
+                g_logger.info(f'Expected 403 has occurred')
+                self.assertTrue(True)
+            elif "False is not true" in error_message:
+                g_logger.error(f'MFA Zones do not seem to work on webdav for localhost: {error_message}')
+                self.assertTrue(False)
+            else:
+                g_logger.error(f'Unexpected error on localhost: {error_message}')
+                self.assertTrue(False)
+
+        g_logger.info(f'And done...')
+
+    def test_nonmfa_webdav_shared_folders(self):
+        user = 'nomfauser'
+        nodeuser        = g_envConfig[f'MFA_NEXTCLOUD_{user.upper()}']
+        nodepassword    = g_envConfig[f'MFA_NEXTCLOUD_{user.upper()}_PASSWORD']
+        nodetotpsecret  = g_envConfig[f'MFA_NEXTCLOUD_{user.upper()}_SECRET']
+        nodeapppwd      = g_envConfig[f'MFA_NEXTCLOUD_{user.upper()}_APP_PASSWORD']
+
+        g_logger.info(f'TestID: Testing node localhost')
+
+        # Create folder for testing using webdav
+        url = get_webdav_url(username=nodeuser)
+        g_logger.info(f'URL: {url}')
+        options = {
+        'webdav_hostname': url,
+        'webdav_login' : nodeuser,
+        'webdav_password' : nodepassword 
+        }
+
+        client = Client(options)
+        client.verify = False
+        nonMfaFolder = 'OcsTestFolder_NonMfaShared'
+        mfaFolder = 'OcsTestFolder_MfaShared'
+
+        # List non mfa folder, this should succeed
+        try:
+            client.list(nonMfaFolder)
+            g_logger.info(f'Folder {nonMfaFolder} good on node localhost')
+            self.assertTrue(True)
+        except Exception as e:
+            g_logger.info(f'Error listing non mfa shared folder: {e}')
+
+        # List mfa folder, which should result in a 403 exception
+        try:
+            client.list(mfaFolder)
+            g_logger.error(f'Folder {mfaFolder} on node localhost should not be listed')
+            self.assertTrue(False)
+        except Exception as e:
+            g_logger.info(f'Check if this is an expected exception or not')
+            error_message = str(e)
+            if "failed with code 403" in error_message:
+                g_logger.info(f'Expected 403 has occurred')
+                self.assertTrue(True)
+            elif "False is not true" in error_message:
+                g_logger.error(f'MFA Zones do not seem to work on webdav for localhost: {error_message}')
+                self.assertTrue(False)
+            else:
+                g_logger.error(f'Unexpected error on localhost: {error_message}')
+                self.assertTrue(False)
+
+        g_logger.info(f'And done...')
 
     def test_mfazones_no_mfauser(self):
         delay = 30 # seconds
@@ -274,14 +287,14 @@ class TestMfaZonesSelenium(unittest.TestCase):
         nodetotpsecret  = g_envConfig[f'MFA_NEXTCLOUD_{user.upper()}_SECRET']
         nodeapppwd      = g_envConfig[f'MFA_NEXTCLOUD_{user.upper()}_APP_PASSWORD']
 
-        self.logger.info(f'TestID: Testing node localhost')
+        g_logger.info(f'TestID: Testing node localhost')
         nodelogin('localhost', user=user)
 
         try:
             myElem = wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'app-menu')))
-            self.logger.info(f'App menu is ready!')
+            g_logger.info(f'App menu is ready!')
         except TimeoutException:
-            self.logger.info(f'Loading of app menu took too much time, saving screenshot')
+            g_logger.info(f'Loading of app menu took too much time, saving screenshot')
             screenshot = pyautogui.screenshot()
             screenshot.save("screenshots/" + g_filename + ".png")
 
@@ -290,9 +303,9 @@ class TestMfaZonesSelenium(unittest.TestCase):
 
         try:
             myElem = wait.until(EC.presence_of_element_located((By.LINK_TEXT, 'All files')))
-            self.logger.info(f'All files visible!')
+            g_logger.info(f'All files visible!')
         except TimeoutException:
-            self.logger.info(f'Loading of all files took too much time!')
+            g_logger.info(f'Loading of all files took too much time!')
 
         # Click on first sharing icon in list
         try:
@@ -301,7 +314,7 @@ class TestMfaZonesSelenium(unittest.TestCase):
             sharingIcon = g_driver.find_element(By.XPATH, '//*[@id="app-content-vue"]/div[3]/table/tbody/tr[1]/td[3]/div/button[2]/span')
             sharingIcon.click()
         except Exception as e:
-            self.logger.error(f'Error for node localhost: {e}')
+            g_logger.error(f'Error for node localhost: {e}')
             return
 
         # Click on MFA Zone
@@ -311,7 +324,7 @@ class TestMfaZonesSelenium(unittest.TestCase):
             mfaZone = g_driver.find_element(By.XPATH, '//*[@id="tab-button-mfazone"]')
             mfaZone.click()
         except Exception as e:
-            self.logger.error(f'Error for node localhost: {e}')
+            g_logger.error(f'Error for node localhost: {e}')
             return
 
         # Find by text
@@ -319,10 +332,10 @@ class TestMfaZonesSelenium(unittest.TestCase):
             wait.until(EC.presence_of_element_located((By.ID, 'need-mfa')))
             g_driver.implicitly_wait(g_driver_timeout)
         except Exception as e:
-            self.logger.error(f'Error for node localhost: {e}')
+            g_logger.error(f'Error for node localhost: {e}')
             return
 
-        self.logger.info(f'Subtest done for localhost')
+        g_logger.info(f'Subtest done for localhost')
 
     def test_mfazones_mfauser(self):
         delay = 30 # seconds
@@ -339,12 +352,12 @@ class TestMfaZonesSelenium(unittest.TestCase):
 
         # Make sure test folder exists
         # nodeuser = g_drv.get_seleniummfauser(fullnode)
-        self.logger.info(f'Username: {nodeuser}')
+        g_logger.info(f'Username: {nodeuser}')
         # nodeapppwd = g_drv.get_seleniummfauserapppassword(fullnode)
 
         # Create folder for testing using webdav
         url = get_webdav_url(username=nodeuser)
-        self.logger.info(f'Url: {url}')
+        g_logger.info(f'Url: {url}')
         options = {
         'webdav_hostname': url,
         'webdav_login' : nodeuser,
@@ -354,7 +367,7 @@ class TestMfaZonesSelenium(unittest.TestCase):
         client = Client(options)
         client.verify = False
         dir = 'MfaTestFolder'
-        self.logger.info(f'Make and check directory: {dir}')
+        g_logger.info(f'Make and check directory: {dir}')
         client.mkdir(dir)
         self.assertEqual(client.list().count(dir + '/'), 1)
 
@@ -362,9 +375,9 @@ class TestMfaZonesSelenium(unittest.TestCase):
         nodelogin('localhost', user=user)
         try:
             myElem = wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'app-menu')))
-            self.logger.info(f'App menu is ready!')
+            g_logger.info(f'App menu is ready!')
         except TimeoutException:
-            self.logger.info(f'Loading of app menu took too much time, saving screenshot')
+            g_logger.info(f'Loading of app menu took too much time, saving screenshot')
             screenshot = pyautogui.screenshot()
             screenshot.save("screenshots/" + 'localhost' + g_filename + ".png")
 
@@ -373,14 +386,14 @@ class TestMfaZonesSelenium(unittest.TestCase):
             files = g_driver.find_element(By.XPATH, '//a[@href="' + '/apps/files/' +'"]')
             files.click()
         except:
-            self.logger.error(f'Files app icon not found, current url is {g_driver.current_url}')
+            g_logger.error(f'Files app icon not found, current url is {g_driver.current_url}')
             self.assertTrue(False)
 
         try:
             wait.until(EC.presence_of_element_located((By.LINK_TEXT, 'All files')))
-            self.logger.info(f'All files visible!')
+            g_logger.info(f'All files visible!')
         except TimeoutException:
-            self.logger.info(f'Loading of all files took too much time, current url is {g_driver.current_url}')
+            g_logger.info(f'Loading of all files took too much time, current url is {g_driver.current_url}')
 
         # Right click on MFA test folder
         actions = ActionChains(g_driver)
@@ -392,7 +405,7 @@ class TestMfaZonesSelenium(unittest.TestCase):
             wait.until(EC.presence_of_element_located((By.XPATH, "//*[contains(text(), 'Open details')]"))).click()
             # g_driver.find_element((By.XPATH, "//*[contains(text(), 'MfaTestFolder')]")).context_click()
         except Exception as e:
-            self.logger.error(f'Error for node localhost: {e}')
+            g_logger.error(f'Error for node localhost: {e}')
             return
 
         # Click on MFA Zone
@@ -402,7 +415,7 @@ class TestMfaZonesSelenium(unittest.TestCase):
             mfaZone = g_driver.find_element(By.XPATH, '//*[@id="tab-button-mfazone"]')
             mfaZone.click()
         except Exception as e:
-            self.logger.error(f'Error for node localhost: {e}')
+            g_logger.error(f'Error for node localhost: {e}')
             return
 
         # Check if folder already has MFA so we can deactivate it before the first test
@@ -489,7 +502,7 @@ class TestMfaZonesSelenium(unittest.TestCase):
             self.assertTrue(False)
             return
 
-        self.logger.info(f'Subtest done for localhost')
+        g_logger.info(f'Subtest done for localhost')
 
 if __name__ == '__main__':
     unittest.main(testRunner=xmlrunner.XMLTestRunner(output='test-reports'))
