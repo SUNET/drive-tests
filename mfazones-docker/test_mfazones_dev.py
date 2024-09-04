@@ -16,6 +16,7 @@ from requests.auth import HTTPBasicAuth
 import json
 import pyotp
 import pyautogui
+import pyscreeze
 import time
 
 from selenium import webdriver
@@ -485,7 +486,7 @@ class TestMfaZonesSelenium(unittest.TestCase):
             time.sleep(3)
 
             screenshot = pyautogui.screenshot()
-            screenshot.save("screenshots/" + '__debug__01_active' + g_filename + ".png")
+            screenshot.save("screenshots/" + '__debug__01_nomfa' + g_filename + ".png")
 
         except Exception as e:
             g_logger.error(f'Error before activating MFA zone on node localhost: {e}')
@@ -504,7 +505,7 @@ class TestMfaZonesSelenium(unittest.TestCase):
             time.sleep(3)
 
             screenshot = pyautogui.screenshot()
-            screenshot.save("screenshots/" + '__debug__02_mfainactive' + g_filename + ".png")
+            screenshot.save("screenshots/" + '__debug__02_mfa' + g_filename + ".png")
 
             content=client.list(dir)
             g_logger.info(f'List after activating MFA Zone: {content}')
