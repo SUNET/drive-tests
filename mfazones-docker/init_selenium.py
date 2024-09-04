@@ -83,7 +83,7 @@ def delete_cookies(driver):
     driver.delete_all_cookies()    
 
 def prepareOcsMFaShares():
-    global g_logger
+    global g_logger, envVariables
     logger = g_logger
     logger.info(f'Prepare OCS Shares for localhost')
     mainfolder = 'OcsMfaTestfolder'
