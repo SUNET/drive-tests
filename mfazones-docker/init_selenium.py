@@ -215,6 +215,7 @@ for user in mfaUsers:
             screenshot = pyautogui.screenshot()
             screenshot.save("screenshots/" + "init_selenium" + g_filename + ".png")
             g_logger.error(f'{e}')
+            sys.exit()
 
     # Wait for TOTP screen
     try:
@@ -232,7 +233,10 @@ for user in mfaUsers:
         wait.until(EC.element_to_be_clickable((By.XPATH, '//*//input[@placeholder="Authentication code"]'))).send_keys(otp + Keys.ENTER)
 
     except Exception as e:
+        screenshot = pyautogui.screenshot()
+        screenshot.save("screenshots/" + "init_selenium" + g_filename + ".png")
         g_logger.error(f'{e}')
+        sys.exit()
 
     # Open security settings to generate application password
     try:
@@ -253,7 +257,10 @@ for user in mfaUsers:
             yaml.dump(envVariables, stream, default_flow_style=False)
 
     except Exception as e:
+        screenshot = pyautogui.screenshot()
+        screenshot.save("screenshots/" + "init_selenium" + g_filename + ".png")
         g_logger.error(f'Error creating app password for {user}: {e}')
+        sys.exit()
 
     # We prepare the OCS shares from the admin account
     if user == 'admin':
@@ -272,7 +279,10 @@ for user in mfaUsers:
             wait.until(EC.presence_of_element_located((By.XPATH, "//*[contains(text(), 'Open details')]"))).click()
             # driver.find_element((By.XPATH, "//*[contains(text(), 'MfaTestFolder')]")).context_click()
         except Exception as e:
+            screenshot = pyautogui.screenshot()
+            screenshot.save("screenshots/" + "init_selenium" + g_filename + ".png")
             g_logger.error(f'Error for node localhost: {e}')
+            sys.exit()
 
         # Click on MFA Zone
         try:
@@ -289,7 +299,10 @@ for user in mfaUsers:
             time.sleep(3)
 
         except Exception as e:
+            screenshot = pyautogui.screenshot()
+            screenshot.save("screenshots/" + "init_selenium" + g_filename + ".png")
             g_logger.error(f'Error for node localhost: {e}')
+            sys.exit()
 
     try:
         wait.until(EC.element_to_be_clickable((By.ID, 'user-menu'))).click()
