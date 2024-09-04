@@ -55,6 +55,8 @@ g_drv={}
 g_loggedInNodes={}
 g_failedNodes = []
 
+g_mfawait = os.environ.get('MFA_WAIT')  
+
 use_driver_service = False
 if os.environ.get('SELENIUM_DRIVER_SERVICE') == 'True':
     use_driver_service = True
@@ -140,6 +142,10 @@ class TestMfaZonesSelenium(unittest.TestCase):
 
     with open(envFile, "r") as stream:
         g_envConfig=yaml.safe_load(stream)
+
+    if g_mfawait is None:
+        g_mfawait = 3
+    g_logger.info(f'MFA Wait is {g_mfawait}s')
 
     mainFolder = 'MfaZones'
     testfolders = ['SeleniumCollaboraTest', 'selenium-system', 'selenium-personal']
@@ -473,18 +479,15 @@ class TestMfaZonesSelenium(unittest.TestCase):
                 haveMfa = g_driver.find_element(by=By.ID, value='checkbox-radio-switch-mfa')
                 actions.move_to_element(haveMfa)
                 actions.move_by_offset(50, 10)
-                time.sleep(1)
                 g_logger.info(f'Klick to deactivate MFA')
                 actions.click().perform()
-                time.sleep(3)
+                time.sleep(g_mfawait)
             except Exception as e:
                 g_logger.error(f'Error deactivating previously activated MFA zone: {e}')
 
         # List files before activating MFA Zone
         try:
             g_logger.info(f'List folder before MFA Zone: {client.list(dir)}')
-            time.sleep(3)
-
             screenshot = pyautogui.screenshot()
             screenshot.save("screenshots/" + '__debug__01_nomfa' + g_filename + ".png")
 
@@ -502,7 +505,7 @@ class TestMfaZonesSelenium(unittest.TestCase):
             time.sleep(1)
             g_logger.info(f'Klick to activate MFA')
             actions.click().perform()
-            time.sleep(3)
+            time.sleep(g_mfawait)
 
             screenshot = pyautogui.screenshot()
             screenshot.save("screenshots/" + '__debug__02_mfa' + g_filename + ".png")
@@ -530,7 +533,11 @@ class TestMfaZonesSelenium(unittest.TestCase):
         try:
             g_logger.info(f'Deactivate MFA and wait for 3 seconds')
             actions.click().perform()
-            time.sleep(3)
+            time.sleep(g_mfawait)
+
+            screenshot = pyautogui.screenshot()
+            screenshot.save("screenshots/" + '__debug__03_inactiveagain' + g_filename + ".png")
+
             g_logger.info(f'List after deactivating MFA Zone again: {client.list(dir)}')
         except Exception as e:
             g_logger.error(f'Error after deactivating MFA zone: {e}')
