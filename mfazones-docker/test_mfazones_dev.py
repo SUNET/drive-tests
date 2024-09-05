@@ -127,7 +127,6 @@ def nodelogin(nextcloudnode='localhost:8443',user='selenium'):
                 g_logger.info(f'No need to select TOTP provider')
 
             totp = pyotp.TOTP(nodetotpsecret)
-            time.sleep(3)
             g_wait.until(EC.presence_of_element_located((By.XPATH, '//*[@id="body-login"]/div[1]/div/main/div/form/input'))).send_keys(totp.now() + Keys.ENTER)
     return
 
@@ -416,6 +415,7 @@ class TestMfaZonesSelenium(unittest.TestCase):
             g_logger.info(f'All files visible!')
         except TimeoutException:
             g_logger.info(f'Loading of all files took too much time, current url is {g_driver.current_url}')
+        time.sleep(5)
 
         # Right click on MFA test folder
         actions = ActionChains(g_driver)
