@@ -109,18 +109,22 @@ def nodelogin(nextcloudnode='localhost:8443',user='selenium'):
         totp = pyotp.TOTP(nodetotpsecret)
         # Try totp to save some time
         loginCount = 0
+        currentOtp = 0
         while loginCount < 3:
             g_logger.info(f'TOTP log in try {loginCount}')
             try:
                 time.sleep(3)
-                g_wait.until(EC.presence_of_element_located((By.XPATH, '//*[@id="body-login"]/div[1]/div/main/div/form/input'))).send_keys(totp.now() + Keys.ENTER)
+                if currentOtp == totp.now():
+                    g_logger.info(f'Wait for new OTP to be issued')
+                    time.sleep(3)
+                currentOtp = totp.now()
+                g_wait.until(EC.presence_of_element_located((By.XPATH, '//*[@id="body-login"]/div[1]/div/main/div/form/input'))).send_keys(currentOtp + Keys.ENTER)
                 myElem = g_wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'app-menu')))
                 g_logger.info(f'App menu is ready, we are logged in!')
                 break
             except:
-                g_logger.info(f'Retry TOTP login after 45s')
+                g_logger.info(f'Retry TOTP login')
                 loginCount += 1
-                time.sleep(30)
 
         # Wait for TOTP screen add later again
         # if checkForTotp:
