@@ -108,7 +108,7 @@ def nodelogin(nextcloudnode='localhost:8443',user='selenium'):
     if user == 'mfauser':
         totp = pyotp.TOTP(nodetotpsecret)
         # Try totp to save some time
-        loginCount = 1
+        loginCount = 0
         while loginCount < 3:
             g_logger.info(f'TOTP log in try {loginCount}')
             try:
@@ -118,8 +118,9 @@ def nodelogin(nextcloudnode='localhost:8443',user='selenium'):
                 g_logger.info(f'App menu is ready, we are logged in!')
                 break
             except:
-                g_logger.info(f'Retry TOTP login')
+                g_logger.info(f'Retry TOTP login after 45s')
                 loginCount += 1
+                time.sleep(30)
 
         # Wait for TOTP screen add later again
         # if checkForTotp:
