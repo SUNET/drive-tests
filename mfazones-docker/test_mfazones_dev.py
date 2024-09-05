@@ -106,25 +106,31 @@ def nodelogin(nextcloudnode='localhost:8443',user='selenium'):
     g_wait.until(EC.presence_of_element_located((By.ID, 'password'))).send_keys(nodepassword + Keys.ENTER)
 
     if user == 'mfauser':
+        totp = pyotp.TOTP(nodetotpsecret)
         # Try totp to save some time
-        try:
-            totp = pyotp.TOTP(nodetotpsecret)
-            time.sleep(3)
-            g_wait.until(EC.presence_of_element_located((By.XPATH, '//*[@id="body-login"]/div[1]/div/main/div/form/input'))).send_keys(totp.now() + Keys.ENTER)
-            checkForTotp=False
-        except:
-            checkForTotp=True
-
-        # Wait for TOTP screen
-        if checkForTotp:
+        loginCount = 1
+        while loginCount < 3:
+            g_logger.info(f'TOTP log in try {loginCount}')
             try:
-                g_logger.info(f'Check if TOTP selection dialogue is visible')
-                g_wait.until(EC.presence_of_element_located((By.XPATH, '//a[@href="'+ '/index.php/login/challenge/totp' +'"]')))
-                totpselect = g_driver.find_element(By.XPATH, '//a[@href="'+ '/index.php/login/challenge/totp' +'"]')
-                g_logger.warning(f'Found TOTP selection dialogue')
-                totpselect.click()
+                time.sleep(3)
+                g_wait.until(EC.presence_of_element_located((By.XPATH, '//*[@id="body-login"]/div[1]/div/main/div/form/input'))).send_keys(totp.now() + Keys.ENTER)
+                myElem = g_wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'app-menu')))
+                g_logger.info(f'App menu is ready, we are logged in!')
+                break
             except:
-                g_logger.info(f'No need to select TOTP provider')
+                g_logger.info(f'Retry TOTP login')
+                loginCount += 1
+
+        # Wait for TOTP screen add later again
+        # if checkForTotp:
+        #     try:
+        #         g_logger.info(f'Check if TOTP selection dialogue is visible')
+        #         g_wait.until(EC.presence_of_element_located((By.XPATH, '//a[@href="'+ '/index.php/login/challenge/totp' +'"]')))
+        #         totpselect = g_driver.find_element(By.XPATH, '//a[@href="'+ '/index.php/login/challenge/totp' +'"]')
+        #         g_logger.warning(f'Found TOTP selection dialogue')
+        #         totpselect.click()
+        #     except:
+        #         g_logger.info(f'No need to select TOTP provider')
 
             totp = pyotp.TOTP(nodetotpsecret)
             g_wait.until(EC.presence_of_element_located((By.XPATH, '//*[@id="body-login"]/div[1]/div/main/div/form/input'))).send_keys(totp.now() + Keys.ENTER)
@@ -489,7 +495,7 @@ class TestMfaZonesSelenium(unittest.TestCase):
         try:
             g_logger.info(f'List folder before MFA Zone: {client.list(dir)}')
             screenshot = pyautogui.screenshot()
-            screenshot.save("screenshots/" + '__debug__01_nomfa' + g_filename + ".png")
+            screenshot.save("screenshots/debug_" + g_filename + '_01_nomfa' + ".png")
 
         except Exception as e:
             g_logger.error(f'Error before activating MFA zone on node localhost: {e}')
@@ -508,7 +514,7 @@ class TestMfaZonesSelenium(unittest.TestCase):
             time.sleep(g_mfawait)
 
             screenshot = pyautogui.screenshot()
-            screenshot.save("screenshots/" + '__debug__02_mfa' + g_filename + ".png")
+            screenshot.save("screenshots/debug_" + g_filename + '_02_mfa' + ".png")
 
             content=client.list(dir)
             g_logger.info(f'List after activating MFA Zone: {content}')
@@ -536,7 +542,7 @@ class TestMfaZonesSelenium(unittest.TestCase):
             time.sleep(g_mfawait)
 
             screenshot = pyautogui.screenshot()
-            screenshot.save("screenshots/" + '__debug__03_inactiveagain' + g_filename + ".png")
+            screenshot.save("screenshots/debug_" + g_filename + '_03_mfa_again' + ".png")
 
             g_logger.info(f'List after deactivating MFA Zone again: {client.list(dir)}')
         except Exception as e:
