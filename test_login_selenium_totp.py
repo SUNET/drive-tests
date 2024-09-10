@@ -129,15 +129,7 @@ class TestLoginSeleniumTotp(unittest.TestCase):
         # The class name of the share icon changed in Nextcloud 28
         version = self.expectedResults[drv.target]['status']['version']
         self.logger.info(f'Expected Nextcloud version: {version}')
-        if version.startswith('27'):
-            sharedClass = 'icon-shared'
-            simpleLogoutUrl = False
-            self.logger.info(f'We are on Nextcloud 27 and are not using the simple logout url')
-        else:
-            # This will select the first available sharing button
-            sharedClass = 'files-list__row-action-sharing-status'
-            simpleLogoutUrl = True
-            self.logger.info(f'We are on Nextcloud 28 and are therefore using the simple logout url')
+        sharedClass = 'files-list__row-action-sharing-status'
 
         for fullnode in drv.fullnodes:
             with self.subTest(mynode=fullnode):
