@@ -188,23 +188,12 @@ class TestLoginSelenium(unittest.TestCase):
                             self.assertTrue(False)
                         driver.maximize_window()
                         # driver2 = webdriver.Firefox()
-                        self.deleteCookies(driver)
-                        driver.get(loginurl)
+
+                        sel = sunetnextcloud.SeleniumHelper(driver, fullnode)
+                        sel.delete_cookies()
+                        sel.nodelogin(sel.UserType.SELENIUM)
 
                         wait = WebDriverWait(driver, delay)
-                        wait.until(EC.element_to_be_clickable((By.ID, 'user'))).send_keys(nodeuser)
-                        wait.until(EC.element_to_be_clickable((By.ID, 'password'))).send_keys(nodepwd + Keys.ENTER)
-
-                        try:
-                            wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'app-menu')))
-                            self.logger.info(f'App menu is ready!')
-                        except TimeoutException:
-                            self.logger.info(f'Loading of app menu took too much time!')
-
-                        # Check URLs after login
-                        dashboardUrl = drv.get_dashboard_url(fullnode)
-                        currentUrl = driver.current_url
-                        # self.assertEqual(dashboardUrl, currentUrl)                
 
                         files = driver.find_element(By.XPATH, '//a[@href="' + drv.indexsuffix + '/apps/files/' +'"]')
                         files.click()
