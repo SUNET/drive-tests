@@ -90,48 +90,52 @@ class TestLoginMultiSelenium(unittest.TestCase):
                 except:
                     self.logger.error(f'Error initializing Chrome driver')
                     self.assertTrue(False)
-
-                self.deleteCookies(driver)
-                driver.maximize_window()
-                # driver2 = webdriver.Firefox()
-                driver.get(loginurl)
-
                 wait = WebDriverWait(driver, delay)
-                wait.until(EC.presence_of_element_located((By.ID, 'user'))).send_keys(nodeuser)
-                wait.until(EC.presence_of_element_located((By.ID, 'password'))).send_keys(nodepwd + Keys.ENTER)
+                driver.maximize_window()
 
-                # Wait for TOTP screen
-                loggedIn = False
-                logonTries = 0
-                while loggedIn == False:
-                    logonTries += 1
-                    try:
-                        self.logger.info(f'Check if TOTP selection dialogue is visible')
-                        totpselect = driver.find_element(By.XPATH, '//a[@href="'+ '/index.php/login/challenge/totp' +'"]')
-                        self.logger.warning(f'Found TOTP selection dialogue')
-                        totpselect.click()
-                    except:
-                        self.logger.info(f'No need to select TOTP provider')
+                sel = sunetnextcloud.SeleniumHelper(driver, fullnode)
+                sel.delete_cookies()
+                sel.nodelogin(sel.UserType.SELENIUM_MFA)
 
-                    totp = pyotp.TOTP(nodetotpsecret)
-                    wait.until(EC.presence_of_element_located((By.XPATH, '//*[@id="body-login"]/div[1]/div/main/div/form/input'))).send_keys(totp.now() + Keys.ENTER)
+                # self.deleteCookies(driver)
+                # # driver2 = webdriver.Firefox()
+                # driver.get(loginurl)
 
-                    try:
-                        wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'app-menu')))
-                        self.logger.info(f'App menu is ready!')
-                        loggedIn = True
-                    except TimeoutException:
-                        self.logger.warning(f'Loading of app menu took too much time!')
+                # wait.until(EC.presence_of_element_located((By.ID, 'user'))).send_keys(nodeuser)
+                # wait.until(EC.presence_of_element_located((By.ID, 'password'))).send_keys(nodepwd + Keys.ENTER)
+
+                # # Wait for TOTP screen
+                # loggedIn = False
+                # logonTries = 0
+                # while loggedIn == False:
+                #     logonTries += 1
+                #     try:
+                #         self.logger.info(f'Check if TOTP selection dialogue is visible')
+                #         totpselect = driver.find_element(By.XPATH, '//a[@href="'+ '/index.php/login/challenge/totp' +'"]')
+                #         self.logger.warning(f'Found TOTP selection dialogue')
+                #         totpselect.click()
+                #     except:
+                #         self.logger.info(f'No need to select TOTP provider')
+
+                #     totp = pyotp.TOTP(nodetotpsecret)
+                #     wait.until(EC.presence_of_element_located((By.XPATH, '//*[@id="body-login"]/div[1]/div/main/div/form/input'))).send_keys(totp.now() + Keys.ENTER)
+
+                #     try:
+                #         wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'app-menu')))
+                #         self.logger.info(f'App menu is ready!')
+                #         loggedIn = True
+                #     except TimeoutException:
+                #         self.logger.warning(f'Loading of app menu took too much time!')
                     
-                    if logonTries >= 3:
-                        self.logger.error(f'Unable to log on after {logonTries} tries')
-                        self.assertTrue(False)
-                        return
+                #     if logonTries >= 3:
+                #         self.logger.error(f'Unable to log on after {logonTries} tries')
+                #         self.assertTrue(False)
+                #         return
 
-                # Check URLs after login
-                dashboardUrl = g_drv.get_dashboard_url(fullnode)
-                currentUrl = driver.current_url
-                # self.assertEqual(dashboardUrl, currentUrl)                
+                # # Check URLs after login
+                # dashboardUrl = g_drv.get_dashboard_url(fullnode)
+                # currentUrl = driver.current_url
+                # # self.assertEqual(dashboardUrl, currentUrl)                
 
                 try:
                     self.logger.info(f'Waiting for files app button')
@@ -156,22 +160,10 @@ class TestLoginMultiSelenium(unittest.TestCase):
                     screenshot.save("screenshots/" + fullnode + "test_node_multi_login" + g_filename + ".png")
                     self.assertTrue(False)
 
-                if g_version.startswith('27'):
-                    try:
-                        wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'icon-shared')))
-                        sharefolder = driver.find_element(by=By.CLASS_NAME, value='icon-shared')
-                        sharefolder.click()
-                        self.logger.info(f'Clicked on share folder')
-                    except:
-                        self.logger.info(f'icon-shared not found')
-                else: # 28
-                    try:
-                        wait.until(EC.presence_of_element_located((By.XPATH, '//*[@title="Show sharing options"]')))
-                        sharefolder = driver.find_element(by=By.XPATH, value='//*[@title="Show sharing options"]')
-                        sharefolder.click()
-                        self.logger.info(f'Clicked on share folder')
-                    except:
-                        self.logger.info(f'icon-shared not found')
+                wait.until(EC.presence_of_element_located((By.XPATH, '//*[@title="Show sharing options"]')))
+                sharefolder = driver.find_element(by=By.XPATH, value='//*[@title="Show sharing options"]')
+                sharefolder.click()
+                self.logger.info(f'Clicked on share folder')
 
                 try:
                     wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'sharing-entry__title')))
@@ -227,50 +219,15 @@ class TestLoginMultiSelenium(unittest.TestCase):
                 # Right now we have to call the login page twice to prevent a redirect to gss login page
                 driver.get(loginurl)
                 time.sleep(2)
-                driver.get(loginurl)
 
-                wait = WebDriverWait(driver, delay)
-                wait.until(EC.presence_of_element_located((By.ID, 'user'))).send_keys(nodeuser)
-                wait.until(EC.presence_of_element_located((By.ID, 'password'))).send_keys(nodepwd + Keys.ENTER)
-
-                try:
-                    wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'app-menu')))
-                    self.logger.info(f'App menu is ready!')
-                except TimeoutException:
-                    self.logger.warning(f'Loading of app menu took too much time!')
-
-                # Check URLs after login
-                dashboardUrl = g_drv.get_dashboard_url(fullnode)
-                currentUrl = driver.current_url
-                if currentUrl.endswith('/#/'):
-                    dashboardUrl = dashboardUrl + '#/'
-                self.assertEqual(dashboardUrl, currentUrl)
+                sel.nodelogin(sel.UserType.SELENIUM)
 
                 files = driver.find_element(By.XPATH, '//a[@href="'+ '/index.php/apps/files/' +'"]')
                 files.click()
 
-                try:
-                    wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'app-menu-entry')))
-                    self.logger.info(f'All files visible!')
-                except TimeoutException:
-                    self.logger.warning(f'Loading of all files took too much time!')
-
-                if g_version.startswith('27'):
-                    try:
-                        wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'icon-shared')))
-                        sharefolder = driver.find_element(by=By.CLASS_NAME, value='icon-shared')
-                        sharefolder.click()
-                        self.logger.info(f'Clicked on share folder')
-                    except:
-                        self.logger.info(f'icon-shared not found')
-                else: # 28
-                    try:
-                        wait.until(EC.presence_of_element_located((By.XPATH, '//*[@title="Show sharing options"]')))
-                        sharefolder = driver.find_element(by=By.XPATH, value='//*[@title="Show sharing options"]')
-                        sharefolder.click()
-                        self.logger.info(f'Clicked on share folder')
-                    except:
-                        self.logger.info(f'icon-shared not found')
+                wait.until(EC.presence_of_element_located((By.XPATH, '//*[@title="Show sharing options"]')))
+                sharefolder = driver.find_element(by=By.XPATH, value='//*[@title="Show sharing options"]')
+                sharefolder.click()
 
                 try:
                     wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'sharing-entry__title')))
