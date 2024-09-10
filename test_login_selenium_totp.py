@@ -171,54 +171,15 @@ class TestLoginSeleniumTotp(unittest.TestCase):
                     self.logger.error(f'Error initializing Chrome driver')
                     self.assertTrue(False)
                 driver.maximize_window()
-                # driver2 = webdriver.Firefox()
-                self.deleteCookies(driver)
-                driver.get(loginurl)
 
+                sel = sunetnextcloud.SeleniumHelper(driver, fullnode)
+                sel.delete_cookies()
+                sel.nodelogin(sel.UserType.SELENIUM_MFA)
                 wait = WebDriverWait(driver, delay)
-                wait.until(EC.element_to_be_clickable((By.ID, 'user'))).send_keys(nodeuser)
-                wait.until(EC.element_to_be_clickable((By.ID, 'password'))).send_keys(nodepwd + Keys.ENTER)
 
-                # Wait for TOTP screen
-                try:
-                    self.logger.info(f'Check if TOTP selection dialogue is visible')
-                    totpselect = driver.find_element(By.XPATH, '//a[@href="'+ '/index.php/login/challenge/totp' +'"]')
-                    self.logger.warning(f'Found TOTP selection dialogue')
-                    totpselect.click()
-                except:
-                    self.logger.info(f'No need to select TOTP provider')
-
-                totp = pyotp.TOTP(nodetotpsecret)
-                wait.until(EC.element_to_be_clickable((By.XPATH, '//*//input[@placeholder="Authentication code"]'))).send_keys(totp.now() + Keys.ENTER)
-
-                try:
-                    wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'app-menu')))
-                    self.logger.info(f'App menu is ready!')
-                except TimeoutException:
-                    self.logger.info(f'Loading of app menu took too much time!')
-
-                # Check URLs after login
-                dashboardUrl = drv.get_dashboard_url(fullnode)
-                currentUrl = driver.current_url
-                # self.assertEqual(dashboardUrl, currentUrl)                
-
-                totpRetry = 0
-                while totpRetry <= 3:
-                    try:
-                        try:
-                            totpRetry += 1
-                            self.logger.info(f'Try {totpRetry} waiting for files app button')
-                            wait.until(EC.presence_of_element_located((By.XPATH, '//a[@href="'+ '/index.php/apps/files/' +'"]')))
-                            files = driver.find_element(By.XPATH, '//a[@href="'+ '/index.php/apps/files/' +'"]')
-                            files.click()
-                            break
-                        except:
-                            self.logger.warning(f'TOTP {totpRetry} failed, trying again')
-                    except:
-                            self.logger.error(f'TOTP failed {totpRetry} times')
-                            screenshot = pyautogui.screenshot()
-                            screenshot.save("screenshots/" + fullnode + "test_node_login" + g_filename + ".png")
-                            self.assertTrue(False)
+                wait.until(EC.presence_of_element_located((By.XPATH, '//a[@href="'+ '/index.php/apps/files/' +'"]')))
+                files = driver.find_element(By.XPATH, '//a[@href="'+ '/index.php/apps/files/' +'"]')
+                files.click()
 
                 try:
                     wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'app-menu-entry')))
