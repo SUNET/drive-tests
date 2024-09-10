@@ -9,6 +9,17 @@ import random
 import string
 import yaml
 import logging
+import time
+import pyotp
+
+from selenium import webdriver
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.common.by import By
+from selenium.webdriver.common.keys import Keys
+from selenium.common.exceptions import TimeoutException
+
+from enum import Enum
 
 # Change to local directory
 # abspath = os.path.abspath(__file__)
@@ -503,4 +514,92 @@ class Helper():
         result_str = ''.join(random.choice(string.ascii_letters) for i in range(length))
         # print random string
         return result_str
-        
+
+class SeleniumHelper():
+    class UserType(Enum):
+        SELENIUM = 1
+        SELENIUM_MFA = 2
+        OCS = 3
+        UNKNOWN = -1
+
+    def __init__(self, driver, nextcloudnode) -> None:
+        self.driver = driver
+        self.nextcloudnode = nextcloudnode
+        self.drv = TestTarget()
+        delay = 30
+        self.wait = WebDriverWait(self.driver, delay)
+        pass
+
+    def delete_cookies(self):
+        cookies = self.driver.get_cookies()
+        logger.info(f'Deleting all cookies')
+        self.driver.delete_all_cookies()
+        logger.info(f'All cookies deleted')
+        return
+    def nodelogin(self, usertype : UserType):
+        loginurl = self.drv.get_node_login_url(self.nextcloudnode)
+        if usertype == usertype.SELENIUM:
+            nodeuser = self.drv.get_seleniumuser(self.nextcloudnode)
+            nodepwd = self.drv.get_seleniumuserpassword(self.nextcloudnode)
+            nodeapppwd = self.drv.get_seleniumuserapppassword(self.nextcloudnode)
+            nodetotpsecret = ''
+            isMfaUser = False
+        elif usertype == usertype.SELENIUM_MFA:
+            nodeuser = self.drv.get_seleniummfauser(self.nextcloudnode)
+            nodepwd = self.drv.get_seleniummfauserpassword(self.nextcloudnode)
+            nodeapppwd = self.drv.get_seleniummfauserapppassword(self.nextcloudnode)
+            nodetotpsecret = self.drv.get_seleniummfausertotpsecret(self.nextcloudnode)
+            isMfaUser = True
+        elif usertype == usertype.OCS:
+            nodeuser = self.drv.get_ocsuser(self.nextcloudnode)
+            nodepwd = self.drv.get_ocsuserpassword(self.nextcloudnode)
+            nodeapppwd = self.drv.get_ocsuserapppassword(self.nextcloudnode)
+            nodetotpsecret = ''
+            isMfaUser = True
+        else:
+            logger.error(f'Unknown usertype {usertype}')
+            return False
+
+        loginurl = self.drv.get_node_login_url(self.nextcloudnode)
+        self.driver.get(loginurl)
+        self.wait.until(EC.element_to_be_clickable((By.ID, 'user'))).send_keys(nodeuser)
+        self.wait.until(EC.element_to_be_clickable((By.ID, 'password'))).send_keys(nodepwd + Keys.ENTER)
+        currentUrl = self.driver.current_url
+
+        if isMfaUser:
+            logger.info(f'MFA login {currentUrl}')
+            if 'selectchallenge' in currentUrl:
+                logger.info(f'Select TOTP provider')
+                totpselect = self.driver.find_element(By.XPATH, '//a[@href="'+ '/index.php/login/challenge/totp' +'"]')
+                totpselect.click()
+            elif 'challenge/totp' in currentUrl:
+                logger.info(f'No need to select TOTP provider')
+
+            currentOtp = 0
+            totpRetry = 0
+            while totpRetry <= 3:
+                totpRetry += 1
+                totp = pyotp.TOTP(nodetotpsecret)
+                currentOtp = totp.now()
+                self.wait.until(EC.element_to_be_clickable((By.XPATH, '//*//input[@placeholder="Authentication code"]'))).send_keys(currentOtp + Keys.ENTER)
+
+                if 'challenge/totp' in self.driver.current_url:
+                    logger.info(f'Try again')
+                    while currentOtp == totp.now():
+                        logger.info(f'Wait for new OTP to be issued')
+                        time.sleep(3)
+                else:
+                    logger.info(f'Logging in to {self.nextcloudnode}')
+                    break
+        else:
+            logger.info(f'No MFA login')
+
+        if 'apps/dashboard/' not in self.driver.current_url:
+            logger.warning(f'Unknown post login URL: {self.driver.current_url}')
+
+        try:
+            self.wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'app-menu')))
+            logger.info(f'App menu is ready!')
+        except TimeoutException:
+            logger.info(f'Loading of app menu took too much time!')
+        return True
