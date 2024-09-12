@@ -74,7 +74,7 @@ class AppVersions(threading.Thread):
             # print(json.dumps(j, indent=4, sort_keys=True))
             apps = j["ocs"]["data"]["apps"]
         except:
-            logger.error(f'No or invalid JSON reply received')
+            logger.error(f'No or invalid JSON reply received from {fullnode}')
             logger.error(r.text)
             g_testPassed[fullnode] = False
             g_testThreadsRunning -= 1
@@ -106,7 +106,7 @@ class AppVersions(threading.Thread):
                 logger.info(j["ocs"]["data"]["version"])
                 
             except:
-                logger.info(f'No JSON reply received')
+                logger.info(f'No JSON reply received from {fullnode}')
                 logger.info(r.text)
                 g_testPassed[fullnode] = False
                 g_testThreadsRunning -= 1
@@ -142,7 +142,7 @@ class AppVersions(threading.Thread):
                 logger.info(j["ocs"]["data"]["version"])
                 # print(json.dumps(j, indent=4, sort_keys=True))
             except:
-                logger.info(f'No JSON reply received')
+                logger.info(f'No JSON reply received from {fullnode}')
                 logger.info(r.text)
                 g_testPassed[fullnode] = False
                 g_testThreadsRunning -= 1
@@ -204,7 +204,7 @@ class NodeUsers(threading.Thread):
             users = j["ocs"]["data"]["users"]
             logger.info(f'Received {len(users)} from {self.name}')
         except:
-            logger.info("No JSON reply received")
+            logger.info(f"No JSON reply received from {fullnode}")
             logger.info(r.text)
             g_testPassed[fullnode] = False
             g_testThreadsRunning -= 1
@@ -244,7 +244,7 @@ class CapabilitiesNoUser(threading.Thread):
         try:
             j = json.loads(r.text)
         except:
-            logger.info("No JSON reply received")
+            logger.info(f"No JSON reply received from {fullnode}")
             logger.info(r.text)
             g_testPassed[fullnode] = False
             g_testThreadsRunning -= 1
@@ -299,7 +299,7 @@ class Capabilities(threading.Thread):
             logger.info(f'Node capabilities: {json.dumps(j, indent=4, sort_keys=True)}')
 
         except:
-            logger.info("No JSON reply received")
+            logger.info(f"No JSON reply received from {fullnode}")
             logger.info(r.text)
             g_testPassed[fullnode] = False
             g_testThreadsRunning -= 1
@@ -360,7 +360,7 @@ class UserLifeCycle(threading.Thread):
                 j = json.loads(r.text)
                 logger.info(json.dumps(j, indent=4, sort_keys=True))
         except:
-            logger.info("No JSON reply received")
+            logger.info(f"No JSON reply received from {fullnode}")
             logger.info(r.text)
             g_testPassed[fullnode] = False
             g_testThreadsRunning -= 1
@@ -407,7 +407,7 @@ class UserLifeCycle(threading.Thread):
             self.TestOcsCalls.assertEqual(j["ocs"]["meta"]["statuscode"], expectedResults[drv.target]['ocs_capabilities']['ocs_meta_statuscode'])
             self.TestOcsCalls.assertEqual(j["ocs"]["meta"]["message"], expectedResults[drv.target]['ocs_capabilities']['ocs_meta_message'])
         except:
-            logger.info("No or invalid JSON reply received")
+            logger.info(f"No or invalid JSON reply received from {fullnode}")
             logger.info(r.text)
             g_testPassed[fullnode] = False
             g_testThreadsRunning -= 1
@@ -477,7 +477,7 @@ class TestOcsCalls(unittest.TestCase):
             # logger.info(json.dumps(j, indent=4, sort_keys=True))
             users = j["ocs"]["data"]["users"]
         except:
-            logger.info("No JSON reply received")
+            logger.info(f"No JSON reply received from {fullnode}")
             logger.info(r.text)
 
     def test_nodeusers(self):

@@ -182,7 +182,7 @@ class NumberOfAppsOnNode(threading.Thread):
             nodeApps = j["ocs"]["data"]["apps"]
             logger.info(f'Number of apps on {fullnode}: {len(nodeApps)}')
         except:
-            logger.warning(f'No JSON reply received')
+            logger.warning(f'No JSON reply received on {fullnode}')
             logger.warning(r.text)
             g_testThreadsRunning -= 1
             return
