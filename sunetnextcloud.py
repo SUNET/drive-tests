@@ -451,6 +451,19 @@ class TestTarget(object):
         else:
             raise NotImplementedError
 
+    def get_samluseralias(self, userid):
+        if self.platform == 'win32':
+            usercmd = 'powershell -command "& { . ./NodeCredentials.ps1; Get-SamlUserName ' + userid + ' ' + self.target + ' }"'
+            process = os.popen(usercmd)
+            user = process.read()
+            process.close()
+            return user
+        elif self.platform == 'linux':
+            env = "NEXTCLOUD_SAML_USER_" + userid.upper() + "_ALIAS_" + self.target.upper()
+            return get_value(env)
+        else:
+            raise NotImplementedError
+
     def get_samluserpassword(self, userid):
         if self.platform == 'win32':
             pwdcmd = 'powershell -command "& { . ./NodeCredentials.ps1; Get-SamlUserPassword ' + userid + ' ' + self.target + ' }"'
