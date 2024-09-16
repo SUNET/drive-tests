@@ -46,7 +46,8 @@ class FrontendStatusInfo(threading.Thread):
         try:
             r =requests.get(self.url, timeout=g_requestTimeout)
         except Exception as error:
-            logger.error(f'Error getting data from {self.url}: {error}')
+            logger.error(f'Error getting frontend status data from {self.url}: {error}')
+            g_failedNodes.append(self.url)
             testThreadsRunning -= 1
             return
         
@@ -63,6 +64,7 @@ class FrontendStatusInfo(threading.Thread):
         except Exception as error:
             g_failedNodes.append(self.url)
             logger.info(f'No valid JSON reply received for {self.url}: {error}')
+            g_failedNodes.append(self.url)
             testThreadsRunning -= 1
             logger.info(r.text)
             self.TestStatus.assertTrue(False)
@@ -94,7 +96,8 @@ class NodeStatusInfo(threading.Thread):
                 logger.info(f'Getting status from: {url}')
                 r =requests.get(url, timeout=g_requestTimeout, verify=False)
             except Exception as error:
-                logger.error(f'Error getting data from {self.node}: {error}')
+                logger.error(f'Error getting node status data from {self.node}: {error}')
+                g_failedNodes.append(url)
                 testThreadsRunning -= 1
                 return
             
@@ -140,7 +143,8 @@ class StatusInfo(threading.Thread):
             logger.info(f'Getting status from: {url}')
             r =requests.get(url, timeout=g_requestTimeout)
         except Exception as error:
-            logger.error(f'Error getting data from {self.node}: {error}')
+            logger.error(f'Error getting status info data from {self.node}: {error}')
+            g_failedNodes.append(self.url)
             testThreadsRunning -= 1
             return
         
@@ -177,6 +181,7 @@ class FrontentStatus(threading.Thread):
         global testThreadsRunning
         global logger
         global expectedResults
+        global g_failedNodes
         testThreadsRunning += 1
         logger.info(f'Status thread {testThreadsRunning} started for node {self.url}')
 
