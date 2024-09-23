@@ -67,7 +67,7 @@ class CleanWebDAV(threading.Thread):
                     try:
                         client.clean(rootElem + subElement)
                     except:
-                        self.logger.error(f'Could not delete sub element {rootElem}\{subElement}')
+                        self.logger.error(f'Could not delete sub element {rootElem}\\{subElement}')
             else:
                 self.logger.info(f'Removing {fullnode} - {drv.target} - {rootElem}')
                 try:
