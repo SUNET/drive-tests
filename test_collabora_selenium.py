@@ -16,6 +16,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
 from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.common.action_chains import ActionChains
+from selenium.webdriver import FirefoxOptions
 
 from webdav3.client import Client
 
@@ -77,9 +78,18 @@ def checkFile(node, foldername, filename):
         'webdav_timeout': g_webdav_timeout
     }
     client = Client(options)
-    g_logger.info(f'Folder contains {len(client.list(foldername))} elements')
-    exists = client.check(fullPath)
-    g_logger.info(f'File {fullPath} exists on {node}: {exists}')
+    # We check a few times if the file has been created
+    tryCount = 0
+    while tryCount < 5:
+        tryCount += 1
+        g_logger.info(f'Folder contains {len(client.list(foldername))} elements')
+        exists = client.check(fullPath)
+        if exists == True:
+            g_logger.info(f'File {fullPath} was found on try {tryCount}')
+            return exists
+        g_logger.info(f'File {fullPath} not found on try {tryCount}')
+        time.sleep(3)
+    g_logger.info(f'File {fullPath} on {node} not found after {tryCount} tries: {exists}')
     return exists
 
 class TestCollaboraSelenium(unittest.TestCase):
@@ -101,16 +111,23 @@ class TestCollaboraSelenium(unittest.TestCase):
     homeIcon = 'home-icon'
     addIcon = 'plus-icon'
 
+    # try:
+    #     options = Options()
+    #     options.add_argument("--no-sandbox")
+    #     options.add_argument("--disable-dev-shm-usage")
+    #     options.add_argument("--disable-gpu")
+    #     options.add_argument("--disable-extensions")
+    #     driver = webdriver.Chrome(options=options)
+    #     g_driver=driver
+    # except Exception as error:
+    #     logger.error(f'Error initializing Chrome driver: {error}')
+
     try:
-        options = Options()
-        options.add_argument("--no-sandbox")
-        options.add_argument("--disable-dev-shm-usage")
-        options.add_argument("--disable-gpu")
-        options.add_argument("--disable-extensions")
-        driver = webdriver.Chrome(options=options)
+        options = FirefoxOptions()
+        driver = webdriver.Firefox(options=options)
         g_driver=driver
     except Exception as error:
-        logger.error(f'Error initializing Chrome driver: {error}')
+        logger.error(f'Error initializing Firefox driver: {error}')
 
     def test_logger(self):
         self.logger.info(f'TestID: {self._testMethodName}')
@@ -399,12 +416,12 @@ class TestCollaboraSelenium(unittest.TestCase):
                                 isEmpty = True
 
                             # Sort file list so that new files are created at the beginning of the list
-                            if isEmpty == False:
-                                try:
-                                    wait.until(EC.element_to_be_clickable((By.CLASS_NAME, 'files-list__column-sort-button'))).click()
-                                    self.logger.info(f'Changed sort order to descending')
-                                except Exception as error:
-                                    self.logger.warning(f'Unable to change sort order to descending; Exception was {error}')
+                            # if isEmpty == False:
+                            #     try:
+                            #         wait.until(EC.element_to_be_clickable((By.CLASS_NAME, 'files-list__column-sort-button'))).click()
+                            #         self.logger.info(f'Changed sort order to descending')
+                            #     except Exception as error:
+                            #         self.logger.warning(f'Unable to change sort order to descending; Exception was {error}')
 
                             time.sleep(3)
                         
@@ -419,9 +436,9 @@ class TestCollaboraSelenium(unittest.TestCase):
                                 wait.until(EC.presence_of_element_located((By.XPATH, "//*[contains(text(), 'New document')]")))
                                 self.logger.info(f'Renaming the file we just created to {g_filename}.odt')
                                 ActionChains(self.driver).key_down(Keys.CONTROL).send_keys('a').key_up(Keys.CONTROL).perform()
-                                time.sleep(0.5)
+                                time.sleep(.5)
                                 ActionChains(self.driver).send_keys(f'{g_filename}.odt').perform()
-                                time.sleep(0.5)
+                                time.sleep(.5)
                                 ActionChains(self.driver).send_keys(Keys.ENTER).perform()
                             except Exception as error:
                                 self.logger.warning(f'Unable to create new file: {g_filename}, saving screenshot: {error}')
