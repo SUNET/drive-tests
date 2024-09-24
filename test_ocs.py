@@ -374,8 +374,8 @@ class UserLifeCycle(threading.Thread):
         disableuserurl = drv.get_disable_user_url(fullnode, cliuser)
         disableuserurl = disableuserurl.replace("$USERNAME$", nodeuser)
         disableuserurl = disableuserurl.replace("$PASSWORD$", nodepwd)
-        r = session.put(disableuserurl, headers=ocsheaders)
         try:
+            r = session.put(disableuserurl, headers=ocsheaders)
             j = json.loads(r.text)
             logger.info(json.dumps(j, indent=4, sort_keys=True))
 
