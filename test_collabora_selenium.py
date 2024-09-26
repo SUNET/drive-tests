@@ -10,7 +10,7 @@ import pyautogui
 
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
-from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.chrome.options import Options as ChromeOptions
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
@@ -111,23 +111,30 @@ class TestCollaboraSelenium(unittest.TestCase):
     homeIcon = 'home-icon'
     addIcon = 'plus-icon'
 
-    # try:
-    #     options = Options()
-    #     options.add_argument("--no-sandbox")
-    #     options.add_argument("--disable-dev-shm-usage")
-    #     options.add_argument("--disable-gpu")
-    #     options.add_argument("--disable-extensions")
-    #     driver = webdriver.Chrome(options=options)
-    #     g_driver=driver
-    # except Exception as error:
-    #     logger.error(f'Error initializing Chrome driver: {error}')
-
-    try:
-        options = FirefoxOptions()
-        driver = webdriver.Firefox(options=options)
-        g_driver=driver
-    except Exception as error:
-        logger.error(f'Error initializing Firefox driver: {error}')
+    if len(drv.browsers) > 1:
+        logger.warning(f'Please test only one browser by setting NextcloudTestBrowsers to the one you want to test: {drv.browsers}')
+    
+    logger.info(f'Testing browser: {drv.browsers[0]}')
+    if drv.browsers[0] == 'chrome':
+        try:
+            options = ChromeOptions()
+            options.add_argument("--no-sandbox")
+            options.add_argument("--disable-dev-shm-usage")
+            options.add_argument("--disable-gpu")
+            options.add_argument("--disable-extensions")
+            driver = webdriver.Chrome(options=options)
+            g_driver=driver
+        except Exception as error:
+            logger.error(f'Error initializing Chrome driver: {error}')
+    elif drv.browsers[0] == 'firefox':
+        try:
+            options = FirefoxOptions()
+            driver = webdriver.Firefox(options=options)
+            g_driver=driver
+        except Exception as error:
+            logger.error(f'Error initializing Firefox driver: {error}')
+    else:
+        logger.error(f'Unknown browser: {drv.browsers[0]}')
 
     def test_logger(self):
         self.logger.info(f'TestID: {self._testMethodName}')
