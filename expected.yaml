@@ -9,7 +9,7 @@ global:
   redundantnodes: [extern,gih,hh,kau,lnu,ltu,mdu,scilifelab,su,sunet,vr]
   multinodes: [ki,lu,uu,gu,kth,liu,umu,chalmers,slu,lnu,mau,ltu,oru,miun,du,hj,hb,hig,hv,his,bth,rkh,hhs,fhs,uniarts,konstfack,esh,kmh,shh,kkh,ths,nordunet,kb,kva,sics,sp,irf,vr,nrm,smhi,uhr,antagning,swamid,vinnova]
   testGss: true
-  testBrowsers: [chrome,firefox]
+  testBrowsers: [firefox,chrome]
 prod:
   portalnodes: []
   defaultapps: [dashboard,files,photos,activity,contacts,calendar,announcementcenter,collectives,polls,forms,tasks]
