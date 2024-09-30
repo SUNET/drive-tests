@@ -214,7 +214,7 @@ class TestStatus(unittest.TestCase):
         if drv.testgss == False:
             logger.info('Not testing gss')
             return
-
+        
         try:
             url = drv.get_gss_url()
             logger.info(f'{self._testMethodName} - {url}')
@@ -229,6 +229,11 @@ class TestStatus(unittest.TestCase):
         global expectedResults
         logger.info(f'TestID: {self._testMethodName}')
         drv = sunetnextcloud.TestTarget()
+
+        if len(drv.allnodes) == 1:
+            logger.info(f'Only testing node {drv.allnodes[0]}, not gss')
+            return
+
         if drv.testgss == False:
             logger.info('Not testing gss')
             return
@@ -251,6 +256,11 @@ class TestStatus(unittest.TestCase):
         global expectedResults
         logger.info(f'TestID: {self._testMethodName}')
         drv = sunetnextcloud.TestTarget()
+
+        if len(drv.allnodes) == 1:
+            logger.info(f'Only testing node {drv.allnodes[0]}, not gss')
+            return
+
         if drv.testgss == False:
             logger.info('Not testing gss')
             return
