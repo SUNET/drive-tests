@@ -62,8 +62,8 @@ test:
     installed: true
     maintenance: false
     needsDbUpgrade: false
-    version: '29.0.7.2'
-    versionstring: '29.0.7 Enterprise'
+    version: '29.0.8.2'
+    versionstring: '29.0.8 Enterprise'
     edition: ''
     productname: 'Nextcloud'
     extendedSupport: false
@@ -71,8 +71,8 @@ test:
     installed: true
     maintenance: false
     needsDbUpgrade: false
-    version: '29.0.7.2'
-    versionstring: '29.0.7 Enterprise'
+    version: '29.0.8.2'
+    versionstring: '29.0.8 Enterprise'
     edition: ''
     productname: 'Nextcloud'
     extendedSupport: false
@@ -81,7 +81,7 @@ test:
     ocs_meta_statuscode: 100
     ocs_meta_statuscode_2: 200
     ocs_meta_message: 'OK'
-    ocs_data_version_string: '29.0.7 Enterprise'
+    ocs_data_version_string: '29.0.8 Enterprise'
     ocs_data_capabilities_globalscale_enabled: true
   cert_md5: '9dc0f8318dcda31e78308705449f1e2a'
   ocsapps:
