@@ -143,7 +143,7 @@ def nodelogin(nextcloudnode='localhost:8443',user='selenium'):
         #         g_logger.info(f'No need to select TOTP provider')
 
             totp = pyotp.TOTP(nodetotpsecret)
-            g_wait.until(EC.presence_of_element_located((By.XPATH, '//*[@id="body-login"]/div[1]/div/main/div/form/input'))).send_keys(totp.now() + Keys.ENTER)
+            g_wait.until(EC.presence_of_element_located((By.NAME, 'challenge'))).send_keys(totp.now() + Keys.ENTER)
     return
 
 class TestMfaZonesSelenium(unittest.TestCase):
