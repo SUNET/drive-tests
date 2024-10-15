@@ -94,7 +94,6 @@ def nodelogin(nextcloudnode='localhost:8443',user='selenium'):
     nodetotpsecret  = g_envConfig[f'MFA_NEXTCLOUD_{user.upper()}_SECRET']
     nodeapppwd      = g_envConfig[f'MFA_NEXTCLOUD_{user.upper()}_APP_PASSWORD']
 
-    g_isLoggedIn = True
     g_loggedInNodes[nextcloudnode] = True
 
     g_driver.maximize_window()
@@ -118,7 +117,8 @@ def nodelogin(nextcloudnode='localhost:8443',user='selenium'):
                     time.sleep(3)
                 currentOtp = totp.now()
                 g_logger.info(f'Send OTP: {currentOtp}')
-                g_wait.until(EC.presence_of_element_located((By.XPATH, '//*[@id="body-login"]/div[1]/div/main/div/form/input'))).send_keys(currentOtp + Keys.ENTER)
+                g_wait.until(EC.presence_of_element_located((By.NAME, 'challenge'))).send_keys(currentOtp + Keys.ENTER)
+
                 time.sleep(1)
                 currentUrl = g_driver.current_url
                 if '/challenge/totp' in currentUrl:
