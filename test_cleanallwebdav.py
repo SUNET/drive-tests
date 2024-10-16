@@ -53,11 +53,14 @@ class CleanWebDAV(threading.Thread):
 
         client.list()
         davElements = client.list()
-        self.logger.info(f'1. DAV elements: {davElements}')
+        self.logger.info(f'DAV elements: {davElements}')
         davElements.pop(0)
-        self.logger.info(f'2. Remove first element: {davElements}')
+        self.logger.info(f'After removing first element: {davElements}')
 
+        startTime = datetime.now()
+        count = 0
         for rootElem in davElements:
+            count += 1
             if rootElem in g_excludeList:
                 self.logger.info(f'Cleaning subfolders in : {rootElem}')
                 subElements = client.list(rootElem)
@@ -75,8 +78,8 @@ class CleanWebDAV(threading.Thread):
                 except:
                     self.logger.error(f'Could not delete {fullnode} - {drv.target} - {rootElem}')
 
-
-        self.logger.info(f'DAV cleaning thread done: {self.name}')
+        totalTime = (datetime.now() - startTime).total_seconds()
+        self.logger.info(f'DAV cleaning thread done: {self.name} - {count} elements in {totalTime}s at {count/totalTime:.2f} elements/s or {totalTime/count:.2f} s/element')
         davThreadRunning = False
 
 
