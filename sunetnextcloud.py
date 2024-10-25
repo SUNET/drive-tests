@@ -74,7 +74,6 @@ class TestTarget(object):
         testbrowsers = os.environ.get('NextcloudTestBrowsers')
         envtarget = os.environ.get('NextcloudTestTarget')
 
-
         if target is not None:
             logger.info(f'Test target initialized by caller: {target}')
             testtarget = target
@@ -533,6 +532,7 @@ class SeleniumHelper():
         SELENIUM = 1
         SELENIUM_MFA = 2
         OCS = 3
+        BASIC = 4
         UNKNOWN = -1
 
     def __init__(self, driver, nextcloudnode) -> None:
@@ -549,7 +549,7 @@ class SeleniumHelper():
         self.driver.delete_all_cookies()
         logger.info(f'All cookies deleted')
         return
-    def nodelogin(self, usertype : UserType):
+    def nodelogin(self, usertype : UserType, username='', password='', apppwd='', totpsecret='', mfaUser=False):
         loginurl = self.drv.get_node_login_url(self.nextcloudnode)
         if usertype == usertype.SELENIUM:
             nodeuser = self.drv.get_seleniumuser(self.nextcloudnode)
@@ -569,6 +569,12 @@ class SeleniumHelper():
             nodeapppwd = self.drv.get_ocsuserapppassword(self.nextcloudnode)
             nodetotpsecret = ''
             isMfaUser = True
+        elif usertype == usertype.BASIC:
+            nodeuser = username
+            nodepwd = password
+            nodeapppwd = apppwd
+            nodetotpsecret = totpsecret
+            isMfaUser = mfaUser
         else:
             logger.error(f'Unknown usertype {usertype}')
             return False
