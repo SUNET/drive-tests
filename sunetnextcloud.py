@@ -579,11 +579,20 @@ class SeleniumHelper():
             logger.error(f'Unknown usertype {usertype}')
             return False
 
+        loggedIn = False
         loginurl = self.drv.get_node_login_url(self.nextcloudnode)
         self.driver.get(loginurl)
-        self.wait.until(EC.element_to_be_clickable((By.ID, 'user'))).send_keys(nodeuser)
-        self.wait.until(EC.element_to_be_clickable((By.ID, 'password'))).send_keys(nodepwd + Keys.ENTER)
-        currentUrl = self.driver.current_url
+        if self.driver.current_url != loginurl:
+            logger.warning(f'Retry opening login url: {loginurl}')
+            self.driver.get(loginurl)
+
+        try:
+            logger.info(f'Enter username and password')
+            self.wait.until(EC.element_to_be_clickable((By.ID, 'user'))).send_keys(nodeuser)
+            self.wait.until(EC.element_to_be_clickable((By.ID, 'password'))).send_keys(nodepwd + Keys.ENTER)
+            currentUrl = self.driver.current_url
+        except:
+            logger.error(f'Error logging in to {loginurl}')
 
         if isMfaUser:
             logger.info(f'MFA login {currentUrl}')
@@ -613,8 +622,8 @@ class SeleniumHelper():
         else:
             logger.info(f'No MFA login')
 
-        if 'apps/dashboard/' not in self.driver.current_url:
-            logger.warning(f'Unknown post login URL: {self.driver.current_url}')
+        # if 'apps/dashboard/' not in self.driver.current_url:
+        #     logger.warning(f'Unknown post login URL: {self.driver.current_url}')
 
         try:
             self.wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'app-menu')))
