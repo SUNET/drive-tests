@@ -340,6 +340,7 @@ class TestStatus(unittest.TestCase):
 
 # Test status.php for all nodes
     def test_statusinfo(self):
+        global g_failedNodes
         drv = sunetnextcloud.TestTarget()
         for node in expectedResults['global']['allnodes']:
             if node in drv.allnodes:
