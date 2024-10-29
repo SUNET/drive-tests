@@ -328,7 +328,7 @@ apps:
     enabled: false
   globalsiteselector:
     prod:
-      version:  2.5.1
+      version:  2.5.2
       installed:  true
       enabled: true
       exceptdisabled:
@@ -373,7 +373,7 @@ apps:
     enabled: false
   user_saml:
     prod:
-      version: 6.2.0
+      version: 6.3.0
       installed:  true
       enabled: false
       exceptenabled:
