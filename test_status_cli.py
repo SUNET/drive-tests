@@ -144,7 +144,7 @@ class StatusInfo(threading.Thread):
             r =requests.get(url, timeout=g_requestTimeout)
         except Exception as error:
             logger.error(f'Error getting status info data from {self.node}: {error}')
-            g_failedNodes.append(self.url)
+            g_failedNodes.append(url)
             testThreadsRunning -= 1
             return
         
