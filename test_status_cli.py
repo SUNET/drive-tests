@@ -282,6 +282,7 @@ class TestStatus(unittest.TestCase):
             logger.info(f'GSS Status information tested')
 
     def test_frontend_status(self):
+        global g_failedNodes
         drv = sunetnextcloud.TestTarget()
         for url in drv.get_allnode_status_urls():
             with self.subTest(myurl=url):
@@ -300,6 +301,7 @@ class TestStatus(unittest.TestCase):
             self.assertTrue(False)
 
     def test_frontend_statusinfo(self):
+        global g_failedNodes
         drv = sunetnextcloud.TestTarget()
         for url in drv.get_allnode_status_urls():
             with self.subTest(myurl=url):
@@ -320,6 +322,7 @@ class TestStatus(unittest.TestCase):
 
 # Test status infor content for all individual loadbalanced nodes
     def test_node_statusinfo(self):
+        global g_failedNodes
         drv = sunetnextcloud.TestTarget()
         for node in expectedResults['global']['redundantnodes']:
             if node in drv.allnodes:
