@@ -296,8 +296,8 @@ class TestStatus(unittest.TestCase):
             logger.error(f'Frontend status test failed for {len(g_failedNodes)} of {len(drv.allnodes)} nodes:')
             for node in g_failedNodes:
                 logger.error(f'   {node}')
+            g_failedNodes = []
             self.assertTrue(False)
-        
 
     def test_frontend_statusinfo(self):
         drv = sunetnextcloud.TestTarget()
@@ -314,7 +314,9 @@ class TestStatus(unittest.TestCase):
             logger.error(f'FrontendStatusInfo test failed for {len(g_failedNodes)} of {len(drv.allnodes)} nodes:')
             for node in g_failedNodes:
                 logger.error(f'   {node}')
+            g_failedNodes = []
             self.assertTrue(False)
+            
 
 # Test status infor content for all individual loadbalanced nodes
     def test_node_statusinfo(self):
@@ -333,6 +335,7 @@ class TestStatus(unittest.TestCase):
             logger.error(f'NodeStatusInfo test failed for {len(g_failedNodes)} of {len(drv.allnodes)} nodes:')
             for node in g_failedNodes:
                 logger.error(f'   {node}')
+            g_failedNodes = []
             self.assertTrue(False)
 
 # Test status.php for all nodes
@@ -352,6 +355,7 @@ class TestStatus(unittest.TestCase):
             logger.error(f'NodeStatusInfo test failed for {len(g_failedNodes)} of {len(drv.allnodes)} nodes:')
             for node in g_failedNodes:
                 logger.error(f'   {node}')
+            g_failedNodes = []
             self.assertTrue(False)
 
     def test_metadata_gss(self):
