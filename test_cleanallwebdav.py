@@ -17,10 +17,11 @@ import sunetnextcloud
 
 g_testtarget = os.environ.get('NextcloudTestTarget')
 g_excludeList = ['selenium-system/', 'selenium-personal/', 'projectbucket/']
+g_davPerformanceResults = []
 
 # os.environ.set()
 ocsheaders = { "OCS-APIRequest" : "true" }
-davThreadRunning = False
+davThreadRunning = 0
 
 class CleanWebDAV(threading.Thread):
     logger = logging.getLogger('ThreadLogger')
@@ -31,10 +32,10 @@ class CleanWebDAV(threading.Thread):
         self.name = name
 
     def run(self):
-        global davThreadRunning
+        global davThreadRunning, g_davPerformanceResults
         self.logger.info(f'DAV cleaning thread started: {self.name}')
         drv = sunetnextcloud.TestTarget(g_testtarget)
-        davThreadRunning = True
+        davThreadRunning += 1
         fullnode = self.name
 
         nodeuser = drv.get_seleniumuser(fullnode)
@@ -60,7 +61,6 @@ class CleanWebDAV(threading.Thread):
         startTime = datetime.now()
         count = 0
         for rootElem in davElements:
-            count += 1
             if rootElem in g_excludeList:
                 self.logger.info(f'Cleaning subfolders in : {rootElem}')
                 subElements = client.list(rootElem)
@@ -69,8 +69,9 @@ class CleanWebDAV(threading.Thread):
                     self.logger.info(f'Removing {fullnode} - {drv.target} - {subElement}')
                     try:
                         client.clean(rootElem + subElement)
+                        count += 1
                     except:
-                        self.logger.error(f'Could not delete sub element {rootElem}\\{subElement}')
+                        self.logger.error(f'Could not delete sub element - {fullnode} - {rootElem}\\{subElement}')
             else:
                 self.logger.info(f'Removing {fullnode} - {drv.target} - {rootElem}')
                 try:
@@ -79,10 +80,16 @@ class CleanWebDAV(threading.Thread):
                     self.logger.error(f'Could not delete {fullnode} - {drv.target} - {rootElem}')
 
         totalTime = (datetime.now() - startTime).total_seconds()
-        self.logger.info(f'DAV cleaning thread done: {self.name} - {count} elements in {totalTime}s at {count/totalTime:.2f} elements/s or {totalTime/count:.2f} s/element')
-        davThreadRunning = False
+        if count == 0:
+            message = f'{self.name} - no elements deleted'
+            g_davPerformanceResults.append(message)
+            self.logger.info(f'DAV cleaning thread done: {message}')
+        else:
+            message = f'{self.name} - {count} elements in {totalTime:.1f}s at {count/totalTime:.2f} elements/s or {totalTime/count:.2f} s/element'
+            g_davPerformanceResults.append(message)
+            self.logger.info(f'DAV cleaning thread done: {message}')
 
-
+        davThreadRunning -= 1
 
 class TestCleanAllWebDAV(unittest.TestCase):
     logger = logging.getLogger(__name__)
@@ -94,6 +101,7 @@ class TestCleanAllWebDAV(unittest.TestCase):
         pass
 
     def test_cleanallwebdav(self):
+        global g_davPerformanceResults
         self.logger.info(f'Target: {g_testtarget}')
         drv = sunetnextcloud.TestTarget(g_testtarget)
         for fullnode in drv.fullnodes:
@@ -101,8 +109,13 @@ class TestCleanAllWebDAV(unittest.TestCase):
                 davCleanThread = CleanWebDAV(fullnode)
                 davCleanThread.start()
 
-        while (davThreadRunning == True):
+        while (davThreadRunning > 0):
             time.sleep(1)
+
+        for message in g_davPerformanceResults:
+            self.logger.info(f'{message}')
+        
+        self.logger.info(f'Done...')
 
 if __name__ == '__main__':
     import xmlrunner
