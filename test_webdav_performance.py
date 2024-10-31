@@ -73,7 +73,8 @@ class TestWebDavPerformance(unittest.TestCase):
     def test_basic_performance(self):
         global logger, g_testThreadsRunning, g_davPerformanceResults
         numFiles = 100
-        maxUploads=8
+        maxUploads=4
+        maxDeletes=8
         drv = sunetnextcloud.TestTarget()
         for fullnode in drv.fullnodes:
             with self.subTest(mynode=fullnode):
@@ -137,10 +138,7 @@ class TestWebDavPerformance(unittest.TestCase):
                 davElements.pop(0)
                 startTime = datetime.now()
 
-                start = 0
-                end = len(davElements)
-                maxDeletes = 8
-                for i in range(start,end,maxDeletes):
+                for i in range(0,len(davElements),maxDeletes):
                     x = i
                     logger.info(f'Batch delete {davElements[x:x+maxDeletes]}')
                     for element in davElements[x:x+maxDeletes]:
