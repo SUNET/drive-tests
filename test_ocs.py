@@ -117,7 +117,7 @@ class AppVersions(threading.Thread):
                 self.TestOcsCalls.assertEqual(j["ocs"]["data"]["id"], 'user_saml')
                 self.TestOcsCalls.assertEqual(j["ocs"]["data"]["version"], expectedResults['apps']['user_saml'][drv.target]['version'])
             except:
-                logger.error(f'Error with user_saml app, version {j["ocs"]["data"]["version"]} != {expectedResults["apps"]["user_saml"][drv.target]["version"]}')
+                logger.error(f'Error with user_saml app on {self.name}, version {j["ocs"]["data"]["version"]} != {expectedResults["apps"]["user_saml"][drv.target]["version"]}')
                 g_testPassed[fullnode] = False
                 g_testThreadsRunning -= 1
                 return
