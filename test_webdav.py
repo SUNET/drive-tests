@@ -471,7 +471,7 @@ class WebDAVCreateMoveDelete(threading.Thread):
             logger.info(f'Uploading {tmpfilename} to {targetfile}')
             client.upload_sync(remote_path=targetfile, local_path=tmpfilename)
         except Exception as error:
-            logger.error(f'Error uploading file: {error}')
+            logger.error(f'Error uploading file to {fullnode}: {error}')
             g_testPassed[fullnode] = False
             g_testThreadsRunning -= 1
             return
@@ -485,7 +485,7 @@ class WebDAVCreateMoveDelete(threading.Thread):
                 fileMoved = True
                 break
             except Exception as error:
-                logger.warning(f'Retry to move the file due to: {error}')
+                logger.warning(f'Retry to move the file on {fullnode} due to: {error}')
                 moveCount += 1
 
             if moveCount >= 3:
@@ -502,11 +502,11 @@ class WebDAVCreateMoveDelete(threading.Thread):
                 client.clean(targetmvfile)
                 fileDeleted = True
             except Exception as error:
-                logger.warning(f'Retry to delete the file due to: {error}')
+                logger.warning(f'Retry to delete the file on {fullnode} due to: {error}')
                 deleteCount += 1
 
             if deleteCount >= 3:
-                logger.error(f'Error deleting file {targetmvfile} after {deleteCount} tries')
+                logger.error(f'Error deleting file {targetmvfile} on {fullnode} after {deleteCount} tries')
                 g_testPassed[fullnode] = False
                 g_testThreadsRunning -= 1
                 return
@@ -515,7 +515,7 @@ class WebDAVCreateMoveDelete(threading.Thread):
             logger.info(f'Removing local temp file: {tmpfilename}')
             os.remove(tmpfilename)
         except Exception as error:
-            logger.error(f'Error removing the local temp file file: {error}')
+            logger.error(f'Error removing the local temp file on {fullnode}: {error}')
             g_testPassed[fullnode] = False
             g_testThreadsRunning -= 1
             return
