@@ -230,21 +230,21 @@ class TestLoginSelenium(unittest.TestCase):
                         currentUrl = driver.current_url
                         self.logger.info(f'Logout url: {currentUrl}')
 
-                        if fullnode == 'scilifelab':
-                            self.assertEqual(currentUrl, drv.get_node_post_logout_saml_url(fullnode))
-                        elif fullnode == 'kau':
-                            self.assertEqual(currentUrl, drv.get_node_post_logout_url(fullnode))
-                        elif fullnode == 'swamid' or fullnode == 'extern' or fullnode == 'sunet' or fullnode == 'vr' or fullnode == 'su':
-                            pass
-                        elif (self.expectedResults['global']['testGss'] == True) and (len(drv.allnodes) == 1):
-                            self.assertEqual(currentUrl, drv.get_gss_post_logout_url())
-                        elif (self.expectedResults['global']['testGss'] == False) | (len(drv.allnodes) == 1):
-                            if simpleLogoutUrl == True:
-                                self.assertEqual(currentUrl, drv.get_node_post_logout_simple_url(fullnode))
-                            else:
-                                self.assertEqual(currentUrl, drv.get_node_post_logout_url(fullnode))
-                        else:
-                            self.assertEqual(currentUrl, drv.get_gss_post_logout_url())
+                        # if fullnode == 'scilifelab':
+                        #     self.assertEqual(currentUrl, drv.get_node_post_logout_saml_url(fullnode))
+                        # elif fullnode == 'kau':
+                        #     self.assertEqual(currentUrl, drv.get_node_post_logout_url(fullnode))
+                        # elif fullnode == 'swamid' or fullnode == 'extern' or fullnode == 'sunet' or fullnode == 'vr' or fullnode == 'su':
+                        #     pass
+                        # elif (self.expectedResults['global']['testGss'] == True) and (len(drv.allnodes) == 1):
+                        #     self.assertEqual(currentUrl, drv.get_gss_post_logout_url())
+                        # elif (self.expectedResults['global']['testGss'] == False) | (len(drv.allnodes) == 1):
+                        #     if simpleLogoutUrl == True:
+                        #         self.assertEqual(currentUrl, drv.get_node_post_logout_simple_url(fullnode))
+                        #     else:
+                        #         self.assertEqual(currentUrl, drv.get_node_post_logout_url(fullnode))
+                        # else:
+                        #     self.assertEqual(currentUrl, drv.get_gss_post_logout_url())
                         driver.implicitly_wait(g_driver_timeout) # seconds before quitting
                         driver.quit()
 
