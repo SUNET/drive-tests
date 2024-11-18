@@ -63,8 +63,8 @@ class AppVersions(threading.Thread):
 
         try:
             r=session.get(url, headers=ocsheaders)
-        except:
-            logger.error(f'Error getting {url}')
+        except Exception as error:
+            logger.error(f'Error getting {url}:{error}')
             g_testThreadsRunning -= 1
             return
         nodeApps = []
@@ -73,8 +73,8 @@ class AppVersions(threading.Thread):
             j = json.loads(r.text)
             # print(json.dumps(j, indent=4, sort_keys=True))
             apps = j["ocs"]["data"]["apps"]
-        except:
-            logger.error(f'No or invalid JSON reply received from {fullnode}')
+        except Exception as error:
+            logger.error(f'No or invalid JSON reply received from {fullnode}:{error}')
             logger.error(r.text)
             g_testPassed[fullnode] = False
             g_testThreadsRunning -= 1
@@ -105,8 +105,8 @@ class AppVersions(threading.Thread):
                 logger.info(j["ocs"]["data"]["id"])
                 logger.info(j["ocs"]["data"]["version"])
                 
-            except:
-                logger.info(f'No JSON reply received from {fullnode}')
+            except Exception as error:
+                logger.info(f'No JSON reply received from {fullnode}:{error}')
                 logger.info(r.text)
                 g_testPassed[fullnode] = False
                 g_testThreadsRunning -= 1
@@ -116,8 +116,9 @@ class AppVersions(threading.Thread):
                 self.TestOcsCalls.assertTrue(userSamlFound)
                 self.TestOcsCalls.assertEqual(j["ocs"]["data"]["id"], 'user_saml')
                 self.TestOcsCalls.assertEqual(j["ocs"]["data"]["version"], expectedResults['apps']['user_saml'][drv.target]['version'])
-            except:
+            except Exception as error:
                 logger.error(f'Error with user_saml app on {self.name}, version {j["ocs"]["data"]["version"]} != {expectedResults["apps"]["user_saml"][drv.target]["version"]}')
+                logger.error(f'{error}')
                 g_testPassed[fullnode] = False
                 g_testThreadsRunning -= 1
                 return
@@ -141,8 +142,8 @@ class AppVersions(threading.Thread):
                 logger.info(j["ocs"]["data"]["id"])
                 logger.info(j["ocs"]["data"]["version"])
                 # print(json.dumps(j, indent=4, sort_keys=True))
-            except:
-                logger.info(f'No JSON reply received from {fullnode}')
+            except Exception as error:
+                logger.info(f'No JSON reply received from {fullnode}:{error}')
                 logger.info(r.text)
                 g_testPassed[fullnode] = False
                 g_testThreadsRunning -= 1
@@ -152,8 +153,9 @@ class AppVersions(threading.Thread):
                 self.TestOcsCalls.assertTrue(gssFound)
                 self.TestOcsCalls.assertEqual(j["ocs"]["data"]["id"], 'globalsiteselector')
                 self.TestOcsCalls.assertEqual(j["ocs"]["data"]["version"], expectedResults['apps']['globalsiteselector'][drv.target]['version'])
-            except:
+            except Exception as error:
                 logger.error(f'Error with GSS configuration, {j["ocs"]["data"]["version"]} != {expectedResults["apps"]["globalsiteselector"][drv.target]["version"]}')
+                logger.error(f'{error}')
                 g_testPassed[fullnode] = False
                 g_testThreadsRunning -= 1
                 return
@@ -194,8 +196,8 @@ class NodeUsers(threading.Thread):
 
         try:
             r = requests.get(url, headers=ocsheaders, timeout=g_requestTimeout)
-        except:
-            logger.error(f'Error getting {url}')
+        except Exception as error:
+            logger.error(f'Error getting {url}:{error}')
             g_testThreadsRunning -= 1
             return
         try:
@@ -203,8 +205,8 @@ class NodeUsers(threading.Thread):
             # logger.info(json.dumps(j, indent=4, sort_keys=True))
             users = j["ocs"]["data"]["users"]
             logger.info(f'Received {len(users)} from {self.name}')
-        except:
-            logger.info(f"No JSON reply received from {fullnode}")
+        except Exception as error:
+            logger.info(f"No JSON reply received from {fullnode}:{error}")
             logger.info(r.text)
             g_testPassed[fullnode] = False
             g_testThreadsRunning -= 1
@@ -237,14 +239,14 @@ class CapabilitiesNoUser(threading.Thread):
         logger.info(f'{self.TestOcsCalls._testMethodName} {url}')
         try:
             r = requests.get(url, headers=ocsheaders, timeout=g_requestTimeout)
-        except:
-            logger.error(f'Error getting {url}')
+        except Exception as error:
+            logger.error(f'Error getting {url}: {error}')
             g_testThreadsRunning -= 1
             return
         try:
             j = json.loads(r.text)
-        except:
-            logger.info(f"No JSON reply received from {fullnode}")
+        except Exception as error:
+            logger.info(f"No JSON reply received from {fullnode}: {error}")
             logger.info(r.text)
             g_testPassed[fullnode] = False
             g_testThreadsRunning -= 1
@@ -255,8 +257,8 @@ class CapabilitiesNoUser(threading.Thread):
             self.TestOcsCalls.assertEqual(j["ocs"]["meta"]["statuscode"], expectedResults[drv.target]['ocs_capabilities']['ocs_meta_statuscode_2'])
             self.TestOcsCalls.assertEqual(j["ocs"]["meta"]["message"], expectedResults[drv.target]['ocs_capabilities']['ocs_meta_message'])
             self.TestOcsCalls.assertEqual(j["ocs"]["data"]["version"]["string"], expectedResults[drv.target]['ocs_capabilities']['ocs_data_version_string'])
-        except:
-            logger.error(f"Error with OCS capabilities assertion")
+        except Exception as error:
+            logger.error(f"Error with OCS capabilities assertion: {error}")
             g_testPassed[fullnode] = False
             g_testThreadsRunning -= 1
             return
@@ -290,16 +292,16 @@ class Capabilities(threading.Thread):
 
         try:
             r = requests.get(url, headers=ocsheaders, timeout=g_requestTimeout)
-        except:
-            logger.error(f'Error getting {url}')
+        except Exception as error:
+            logger.error(f'Error getting {url}: {error}')
             g_testThreadsRunning -= 1
             return
         try:
             j = json.loads(r.text)
             logger.info(f'Node capabilities: {json.dumps(j, indent=4, sort_keys=True)}')
 
-        except:
-            logger.info(f"No JSON reply received from {fullnode}")
+        except Exception as error:
+            logger.info(f"No JSON reply received from {fullnode}: {error}")
             logger.info(r.text)
             g_testPassed[fullnode] = False
             g_testThreadsRunning -= 1
@@ -345,8 +347,8 @@ class UserLifeCycle(threading.Thread):
         logger.info(f'Create cli user {cliuser}')
         try:
             r = session.post(url, headers=ocsheaders, data=data)
-        except:
-            logger.error(f'Error posting to create cli user')
+        except Exception as error:
+            logger.error(f'Error posting to create cli user: {error}')
             g_testPassed[fullnode] = False
             g_testThreadsRunning -= 1
             return
@@ -359,8 +361,8 @@ class UserLifeCycle(threading.Thread):
                 r = session.post(url, headers=ocsheaders, data=data)
                 j = json.loads(r.text)
                 logger.info(json.dumps(j, indent=4, sort_keys=True))
-        except:
-            logger.info(f"No JSON reply received from {fullnode}")
+        except Exception as error:
+            logger.info(f"No JSON reply received from {fullnode}: {error}")
             logger.info(r.text)
             g_testPassed[fullnode] = False
             g_testThreadsRunning -= 1
@@ -406,8 +408,8 @@ class UserLifeCycle(threading.Thread):
             self.TestOcsCalls.assertEqual(j["ocs"]["meta"]["status"], expectedResults[drv.target]['ocs_capabilities']['ocs_meta_status'])
             self.TestOcsCalls.assertEqual(j["ocs"]["meta"]["statuscode"], expectedResults[drv.target]['ocs_capabilities']['ocs_meta_statuscode'])
             self.TestOcsCalls.assertEqual(j["ocs"]["meta"]["message"], expectedResults[drv.target]['ocs_capabilities']['ocs_meta_message'])
-        except:
-            logger.info(f"No or invalid JSON reply received from {fullnode}")
+        except Exception as error:
+            logger.info(f"No or invalid JSON reply received from {fullnode}: {error}")
             logger.info(r.text)
             g_testPassed[fullnode] = False
             g_testThreadsRunning -= 1
@@ -470,14 +472,14 @@ class TestOcsCalls(unittest.TestCase):
 
         try:
             r = requests.get(url, headers=ocsheaders, timeout=g_requestTimeout)
-        except:
-            logger.error(f'Error getting {url}')
+        except Exception as error:
+            logger.error(f'Error getting {url}: {error}')
         try:
             j = json.loads(r.text)
             # logger.info(json.dumps(j, indent=4, sort_keys=True))
             users = j["ocs"]["data"]["users"]
-        except:
-            logger.info(f"No JSON reply received from {fullnode}")
+        except Exception as error:
+            logger.info(f"No JSON reply received from {fullnode}:{error}")
             logger.info(r.text)
 
     def test_nodeusers(self):
