@@ -395,7 +395,7 @@ class TestCollaboraSelenium(unittest.TestCase):
                             wait.until(EC.element_to_be_clickable((By.XPATH, "//*[contains(@class, 'action-button__text') and text()='New folder']"))).click()
                             wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, 'input[id^=\'input\']')))
                             ActionChains(self.driver).key_down(Keys.CONTROL).send_keys('a').key_up(Keys.CONTROL).perform()
-                            ActionChains(self.driver).send_keys(f'SeleniumCollaboraTest{Keys.ENTER}').perform()
+                            ActionChains(self.driver).send_keys(f'{testfolder}{Keys.ENTER}').perform()
                             time.sleep(1)
 
                         folderurl = self.drv.get_folder_url(collaboranode, testfolder)
