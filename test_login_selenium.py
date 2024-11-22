@@ -57,6 +57,11 @@ class TestLoginSelenium(unittest.TestCase):
         delay = 30 # seconds
         drv = sunetnextcloud.TestTarget()
         self.logger.info(f'TestID: {self._testMethodName}')
+
+        if drv.target.lower() == 'test':
+            self.logger.warning(f'We are not testing gss in test anymore!')
+            return
+
         if drv.testgss == False:
             self.logger.info('Not testing gss')
             return
