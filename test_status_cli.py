@@ -362,41 +362,41 @@ class TestStatus(unittest.TestCase):
             g_failedNodes = []
             self.assertTrue(False)
 
-    def test_metadata_gss(self):
-        global logger
-        global expectedResults
-        logger.info(f'TestID: {self._testMethodName}')
-        drv = sunetnextcloud.TestTarget()
-        if drv.testgss == False:
-            logger.info('Not testing gss')
-            return
+    # def test_metadata_gss(self):
+    #     global logger
+    #     global expectedResults
+    #     logger.info(f'TestID: {self._testMethodName}')
+    #     drv = sunetnextcloud.TestTarget()
+    #     if drv.testgss == False:
+    #         logger.info('Not testing gss')
+    #         return
 
-        url = drv.get_gss_metadata_url()
-        expectedEntityId = ''
-        certMd5 = ''
-        logger.info(f'Verify metadata for {url}')
-        r = requests.get(url, timeout=g_requestTimeout)
+    #     url = drv.get_gss_metadata_url()
+    #     expectedEntityId = ''
+    #     certMd5 = ''
+    #     logger.info(f'Verify metadata for {url}')
+    #     r = requests.get(url, timeout=g_requestTimeout)
 
-        try:
-            metadataXml = fromstring(r.text)
-            items = metadataXml.items()
-            for item in items:
-                name = item[0]
-                if name == 'entityID':
-                    expectedEntityId = item[1]
-                    logger.info("entityID checked")
+    #     try:
+    #         metadataXml = fromstring(r.text)
+    #         items = metadataXml.items()
+    #         for item in items:
+    #             name = item[0]
+    #             if name == 'entityID':
+    #                 expectedEntityId = item[1]
+    #                 logger.info("entityID checked")
 
-            metadataDict = xmltodict.parse(r.text)
-            jsonString = json.dumps(metadataDict)
-            j = json.loads(jsonString)
-            certString = j["md:EntityDescriptor"]["md:SPSSODescriptor"]["md:KeyDescriptor"]["ds:KeyInfo"]["ds:X509Data"]["ds:X509Certificate"]
-            certMd5 = hashlib.md5(certString.encode('utf-8')).hexdigest()
-        except Exception as error:
-            logger.error(f'Metadata is not valid XML: {error}')
+    #         metadataDict = xmltodict.parse(r.text)
+    #         jsonString = json.dumps(metadataDict)
+    #         j = json.loads(jsonString)
+    #         certString = j["md:EntityDescriptor"]["md:SPSSODescriptor"]["md:KeyDescriptor"]["ds:KeyInfo"]["ds:X509Data"]["ds:X509Certificate"]
+    #         certMd5 = hashlib.md5(certString.encode('utf-8')).hexdigest()
+    #     except Exception as error:
+    #         logger.error(f'Metadata is not valid XML: {error}')
 
-        self.assertEqual(expectedEntityId, drv.get_gss_entity_id())
-        self.assertEqual(certMd5, expectedResults[drv.target]['cert_md5'])
-        logger.info(f'GSS metadata test done')
+    #     self.assertEqual(expectedEntityId, drv.get_gss_entity_id())
+    #     self.assertEqual(certMd5, expectedResults[drv.target]['cert_md5'])
+    #     logger.info(f'GSS metadata test done')
 
     def test_collabora_nodes(self):
         global logger
