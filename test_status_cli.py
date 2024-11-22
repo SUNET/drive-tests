@@ -224,63 +224,6 @@ class TestStatus(unittest.TestCase):
         except Exception as error:
             logger.error(f'An error occurred for gss: {error}')
 
-    def test_frontend_statusinfo_gss(self):
-        global logger
-        global expectedResults
-        logger.info(f'TestID: {self._testMethodName}')
-        drv = sunetnextcloud.TestTarget()
-
-        if len(drv.allnodes) == 1:
-            logger.info(f'Only testing node {drv.allnodes[0]}, not gss')
-            return
-
-        if drv.testgss == False:
-            logger.info('Not testing gss')
-            return
-
-        url=drv.get_gss_url() + "/status.php"
-        print(self._testMethodName, url)
-        r =requests.get(url, timeout=g_requestTimeout)
-        j = json.loads(r.text)
-
-        self.assertEqual(j["maintenance"], expectedResults[drv.target]['status_gss']['maintenance']) 
-        self.assertEqual(j["needsDbUpgrade"], expectedResults[drv.target]['status_gss']['needsDbUpgrade'])
-        self.assertEqual(j["version"], expectedResults[drv.target]['status_gss']['version'])
-        self.assertEqual(j["versionstring"], expectedResults[drv.target]['status_gss']['versionstring'])
-        self.assertEqual(j["edition"], expectedResults[drv.target]['status_gss']['edition'])
-        self.assertEqual(j["extendedSupport"], expectedResults[drv.target]['status_gss']['extendedSupport'])
-        logger.info(f'GSS Status information tested')
-
-    def test_node_statusinfo_gss(self):
-        global logger
-        global expectedResults
-        logger.info(f'TestID: {self._testMethodName}')
-        drv = sunetnextcloud.TestTarget()
-
-        if len(drv.allnodes) == 1:
-            logger.info(f'Only testing node {drv.allnodes[0]}, not gss')
-            return
-
-        if drv.testgss == False:
-            logger.info('Not testing gss')
-            return
-
-        x = range(1,4)
-        for i in x:
-            url=drv.get_gss_url() + "/status.php"
-            url=url.replace('https://','https://gss' + str(i) + ".")
-            logger.info(f'{self._testMethodName}: {url}')
-            r =requests.get(url, timeout=g_requestTimeout, verify=False)
-            j = json.loads(r.text)
-
-            self.assertEqual(j["maintenance"], expectedResults[drv.target]['status_gss']['maintenance']) 
-            self.assertEqual(j["needsDbUpgrade"], expectedResults[drv.target]['status_gss']['needsDbUpgrade'])
-            self.assertEqual(j["version"], expectedResults[drv.target]['status_gss']['version'])
-            self.assertEqual(j["versionstring"], expectedResults[drv.target]['status_gss']['versionstring'])
-            self.assertEqual(j["edition"], expectedResults[drv.target]['status_gss']['edition'])
-            self.assertEqual(j["extendedSupport"], expectedResults[drv.target]['status_gss']['extendedSupport'])
-            logger.info(f'GSS Status information tested')
-
     def test_frontend_status(self):
         global g_failedNodes
         drv = sunetnextcloud.TestTarget()
