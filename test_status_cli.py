@@ -170,6 +170,42 @@ class StatusInfo(threading.Thread):
         testThreadsRunning -= 1
         logger.info(f'NodeStatusInfo threads remaining: {testThreadsRunning}')
 
+class SeamlessAccessInfo(threading.Thread):
+    def __init__(self, node, TestStatus):
+        threading.Thread.__init__(self)
+        self.node = node
+        self.TestStatus = TestStatus
+
+    def run(self):
+        global testThreadsRunning
+        global logger
+        global expectedResults
+        global g_failedNodes
+        testThreadsRunning += 1
+        drv = sunetnextcloud.TestTarget()
+        logger.info(f'SeamlessAccessInfo thread {testThreadsRunning} started for node {self.node}')
+
+        url = drv.get_node_login_url(self.node, direct=False)
+        try:
+            logger.info(f'Getting node login url from: {url}')
+            r =requests.get(url, timeout=g_requestTimeout)
+
+            if "seamlessaccess.org" not in r.text and self.node not in expectedResults[drv.target]['loginexceptions']:
+                logger.error(f'Errog getting seamless access info from: {self.node}')
+                g_failedNodes.append(url)
+                testThreadsRunning-=1
+                return
+
+        except Exception as error:
+            logger.error(f'Error seamless access info from {self.node}: {error}')
+            g_failedNodes.append(url)
+            testThreadsRunning -= 1
+            return
+        
+        logger.info(f'SeamlessAccessInfo thread done for node {url}')
+        testThreadsRunning -= 1
+        logger.info(f'SeamlessAccessInfo threads remaining: {testThreadsRunning}')
+
 # Test frontend status for code 200, no content check
 class FrontentStatus(threading.Thread):
     def __init__(self, url, TestStatus):
@@ -368,6 +404,31 @@ class TestStatus(unittest.TestCase):
 
         if len(g_failedNodes) > 0:
             logger.error(f'NodeStatusInfo test failed for {len(g_failedNodes)} of {len(drv.allnodes)} nodes:')
+            for node in g_failedNodes:
+                logger.error(f'   {node}')
+            g_failedNodes = []
+            self.assertTrue(False)
+
+    def test_seamlessaccessinfo(self):
+        global g_failedNodes
+        drv = sunetnextcloud.TestTarget()
+
+        if drv.target == 'prod':
+            logger.warning(f'We are not testing SeamlessAccess in production yet')
+            return
+
+        for node in expectedResults['global']['allnodes']:
+            if node in drv.allnodes:
+                with self.subTest(myurl=node):
+                    logger.info(f'TestID: {node}')
+                    saInfoThread = SeamlessAccessInfo(node, self)
+                    saInfoThread.start()
+
+        while(testThreadsRunning > 0):
+            time.sleep(1)
+
+        if len(g_failedNodes) > 0:
+            logger.error(f'SeamlessAccessInfo test failed for {len(g_failedNodes)} of {len(drv.allnodes)} nodes:')
             for node in g_failedNodes:
                 logger.error(f'   {node}')
             g_failedNodes = []

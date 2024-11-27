@@ -11,7 +11,7 @@ global:
   testGss: true
   testBrowsers: [firefox,chrome]
 prod:
-  portalnodes: []
+  loginexceptions: [kau,scilifelab]
   defaultapps: [dashboard,files,photos,activity,contacts,calendar,announcementcenter,collectives,polls,forms,tasks]
   optionalapps: [rds,integration_jupyterhub]
   status:
@@ -55,7 +55,7 @@ prod:
       productVersion: "23.05.10.1"
       productVersionHash: "baa6eef"
 test:
-  portalnodes: [su,sunet,extern]
+  loginexceptions: [suni,kau,scilifelab]
   defaultapps: [dashboard,files,photos,activity,contacts,calendar,announcementcenter,collectives,polls,forms,tasks]
   optionalapps: [rds,integration_jupyterhub]
   status:
