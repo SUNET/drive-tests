@@ -243,91 +243,6 @@ class TestStatus(unittest.TestCase):
         logger.info(f'TestID: {self._testMethodName}')
         pass
 
-    def test_status_gss(self):
-        global logger
-        logger.info(f'TestID: {self._testMethodName}')
-        drv = sunetnextcloud.TestTarget()
-        if drv.target.lower() == 'test':
-            logger.warning(f'We are not testing gss in test anymore!')
-            return
-
-        if drv.testgss == False:
-            logger.info('Not testing gss')
-            return
-        
-        try:
-            url = drv.get_gss_url()
-            logger.info(f'{self._testMethodName} - {url}')
-            r=requests.get(url, timeout=g_requestTimeout)
-            self.assertEqual(r.status_code, 200)
-            logger.info(f'GSS Status tested')
-        except Exception as error:
-            logger.error(f'An error occurred for gss: {error}')
-
-    def test_frontend_statusinfo_gss(self):
-        global logger
-        global expectedResults
-        logger.info(f'TestID: {self._testMethodName}')
-        drv = sunetnextcloud.TestTarget()
-        if drv.target.lower() == 'test':
-            logger.warning(f'We are not testing gss in test anymore!')
-            return
-
-        if len(drv.allnodes) == 1:
-            logger.info(f'Only testing node {drv.allnodes[0]}, not gss')
-            return
-
-        if drv.testgss == False:
-            logger.info('Not testing gss')
-            return
-
-        url=drv.get_gss_url() + "/status.php"
-        print(self._testMethodName, url)
-        r =requests.get(url, timeout=g_requestTimeout)
-        j = json.loads(r.text)
-
-        self.assertEqual(j["maintenance"], expectedResults[drv.target]['status_gss']['maintenance']) 
-        self.assertEqual(j["needsDbUpgrade"], expectedResults[drv.target]['status_gss']['needsDbUpgrade'])
-        self.assertEqual(j["version"], expectedResults[drv.target]['status_gss']['version'])
-        self.assertEqual(j["versionstring"], expectedResults[drv.target]['status_gss']['versionstring'])
-        self.assertEqual(j["edition"], expectedResults[drv.target]['status_gss']['edition'])
-        self.assertEqual(j["extendedSupport"], expectedResults[drv.target]['status_gss']['extendedSupport'])
-        logger.info(f'GSS Status information tested')
-
-    def test_node_statusinfo_gss(self):
-        global logger
-        global expectedResults
-        logger.info(f'TestID: {self._testMethodName}')
-        drv = sunetnextcloud.TestTarget()
-
-        if drv.target.lower() == 'test':
-            logger.warning(f'We are not testing gss in test anymore!')
-            return
-
-        if len(drv.allnodes) == 1:
-            logger.info(f'Only testing node {drv.allnodes[0]}, not gss')
-            return
-
-        if drv.testgss == False:
-            logger.info('Not testing gss')
-            return
-
-        x = range(1,4)
-        for i in x:
-            url=drv.get_gss_url() + "/status.php"
-            url=url.replace('https://','https://gss' + str(i) + ".")
-            logger.info(f'{self._testMethodName}: {url}')
-            r =requests.get(url, timeout=g_requestTimeout, verify=False)
-            j = json.loads(r.text)
-
-            self.assertEqual(j["maintenance"], expectedResults[drv.target]['status_gss']['maintenance']) 
-            self.assertEqual(j["needsDbUpgrade"], expectedResults[drv.target]['status_gss']['needsDbUpgrade'])
-            self.assertEqual(j["version"], expectedResults[drv.target]['status_gss']['version'])
-            self.assertEqual(j["versionstring"], expectedResults[drv.target]['status_gss']['versionstring'])
-            self.assertEqual(j["edition"], expectedResults[drv.target]['status_gss']['edition'])
-            self.assertEqual(j["extendedSupport"], expectedResults[drv.target]['status_gss']['extendedSupport'])
-            logger.info(f'GSS Status information tested')
-
     def test_frontend_status(self):
         global g_failedNodes
         drv = sunetnextcloud.TestTarget()
@@ -434,45 +349,43 @@ class TestStatus(unittest.TestCase):
             g_failedNodes = []
             self.assertTrue(False)
 
-    def test_metadata_gss(self):
+    def test_saml_metadata(self):
         global logger
         global expectedResults
         logger.info(f'TestID: {self._testMethodName}')
         drv = sunetnextcloud.TestTarget()
-        if drv.target.lower() == 'test':
-            logger.warning(f'We are not testing gss in test anymore!')
-            return
 
-        if drv.testgss == False:
-            logger.info('Not testing gss')
-            return
+        for node in drv.allnodes:           
+            with self.subTest(mynode=node):
+                if node in expectedResults[drv.target]['loginexceptions']:
+                    logger.info(f'Not testing metadata for {node}')
+                else:
+                    url = drv.get_metadata_url(node)
+                    expectedEntityId = ''
+                    certMd5 = ''
+                    logger.info(f'Verify metadata for {url}')
+                    r = requests.get(url, timeout=g_requestTimeout)
 
-        url = drv.get_gss_metadata_url()
-        expectedEntityId = ''
-        certMd5 = ''
-        logger.info(f'Verify metadata for {url}')
-        r = requests.get(url, timeout=g_requestTimeout)
+                    try:
+                        metadataXml = fromstring(r.text)
+                        items = metadataXml.items()
+                        for item in items:
+                            name = item[0]
+                            if name == 'entityID':
+                                expectedEntityId = item[1]
+                                logger.info("entityID checked")
 
-        try:
-            metadataXml = fromstring(r.text)
-            items = metadataXml.items()
-            for item in items:
-                name = item[0]
-                if name == 'entityID':
-                    expectedEntityId = item[1]
-                    logger.info("entityID checked")
+                        metadataDict = xmltodict.parse(r.text)
+                        jsonString = json.dumps(metadataDict)
+                        j = json.loads(jsonString)
+                        certString = j["md:EntityDescriptor"]["md:SPSSODescriptor"]["md:KeyDescriptor"]["ds:KeyInfo"]["ds:X509Data"]["ds:X509Certificate"]
+                        certMd5 = hashlib.md5(certString.encode('utf-8')).hexdigest()
+                    except Exception as error:
+                        logger.error(f'Metadata is not valid XML: {error}')
 
-            metadataDict = xmltodict.parse(r.text)
-            jsonString = json.dumps(metadataDict)
-            j = json.loads(jsonString)
-            certString = j["md:EntityDescriptor"]["md:SPSSODescriptor"]["md:KeyDescriptor"]["ds:KeyInfo"]["ds:X509Data"]["ds:X509Certificate"]
-            certMd5 = hashlib.md5(certString.encode('utf-8')).hexdigest()
-        except Exception as error:
-            logger.error(f'Metadata is not valid XML: {error}')
-
-        self.assertEqual(expectedEntityId, drv.get_gss_entity_id())
-        self.assertEqual(certMd5, expectedResults[drv.target]['cert_md5'])
-        logger.info(f'GSS metadata test done')
+                    self.assertEqual(expectedEntityId, drv.get_node_entity_id(node))
+                    self.assertEqual(certMd5, expectedResults[drv.target]['cert_md5'])
+        logger.info(f'Saml metadata test done')
 
     def test_collabora_nodes(self):
         global logger
