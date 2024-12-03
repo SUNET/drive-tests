@@ -176,21 +176,7 @@ class TestLoginMultiSelenium(unittest.TestCase):
                 logoutLink.click()
                 self.logger.info(f'Logout complete')
 
-                currentUrl = driver.current_url
-                self.logger.info(driver.current_url)
-
-                # if fullnode == 'scilifelab':
-                #     self.assertEqual(driver.current_url, g_drv.get_node_post_logout_saml_url(fullnode))
-                # elif fullnode == 'kau':
-                #     self.assertEqual(driver.current_url, g_drv.get_node_post_logout_url(fullnode))
-                # elif fullnode == 'swamid' or fullnode == 'extern' or fullnode == 'sunet' or fullnode == 'vr' or fullnode == 'su':
-                #     self.logger.info(f'Not checking logout URL for {fullnode}')
-                #     pass
-                # else:
-                #     self.assertEqual(driver.current_url, g_drv.get_gss_post_logout_url())
-
                 self.logger.info(f'{driver.current_url}')
-
 
                 self.logger.info(f'TOTP Login done, testing normal login now')
                 self.deleteCookies(driver)
@@ -216,7 +202,7 @@ class TestLoginMultiSelenium(unittest.TestCase):
                 client.mkdir(dir)
                 self.assertEqual(client.list().count('SharedFolder/'), 1)
 
-                # Right now we have to call the login page twice to prevent a redirect to gss login page
+                # Right now we have to call the login page twice - Check after upgrade
                 driver.get(loginurl)
                 time.sleep(2)
 
@@ -242,16 +228,6 @@ class TestLoginMultiSelenium(unittest.TestCase):
 
                 currentUrl = driver.current_url
                 self.logger.info(driver.current_url)
-
-                # if fullnode == 'scilifelab':
-                #     self.assertEqual(driver.current_url, g_drv.get_node_post_logout_saml_url(fullnode))
-                # elif fullnode == 'kau':
-                #     self.assertEqual(driver.current_url, g_drv.get_node_post_logout_url(fullnode))
-                # elif fullnode == 'swamid' or fullnode == 'extern' or fullnode == 'sunet' or fullnode == 'vr' or fullnode == 'su':
-                #     self.logger.info(f'Not checking logout URL for {fullnode}')
-                #     pass
-                # else:
-                #     self.assertEqual(driver.current_url, g_drv.get_gss_post_logout_url())
                 driver.implicitly_wait(10) # seconds before quitting                
 
 if __name__ == '__main__':

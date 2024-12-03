@@ -51,7 +51,6 @@ class TestTarget(object):
     testprefix = expectedResults['global']['testPrefix']
     nodeprefix = expectedResults['global']['nodePrefix']
     docprefix = expectedResults['global']['docPrefix']
-    testgss = expectedResults['global']['testGss']
     indexsuffix = expectedResults['global']['indexSuffix']
 
     # default target is test, unless overwritten by initializing with 'prod'
@@ -107,7 +106,7 @@ class TestTarget(object):
             self.browsers = testbrowsers.split(",")
 
     def getnodeprefix(self, node):
-        if (node == 'gss' or node == 'none'):
+        if (node == 'none'):
             prefix = self.nodeprefix
         elif len(self.nodeprefix) == 0:
             prefix = node
@@ -115,20 +114,8 @@ class TestTarget(object):
             prefix = node + '.' + self.nodeprefix
         return prefix
 
-    def get_gss_url(self):
-        if self.target == "prod":
-            return 'https://drive.' + self.baseurl
-        else:
-            return 'https://drive.test.' + self.baseurl
-
     def get_node_url(self, node):
         return 'https://' + self.getnodeprefix(node) + self.targetprefix + '.' + self.baseurl
-
-    def get_gss_post_logout_url(self):
-        if self.target == "prod":
-            return 'https://drive.' + self.baseurl + self.indexsuffix + '/apps/user_saml/saml/selectUserBackEnd?redirectUrl='
-        else:
-            return 'https://drive.test.' + self.baseurl + self.indexsuffix + '/apps/user_saml/saml/selectUserBackEnd?redirectUrl='
 
     def get_node_login_url(self, node, direct = True):
         if direct == True:
@@ -196,14 +183,8 @@ class TestTarget(object):
     def get_serverinfo_url(self, node):
         return 'https://' + self.getnodeprefix(node) + self.targetprefix + '.' + self.baseurl + '/ocs/v2.php/apps/serverinfo/api/v1/info?format=json'
 
-    def get_gss_metadata_url(self):
-        return 'https://drive' + self.targetprefix + '.' + self.baseurl + self.indexsuffix + '/apps/user_saml/saml/metadata?idp=1'
-
     def get_metadata_url(self, node):
         return 'https://' + self.getnodeprefix(node) + self.targetprefix + '.' + self.baseurl + self.indexsuffix + '/apps/user_saml/saml/metadata?idp=1'
-
-    def get_gss_entity_id(self):
-        return 'https://drive' + self.targetprefix + '.' + self.baseurl + self.indexsuffix + '/apps/user_saml/saml/metadata'
 
     def get_node_entity_id(self, node):
         return 'https://' + self.getnodeprefix(node) + self.targetprefix + '.' + self.baseurl + self.indexsuffix + '/apps/user_saml/saml/metadata'

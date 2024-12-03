@@ -47,8 +47,6 @@ class AppVersions(threading.Thread):
         logger.info(f'Setting passed for {fullnode} to {g_testPassed.get(fullnode)}')
 
         userSamlFound = False
-        gssFound = False
-
         session = requests.Session()
         nodeuser = drv.get_ocsuser(fullnode)
         nodepwd = drv.get_ocsuserapppassword(fullnode)
@@ -82,8 +80,6 @@ class AppVersions(threading.Thread):
 
         if 'user_saml' in apps:
             userSamlFound = True
-        if 'globalsiteselector' in apps:
-            gssFound = True
 
         # # user_saml check
         if userSamlFound:
@@ -123,47 +119,8 @@ class AppVersions(threading.Thread):
                 g_testThreadsRunning -= 1
                 return
 
-        # # global site selector check
-        if gssFound:
-            nodeuser = drv.get_ocsuser(fullnode)
-            nodepwd = drv.get_ocsuserapppassword(fullnode)
-            url = drv.get_app_url(fullnode, 'globalsiteselector')
-
-            logger.info(url)
-            url = url.replace("$USERNAME$", nodeuser)
-            url = url.replace("$PASSWORD$", nodepwd)
-
-            nodeuser = drv.get_ocsuser(fullnode)
-            nodepwd = drv.get_ocsuserpassword(fullnode)
-
-            r=session.get(url, headers=ocsheaders)
-            try:
-                j = json.loads(r.text)
-                logger.info(j["ocs"]["data"]["id"])
-                logger.info(j["ocs"]["data"]["version"])
-                # print(json.dumps(j, indent=4, sort_keys=True))
-            except Exception as error:
-                logger.info(f'No JSON reply received from {fullnode}:{error}')
-                logger.info(r.text)
-                g_testPassed[fullnode] = False
-                g_testThreadsRunning -= 1
-                return
-            
-            try:
-                self.TestOcsCalls.assertTrue(gssFound)
-                self.TestOcsCalls.assertEqual(j["ocs"]["data"]["id"], 'globalsiteselector')
-                self.TestOcsCalls.assertEqual(j["ocs"]["data"]["version"], expectedResults['apps']['globalsiteselector'][drv.target]['version'])
-            except Exception as error:
-                logger.error(f'Error with GSS configuration, {j["ocs"]["data"]["version"]} != {expectedResults["apps"]["globalsiteselector"][drv.target]["version"]}')
-                logger.error(f'{error}')
-                g_testPassed[fullnode] = False
-                g_testThreadsRunning -= 1
-                return
-
         # Summary and test
         logger.info(f'Saml app found: {userSamlFound}')
-        logger.info(f'Gss app found: {gssFound}')
-
 
         g_testPassed[fullnode] = True
         g_testThreadsRunning -= 1
@@ -307,8 +264,6 @@ class Capabilities(threading.Thread):
             g_testThreadsRunning -= 1
             return
 
-        # TBD: Add assertion for GSS enabled
-        # self.assertEqual(j["ocs"]["data"]["capabilities"]["globalscale"]["enabled"], ocsresult.ocs_data_capabilities_globalscale_enabled)
         g_testPassed[fullnode] = True
         g_testThreadsRunning -= 1
         logger.info(f'Capabilities thread done for node {self.name}, test passed: {g_testPassed[fullnode]}')
@@ -454,33 +409,6 @@ class TestOcsCalls(unittest.TestCase):
         for fullnode in drv.fullnodes:
             with self.subTest(mynode=fullnode):
                 self.assertTrue(g_testPassed[fullnode])
-
-    def test_gssusers(self):
-        drv = sunetnextcloud.TestTarget()
-        logger.info(f'TestID: {self._testMethodName}')
-        if drv.testgss == False:
-            logger.info(f'Not testing gss')
-            return
-
-        fullnode = 'gss'
-        url = drv.get_add_user_url(fullnode)
-        logger.info(f'{self._testMethodName} {url}')
-        nodeuser = drv.get_ocsuser(fullnode)
-        nodepwd = drv.get_ocsuserapppassword(fullnode)
-        url = url.replace("$USERNAME$", nodeuser)
-        url = url.replace("$PASSWORD$", nodepwd)
-
-        try:
-            r = requests.get(url, headers=ocsheaders, timeout=g_requestTimeout)
-        except Exception as error:
-            logger.error(f'Error getting {url}: {error}')
-        try:
-            j = json.loads(r.text)
-            # logger.info(json.dumps(j, indent=4, sort_keys=True))
-            users = j["ocs"]["data"]["users"]
-        except Exception as error:
-            logger.info(f"No JSON reply received from {fullnode}:{error}")
-            logger.info(r.text)
 
     def test_nodeusers(self):
         drv = sunetnextcloud.TestTarget()

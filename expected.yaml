@@ -8,22 +8,12 @@ global:
   fullnodes: [extern,sunet,su,kau,suni,scilifelab,hh,gih,mdu,mau,hv,shh,bth,kmh,ltu,hb,his,lnu,uu,swamid,vr]
   redundantnodes: [extern,gih,hh,kau,lnu,ltu,mdu,scilifelab,su,sunet,vr]
   multinodes: [ki,lu,uu,gu,kth,liu,umu,chalmers,slu,lnu,mau,ltu,oru,miun,du,hj,hb,hig,hv,his,bth,rkh,hhs,fhs,uniarts,konstfack,esh,kmh,shh,kkh,ths,nordunet,kb,kva,sics,sp,irf,vr,nrm,smhi,uhr,antagning,swamid,vinnova]
-  testGss: true
   testBrowsers: [firefox,chrome]
 prod:
   loginexceptions: [kau,scilifelab]
   defaultapps: [dashboard,files,photos,activity,contacts,calendar,announcementcenter,collectives,polls,forms,tasks]
   optionalapps: [rds,integration_jupyterhub]
   status:
-    installed: true
-    maintenance: false
-    needsDbUpgrade: false
-    version: '29.0.8.2'
-    versionstring: '29.0.8 Enterprise'
-    edition: ''
-    productname: 'Nextcloud'
-    extendedSupport: false
-  status_gss:
     installed: true
     maintenance: false
     needsDbUpgrade: false
@@ -59,15 +49,6 @@ test:
   defaultapps: [dashboard,files,photos,activity,contacts,calendar,announcementcenter,collectives,polls,forms,tasks]
   optionalapps: [rds,integration_jupyterhub]
   status:
-    installed: true
-    maintenance: false
-    needsDbUpgrade: false
-    version: '29.0.9.3'
-    versionstring: '29.0.9 Enterprise'
-    edition: ''
-    productname: 'Nextcloud'
-    extendedSupport: false
-  status_gss:
     installed: true
     maintenance: false
     needsDbUpgrade: false
