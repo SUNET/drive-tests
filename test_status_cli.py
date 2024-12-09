@@ -191,7 +191,7 @@ class SeamlessAccessInfo(threading.Thread):
             r =requests.get(url, timeout=g_requestTimeout)
 
             if "seamlessaccess.org" not in r.text and self.node not in expectedResults[drv.target]['loginexceptions']:
-                logger.error(f'Errog getting seamless access info from: {self.node}')
+                logger.error(f'Error getting seamless access info from: {self.node}')
                 g_failedNodes.append(url)
                 testThreadsRunning-=1
                 return
@@ -381,7 +381,8 @@ class TestStatus(unittest.TestCase):
                         certString = j["md:EntityDescriptor"]["md:SPSSODescriptor"]["md:KeyDescriptor"]["ds:KeyInfo"]["ds:X509Data"]["ds:X509Certificate"]
                         certMd5 = hashlib.md5(certString.encode('utf-8')).hexdigest()
                     except Exception as error:
-                        logger.error(f'Metadata is not valid XML: {error}')
+                        logger.error(f'Metadata is not valid XML for {node}: {error}')
+                        logger.error(f'Metadata: {r.text}')
 
                     self.assertEqual(expectedEntityId, drv.get_node_entity_id(node))
                     self.assertEqual(certMd5, expectedResults[drv.target]['cert_md5'])
