@@ -259,6 +259,54 @@ class WebDAVCleanSeleniumFolders(threading.Thread):
         g_testPassed[fullnode] = True
         g_testThreadsRunning -= 1
 
+class WebDAVCleanTrashbin(threading.Thread):
+    def __init__(self, name, TestWebDAV):
+        threading.Thread.__init__(self)
+        self.name = name
+        self.TestWebDAV = TestWebDAV
+
+    def run(self):
+        global logger
+        global g_testPassed
+        global g_testThreadsRunning
+        fullnode = self.name    
+        g_testPassed[fullnode] = False
+        g_testThreadsRunning += 1
+        logger.info(f'WebDAVCleanTrashbin thread started for node {self.name}')
+        drv = sunetnextcloud.TestTarget()
+
+        nodeuser = drv.get_seleniumuser(fullnode)
+        nodepwd = drv.get_seleniumuserpassword(fullnode)
+        url = drv.get_webdav_url(fullnode, nodeuser)
+        url = url.replace('files','trashbin')
+        logger.info(f'URL: {url}')
+        options = {
+        'webdav_hostname': url,
+        'webdav_login' : nodeuser,
+        'webdav_password' : nodepwd,
+        'webdav_timeout': g_webdav_timeout
+        }
+
+        try:
+            client = Client(options)
+            files = client.list(f'trash')
+            files.pop(0)    # Remove first that is just the folder name
+            for file in files:
+                try:
+                    targetdeletefile = f'trash/{file}'
+                    logger.info(f'Deleting file {targetdeletefile}')
+                    client.clean(targetdeletefile)
+                except Exception as error:
+                    logger.warning(f'Unable to delete {targetdeletefile} on {fullnode} due to: {error}')
+        except Exception as error:
+            logger.error(f'Error in WebDAVCleanTrashbin thread for node {self.name}: {error}')
+            g_testPassed[fullnode] = False
+            g_testThreadsRunning -= 1
+            return
+        logger.info(f'WebDAVCleanTrashbin thread done for node {self.name}')
+        g_testPassed[fullnode] = True
+        g_testThreadsRunning -= 1
+
 class WebDAVMakeSharingFolder(threading.Thread):
     def __init__(self, name, TestWebDAV):
         threading.Thread.__init__(self)
@@ -712,6 +760,23 @@ class TestWebDAV(unittest.TestCase):
                 logger.info(f'TestID: {fullnode}')
                 WebDAVSystemBucketFoldersThread = WebDAVCreateMoveDelete(fullnode, g_systemBucket, self)
                 WebDAVSystemBucketFoldersThread.start()
+
+        while(g_testThreadsRunning > 0):
+            time.sleep(1)
+
+        for fullnode in drv.fullnodes:
+            with self.subTest(mynode=fullnode):
+                self.assertTrue(g_testPassed[fullnode])
+
+    def test_empty_trashbin(self):
+        global logger
+        logger.info(f'test_empty_trashbin')
+        drv = sunetnextcloud.TestTarget()
+        for fullnode in drv.fullnodes:
+            with self.subTest(mynode=fullnode):
+                logger.info(f'TestID: {fullnode}')
+                WebDAVCleanTrashbinThread = WebDAVCleanTrashbin(fullnode, self)
+                WebDAVCleanTrashbinThread.start()
 
         while(g_testThreadsRunning > 0):
             time.sleep(1)
