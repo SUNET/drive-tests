@@ -768,22 +768,22 @@ class TestWebDAV(unittest.TestCase):
             with self.subTest(mynode=fullnode):
                 self.assertTrue(g_testPassed[fullnode])
 
-    # def test_empty_trashbin(self):
-    #     global logger
-    #     logger.info(f'test_empty_trashbin')
-    #     drv = sunetnextcloud.TestTarget()
-    #     for fullnode in drv.fullnodes:
-    #         with self.subTest(mynode=fullnode):
-    #             logger.info(f'TestID: {fullnode}')
-    #             WebDAVCleanTrashbinThread = WebDAVCleanTrashbin(fullnode, self)
-    #             WebDAVCleanTrashbinThread.start()
+    def test_empty_trashbin(self):
+        global logger
+        logger.info(f'test_empty_trashbin')
+        drv = sunetnextcloud.TestTarget()
+        for fullnode in drv.fullnodes:
+            with self.subTest(mynode=fullnode):
+                logger.info(f'TestID: {fullnode}')
+                WebDAVCleanTrashbinThread = WebDAVCleanTrashbin(fullnode, self)
+                WebDAVCleanTrashbinThread.start()
 
-    #     while(g_testThreadsRunning > 0):
-    #         time.sleep(1)
+        while(g_testThreadsRunning > 0):
+            time.sleep(1)
 
-    #     for fullnode in drv.fullnodes:
-    #         with self.subTest(mynode=fullnode):
-    #             self.assertTrue(g_testPassed[fullnode])
+        for fullnode in drv.fullnodes:
+            with self.subTest(mynode=fullnode):
+                self.assertTrue(g_testPassed[fullnode])
 
 if __name__ == '__main__':
     unittest.main(testRunner=xmlrunner.XMLTestRunner(output='test-reports'))
