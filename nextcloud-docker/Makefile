@@ -50,7 +50,6 @@ selfsignedcert:
 docker_kill:
 	docker kill nextcloud-local 2&> /dev/null || true
 	docker kill nextcloud-local-db 2&> /dev/null || true
-	pushd $(CURDIR)/minio && docker-compose down
 .PHONY: docker
 docker: selfsignedcert docker_kill
 	$(shell printf 'LoadModule socache_shmcb_module /usr/lib/apache2/modules/mod_socache_shmcb.so \nLoadModule ssl_module /usr/lib/apache2/modules/mod_ssl.so \nSSLRandomSeed startup builtin \nSSLRandomSeed startup file:/dev/urandom 512 \nSSLRandomSeed connect builtin \nSSLRandomSeed connect file:/dev/urandom 512 \nAddType application/x-x509-ca-cert .crt \nAddType application/x-pkcs7-crl .crl \nSSLPassPhraseDialog  exec:/usr/share/apache2/ask-for-passphrase \nSSLSessionCache     shmcb:$${APACHE_RUN_DIR}/ssl_scache(512000) \nSSLSessionCacheTimeout  300 \nSSLCipherSuite HIGH:!aNULL \nSSLProtocol all -SSLv3 \nSSLSessionTickets off' > /tmp/nextcloud-ssl.conf )
@@ -60,23 +59,22 @@ docker: selfsignedcert docker_kill
 	# docker cp $(build_dir)/$(app_name)-$(version).tar.gz nextcloud:/var/www/html/custom_apps
 	# docker exec -u www-data nextcloud /bin/bash -c "cd /var/www/html/custom_apps && tar -xzf $(app_name)-$(version).tar.gz && rm $(app_name)-$(version).tar.gz"
 	# docker exec nextcloud /bin/bash -c "chown -R www-data:www-data /var/www/html/custom_apps/$(app_name)"
-	docker exec -u www-data nextcloud-local /bin/bash -c "/var/www/html/occ maintenance:install --admin-user='admin' --admin-pass='adminpassword'"
-	docker exec -u www-data nextcloud-local /bin/bash -c "/var/www/html/occ app:install files_accesscontrol"
-	docker exec -u www-data nextcloud-local /bin/bash -c "/var/www/html/occ app:install files_automatedtagging"
-	docker exec -u www-data nextcloud-local /bin/bash -c "/var/www/html/occ app:install twofactor_webauthn"
+	-docker exec -u www-data nextcloud-local /bin/bash -c "/var/www/html/occ maintenance:install --admin-user='admin' --admin-pass='adminpassword'"
+	-docker exec -u www-data nextcloud-local /bin/bash -c "/var/www/html/occ app:install files_accesscontrol"
+	-docker exec -u www-data nextcloud-local /bin/bash -c "/var/www/html/occ app:install files_automatedtagging"
+	-docker exec -u www-data nextcloud-local /bin/bash -c "/var/www/html/occ app:install twofactor_webauthn"
 	docker exec -u www-data nextcloud-local /bin/bash -c "/var/www/html/occ app:enable twofactor_totp"
 	docker exec -u www-data nextcloud-local /bin/bash -c "/var/www/html/occ app:enable files_external"
 	# docker exec -u www-data nextcloud-local /bin/bash -c "/var/www/html/occ app:enable mfazones"
-	docker exec -u www-data nextcloud-local /bin/bash -c "/var/www/html/occ group:add mfa"
+	-docker exec -u www-data nextcloud-local /bin/bash -c "/var/www/html/occ group:add mfa"
 	docker exec -u www-data nextcloud-local /bin/bash -c "/var/www/html/occ twofactorauth:enforce --on --group mfa"
 	docker exec -u www-data nextcloud-local /bin/bash -c "/var/www/html/occ group:adduser mfa admin"
-	docker exec -u www-data nextcloud-local /bin/bash -c "env OC_PASS=mfauserpassword /var/www/html/occ user:add --password-from-env --display-name='MFA User' --group='mfa' mfauser"
-	docker exec -u www-data nextcloud-local /bin/bash -c "env OC_PASS=nomfauserpassword /var/www/html/occ user:add --password-from-env --display-name='Ordinary User' nomfauser"
-	firefox -new-tab https://localhost:8443/
+	-docker exec -u www-data nextcloud-local /bin/bash -c "env OC_PASS=mfauserpassword /var/www/html/occ user:add --password-from-env --display-name='MFA User' --group='mfa' mfauser"
+	-docker exec -u www-data nextcloud-local /bin/bash -c "env OC_PASS=nomfauserpassword /var/www/html/occ user:add --password-from-env --display-name='Ordinary User' nomfauser"
+	firefox -new-tab https://localhost:8443/ http://localhost:9001
 
 clean: docker_kill
 
-# .PHONY: test
-# test: composer
-# 	$(project_dir)/vendor/phpunit/phpunit/phpunit -c $(project_dir)/phpunit.xml
-# 	$(project_dir)/vendor/phpunit/phpunit/phpunit -c $(project_dir)/phpunit.integration.xml
+.PHONY: test
+test: clean docker
+	python ../mfazones-docker/init_selenium.py
