@@ -58,22 +58,33 @@ docker: selfsignedcert docker_kill
 	sleep 10
 	# docker cp $(build_dir)/$(app_name)-$(version).tar.gz nextcloud:/var/www/html/custom_apps
 	# docker exec -u www-data nextcloud /bin/bash -c "cd /var/www/html/custom_apps && tar -xzf $(app_name)-$(version).tar.gz && rm $(app_name)-$(version).tar.gz"
-	# docker exec nextcloud /bin/bash -c "chown -R www-data:www-data /var/www/html/custom_apps/$(app_name)"
-	-docker exec -u www-data nextcloud-local /bin/bash -c "/var/www/html/occ maintenance:install --admin-user='admin' --admin-pass='adminpassword'"
-	-docker exec -u www-data nextcloud-local /bin/bash -c "/var/www/html/occ app:install files_accesscontrol"
-	-docker exec -u www-data nextcloud-local /bin/bash -c "/var/www/html/occ app:install files_automatedtagging"
-	-docker exec -u www-data nextcloud-local /bin/bash -c "/var/www/html/occ app:install twofactor_webauthn"
-	docker exec -u www-data nextcloud-local /bin/bash -c "/var/www/html/occ app:enable twofactor_totp"
-	docker exec -u www-data nextcloud-local /bin/bash -c "/var/www/html/occ app:enable files_external"
-	docker exec -u www-data nextcloud-local /bin/bash -c "/var/www/html/occ app:disable firstrunwizard"
-	-docker exec -u www-data nextcloud-local /bin/bash -c "/var/www/html/occ app:enable mfazones"
-	-docker exec -u www-data nextcloud-local /bin/bash -c "/var/www/html/occ group:add mfa"
-	docker exec -u www-data nextcloud-local /bin/bash -c "/var/www/html/occ twofactorauth:enforce --on --group mfa"
-	docker exec -u www-data nextcloud-local /bin/bash -c "/var/www/html/occ group:adduser mfa admin"
-	-docker exec -u www-data nextcloud-local /bin/bash -c "env OC_PASS=mfauserpassword /var/www/html/occ user:add --password-from-env --display-name='MFA User' --group='mfa' mfauser"
-	-docker exec -u www-data nextcloud-local /bin/bash -c "env OC_PASS=nomfauserpassword /var/www/html/occ user:add --password-from-env --display-name='Ordinary User' nomfauser"
+	# docker exec nextcloud /bin/bash -c "chown -R www-data:www-data /var/www/html/custom_apps/$(app_name)
+	-./occ_docker  maintenance:install --admin-user='admin' --admin-pass='adminpassword'
+	-./occ_docker  app:install files_accesscontrol
+	-./occ_docker  app:install files_automatedtagging
+	-./occ_docker  app:install twofactor_webauthn
+	./occ_docker  app:enable twofactor_totp
+	./occ_docker  app:enable files_external
+	./occ_docker  app:disable firstrunwizard
+	-./occ_docker  app:enable mfazones
+	-./occ_docker  group:add mfa
+	./occ_docker  twofactorauth:enforce --on --group mfa
+	./occ_docker  group:adduser mfa admin
+	-docker exec -u www-data nextcloud-local /bin/bash -c "env OC_PASS=mfauserpassword /var/www/html/occ user:add --password-from-env --display-name='MFA User' --group='mfa' mfauser
+	-docker exec -u www-data nextcloud-local /bin/bash -c "env OC_PASS=nomfauserpassword /var/www/html/occ user:add --password-from-env --display-name='Ordinary User' nomfauser
+
+	-docker exec -u www-data nextcloud-local /bin/bash -c "env OC_PASS=_selenium_localhost_mfa_password /var/www/html/occ user:add --password-from-env --display-name='Selenium MFA User' --group='mfa' _selenium_localhost_mfa"
+	-docker exec -u www-data nextcloud-local /bin/bash -c "env OC_PASS=_selenium_localhost_password /var/www/html/occ user:add --password-from-env --display-name='Selenium User' _selenium_localhost"
+
 	docker exec nextcloud-docker-minio1-1 mc config host add myminio http://nextcloud-local-minio:9000 minioadmin minioadmin
-	docker exec nextcloud-docker-minio1-1 mc mb myminio/test-bucket
+	-docker exec nextcloud-docker-minio1-1 mc mb myminio/project-bucket
+	-docker exec nextcloud-docker-minio1-1 mc mb myminio/selenium-system
+	-docker exec nextcloud-docker-minio1-1 mc mb myminio/selenium-home
+
+	# Copy bucket configuration file to container and import mounts
+	docker cp files_external.json nextcloud-local:/var/www/html
+	./occ_docker files_external:import files_external.json
+	
 	firefox -new-tab https://localhost:8443/ http://localhost:9001
 
 clean: docker_kill

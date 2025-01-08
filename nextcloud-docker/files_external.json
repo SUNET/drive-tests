@@ -1,0 +1,130 @@
+[
+    {
+        "mount_id": 1,
+        "mount_point": "\/project-bucket",
+        "storage": "\\OCA\\Files_External\\Lib\\Storage\\AmazonS3",
+        "authentication_type": "amazons3::accesskey",
+        "configuration": {
+            "bucket": "project-bucket",
+            "hostname": "nextcloud-local-minio",
+            "key": "minioadmin",
+            "legacy_auth": false,
+            "port": "9000",
+            "region": "",
+            "secret": "minioadmin",
+            "storageClass": "",
+            "useMultipartCopy": true,
+            "use_path_style": true,
+            "use_ssl": false
+        },
+        "options": {
+            "enable_sharing": true,
+            "encoding_compatibility": false,
+            "encrypt": true,
+            "filesystem_check_changes": 0,
+            "previews": true,
+            "readonly": false
+        },
+        "applicable_users": [],
+        "applicable_groups": [
+            "admin"
+        ],
+        "type": "admin"
+    },
+    {
+        "mount_id": 2,
+        "mount_point": "\/test-bucket",
+        "storage": "\\OCA\\Files_External\\Lib\\Storage\\AmazonS3",
+        "authentication_type": "amazons3::accesskey",
+        "configuration": {
+            "bucket": "test-bucket",
+            "hostname": "nextcloud-local-minio",
+            "key": "minioadmin",
+            "legacy_auth": false,
+            "port": "9000",
+            "region": "",
+            "secret": "minioadmin",
+            "storageClass": "",
+            "useMultipartCopy": true,
+            "use_path_style": true,
+            "use_ssl": false
+        },
+        "options": {
+            "enable_sharing": true,
+            "encoding_compatibility": false,
+            "encrypt": true,
+            "filesystem_check_changes": 0,
+            "previews": true,
+            "readonly": false
+        },
+        "applicable_users": [],
+        "applicable_groups": [
+            "admin"
+        ],
+        "type": "admin"
+    },
+    {
+        "mount_id": 3,
+        "mount_point": "\/selenium-system",
+        "storage": "\\OCA\\Files_External\\Lib\\Storage\\AmazonS3",
+        "authentication_type": "amazons3::accesskey",
+        "configuration": {
+            "bucket": "selenium-system",
+            "hostname": "nextcloud-local-minio",
+            "key": "minioadmin",
+            "legacy_auth": false,
+            "port": "9000",
+            "region": "",
+            "secret": "minioadmin",
+            "storageClass": "",
+            "useMultipartCopy": true,
+            "use_path_style": true,
+            "use_ssl": false
+        },
+        "options": {
+            "enable_sharing": true,
+            "encoding_compatibility": false,
+            "encrypt": true,
+            "filesystem_check_changes": 0,
+            "previews": true,
+            "readonly": false
+        },
+        "applicable_users": [
+            "_selenium_localhost"
+        ],
+        "applicable_groups": [],
+        "type": "admin"
+    },
+    {
+        "mount_id": 4,
+        "mount_point": "\/selenium-home",
+        "storage": "\\OCA\\Files_External\\Lib\\Storage\\AmazonS3",
+        "authentication_type": "amazons3::accesskey",
+        "configuration": {
+            "bucket": "selenium-home",
+            "hostname": "nextcloud-local-minio",
+            "key": "minioadmin",
+            "legacy_auth": false,
+            "port": "9000",
+            "region": "",
+            "secret": "minioadmin",
+            "storageClass": "",
+            "useMultipartCopy": true,
+            "use_path_style": true,
+            "use_ssl": false
+        },
+        "options": {
+            "enable_sharing": true,
+            "encoding_compatibility": false,
+            "encrypt": true,
+            "filesystem_check_changes": 0,
+            "previews": true,
+            "readonly": false
+        },
+        "applicable_users": [
+            "_selenium_localhost"
+        ],
+        "applicable_groups": [],
+        "type": "personal"
+    }
+]
