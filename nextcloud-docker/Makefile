@@ -72,10 +72,9 @@ docker: selfsignedcert docker_kill
 	./occ_docker  group:adduser mfa admin
 	-docker exec -u www-data nextcloud-local /bin/bash -c "env OC_PASS=mfauserpassword /var/www/html/occ user:add --password-from-env --display-name='MFA User' --group='mfa' mfauser
 	-docker exec -u www-data nextcloud-local /bin/bash -c "env OC_PASS=nomfauserpassword /var/www/html/occ user:add --password-from-env --display-name='Ordinary User' nomfauser
-
+	-docker exec -u www-data nextcloud-local /bin/bash -c "env OC_PASS=_ocs_localhost_password /var/www/html/occ user:add --password-from-env --display-name='MFA User' --group='admin' _ocs_localhost
 	-docker exec -u www-data nextcloud-local /bin/bash -c "env OC_PASS=_selenium_localhost_mfa_password /var/www/html/occ user:add --password-from-env --display-name='Selenium MFA User' --group='mfa' _selenium_localhost_mfa"
 	-docker exec -u www-data nextcloud-local /bin/bash -c "env OC_PASS=_selenium_localhost_password /var/www/html/occ user:add --password-from-env --display-name='Selenium User' _selenium_localhost"
-
 	docker exec nextcloud-docker-minio1-1 mc config host add myminio http://nextcloud-local-minio:9000 minioadmin minioadmin
 	-docker exec nextcloud-docker-minio1-1 mc mb myminio/project-bucket
 	-docker exec nextcloud-docker-minio1-1 mc mb myminio/selenium-system
