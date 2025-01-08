@@ -1,0 +1,3 @@
+#!/bin/bash
+command="docker exec -u www-data nextcloud-local /bin/bash -c \"/var/www/html/occ ${@}\""
+bash -c "$command"
