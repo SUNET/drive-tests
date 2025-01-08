@@ -72,6 +72,8 @@ docker: selfsignedcert docker_kill
 	docker exec -u www-data nextcloud-local /bin/bash -c "/var/www/html/occ group:adduser mfa admin"
 	-docker exec -u www-data nextcloud-local /bin/bash -c "env OC_PASS=mfauserpassword /var/www/html/occ user:add --password-from-env --display-name='MFA User' --group='mfa' mfauser"
 	-docker exec -u www-data nextcloud-local /bin/bash -c "env OC_PASS=nomfauserpassword /var/www/html/occ user:add --password-from-env --display-name='Ordinary User' nomfauser"
+	docker exec nextcloud-docker-minio1-1 mc config host add myminio http://nextcloud-local-minio:9000 minioadmin minioadmin
+	docker exec nextcloud-docker-minio1-1 mc mb myminio/test-bucket
 	firefox -new-tab https://localhost:8443/ http://localhost:9001
 
 clean: docker_kill
