@@ -100,7 +100,7 @@ class NodeStatusInfo(threading.Thread):
             url = drv.get_node_status_url(self.node, i)
             try:
                 logger.info(f'Getting status from: {url}')
-                r =requests.get(url, timeout=g_requestTimeout, verify=self.verify)
+                r =requests.get(url, timeout=g_requestTimeout, verify=False)
             except Exception as error:
                 logger.error(f'Error getting node status data from {self.node}: {error}')
                 g_failedNodes.append(url)
