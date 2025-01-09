@@ -26,15 +26,17 @@ abspath = os.path.abspath(__file__)
 dname = os.path.dirname(abspath)
 os.chdir(dname)
 
+logger = logging.getLogger(__name__)
+logging.basicConfig(format = '%(asctime)s - %(module)s.%(funcName)s - %(levelname)s: %(message)s',
+                datefmt = '%Y-%m-%d %H:%M:%S', level = logging.INFO)
+
 envtarget = os.environ.get('NextcloudTestTarget')
 if envtarget == 'localhost':
     g_expectedFile = 'expected_localhost.yaml'
 else:
     g_expectedFile = 'expected.yaml'
 
-logger = logging.getLogger(__name__)
-logging.basicConfig(format = '%(asctime)s - %(module)s.%(funcName)s - %(levelname)s: %(message)s',
-                datefmt = '%Y-%m-%d %H:%M:%S', level = logging.INFO)
+logger.info(f'Using test results file: {g_expectedFile}')
 
 def get_value(env, raiseException = True):
     value = os.environ.get(env)
@@ -113,10 +115,6 @@ class TestTarget(object):
             self.browsers = testbrowsers.split(",")
 
         if testtarget == "localhost":
-            self.allnodes = ["localhost"]
-            self.fullnodes = []
-            self.multinodes = ["localhost"]
-            self.baseurl = 'localhost:8443'
             self.targetprefix = ''
             self.nodeprefix = ''
             self.delimiter = ''

@@ -19,18 +19,19 @@ import sunetnextcloud
 import os
 
 drv = sunetnextcloud.TestTarget()
-if drv.target == 'localhost':
-    expectedResultsFile = 'expected_localhost.yaml'
-else:
-    expectedResultsFile = 'expected.yaml'
+expectedResults = drv.expectedResults
+# if drv.target == 'localhost':
+#     expectedResultsFile = 'expected_localhost.yaml'
+# else:
+#     expectedResultsFile = 'expected.yaml'
 testThreadsRunning = 0
 g_failedNodes = []
 g_requestTimeout=10
 logger = logging.getLogger(__name__)
 logging.basicConfig(format = '%(asctime)s - %(module)s.%(funcName)s - %(levelname)s: %(message)s',
                 datefmt = '%Y-%m-%d %H:%M:%S', level = logging.INFO)
-with open(expectedResultsFile, "r") as stream:
-    expectedResults=yaml.safe_load(stream)
+# with open(expectedResultsFile, "r") as stream:
+#     expectedResults=yaml.safe_load(stream)
 
 class FrontendStatusInfo(threading.Thread):
     def __init__(self, url, TestStatus, verify=True):
