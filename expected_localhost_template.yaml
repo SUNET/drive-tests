@@ -1,0 +1,31 @@
+global:
+  baseUrl: 'localhost:8443'
+  nodePrefix: ''
+  testPrefix: ''
+  docPrefix: ''
+  indexSuffix: '/index.php'
+  allnodes: [localhost]
+  fullnodes: [localhost]
+  redundantnodes: []
+  multinodes: []
+  testBrowsers: [firefox,chrome]
+localhost:
+  loginexceptions: []
+  defaultapps: [dashboard,files,photos,activity,contacts,calendar,announcementcenter,collectives,polls,forms,tasks]
+  optionalapps: [rds,integration_jupyterhub]
+  status:
+    installed: true
+    maintenance: false
+    needsDbUpgrade: false
+    version: '30.0.4.1'
+    versionstring: '30.0.4'
+    edition: ''
+    productname: 'Nextcloud'
+    extendedSupport: false
+  ocs_capabilities:
+    ocs_meta_status: 'ok'
+    ocs_meta_statuscode: 100
+    ocs_meta_statuscode_2: 200
+    ocs_meta_message: 'OK'
+    ocs_data_version_string: '30.0.4'
+    ocs_data_capabilities_globalscale_enabled: true

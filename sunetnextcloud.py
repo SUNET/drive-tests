@@ -22,11 +22,15 @@ from selenium.common.exceptions import TimeoutException
 from enum import Enum
 
 # Change to local directory
-# abspath = os.path.abspath(__file__)
-# dname = os.path.dirname(abspath)
-# os.chdir(dname)
+abspath = os.path.abspath(__file__)
+dname = os.path.dirname(abspath)
+os.chdir(dname)
 
-g_expectedFile = 'expected.yaml'
+envtarget = os.environ.get('NextcloudTestTarget')
+if envtarget == 'localhost':
+    g_expectedFile = 'expected_localhost.yaml'
+else:
+    g_expectedFile = 'expected.yaml'
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(format = '%(asctime)s - %(module)s.%(funcName)s - %(levelname)s: %(message)s',
@@ -66,12 +70,13 @@ class TestTarget(object):
     platform = sys.platform
 
     def __init__(self, target=None):
+        global envtarget
         abspath = os.path.abspath(__file__)
         dname = os.path.dirname(abspath)
         logger.info(f'Working directory is {dname}')
         testcustomers = os.environ.get('NextcloudTestCustomers')
         testbrowsers = os.environ.get('NextcloudTestBrowsers')
-        envtarget = os.environ.get('NextcloudTestTarget')
+        
 
         if target is not None:
             logger.info(f'Test target initialized by caller: {target}')
@@ -83,7 +88,7 @@ class TestTarget(object):
             logger.warning(f'Test target initialized by default value: test')
             testtarget = 'test'
 
-        if testtarget not in ['prod','test','dev']:
+        if testtarget not in ['prod','test','localhost']:
             logger.error(f'Unsupported test target: {target}, exiting...')
             sys.exit()
 
@@ -91,6 +96,8 @@ class TestTarget(object):
         if testtarget == "prod":
             self.target = "prod"
             self.targetprefix = ""
+        elif testtarget == "localhost":
+            self.target = "localhost"
         else:
             self.target = "test"
             self.targetprefix = "." + self.testprefix
@@ -105,8 +112,21 @@ class TestTarget(object):
         if testbrowsers is not None:
             self.browsers = testbrowsers.split(",")
 
+        if testtarget == "localhost":
+            self.allnodes = ["localhost"]
+            self.fullnodes = []
+            self.multinodes = ["localhost"]
+            self.baseurl = 'localhost:8443'
+            self.targetprefix = ''
+            self.nodeprefix = ''
+            self.delimiter = ''
+            self.verify = False     # Do not verify SSL when testing locally
+        else:
+            self.delimiter = '.'    # URL delimiter
+            self.verify = True
+
     def getnodeprefix(self, node):
-        if (node == 'none'):
+        if (node == 'none') or (node == 'localhost'):
             prefix = self.nodeprefix
         elif len(self.nodeprefix) == 0:
             prefix = node
@@ -115,13 +135,13 @@ class TestTarget(object):
         return prefix
 
     def get_node_url(self, node):
-        return 'https://' + self.getnodeprefix(node) + self.targetprefix + '.' + self.baseurl
+        return 'https://' + self.getnodeprefix(node) + self.targetprefix + self.delimiter + self.baseurl
 
     def get_node_login_url(self, node, direct = True):
         if direct == True:
-            return 'https://' + self.getnodeprefix(node) + self.targetprefix + '.' + self.baseurl + self.indexsuffix + '/login?direct=1'
+            return 'https://' + self.getnodeprefix(node) + self.targetprefix + self.delimiter + self.baseurl + self.indexsuffix + '/login?direct=1'
         else:
-            return 'https://' + self.getnodeprefix(node) + self.targetprefix + '.' + self.baseurl + self.indexsuffix
+            return 'https://' + self.getnodeprefix(node) + self.targetprefix + self.delimiter + self.baseurl + self.indexsuffix
 
     def get_portal_login_url(self):
         if self.target == "prod":
@@ -130,98 +150,98 @@ class TestTarget(object):
             return 'https://portal.drive.test.' + self.baseurl
 
     def get_node_post_logout_url(self, node):
-        return 'https://' + self.getnodeprefix(node) + self.targetprefix + '.' + self.baseurl + self.indexsuffix + '/login?clear=1'
+        return 'https://' + self.getnodeprefix(node) + self.targetprefix + self.delimiter + self.baseurl + self.indexsuffix + '/login?clear=1'
 
     def get_node_post_logout_simple_url(self, node):
-        return 'https://' + self.getnodeprefix(node) + self.targetprefix + '.' + self.baseurl + self.indexsuffix + '/login'
+        return 'https://' + self.getnodeprefix(node) + self.targetprefix + self.delimiter + self.baseurl + self.indexsuffix + '/login'
 
     def get_node_post_logout_saml_url(self, node):
-        return 'https://' + self.getnodeprefix(node) + self.targetprefix + '.' + self.baseurl + self.indexsuffix + '/apps/user_saml/saml/selectUserBackEnd?redirectUrl='
+        return 'https://' + self.getnodeprefix(node) + self.targetprefix + self.delimiter + self.baseurl + self.indexsuffix + '/apps/user_saml/saml/selectUserBackEnd?redirectUrl='
 
     def get_ocs_capabilities_url(self, node):
-        return 'https://' + self.getnodeprefix(node) + self.targetprefix + '.' + self.baseurl + '/ocs/v2.php/cloud/capabilities?format=json'
+        return 'https://' + self.getnodeprefix(node) + self.targetprefix + self.delimiter + self.baseurl + '/ocs/v2.php/cloud/capabilities?format=json'
 
     def get_all_apps_url(self, node):
-        return 'https://$USERNAME$:$PASSWORD$@' + self.getnodeprefix(node) + self.targetprefix + '.' + self.baseurl + '/ocs/v2.php/cloud/apps?format=json'
+        return 'https://$USERNAME$:$PASSWORD$@' + self.getnodeprefix(node) + self.targetprefix + self.delimiter + self.baseurl + '/ocs/v2.php/cloud/apps?format=json'
 
     def get_app_url(self, node, app):
-        return 'https://$USERNAME$:$PASSWORD$@' + self.getnodeprefix(node) + self.targetprefix + '.' + self.baseurl + '/ocs/v2.php/cloud/apps/' + app + '?format=json'
+        return 'https://$USERNAME$:$PASSWORD$@' + self.getnodeprefix(node) + self.targetprefix + self.delimiter + self.baseurl + '/ocs/v2.php/cloud/apps/' + app + '?format=json'
 
     def get_add_user_url(self, node):
-        return 'https://$USERNAME$:$PASSWORD$@' + self.getnodeprefix(node) + self.targetprefix + '.' + self.baseurl + '/ocs/v1.php/cloud/users?format=json'
+        return 'https://$USERNAME$:$PASSWORD$@' + self.getnodeprefix(node) + self.targetprefix + self.delimiter + self.baseurl + '/ocs/v1.php/cloud/users?format=json'
 
     def get_user_url(self, node, username):
-        return 'https://$USERNAME$:$PASSWORD$@' + self.getnodeprefix(node) + self.targetprefix + '.' + self.baseurl + '/ocs/v1.php/cloud/users/' + username + '?format=json'
+        return 'https://$USERNAME$:$PASSWORD$@' + self.getnodeprefix(node) + self.targetprefix + self.delimiter + self.baseurl + '/ocs/v1.php/cloud/users/' + username + '?format=json'
 
     def get_disable_user_url(self, node, username):
-        return 'https://$USERNAME$:$PASSWORD$@' + self.getnodeprefix(node) + self.targetprefix + '.' + self.baseurl + '/ocs/v1.php/cloud/users/' + username + '/disable?format=json'
+        return 'https://$USERNAME$:$PASSWORD$@' + self.getnodeprefix(node) + self.targetprefix + self.delimiter + self.baseurl + '/ocs/v1.php/cloud/users/' + username + '/disable?format=json'
 
     def get_dashboard_url(self, node):
-        return 'https://' + self.getnodeprefix(node) + self.targetprefix + '.' + self.baseurl + self.indexsuffix + '/apps/dashboard/'
+        return 'https://' + self.getnodeprefix(node) + self.targetprefix + self.delimiter + self.baseurl + self.indexsuffix + '/apps/dashboard/'
 
     def get_folder_url(self, node, foldername):
-        return 'https://' + self.getnodeprefix(node) + self.targetprefix + '.' + self.baseurl + self.indexsuffix + '/apps/files/?dir=/' + foldername
+        return 'https://' + self.getnodeprefix(node) + self.targetprefix + self.delimiter + self.baseurl + self.indexsuffix + '/apps/files/?dir=/' + foldername
 
     def get_webdav_url(self, node, username):
-        return 'https://' + self.getnodeprefix(node) + self.targetprefix + '.' + self.baseurl + '/remote.php/dav/files/' + username + '/'
+        return 'https://' + self.getnodeprefix(node) + self.targetprefix + self.delimiter + self.baseurl + '/remote.php/dav/files/' + username + '/'
  
     def get_file_lock_url(self, node, filename):
-        return 'https://' + self.getnodeprefix(node) + self.targetprefix + '.' + self.baseurl + '/ocs/v2.php/apps/files_lock/lock/' + filename
+        return 'https://' + self.getnodeprefix(node) + self.targetprefix + self.delimiter + self.baseurl + '/ocs/v2.php/apps/files_lock/lock/' + filename
 
     def get_file_lock_curl(self, node, username, filename):
-        return 'curl -X LOCK --url https://' + username + ':$PASSWORD$@' + self.getnodeprefix(node) + self.targetprefix + '.' + self.baseurl + '/remote.php/dav/files/' + username + '/' + filename + ' --header \'X-User-Lock: 1\''
+        return 'curl -X LOCK --url https://' + username + ':$PASSWORD$@' + self.getnodeprefix(node) + self.targetprefix + self.delimiter + self.baseurl + '/remote.php/dav/files/' + username + '/' + filename + ' --header \'X-User-Lock: 1\''
 
     def get_file_unlock_curl(self, node, username, filename):
-        return 'curl -X UNLOCK --url https://' + username + ':$PASSWORD$@' + self.getnodeprefix(node) + self.targetprefix + '.' + self.baseurl + '/remote.php/dav/files/' + username + '/' + filename + ' --header \'X-User-Lock: 1\''
+        return 'curl -X UNLOCK --url https://' + username + ':$PASSWORD$@' + self.getnodeprefix(node) + self.targetprefix + self.delimiter + self.baseurl + '/remote.php/dav/files/' + username + '/' + filename + ' --header \'X-User-Lock: 1\''
 
     def get_shares_url(self, node):
-        return 'https://$USERNAME$:$PASSWORD$@' + self.getnodeprefix(node) + self.targetprefix + '.' + self.baseurl + '/ocs/v2.php/apps/files_sharing/api/v1/shares?format=json'
+        return 'https://$USERNAME$:$PASSWORD$@' + self.getnodeprefix(node) + self.targetprefix + self.delimiter + self.baseurl + '/ocs/v2.php/apps/files_sharing/api/v1/shares?format=json'
 
     def get_delete_share_url(self, node, id):
-        return 'https://$USERNAME$:$PASSWORD$@' + self.getnodeprefix(node) + self.targetprefix + '.' + self.baseurl + '/ocs/v2.php/apps/files_sharing/api/v1/shares/' + id
+        return 'https://$USERNAME$:$PASSWORD$@' + self.getnodeprefix(node) + self.targetprefix + self.delimiter + self.baseurl + '/ocs/v2.php/apps/files_sharing/api/v1/shares/' + id
 
     def get_serverinfo_url(self, node):
-        return 'https://' + self.getnodeprefix(node) + self.targetprefix + '.' + self.baseurl + '/ocs/v2.php/apps/serverinfo/api/v1/info?format=json'
+        return 'https://' + self.getnodeprefix(node) + self.targetprefix + self.delimiter + self.baseurl + '/ocs/v2.php/apps/serverinfo/api/v1/info?format=json'
 
     def get_metadata_url(self, node):
-        return 'https://' + self.getnodeprefix(node) + self.targetprefix + '.' + self.baseurl + self.indexsuffix + '/apps/user_saml/saml/metadata?idp=1'
+        return 'https://' + self.getnodeprefix(node) + self.targetprefix + self.delimiter + self.baseurl + self.indexsuffix + '/apps/user_saml/saml/metadata?idp=1'
 
     def get_node_entity_id(self, node):
-        return 'https://' + self.getnodeprefix(node) + self.targetprefix + '.' + self.baseurl + self.indexsuffix + '/apps/user_saml/saml/metadata'
+        return 'https://' + self.getnodeprefix(node) + self.targetprefix + self.delimiter + self.baseurl + self.indexsuffix + '/apps/user_saml/saml/metadata'
 
     def get_collabora_node_url(self, node):
         if len(self.nodeprefix) == 0:
-            return 'https://' + self.docprefix + str(node) + self.targetprefix + '.' + self.baseurl + '' 
-        return 'https://' + self.docprefix + str(node) + '.' + self.getnodeprefix('none') + self.targetprefix + '.' + self.baseurl + ''
+            return 'https://' + self.docprefix + str(node) + self.targetprefix + self.delimiter + self.baseurl + '' 
+        return 'https://' + self.docprefix + str(node) + '.' + self.getnodeprefix('none') + self.targetprefix + self.delimiter + self.baseurl + ''
 
     def get_collabora_capabilities_url(self, node):
         if len(self.nodeprefix) == 0:
-            return 'https://' + self.docprefix + str(node) + self.targetprefix + '.' + self.baseurl + '/hosting/capabilities'
-        return 'https://' + self.docprefix + str(node) + '.' + self.getnodeprefix('none') + self.targetprefix + '.' + self.baseurl + '/hosting/capabilities'
+            return 'https://' + self.docprefix + str(node) + self.targetprefix + self.delimiter + self.baseurl + '/hosting/capabilities'
+        return 'https://' + self.docprefix + str(node) + '.' + self.getnodeprefix('none') + self.targetprefix + self.delimiter + self.baseurl + '/hosting/capabilities'
 
     def get_fullnode_status_urls(self):
         nodeurls = []
         for node in self.fullnodes:
-            nodeurls.append("https://" + self.getnodeprefix(node) +  self.targetprefix + '.' + self.baseurl + "/status.php" )
+            nodeurls.append("https://" + self.getnodeprefix(node) +  self.targetprefix + self.delimiter + self.baseurl + "/status.php" )
         return nodeurls
 
     def get_multinode_status_urls(self):
         nodeurls = []
         for node in self.multinodes:
-            nodeurls.append("https://" + self.getnodeprefix(node) +  self.targetprefix + '.' + self.baseurl + "/status.php" )
+            nodeurls.append("https://" + self.getnodeprefix(node) +  self.targetprefix + self.delimiter + self.baseurl + "/status.php" )
         return nodeurls
 
     def get_allnode_status_urls(self):
         nodeurls = []
         for node in self.allnodes:
-            nodeurls.append("https://" + self.getnodeprefix(node) +  self.targetprefix + '.' + self.baseurl + "/status.php" )
+            nodeurls.append("https://" + self.getnodeprefix(node) +  self.targetprefix + self.delimiter + self.baseurl + "/status.php" )
         return nodeurls
 
     def get_status_url(self, node):
-        return 'https://' + self.getnodeprefix(node) +  self.targetprefix + '.' + self.baseurl + "/status.php"
+        return 'https://' + self.getnodeprefix(node) +  self.targetprefix + self.delimiter + self.baseurl + "/status.php"
 
     def get_node_status_url(self, node, id):
-        return 'https://node' + str(id) + '.' + self.getnodeprefix(node) +  self.targetprefix + '.' + self.baseurl + "/status.php"
+        return 'https://node' + str(id) + '.' + self.getnodeprefix(node) +  self.targetprefix + self.delimiter + self.baseurl + "/status.php"
 
     def get_webdav_root(self, username):
         return '/remote.php/dav/files/' + username + '/'

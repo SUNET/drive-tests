@@ -18,7 +18,11 @@ import xmlrunner
 import sunetnextcloud
 import os
 
-expectedResultsFile = 'expected.yaml'
+drv = sunetnextcloud.TestTarget()
+if drv.target == 'localhost':
+    expectedResultsFile = 'expected_localhost.yaml'
+else:
+    expectedResultsFile = 'expected.yaml'
 testThreadsRunning = 0
 g_failedNodes = []
 g_requestTimeout=10
@@ -29,10 +33,11 @@ with open(expectedResultsFile, "r") as stream:
     expectedResults=yaml.safe_load(stream)
 
 class FrontendStatusInfo(threading.Thread):
-    def __init__(self, url, TestStatus):
+    def __init__(self, url, TestStatus, verify=True):
         threading.Thread.__init__(self)
         self.url = url
         self.TestStatus = TestStatus
+        self.verify = verify
 
     def run(self):
         global testThreadsRunning
@@ -44,7 +49,7 @@ class FrontendStatusInfo(threading.Thread):
         logger.info(f'FrontendStatusInfo thread {testThreadsRunning} started for node {self.url}')
 
         try:
-            r =requests.get(self.url, timeout=g_requestTimeout)
+            r =requests.get(self.url, timeout=g_requestTimeout, verify=self.verify)
         except Exception as error:
             logger.error(f'Error getting frontend status data from {self.url}: {error}')
             g_failedNodes.append(self.url)
@@ -75,10 +80,11 @@ class FrontendStatusInfo(threading.Thread):
         logger.info(f'FrontendStatusInfo threads remaining: {testThreadsRunning}')
 
 class NodeStatusInfo(threading.Thread):
-    def __init__(self, node, TestStatus):
+    def __init__(self, node, TestStatus, verify=True):
         threading.Thread.__init__(self)
         self.node = node
         self.TestStatus = TestStatus
+        self.verify = verify
 
     def run(self):
         global testThreadsRunning
@@ -94,7 +100,7 @@ class NodeStatusInfo(threading.Thread):
             url = drv.get_node_status_url(self.node, i)
             try:
                 logger.info(f'Getting status from: {url}')
-                r =requests.get(url, timeout=g_requestTimeout, verify=False)
+                r =requests.get(url, timeout=g_requestTimeout, verify=self.verify)
             except Exception as error:
                 logger.error(f'Error getting node status data from {self.node}: {error}')
                 g_failedNodes.append(url)
@@ -124,10 +130,11 @@ class NodeStatusInfo(threading.Thread):
         logger.info(f'NodeStatusInfo threads remaining: {testThreadsRunning}')
 
 class StatusInfo(threading.Thread):
-    def __init__(self, node, TestStatus):
+    def __init__(self, node, TestStatus, verify=True):
         threading.Thread.__init__(self)
         self.node = node
         self.TestStatus = TestStatus
+        self.verify = verify
 
     def run(self):
         global testThreadsRunning
@@ -141,7 +148,7 @@ class StatusInfo(threading.Thread):
         url = drv.get_status_url(self.node)
         try:
             logger.info(f'Getting status from: {url}')
-            r =requests.get(url, timeout=g_requestTimeout)
+            r =requests.get(url, timeout=g_requestTimeout, verify=self.verify)
         except Exception as error:
             logger.error(f'Error getting status info data from {self.node}: {error}')
             g_failedNodes.append(url)
@@ -171,10 +178,11 @@ class StatusInfo(threading.Thread):
         logger.info(f'NodeStatusInfo threads remaining: {testThreadsRunning}')
 
 class SeamlessAccessInfo(threading.Thread):
-    def __init__(self, node, TestStatus):
+    def __init__(self, node, TestStatus, verify=True):
         threading.Thread.__init__(self)
         self.node = node
         self.TestStatus = TestStatus
+        self.verify = verify
 
     def run(self):
         global testThreadsRunning
@@ -188,7 +196,7 @@ class SeamlessAccessInfo(threading.Thread):
         url = drv.get_node_login_url(self.node, direct=False)
         try:
             logger.info(f'Getting node login url from: {url}')
-            r =requests.get(url, timeout=g_requestTimeout)
+            r =requests.get(url, timeout=g_requestTimeout, verify=self.verify)
 
             if "seamlessaccess.org" not in r.text and self.node not in expectedResults[drv.target]['loginexceptions']:
                 logger.error(f'Error getting seamless access info from: {self.node}')
@@ -208,9 +216,10 @@ class SeamlessAccessInfo(threading.Thread):
 
 # Test frontend status for code 200, no content check
 class FrontentStatus(threading.Thread):
-    def __init__(self, url, TestStatus):
+    def __init__(self, url, TestStatus, verify=True):
         threading.Thread.__init__(self)
         self.url = url
+        self.verify = verify
         self.TestStatus = TestStatus
 
     def run(self):
@@ -222,7 +231,7 @@ class FrontentStatus(threading.Thread):
         logger.info(f'Status thread {testThreadsRunning} started for node {self.url}')
 
         try:
-            r=requests.get(self.url, timeout=g_requestTimeout)
+            r=requests.get(self.url, timeout=g_requestTimeout, verify=self.verify)
             self.TestStatus.assertEqual(r.status_code, 200)
             logger.info(f'Status tested: {self.url}')
         except Exception as error:
@@ -249,7 +258,7 @@ class TestStatus(unittest.TestCase):
         for url in drv.get_allnode_status_urls():
             with self.subTest(myurl=url):
                 logger.info(f'TestID: {url}')
-                statusThread = FrontentStatus(url, self)
+                statusThread = FrontentStatus(url, self, verify=drv.verify)
                 statusThread.start()
 
         while(testThreadsRunning > 0):
@@ -268,7 +277,7 @@ class TestStatus(unittest.TestCase):
         for url in drv.get_allnode_status_urls():
             with self.subTest(myurl=url):
                 logger.info(f'TestID: {url}')
-                statusInfoThread = FrontendStatusInfo(url, self)
+                statusInfoThread = FrontendStatusInfo(url, self, verify=drv.verify)
                 statusInfoThread.start()
 
         while(testThreadsRunning > 0):
@@ -290,7 +299,7 @@ class TestStatus(unittest.TestCase):
             if node in drv.allnodes:
                 with self.subTest(myurl=node):
                     logger.info(f'TestID: {node}')
-                    statusInfoThread = NodeStatusInfo(node, self)
+                    statusInfoThread = NodeStatusInfo(node, self, verify=drv.verify)
                     statusInfoThread.start()
 
         while(testThreadsRunning > 0):
@@ -311,7 +320,7 @@ class TestStatus(unittest.TestCase):
             if node in drv.allnodes:
                 with self.subTest(myurl=node):
                     logger.info(f'TestID: {node}')
-                    statusInfoThread = StatusInfo(node, self)
+                    statusInfoThread = StatusInfo(node, self, verify=drv.verify)
                     statusInfoThread.start()
 
         while(testThreadsRunning > 0):
@@ -330,6 +339,9 @@ class TestStatus(unittest.TestCase):
 
         if drv.target == 'prod':
             logger.warning(f'We are not testing SeamlessAccess in production yet')
+            return
+        elif drv.target == 'localhost':
+            logger.warning(f'We are not testing SeamlessAccess for localhost')
             return
 
         for node in expectedResults['global']['allnodes']:
@@ -354,6 +366,10 @@ class TestStatus(unittest.TestCase):
         global expectedResults
         logger.info(f'TestID: {self._testMethodName}')
         drv = sunetnextcloud.TestTarget()
+
+        if drv.target == 'localhost':
+            logger.warning(f'We are not testing Saml metadata locally (yet)')
+            return
 
         for node in drv.allnodes:           
             with self.subTest(mynode=node):
@@ -393,6 +409,11 @@ class TestStatus(unittest.TestCase):
         global expectedResults
         logger.info(f'TestID: {self._testMethodName}')
         drv = sunetnextcloud.TestTarget()
+
+        if drv.target == 'localhost':
+            logger.warning(f'We are not testing Collabora locally (yet)')
+            return
+
         numCollaboraNodes = expectedResults[drv.target]['collabora']['nodes']
         logger.info(f'Collabora nodes: {numCollaboraNodes}')
         for i in range(1,numCollaboraNodes+1):

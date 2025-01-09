@@ -82,12 +82,57 @@ docker: selfsignedcert docker_kill
 
 	# Copy bucket configuration file to container and import mounts
 	docker cp files_external.json nextcloud-local:/var/www/html
-	./occ_docker files_external:import files_external.json
+	-./occ_docker files_external:import files_external.json
 	
 	firefox -new-tab https://localhost:8443/ http://localhost:9001
 
 clean: docker_kill
 
+.PHONY: expected
+expected: 
+	python ../expected_localhost.py
+
+.PHONY: clean
+	cd .. && rm expected_localhost.yaml
+
+.PHONY: cleantest
+cleantest: clean docker expected test
+
 .PHONY: test
-test: clean docker
-	python ../mfazones-docker/init_selenium.py
+test:
+	cd .. && python test_tests.py
+	cd .. && python test_status_cli.py
+	# cd .. & python ../mfazones-docker/init_selenium.py
+
+# Global for all targets
+# export NextcloudTestTarget=localhost
+export NextcloudTestTarget=localhost
+export NextcloudTestCustomers=localhost
+export NEXTCLOUD_OCS_USER_LOCALHOST_TEST=_ocs_localhost
+export NEXTCLOUD_OCS_PASSWORD_LOCALHOST_TEST=_ocs_localhost_password
+export NEXTCLOUD_OCS_APP_PASSWORD_LOCALHOST_TEST=
+export NEXTCLOUD_SELENIUM_USER_LOCALHOST_TEST=_selenium_localhost
+export NEXTCLOUD_SELENIUM_PASSWORD_LOCALHOST_TEST=_selenium_localhost_password
+export NEXTCLOUD_SELENIUM_APP_PASSWORD_LOCALHOST_TEST=
+export NEXTCLOUD_SELENIUM_MFA_USER_LOCALHOST_TEST=_selenium_localhost_mfa
+export NEXTCLOUD_SELENIUM_MFA_PASSWORD_LOCALHOST_TEST=_selenium_localhost_mfa_password
+export NEXTCLOUD_SELENIUM_MFA_APP_PASSWORD_LOCALHOST_TEST=
+export NEXTCLOUD_SELENIUM_MFA_SECRET_LOCALHOST_TEST=
+
+# To set environment variables in your local shell run:
+# eval "$(make printenv)"
+.PHONY: printenv
+printenv:
+	echo 'export NextcloudTestTarget="$(NextcloudTestTarget)"'
+	echo 'export NextcloudTestCustomers="$(NextcloudTestCustomers)"'
+	echo 'export NEXTCLOUD_OCS_USER_LOCALHOST_TEST="$(NEXTCLOUD_OCS_USER_LOCALHOST_TEST)"'
+	echo 'export NEXTCLOUD_OCS_PASSWORD_LOCALHOST_TEST="$(NEXTCLOUD_OCS_PASSWORD_LOCALHOST_TEST)"'
+	echo 'export NEXTCLOUD_OCS_APP_PASSWORD_LOCALHOST_TEST="$()"'
+	echo 'export NEXTCLOUD_OCS_APP_PASSWORD_LOCALHOST_TEST="$(NEXTCLOUD_OCS_APP_PASSWORD_LOCALHOST_TEST)"'
+	echo 'export NEXTCLOUD_SELENIUM_USER_LOCALHOST_TEST="$(NEXTCLOUD_SELENIUM_USER_LOCALHOST_TEST)"'
+	echo 'export NEXTCLOUD_SELENIUM_PASSWORD_LOCALHOST_TEST="$(NEXTCLOUD_SELENIUM_PASSWORD_LOCALHOST_TEST)"'
+	echo 'export NEXTCLOUD_SELENIUM_APP_PASSWORD_LOCALHOST_TEST="$(NEXTCLOUD_SELENIUM_APP_PASSWORD_LOCALHOST_TEST)"'
+	echo 'export NEXTCLOUD_SELENIUM_MFA_USER_LOCALHOST_TEST="$(NEXTCLOUD_SELENIUM_MFA_USER_LOCALHOST_TEST)"'
+	echo 'export NEXTCLOUD_SELENIUM_MFA_PASSWORD_LOCALHOST_TEST="$(NEXTCLOUD_SELENIUM_MFA_PASSWORD_LOCALHOST_TEST)"'
+	echo 'export NEXTCLOUD_SELENIUM_MFA_APP_PASSWORD_LOCALHOST_TEST="$(NEXTCLOUD_SELENIUM_MFA_APP_PASSWORD_LOCALHOST_TEST)"'
+	echo 'export NEXTCLOUD_SELENIUM_MFA_SECRET_LOCALHOST_TEST="$(NEXTCLOUD_SELENIUM_MFA_SECRET_LOCALHOST_TEST)"'
