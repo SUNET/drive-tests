@@ -86,14 +86,15 @@ docker: selfsignedcert docker_kill
 	
 	firefox -new-tab https://localhost:8443/ http://localhost:9001
 
-clean: docker_kill
-
 .PHONY: expected
 expected: 
+	cp -f ../expected_localhost_template.yaml ../expected_localhost.yaml
 	python ../expected_localhost.py
 
 .PHONY: clean
-	cd .. && rm expected_localhost.yaml
+clean: docker_kill
+	-./cleanall.sh
+	-cd .. && rm expected_localhost.yaml
 
 .PHONY: cleantest
 cleantest: clean docker expected test
