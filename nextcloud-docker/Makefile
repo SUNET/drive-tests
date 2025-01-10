@@ -118,6 +118,13 @@ acceptancetest:
 	python test_ocs.py; \
 	python test_webdav.py
 
+.PHONY: logintest
+logintest:
+	source ./.env; \
+	cd ..; \
+	python test_tests.py; \
+	python test_login_selenium.py
+
 # Global for all targets
 # export NextcloudTestTarget=localhost
 export NextcloudTestTarget=localhost
