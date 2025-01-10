@@ -1,2 +1,4 @@
 __pycache__/
 test-reports/
+*.env
+expected_localhost.yaml
