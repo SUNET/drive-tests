@@ -107,15 +107,16 @@ clean: docker_kill
 	-cd .. && rm expected_localhost.yaml
 
 .PHONY: cleantest
-cleantest: clean docker expected apppasswords test
+cleantest: clean docker expected apppasswords acceptancetest
 
-.PHONY: test
-test:
+.PHONY: acceptancetest
+acceptancetest:
 	source ./.env; \
 	cd ..; \
 	python test_tests.py; \
-	python test_status_cli.py
-	# cd .. & python ../mfazones-docker/init_selenium.py
+	python test_status_cli.py; \
+	python test_ocs.py; \
+	python test_webdav.py
 
 # Global for all targets
 # export NextcloudTestTarget=localhost
