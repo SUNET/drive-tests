@@ -111,8 +111,7 @@ cleantest: clean docker expected apppasswords acceptancetest
 
 .PHONY: acceptancetest
 acceptancetest:
-	eval "$(make printenv)"; \
-	source ./.env; \
+	. ./.env; \
 	cd ..; \
 	python test_tests.py; \
 	python test_status_cli.py; \
@@ -121,8 +120,7 @@ acceptancetest:
 
 .PHONY: logintest
 logintest:
-	eval "$(make printenv)"; \
-	source ./.env; \
+	. ./.env; \
 	cd ..; \
 	python test_tests.py; \
 	python test_login_selenium.py
