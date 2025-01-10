@@ -3,7 +3,7 @@ global:
   nodePrefix: ''
   testPrefix: ''
   docPrefix: ''
-  indexSuffix: '/index.php'
+  indexSuffix: ''
   allnodes: [localhost]
   fullnodes: [localhost]
   redundantnodes: []
