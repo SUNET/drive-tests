@@ -72,9 +72,18 @@ docker: selfsignedcert docker_kill
 	./occ_docker  group:adduser mfa admin
 	-docker exec -u www-data nextcloud-local /bin/bash -c "env OC_PASS=mfauserpassword /var/www/html/occ user:add --password-from-env --display-name='MFA User' --group='mfa' mfauser
 	-docker exec -u www-data nextcloud-local /bin/bash -c "env OC_PASS=nomfauserpassword /var/www/html/occ user:add --password-from-env --display-name='Ordinary User' nomfauser
-	-docker exec -u www-data nextcloud-local /bin/bash -c "env OC_PASS=_ocs_localhost_password /var/www/html/occ user:add --password-from-env --display-name='MFA User' --group='admin' _ocs_localhost
+	-docker exec -u www-data nextcloud-local /bin/bash -c "env OC_PASS=_ocs_localhost_password /var/www/html/occ user:add --password-from-env --display-name='MFA User' --group='admin' _ocs_localhost"
 	-docker exec -u www-data nextcloud-local /bin/bash -c "env OC_PASS=_selenium_localhost_mfa_password /var/www/html/occ user:add --password-from-env --display-name='Selenium MFA User' --group='mfa' _selenium_localhost_mfa"
 	-docker exec -u www-data nextcloud-local /bin/bash -c "env OC_PASS=_selenium_localhost_password /var/www/html/occ user:add --password-from-env --display-name='Selenium User' _selenium_localhost"
+
+	-docker exec -u www-data nextcloud-local /bin/bash -c "env NC_PASS=$(NEXTCLOUD_OCS_APP_PASSWORD_LOCALHOST_LOCALHOST) /var/www/html/occ user:auth-tokens:add --password-from-env _ocs_localhost"
+	-docker exec -u www-data nextcloud-local /bin/bash -c "env NC_PASS=$(NEXTCLOUD_SELENIUM_APP_PASSWORD_LOCALHOST_LOCALHOST) /var/www/html/occ user:auth-tokens:add --password-from-env _selenium_localhost"
+	-docker exec -u www-data nextcloud-local /bin/bash -c "env NC_PASS=$(NEXTCLOUD_SELENIUM_MFA_APP_PASSWORD_LOCALHOST_LOCALHOST) /var/www/html/occ user:auth-tokens:add --password-from-env _selenium_localhost_mfa"
+
+	-docker exec -u www-data nextcloud-local /bin/bash -c "env NC_PASS=bla /var/www/html/occ user:auth-tokens:add --password-from-env _ocs_localhost"
+	-docker exec -u www-data nextcloud-local /bin/bash -c "env NC_PASS=$(NEXTCLOUD_SELENIUM_APP_PASSWORD_LOCALHOST_LOCALHOST) /var/www/html/occ user:auth-tokens:add --password-from-env _selenium_localhost"
+	-docker exec -u www-data nextcloud-local /bin/bash -c "env NC_PASS=$(NEXTCLOUD_SELENIUM_MFA_APP_PASSWORD_LOCALHOST_LOCALHOST) /var/www/html/occ user:auth-tokens:add --password-from-env _selenium_localhost_mfa"
+
 	docker exec nextcloud-docker-minio1-1 mc config host add myminio http://nextcloud-local-minio:9000 minioadmin minioadmin
 	-docker exec nextcloud-docker-minio1-1 mc mb myminio/project-bucket
 	-docker exec nextcloud-docker-minio1-1 mc mb myminio/selenium-system
@@ -94,31 +103,45 @@ expected:
 .PHONY: clean
 clean: docker_kill
 	-./cleanall.sh
+	-rm .env
 	-cd .. && rm expected_localhost.yaml
 
 .PHONY: cleantest
-cleantest: clean docker expected test
+cleantest: clean docker expected apppasswords test
 
 .PHONY: test
 test:
-	cd .. && python test_tests.py
-	cd .. && python test_status_cli.py
+	source ./.env; \
+	cd ..; \
+	python test_tests.py; \
+	python test_status_cli.py
 	# cd .. & python ../mfazones-docker/init_selenium.py
 
 # Global for all targets
 # export NextcloudTestTarget=localhost
 export NextcloudTestTarget=localhost
 export NextcloudTestCustomers=localhost
-export NEXTCLOUD_OCS_USER_LOCALHOST_TEST=_ocs_localhost
-export NEXTCLOUD_OCS_PASSWORD_LOCALHOST_TEST=_ocs_localhost_password
-export NEXTCLOUD_OCS_APP_PASSWORD_LOCALHOST_TEST=
-export NEXTCLOUD_SELENIUM_USER_LOCALHOST_TEST=_selenium_localhost
-export NEXTCLOUD_SELENIUM_PASSWORD_LOCALHOST_TEST=_selenium_localhost_password
-export NEXTCLOUD_SELENIUM_APP_PASSWORD_LOCALHOST_TEST=
-export NEXTCLOUD_SELENIUM_MFA_USER_LOCALHOST_TEST=_selenium_localhost_mfa
-export NEXTCLOUD_SELENIUM_MFA_PASSWORD_LOCALHOST_TEST=_selenium_localhost_mfa_password
-export NEXTCLOUD_SELENIUM_MFA_APP_PASSWORD_LOCALHOST_TEST=
-export NEXTCLOUD_SELENIUM_MFA_SECRET_LOCALHOST_TEST=
+export NEXTCLOUD_OCS_USER_LOCALHOST_LOCALHOST=_ocs_localhost
+export NEXTCLOUD_OCS_PASSWORD_LOCALHOST_LOCALHOST=_ocs_localhost_password
+export NEXTCLOUD_OCS_APP_PASSWORD_LOCALHOST_LOCALHOST=_ocs_localhost_app_password
+export NEXTCLOUD_SELENIUM_USER_LOCALHOST_LOCALHOST=_selenium_localhost
+export NEXTCLOUD_SELENIUM_PASSWORD_LOCALHOST_LOCALHOST=_selenium_localhost_password
+export NEXTCLOUD_SELENIUM_APP_PASSWORD_LOCALHOST_LOCALHOST=unset
+export NEXTCLOUD_SELENIUM_MFA_USER_LOCALHOST_LOCALHOST=_selenium_localhost_mfa
+export NEXTCLOUD_SELENIUM_MFA_PASSWORD_LOCALHOST_LOCALHOST=_selenium_localhost_mfa_password
+export NEXTCLOUD_SELENIUM_MFA_APP_PASSWORD_LOCALHOST_LOCALHOST=unset
+export NEXTCLOUD_SELENIUM_MFA_SECRET_LOCALHOST_LOCALHOST=unset
+
+
+.PHONY: apppasswords
+apppasswords:
+	-rm .env
+	export OCS_APP_PASSWORD=$(shell docker exec -u www-data nextcloud-local /bin/bash -c "env NC_PASS=whatever /var/www/html/occ user:auth-tokens:add --password-from-env _ocs_localhost" | sed -n '2 p'); \
+	export SELENIUM_APP_PASSWORD=$(shell docker exec -u www-data nextcloud-local /bin/bash -c "env NC_PASS=whatever /var/www/html/occ user:auth-tokens:add --password-from-env _selenium_localhost" | sed -n '2 p'); \
+	export SELENIUM_MFA_APP_PASSWORD=$(shell docker exec -u www-data nextcloud-local /bin/bash -c "env NC_PASS=whatever /var/www/html/occ user:auth-tokens:add --password-from-env _selenium_localhost_mfa" | sed -n '2 p'); \
+	echo export NEXTCLOUD_OCS_APP_PASSWORD_LOCALHOST_LOCALHOST=$$OCS_APP_PASSWORD >> .env; \
+	echo export NEXTCLOUD_SELENIUM_APP_PASSWORD_LOCALHOST_LOCALHOST=$$SELENIUM_APP_PASSWORD >> .env; \
+	echo export NEXTCLOUD_SELENIUM_MFA_APP_PASSWORD_LOCALHOST_LOCALHOST=$$SELENIUM_MFA_APP_PASSWORD >> .env
 
 # To set environment variables in your local shell run:
 # eval "$(make printenv)"
@@ -126,14 +149,13 @@ export NEXTCLOUD_SELENIUM_MFA_SECRET_LOCALHOST_TEST=
 printenv:
 	echo 'export NextcloudTestTarget="$(NextcloudTestTarget)"'
 	echo 'export NextcloudTestCustomers="$(NextcloudTestCustomers)"'
-	echo 'export NEXTCLOUD_OCS_USER_LOCALHOST_TEST="$(NEXTCLOUD_OCS_USER_LOCALHOST_TEST)"'
-	echo 'export NEXTCLOUD_OCS_PASSWORD_LOCALHOST_TEST="$(NEXTCLOUD_OCS_PASSWORD_LOCALHOST_TEST)"'
-	echo 'export NEXTCLOUD_OCS_APP_PASSWORD_LOCALHOST_TEST="$()"'
-	echo 'export NEXTCLOUD_OCS_APP_PASSWORD_LOCALHOST_TEST="$(NEXTCLOUD_OCS_APP_PASSWORD_LOCALHOST_TEST)"'
-	echo 'export NEXTCLOUD_SELENIUM_USER_LOCALHOST_TEST="$(NEXTCLOUD_SELENIUM_USER_LOCALHOST_TEST)"'
-	echo 'export NEXTCLOUD_SELENIUM_PASSWORD_LOCALHOST_TEST="$(NEXTCLOUD_SELENIUM_PASSWORD_LOCALHOST_TEST)"'
-	echo 'export NEXTCLOUD_SELENIUM_APP_PASSWORD_LOCALHOST_TEST="$(NEXTCLOUD_SELENIUM_APP_PASSWORD_LOCALHOST_TEST)"'
-	echo 'export NEXTCLOUD_SELENIUM_MFA_USER_LOCALHOST_TEST="$(NEXTCLOUD_SELENIUM_MFA_USER_LOCALHOST_TEST)"'
-	echo 'export NEXTCLOUD_SELENIUM_MFA_PASSWORD_LOCALHOST_TEST="$(NEXTCLOUD_SELENIUM_MFA_PASSWORD_LOCALHOST_TEST)"'
-	echo 'export NEXTCLOUD_SELENIUM_MFA_APP_PASSWORD_LOCALHOST_TEST="$(NEXTCLOUD_SELENIUM_MFA_APP_PASSWORD_LOCALHOST_TEST)"'
-	echo 'export NEXTCLOUD_SELENIUM_MFA_SECRET_LOCALHOST_TEST="$(NEXTCLOUD_SELENIUM_MFA_SECRET_LOCALHOST_TEST)"'
+	echo 'export NEXTCLOUD_OCS_USER_LOCALHOST_LOCALHOST="$(NEXTCLOUD_OCS_USER_LOCALHOST_LOCALHOST)"'
+	echo 'export NEXTCLOUD_OCS_PASSWORD_LOCALHOST_LOCALHOST="$(NEXTCLOUD_OCS_PASSWORD_LOCALHOST_LOCALHOST)"'
+	echo 'export NEXTCLOUD_OCS_APP_PASSWORD_LOCALHOST_LOCALHOST="$(NEXTCLOUD_OCS_APP_PASSWORD_LOCALHOST_LOCALHOST)"'
+	echo 'export NEXTCLOUD_SELENIUM_USER_LOCALHOST_LOCALHOST="$(NEXTCLOUD_SELENIUM_USER_LOCALHOST_LOCALHOST)"'
+	echo 'export NEXTCLOUD_SELENIUM_PASSWORD_LOCALHOST_LOCALHOST="$(NEXTCLOUD_SELENIUM_PASSWORD_LOCALHOST_LOCALHOST)"'
+	echo 'export NEXTCLOUD_SELENIUM_APP_PASSWORD_LOCALHOST_LOCALHOST="$(NEXTCLOUD_SELENIUM_APP_PASSWORD_LOCALHOST_LOCALHOST)"'
+	echo 'export NEXTCLOUD_SELENIUM_MFA_USER_LOCALHOST_LOCALHOST="$(NEXTCLOUD_SELENIUM_MFA_USER_LOCALHOST_LOCALHOST)"'
+	echo 'export NEXTCLOUD_SELENIUM_MFA_PASSWORD_LOCALHOST_LOCALHOST="$(NEXTCLOUD_SELENIUM_MFA_PASSWORD_LOCALHOST_LOCALHOST)"'
+	echo 'export NEXTCLOUD_SELENIUM_MFA_APP_PASSWORD_LOCALHOST_LOCALHOST="$(NEXTCLOUD_SELENIUM_MFA_APP_PASSWORD_LOCALHOST_LOCALHOST)"'
+	echo 'export NEXTCLOUD_SELENIUM_MFA_SECRET_LOCALHOST_LOCALHOST="$(NEXTCLOUD_SELENIUM_MFA_SECRET_LOCALHOST_LOCALHOST)"'
