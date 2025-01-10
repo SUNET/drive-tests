@@ -68,6 +68,7 @@ class WebDAVDneCheck(threading.Thread):
         }
 
         client = Client(options)
+        client.verify = drv.verify
         dneName = 'THISFOLDERDOESNOTEXIST'
 
         for i in range(1,g_maxCheck):
@@ -137,6 +138,8 @@ class WebDAVList(threading.Thread):
                 'webdav_timeout': g_webdav_timeout
                 }
                 client = Client(options)
+                client.verify = drv.verify
+
                 logger.info(client.list())
         except Exception as error:
             logger.error(f'Error in webdav listing: {error}')
@@ -176,6 +179,7 @@ class WebDAVMultiCheckAndRemove(threading.Thread):
         }
 
         client = Client(options)
+        client.verify = drv.verify
 
         # logger.info(f'HERE HERE HERE Client precheck: {client.list()}')
         
@@ -235,6 +239,7 @@ class WebDAVCleanSeleniumFolders(threading.Thread):
         }
 
         client = Client(options)
+        client.verify = drv.verify
 
         # for i in range(1,g_maxCheck):
         #     if (client.check(g_testFolder)):
@@ -289,6 +294,7 @@ class WebDAVCleanTrashbin(threading.Thread):
 
         try:
             client = Client(options)
+            client.verify = drv.verify
             files = client.list(f'trash')
             files.pop(0)    # Remove first that is just the folder name
             for file in files:
@@ -335,6 +341,7 @@ class WebDAVMakeSharingFolder(threading.Thread):
         }
 
         client = Client(options)
+        client.verify = drv.verify
 
         try:
             logger.info(f'Before mkdir: {client.list()}')
@@ -386,6 +393,7 @@ class WebDAVPersonalBucketFolders(threading.Thread):
         }
 
         client = Client(options)
+        client.verify = drv.verify
 
         try:
             folders = ''
@@ -440,6 +448,7 @@ class WebDAVSystemBucketFolders(threading.Thread):
         }
 
         client = Client(options)
+        client.verify = drv.verify
 
         folders = ''
         folder = 'test_webdav'
@@ -506,6 +515,7 @@ class WebDAVCreateMoveDelete(threading.Thread):
         
         try:
             client = Client(options)
+            client.verify = drv.verify
             client.mkdir(self.target)
             targetfile=self.target + '/' + filename
             targetmvfile=self.target + '/' + mvfilename
