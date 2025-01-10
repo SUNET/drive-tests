@@ -111,6 +111,7 @@ cleantest: clean docker expected apppasswords acceptancetest
 
 .PHONY: acceptancetest
 acceptancetest:
+	eval "$(make printenv)"; \
 	source ./.env; \
 	cd ..; \
 	python test_tests.py; \
@@ -120,6 +121,7 @@ acceptancetest:
 
 .PHONY: logintest
 logintest:
+	eval "$(make printenv)"; \
 	source ./.env; \
 	cd ..; \
 	python test_tests.py; \
