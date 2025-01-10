@@ -93,7 +93,7 @@ docker: selfsignedcert docker_kill
 	docker cp files_external.json nextcloud-local:/var/www/html
 	-./occ_docker files_external:import files_external.json
 	
-	firefox -new-tab https://localhost:8443/ http://localhost:9001
+	-firefox -new-tab https://localhost:8443/ http://localhost:9001
 
 .PHONY: expected
 expected: 
