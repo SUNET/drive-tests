@@ -16,7 +16,10 @@ import xmlrunner
 import sunetnextcloud
 
 ocsheaders = { "OCS-APIRequest" : "true" } 
-expectedResultsFile = 'expected.yaml'
+
+drv = sunetnextcloud.TestTarget()
+expectedResults = drv.expectedResults
+
 g_testPassed = {}
 g_testThreadsRunning = 0
 g_requestTimeout = 10
@@ -25,14 +28,12 @@ logger = logging.getLogger('TestLogger')
 logging.basicConfig(format = '%(asctime)s - %(module)s.%(funcName)s - %(levelname)s: %(message)s',
                 datefmt = '%Y-%m-%d %H:%M:%S', level = logging.INFO)
 
-with open(expectedResultsFile, "r") as stream:
-    expectedResults=yaml.safe_load(stream)
-
 class AppVersions(threading.Thread):
-    def __init__(self, name, TestOcsCalls):
+    def __init__(self, name, TestOcsCalls, verify=True):
         threading.Thread.__init__(self)
         self.name = name
         self.TestOcsCalls = TestOcsCalls
+        self.verify = verify
 
     def run(self):
         global logger
@@ -60,7 +61,7 @@ class AppVersions(threading.Thread):
         nodepwd = drv.get_ocsuserpassword(fullnode)
 
         try:
-            r=session.get(url, headers=ocsheaders)
+            r=session.get(url, headers=ocsheaders, verify=self.verify)
         except Exception as error:
             logger.error(f'Error getting {url}:{error}')
             g_testThreadsRunning -= 1
@@ -128,10 +129,11 @@ class AppVersions(threading.Thread):
         return
 
 class NodeUsers(threading.Thread):
-    def __init__(self, name, TestOcsCalls):
+    def __init__(self, name, TestOcsCalls, verify=True):
         threading.Thread.__init__(self)
         self.name = name
         self.TestOcsCalls = TestOcsCalls
+        self.verify = verify
 
     def run(self):
         global logger
@@ -152,7 +154,7 @@ class NodeUsers(threading.Thread):
         url = url.replace("$PASSWORD$", nodepwd)
 
         try:
-            r = requests.get(url, headers=ocsheaders, timeout=g_requestTimeout)
+            r = requests.get(url, headers=ocsheaders, timeout=g_requestTimeout, verify=self.verify)
         except Exception as error:
             logger.error(f'Error getting {url}:{error}')
             g_testThreadsRunning -= 1
@@ -175,10 +177,11 @@ class NodeUsers(threading.Thread):
         return
 
 class CapabilitiesNoUser(threading.Thread):
-    def __init__(self, name, TestOcsCalls):
+    def __init__(self, name, TestOcsCalls, verify=True):
         threading.Thread.__init__(self)
         self.name = name
         self.TestOcsCalls = TestOcsCalls
+        self.verify = verify
 
     def run(self):
         global g_testPassed
@@ -195,7 +198,7 @@ class CapabilitiesNoUser(threading.Thread):
         url = drv.get_ocs_capabilities_url(fullnode)
         logger.info(f'{self.TestOcsCalls._testMethodName} {url}')
         try:
-            r = requests.get(url, headers=ocsheaders, timeout=g_requestTimeout)
+            r = requests.get(url, headers=ocsheaders, timeout=g_requestTimeout, verify=self.verify)
         except Exception as error:
             logger.error(f'Error getting {url}: {error}')
             g_testThreadsRunning -= 1
@@ -226,10 +229,11 @@ class CapabilitiesNoUser(threading.Thread):
         return
 
 class Capabilities(threading.Thread):
-    def __init__(self, name, TestOcsCalls):
+    def __init__(self, name, TestOcsCalls, verify=True):
         threading.Thread.__init__(self)
         self.name = name
         self.TestOcsCalls = TestOcsCalls
+        self.verify = verify
 
     def run(self):
         global g_testPassed
@@ -248,7 +252,7 @@ class Capabilities(threading.Thread):
         nodepwd = drv.get_ocsuserpassword(fullnode)
 
         try:
-            r = requests.get(url, headers=ocsheaders, timeout=g_requestTimeout)
+            r = requests.get(url, headers=ocsheaders, timeout=g_requestTimeout, verify=self.verify)
         except Exception as error:
             logger.error(f'Error getting {url}: {error}')
             g_testThreadsRunning -= 1
@@ -270,10 +274,11 @@ class Capabilities(threading.Thread):
         return
 
 class UserLifeCycle(threading.Thread):
-    def __init__(self, name, TestOcsCalls):
+    def __init__(self, name, TestOcsCalls, verify=True):
         threading.Thread.__init__(self)
         self.name = name
         self.TestOcsCalls = TestOcsCalls
+        self.verify = verify
 
     def run(self):
         global g_testPassed
@@ -301,7 +306,7 @@ class UserLifeCycle(threading.Thread):
 
         logger.info(f'Create cli user {cliuser}')
         try:
-            r = session.post(url, headers=ocsheaders, data=data)
+            r = session.post(url, headers=ocsheaders, data=data, verify=self.verify)
         except Exception as error:
             logger.error(f'Error posting to create cli user: {error}')
             g_testPassed[fullnode] = False
@@ -313,7 +318,7 @@ class UserLifeCycle(threading.Thread):
 
             if (j["ocs"]["meta"]["statuscode"] != 100):
                 logger.info(f'Retry to create cli user {cliuser} after error {j["ocs"]["meta"]["statuscode"]}')
-                r = session.post(url, headers=ocsheaders, data=data)
+                r = session.post(url, headers=ocsheaders, data=data, verify=self.verify)
                 j = json.loads(r.text)
                 logger.info(json.dumps(j, indent=4, sort_keys=True))
         except Exception as error:
@@ -332,13 +337,13 @@ class UserLifeCycle(threading.Thread):
         disableuserurl = disableuserurl.replace("$USERNAME$", nodeuser)
         disableuserurl = disableuserurl.replace("$PASSWORD$", nodepwd)
         try:
-            r = session.put(disableuserurl, headers=ocsheaders)
+            r = session.put(disableuserurl, headers=ocsheaders, verify=self.verify)
             j = json.loads(r.text)
             logger.info(json.dumps(j, indent=4, sort_keys=True))
 
             if (j["ocs"]["meta"]["statuscode"] != 100):
                 logger.info(f'Retry to disable cli user {cliuser} after error {j["ocs"]["meta"]["statuscode"]}')
-                r = session.put(disableuserurl, headers=ocsheaders)
+                r = session.put(disableuserurl, headers=ocsheaders, verify=self.verify)
                 j = json.loads(r.text)
                 logger.info(json.dumps(j, indent=4, sort_keys=True))
 
@@ -350,13 +355,13 @@ class UserLifeCycle(threading.Thread):
             userurl = drv.get_user_url(fullnode, cliuser)
             userurl = userurl.replace("$USERNAME$", nodeuser)
             userurl = userurl.replace("$PASSWORD$", nodepwd)
-            r = session.delete(userurl, headers=ocsheaders)
+            r = session.delete(userurl, headers=ocsheaders, verify=drv.verify)
             j = json.loads(r.text)
             logger.info(json.dumps(j, indent=4, sort_keys=True))
 
             if (j["ocs"]["meta"]["statuscode"] != 100):
                 logger.info(f'Retry to delete cli user after {cliuser} after error {j["ocs"]["meta"]["statuscode"]}')
-                r = session.delete(userurl, headers=ocsheaders)
+                r = session.delete(userurl, headers=ocsheaders, verify=self.verify)
                 j = json.loads(r.text)
                 logger.info(json.dumps(j, indent=4, sort_keys=True))
 
@@ -385,7 +390,7 @@ class TestOcsCalls(unittest.TestCase):
         for fullnode in drv.fullnodes:
             with self.subTest(mynode=fullnode):
                 logger.info(f'TestID: {fullnode}')
-                capabilitiesNoUserThread = CapabilitiesNoUser(fullnode, self)
+                capabilitiesNoUserThread = CapabilitiesNoUser(fullnode, self, verify=drv.verify)
                 capabilitiesNoUserThread.start()
 
         while(g_testThreadsRunning > 0):
@@ -400,7 +405,7 @@ class TestOcsCalls(unittest.TestCase):
         for fullnode in drv.fullnodes:
             with self.subTest(mynode=fullnode):
                 logger.info(f'TestID: {fullnode}')
-                capabilitiesThread = Capabilities(fullnode, self)
+                capabilitiesThread = Capabilities(fullnode, self, verify=drv.verify)
                 capabilitiesThread.start()
 
         while(g_testThreadsRunning > 0):
@@ -415,7 +420,7 @@ class TestOcsCalls(unittest.TestCase):
         for fullnode in drv.fullnodes:
             with self.subTest(mynode=fullnode):
                 logger.info(f'TestID: {fullnode}')
-                nodeUsersThread = NodeUsers(fullnode, self)
+                nodeUsersThread = NodeUsers(fullnode, self, verify=drv.verify)
                 nodeUsersThread.start()
 
         while(g_testThreadsRunning > 0):
@@ -430,7 +435,7 @@ class TestOcsCalls(unittest.TestCase):
         for fullnode in drv.fullnodes:
             with self.subTest(mynode=fullnode):
                 logger.info(f'TestID: {fullnode}')
-                userLifecycleThread = UserLifeCycle(fullnode, self)
+                userLifecycleThread = UserLifeCycle(fullnode, self, verify=drv.verify)
                 userLifecycleThread.start()
 
         while(g_testThreadsRunning > 0):
@@ -445,7 +450,7 @@ class TestOcsCalls(unittest.TestCase):
         for fullnode in drv.fullnodes:
             with self.subTest(mynode=fullnode):
                 logger.info(f'TestID: {fullnode}')
-                appVersionsThread = AppVersions(fullnode, self)
+                appVersionsThread = AppVersions(fullnode, self, verify=drv.verify)
                 appVersionsThread.start()
 
         while(g_testThreadsRunning > 0):
