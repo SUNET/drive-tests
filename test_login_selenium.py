@@ -25,7 +25,9 @@ import time
 import logging
 from datetime import datetime
 
-expectedResultsFile = 'expected.yaml'
+drv = sunetnextcloud.TestTarget()
+expectedResults = drv.expectedResults
+
 geckodriver_path = "/snap/bin/geckodriver"
 g_filename=datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 g_driver_timeout = 20
@@ -38,9 +40,6 @@ class TestLoginSelenium(unittest.TestCase):
     logger = logging.getLogger(__name__)
     logging.basicConfig(format = '%(asctime)s - %(module)s.%(funcName)s - %(levelname)s: %(message)s',
                     datefmt = '%Y-%m-%d %H:%M:%S', level = logging.INFO)
-
-    with open(expectedResultsFile, "r") as stream:
-        expectedResults=yaml.safe_load(stream)
 
     def deleteCookies(self, driver):
         cookies = driver.get_cookies()
@@ -57,7 +56,7 @@ class TestLoginSelenium(unittest.TestCase):
         delay = 30 # seconds
         drv = sunetnextcloud.TestTarget()
         # The class name of the share icon changed in Nextcloud 28
-        version = self.expectedResults[drv.target]['status']['version']
+        version = drv.expectedResults[drv.target]['status']['version']
         self.logger.info(f'Expected Nextcloud version: {version}')
         if version.startswith('27'):
             sharedClass = 'icon-shared'
@@ -89,6 +88,7 @@ class TestLoginSelenium(unittest.TestCase):
                         }
 
                         client = Client(options)
+                        client.verify = drv.verify
                         dir = 'SharedFolder'
                         self.logger.info(f'Make and check directory: {dir}')
                         client.mkdir(dir)
@@ -101,12 +101,14 @@ class TestLoginSelenium(unittest.TestCase):
                                 options.add_argument("--disable-dev-shm-usage")
                                 options.add_argument("--disable-gpu")
                                 options.add_argument("--disable-extensions")
+                                if drv.verify == False:
+                                    options.add_argument("--ignore-certificate-errors")
                                 driver = webdriver.Chrome(options=options)
                             elif browser == 'firefox':
                                 if use_driver_service == False:
                                     self.logger.info(f'Initialize Firefox driver without driver service')
                                     options = FirefoxOptions()
-                                    options.add_argument("--headless")
+                                    # options.add_argument("--headless")
                                     driver = webdriver.Firefox(options=options)
                                 else:
                                     self.logger.info(f'Initialize Firefox driver using snap geckodriver and driver service')
@@ -126,7 +128,6 @@ class TestLoginSelenium(unittest.TestCase):
                         sel.nodelogin(sel.UserType.SELENIUM)
 
                         wait = WebDriverWait(driver, delay)
-
                         files = driver.find_element(By.XPATH, '//a[@href="' + drv.indexsuffix + '/apps/files/' +'"]')
                         files.click()
 
