@@ -25,9 +25,9 @@ import os
 import time
 import yaml
 
-# 'prod' for production environment, 'test' for test environment
-g_testtarget = os.environ.get('NextcloudTestTarget')
-g_expectedResultsFile = 'expected.yaml'
+g_drv = sunetnextcloud.TestTarget()
+expectedResults = g_drv.expectedResults
+
 g_filename=datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 g_isLoggedIn=False
 g_webdav_timeout = 30
@@ -65,6 +65,29 @@ def nodelogin(collaboranode):
     g_wait.until(EC.presence_of_element_located((By.ID, 'password'))).send_keys(nodepwd + Keys.ENTER)
     return
 
+def removeFolder(node, foldername):
+    fullPath = foldername + '/'
+    g_logger.info(f'Check if file {fullPath} exists on {node}')
+    nodeuser = g_drv.get_seleniumuser(node)
+    nodepwd = g_drv.get_seleniumuserpassword(node)
+    url = g_drv.get_webdav_url(node, nodeuser)
+    options = {
+        'webdav_hostname': url,
+        'webdav_login' : nodeuser,
+        'webdav_password' : nodepwd, 
+        'webdav_timeout': g_webdav_timeout
+    }
+    client = Client(options)
+    client.verify = g_drv.verify
+    # We check a few times if the file has been created
+    exists = client.check(fullPath)
+    if exists == True:
+        g_logger.info(f'Folder {fullPath} was found, removing')
+        client.clean(fullPath)
+    else:
+        g_logger.info(f'Folder {fullPath} not found')
+    return
+
 def checkFile(node, foldername, filename):
     fullPath = foldername + '/' + filename
     g_logger.info(f'Check if file {fullPath} exists on {node}')
@@ -78,6 +101,7 @@ def checkFile(node, foldername, filename):
         'webdav_timeout': g_webdav_timeout
     }
     client = Client(options)
+    client.verify = g_drv.verify
     # We check a few times if the file has been created
     tryCount = 0
     while tryCount < 5:
@@ -94,53 +118,54 @@ def checkFile(node, foldername, filename):
 
 class TestCollaboraSelenium(unittest.TestCase):
     global g_loggedInNodes, g_logger, g_drv, g_wait, g_driver
-    drv = sunetnextcloud.TestTarget(g_testtarget)
-    g_drv=drv
+    g_drv = sunetnextcloud.TestTarget()
+
     logger = logging.getLogger(__name__)
     g_logger = logger
     logging.basicConfig(format = '%(asctime)s - %(module)s.%(funcName)s - %(levelname)s: %(message)s',
                     datefmt = '%Y-%m-%d %H:%M:%S', level = logging.INFO)
     
-    with open(g_expectedResultsFile, "r") as stream:
-        expectedResults=yaml.safe_load(stream)
-
     testfolders = ['SeleniumCollaboraTest', 'selenium-system', 'selenium-personal']
 
     # Some class names of icons changed from Nextcloud 27 to 28
-    version = expectedResults[drv.target]['status']['version']
+    version = expectedResults[g_drv.target]['status']['version']
     homeIcon = 'home-icon'
     addIcon = 'plus-icon'
 
-    if len(drv.browsers) > 1:
-        logger.warning(f'Please test only one browser by setting NextcloudTestBrowsers to the one you want to test: {drv.browsers}')
+    if len(g_drv.browsers) > 1:
+        logger.warning(f'Please test only one browser by setting NextcloudTestBrowsers to the one you want to test: {g_drv.browsers}')
     
-    logger.info(f'Testing browser: {drv.browsers[0]}')
-    if drv.browsers[0] == 'chrome':
+    logger.info(f'Testing browser: {g_drv.browsers[0]}')
+    if g_drv.browsers[0] == 'chrome':
         try:
             options = ChromeOptions()
             options.add_argument("--no-sandbox")
             options.add_argument("--disable-dev-shm-usage")
             options.add_argument("--disable-gpu")
             options.add_argument("--disable-extensions")
+            if g_drv.verify == False:
+                options.add_argument("--ignore-certificate-errors")
             driver = webdriver.Chrome(options=options)
             g_driver=driver
         except Exception as error:
             logger.error(f'Error initializing Chrome driver: {error}')
-    elif drv.browsers[0] == 'firefox':
+    elif g_drv.browsers[0] == 'firefox':
         try:
             options = FirefoxOptions()
+            if g_drv.verify == False:
+                options.add_argument("--ignore-certificate-errors")
             driver = webdriver.Firefox(options=options)
             g_driver=driver
         except Exception as error:
             logger.error(f'Error initializing Firefox driver: {error}')
     else:
-        logger.error(f'Unknown browser: {drv.browsers[0]}')
+        logger.error(f'Unknown browser: {g_drv.browsers[0]}')
 
     def test_logger(self):
         self.logger.info(f'TestID: {self._testMethodName}')
         pass
 
-    for collaboranode in drv.fullnodes:
+    for collaboranode in g_drv.fullnodes:
         g_loggedInNodes[collaboranode] = False
 
     # text file
@@ -150,10 +175,11 @@ class TestCollaboraSelenium(unittest.TestCase):
         wait = WebDriverWait(self.driver, delay)
         g_wait = wait
 
-        for collaboranode in self.drv.fullnodes:
+        for collaboranode in g_drv.fullnodes:
             with self.subTest(mynode=collaboranode):
                 self.logger.info(f'TestID: {collaboranode}')
                 # if g_isLoggedIn == False:
+                removeFolder(collaboranode, f'Templates')
                 if g_loggedInNodes.get(collaboranode) == False:
                     nodelogin(collaboranode)
                 self.assertTrue(g_loggedInNodes.get(collaboranode))
@@ -169,21 +195,21 @@ class TestCollaboraSelenium(unittest.TestCase):
 
                 if success == False:
                     self.logger.warning(f'Manually open home folder in case loading of all files takes too much time')
-                    self.driver.get(self.drv.get_folder_url(collaboranode,''))
+                    self.driver.get(g_drv.get_folder_url(collaboranode,''))
                     success = True
 
                 self.assertTrue(success)
 
                 # Check URLs after login
-                dashboardUrl = self.drv.get_dashboard_url(collaboranode)
+                dashboardUrl = g_drv.get_dashboard_url(collaboranode)
                 currentUrl = self.driver.current_url
                 # self.assertEqual(dashboardUrl, currentUrl)
 
                 try:
-                    self.logger.info(f'Wait for {self.drv.indexsuffix}/apps/files/')
-                    wait.until(EC.element_to_be_clickable((By.XPATH,'//a[@href="'+ self.drv.indexsuffix + '/apps/files/' +'"]'))).click()
+                    self.logger.info(f'Wait for {g_drv.indexsuffix}/apps/files/')
+                    wait.until(EC.element_to_be_clickable((By.XPATH,'//a[@href="'+ g_drv.indexsuffix + '/apps/files/' +'"]'))).click()
                 except Exception as error:
-                    self.logger.warning(f'Wait for {self.drv.indexsuffix}/apps/files/ took too long: {error}')
+                    self.logger.warning(f'Wait for {g_drv.indexsuffix}/apps/files/ took too long: {error}')
                     success = False
                 self.assertTrue(success)
 
@@ -196,7 +222,7 @@ class TestCollaboraSelenium(unittest.TestCase):
 
                 if success == False:
                     self.logger.warning(f'Manually open home folder in case loading of all files takes too much time')
-                    self.driver.get(self.drv.get_folder_url(collaboranode,''))
+                    self.driver.get(g_drv.get_folder_url(collaboranode,''))
                     success = True
 
                 self.assertTrue(success)
@@ -223,7 +249,7 @@ class TestCollaboraSelenium(unittest.TestCase):
                     ActionChains(self.driver).key_down(Keys.CONTROL).send_keys('a').key_up(Keys.CONTROL).perform()
                     ActionChains(self.driver).send_keys(f'SeleniumCollaboraTest{Keys.ENTER}').perform()
                     time.sleep(1)
-                folderurl = self.drv.get_folder_url(collaboranode, "SeleniumCollaboraTest")
+                folderurl = g_drv.get_folder_url(collaboranode, "SeleniumCollaboraTest")
                 self.driver.get(folderurl)
 
                 fileCreated = False
@@ -303,7 +329,7 @@ class TestCollaboraSelenium(unittest.TestCase):
                     self.logger.warning(f"Closing markup document failed: {error}")
 
                 self.logger.info(f'Manually open home folder in case closing of document fails')
-                self.driver.get(self.drv.get_folder_url(collaboranode,''))
+                self.driver.get(g_drv.get_folder_url(collaboranode,''))
 
                 self.logger.info(f'And done...')
                 time.sleep(1)
@@ -314,10 +340,11 @@ class TestCollaboraSelenium(unittest.TestCase):
         wait = WebDriverWait(self.driver, delay)
         g_wait = wait
         
-        for collaboranode in self.drv.fullnodes:
+        for collaboranode in g_drv.fullnodes:
             with self.subTest(mynode=collaboranode):
                 self.logger.info(f'TestID: {collaboranode}')
                 # if g_isLoggedIn == False:
+                removeFolder(collaboranode, f'Templates')
                 if g_loggedInNodes.get(collaboranode) == False:
                     nodelogin(collaboranode)
                 self.assertTrue(g_loggedInNodes.get(collaboranode))
@@ -333,12 +360,12 @@ class TestCollaboraSelenium(unittest.TestCase):
 
                 if success == False:
                     self.logger.warning(f'Manually open home folder in case loading of all files takes too much time')
-                    self.driver.get(self.drv.get_folder_url(collaboranode,''))
+                    self.driver.get(g_drv.get_folder_url(collaboranode,''))
                     success = True
                 self.assertTrue(success)
 
                 # Check URLs after login
-                dashboardUrl = self.drv.get_dashboard_url(collaboranode)
+                dashboardUrl = g_drv.get_dashboard_url(collaboranode)
                 currentUrl = self.driver.current_url
                 # self.assertEqual(dashboardUrl, currentUrl)                
 
@@ -347,14 +374,14 @@ class TestCollaboraSelenium(unittest.TestCase):
                         self.logger.info(f'TestID: {collaboranode} for folder {testfolder}')
 
                         try:
-                            self.logger.info(f'Wait for {self.drv.indexsuffix}/apps/files/ and click')
-                            wait.until(EC.element_to_be_clickable((By.XPATH,'//a[@href="'+ self.drv.indexsuffix + '/apps/files/' +'"]'))).click()
+                            self.logger.info(f'Wait for {g_drv.indexsuffix}/apps/files/ and click')
+                            wait.until(EC.element_to_be_clickable((By.XPATH,'//a[@href="'+ g_drv.indexsuffix + '/apps/files/' +'"]'))).click()
                             # self.logger.info(f'Get link for files app')
-                            # files = self.driver.find_element(by=By.XPATH, value='//a[@href="'+ self.drv.indexsuffix + '/apps/files/' +'"]')
+                            # files = self.driver.find_element(by=By.XPATH, value='//a[@href="'+ g_drv.indexsuffix + '/apps/files/' +'"]')
                             # self.logger.info(f'Click on files app')
                             # files.click()
                         except Exception as error:
-                            self.logger.warning(f'Wait for {self.drv.indexsuffix}/apps/files/ took too long: {error}')
+                            self.logger.warning(f'Wait for {g_drv.indexsuffix}/apps/files/ took too long: {error}')
                             success = False
 
                         self.logger.info(f'Success: {success}')
@@ -369,7 +396,7 @@ class TestCollaboraSelenium(unittest.TestCase):
 
                         if success == False:
                             self.logger.warning(f'Manually open home folder in case loading of all files takes too much time')
-                            self.driver.get(self.drv.get_folder_url(collaboranode,''))
+                            self.driver.get(g_drv.get_folder_url(collaboranode,''))
                             success = True
 
                         self.assertTrue(success)
@@ -398,7 +425,7 @@ class TestCollaboraSelenium(unittest.TestCase):
                             ActionChains(self.driver).send_keys(f'{testfolder}{Keys.ENTER}').perform()
                             time.sleep(1)
 
-                        folderurl = self.drv.get_folder_url(collaboranode, testfolder)
+                        folderurl = g_drv.get_folder_url(collaboranode, testfolder)
                         self.driver.get(folderurl)
 
                         fileCreated = False
@@ -485,7 +512,7 @@ class TestCollaboraSelenium(unittest.TestCase):
                             success = False
 
                         self.logger.info(f'Open the folder URL instead of closing the document')
-                        self.driver.get(self.drv.get_folder_url(collaboranode,''))
+                        self.driver.get(g_drv.get_folder_url(collaboranode,''))
                         self.assertTrue(success)
 
                 self.logger.info('End of test!')
@@ -498,10 +525,11 @@ class TestCollaboraSelenium(unittest.TestCase):
         wait = WebDriverWait(self.driver, delay)
         g_wait = wait
         
-        for collaboranode in self.drv.fullnodes:
+        for collaboranode in g_drv.fullnodes:
             with self.subTest(mynode=collaboranode):
                 self.logger.info(f'TestID: {collaboranode}')
                 # if g_isLoggedIn == False:
+                removeFolder(collaboranode, f'Templates')
                 if g_loggedInNodes.get(collaboranode) == False:
                     nodelogin(collaboranode)
                 self.assertTrue(g_loggedInNodes.get(collaboranode))
@@ -517,23 +545,23 @@ class TestCollaboraSelenium(unittest.TestCase):
 
                 if success == False:
                     self.logger.warning(f'Manually open home folder in case loading of all files takes too much time')
-                    self.driver.get(self.drv.get_folder_url(collaboranode,''))
+                    self.driver.get(g_drv.get_folder_url(collaboranode,''))
                     success = True
 
                 self.assertTrue(success)
 
                 # Check URLs after login
-                dashboardUrl = self.drv.get_dashboard_url(collaboranode)
+                dashboardUrl = g_drv.get_dashboard_url(collaboranode)
                 currentUrl = self.driver.current_url
                 # self.assertEqual(dashboardUrl, currentUrl)                
 
                 try:
-                    self.logger.info(f'Wait for {self.drv.indexsuffix}/apps/files/')
-                    wait.until(EC.element_to_be_clickable((By.XPATH,'//a[@href="'+ self.drv.indexsuffix + '/apps/files/' +'"]'))).click()
-                    # files = self.driver.find_element(by=By.XPATH, value='//a[@href="'+ self.drv.indexsuffix + '/apps/files/' +'"]')
+                    self.logger.info(f'Wait for {g_drv.indexsuffix}/apps/files/')
+                    wait.until(EC.element_to_be_clickable((By.XPATH,'//a[@href="'+ g_drv.indexsuffix + '/apps/files/' +'"]'))).click()
+                    # files = self.driver.find_element(by=By.XPATH, value='//a[@href="'+ g_drv.indexsuffix + '/apps/files/' +'"]')
                     # files.click()
                 except Exception as error:
-                    self.logger.warning(f'Wait for {self.drv.indexsuffix}/apps/files/ took too long: {error}')
+                    self.logger.warning(f'Wait for {g_drv.indexsuffix}/apps/files/ took too long: {error}')
                     success = False
                 self.assertTrue(success)
 
@@ -546,7 +574,7 @@ class TestCollaboraSelenium(unittest.TestCase):
 
                 if success == False:
                     self.logger.warning(f'Manually open home folder in case loading of all files takes too much time')
-                    self.driver.get(self.drv.get_folder_url(collaboranode,''))
+                    self.driver.get(g_drv.get_folder_url(collaboranode,''))
                     success = True
 
                 self.assertTrue(success)
@@ -574,7 +602,7 @@ class TestCollaboraSelenium(unittest.TestCase):
                     ActionChains(self.driver).key_down(Keys.CONTROL).send_keys('a').key_up(Keys.CONTROL).perform()
                     ActionChains(self.driver).send_keys(f'SeleniumCollaboraTest{Keys.ENTER}').perform()
                     time.sleep(1)
-                folderurl = self.drv.get_folder_url(collaboranode, "SeleniumCollaboraTest")
+                folderurl = g_drv.get_folder_url(collaboranode, "SeleniumCollaboraTest")
                 self.driver.get(folderurl)
 
                 fileCreated = False
@@ -660,7 +688,7 @@ class TestCollaboraSelenium(unittest.TestCase):
                     success = False
 
                 self.logger.info(f'Open the folder URL instead of closing the document')
-                self.driver.get(self.drv.get_folder_url(collaboranode,''))
+                self.driver.get(g_drv.get_folder_url(collaboranode,''))
                 self.assertTrue(success)
 
                 self.logger.info('End of test!')
@@ -672,10 +700,11 @@ class TestCollaboraSelenium(unittest.TestCase):
         wait = WebDriverWait(self.driver, delay)
         g_wait = wait
         
-        for collaboranode in self.drv.fullnodes:
+        for collaboranode in g_drv.fullnodes:
             with self.subTest(mynode=collaboranode):
                 self.logger.info(f'TestID: {collaboranode}')
                 # if g_isLoggedIn == False:
+                removeFolder(collaboranode, f'Templates')
                 if g_loggedInNodes.get(collaboranode) == False:
                     nodelogin(collaboranode)
                 self.assertTrue(g_loggedInNodes.get(collaboranode))
@@ -691,22 +720,22 @@ class TestCollaboraSelenium(unittest.TestCase):
 
                 if success == False:
                     self.logger.warning(f'Manually open home folder in case loading of all files takes too much time')
-                    self.driver.get(self.drv.get_folder_url(collaboranode,''))
+                    self.driver.get(g_drv.get_folder_url(collaboranode,''))
                     success = True
                 self.assertTrue(success)
 
                 # Check URLs after login
-                dashboardUrl = self.drv.get_dashboard_url(collaboranode)
+                dashboardUrl = g_drv.get_dashboard_url(collaboranode)
                 currentUrl = self.driver.current_url
                 # self.assertEqual(dashboardUrl, currentUrl)                
 
                 try:
-                    self.logger.info(f'Wait for {self.drv.indexsuffix}/apps/files/')
-                    wait.until(EC.element_to_be_clickable((By.XPATH,'//a[@href="'+ self.drv.indexsuffix + '/apps/files/' +'"]'))).click()
-                    # files = self.driver.find_element(by=By.XPATH, value='//a[@href="'+ self.drv.indexsuffix + '/apps/files/' +'"]')
+                    self.logger.info(f'Wait for {g_drv.indexsuffix}/apps/files/')
+                    wait.until(EC.element_to_be_clickable((By.XPATH,'//a[@href="'+ g_drv.indexsuffix + '/apps/files/' +'"]'))).click()
+                    # files = self.driver.find_element(by=By.XPATH, value='//a[@href="'+ g_drv.indexsuffix + '/apps/files/' +'"]')
                     # files.click()
                 except Exception as error:
-                    self.logger.warning(f'Wait for {self.drv.indexsuffix}/apps/files/ took too long: {error}')
+                    self.logger.warning(f'Wait for {g_drv.indexsuffix}/apps/files/ took too long: {error}')
                     success = False
                 self.assertTrue(success)
 
@@ -719,7 +748,7 @@ class TestCollaboraSelenium(unittest.TestCase):
 
                 if success == False:
                     self.logger.warning(f'Manually open home folder in case loading of all files takes too much time')
-                    self.driver.get(self.drv.get_folder_url(collaboranode,''))
+                    self.driver.get(g_drv.get_folder_url(collaboranode,''))
                     success = True
 
                 self.assertTrue(success)
@@ -746,7 +775,7 @@ class TestCollaboraSelenium(unittest.TestCase):
                     ActionChains(self.driver).key_down(Keys.CONTROL).send_keys('a').key_up(Keys.CONTROL).perform()
                     ActionChains(self.driver).send_keys(f'SeleniumCollaboraTest{Keys.ENTER}').perform()
                     time.sleep(1)
-                folderurl = self.drv.get_folder_url(collaboranode, "SeleniumCollaboraTest")
+                folderurl = g_drv.get_folder_url(collaboranode, "SeleniumCollaboraTest")
                 self.driver.get(folderurl)
 
                 fileCreated = False
@@ -830,7 +859,7 @@ class TestCollaboraSelenium(unittest.TestCase):
                     success = False
 
                 self.logger.info(f'Open the folder URL instead of closing the document')
-                self.driver.get(self.drv.get_folder_url(collaboranode,''))
+                self.driver.get(g_drv.get_folder_url(collaboranode,''))
                 self.assertTrue(success)
 
                 self.logger.info('End of test!')
