@@ -59,10 +59,12 @@ docker: selfsignedcert docker_kill
 	# docker cp $(build_dir)/$(app_name)-$(version).tar.gz nextcloud:/var/www/html/custom_apps
 	# docker exec -u www-data nextcloud /bin/bash -c "cd /var/www/html/custom_apps && tar -xzf $(app_name)-$(version).tar.gz && rm $(app_name)-$(version).tar.gz"
 	# docker exec nextcloud /bin/bash -c "chown -R www-data:www-data /var/www/html/custom_apps/$(app_name)
-	-./occ_docker  maintenance:install --admin-user='admin' --admin-pass='adminpassword'
+	-./occ_docker maintenance:install --admin-user='admin' --admin-pass='adminpassword' --database='mysql' --database-name='nextcloud' --database-host='nextcloud-local-db' --database-user='nextcloud' --database-pass='userpass'
 	-./occ_docker  app:install files_accesscontrol
 	-./occ_docker  app:install files_automatedtagging
 	-./occ_docker  app:install twofactor_webauthn
+	-./occ_docker app:install richdocumentscode
+	-./occ_docker app:install richdocuments
 	./occ_docker  app:enable twofactor_totp
 	./occ_docker  app:enable files_external
 	./occ_docker  app:disable firstrunwizard
@@ -105,6 +107,9 @@ clean: docker_kill
 	-./cleanall.sh
 	-rm .env
 	-cd .. && rm expected_localhost.yaml
+
+.PHONY: preparetest
+preparetest: expected apppasswords
 
 .PHONY: cleantest
 cleantest: clean docker expected apppasswords acceptancetest
