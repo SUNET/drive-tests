@@ -50,6 +50,13 @@ selfsignedcert:
 docker_kill:
 	docker kill nextcloud-local 2&> /dev/null || true
 	docker kill nextcloud-local-db 2&> /dev/null || true
+	docker kill nextcloud-local-whiteboard 2&> /dev/null || true
+	docker kill nextcloud-local-minio 2&> /dev/null || true
+	docker kill nextcloud-local-minio1-1 2&> /dev/null || true
+	docker kill nextcloud-local-minio2-1 2&> /dev/null || true
+	docker kill nextcloud-local-minio3-1 2&> /dev/null || true
+	docker kill nextcloud-local-minio4-1 2&> /dev/null || true
+
 .PHONY: docker
 docker: selfsignedcert docker_kill
 	$(shell printf 'LoadModule socache_shmcb_module /usr/lib/apache2/modules/mod_socache_shmcb.so \nLoadModule ssl_module /usr/lib/apache2/modules/mod_ssl.so \nSSLRandomSeed startup builtin \nSSLRandomSeed startup file:/dev/urandom 512 \nSSLRandomSeed connect builtin \nSSLRandomSeed connect file:/dev/urandom 512 \nAddType application/x-x509-ca-cert .crt \nAddType application/x-pkcs7-crl .crl \nSSLPassPhraseDialog  exec:/usr/share/apache2/ask-for-passphrase \nSSLSessionCache     shmcb:$${APACHE_RUN_DIR}/ssl_scache(512000) \nSSLSessionCacheTimeout  300 \nSSLCipherSuite HIGH:!aNULL \nSSLProtocol all -SSLv3 \nSSLSessionTickets off' > /tmp/nextcloud-ssl.conf )
