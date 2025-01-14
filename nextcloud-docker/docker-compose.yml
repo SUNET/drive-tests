@@ -33,9 +33,11 @@ services:
     image: nextcloud:latest
     restart: always
     expose:
+      - "8080"
       - "8443"
     ports:
       - 8443:8443
+      - 8080:80
     links:
       - db
     volumes:
@@ -68,6 +70,15 @@ services:
       - MYSQL_PASSWORD=userpass
       - MYSQL_DATABASE=nextcloud
       - MYSQL_USER=nextcloud
+
+  whiteboard-server:
+    container_name: nextcloud-whiteboard
+    image: ghcr.io/nextcloud-releases/whiteboard:release
+    ports:
+      - 3002:3002
+    environment:
+      - NEXTCLOUD_URL=http://localhost:8080
+      - JWT_SECRET_KEY=some-random-key
 
   minio1:
     <<: *minio-common
