@@ -51,11 +51,11 @@ docker_kill:
 	docker kill nextcloud-local 2&> /dev/null || true
 	docker kill nextcloud-local-db 2&> /dev/null || true
 	docker kill nextcloud-local-whiteboard 2&> /dev/null || true
-	docker kill nextcloud-local-minio 2&> /dev/null || true
-	docker kill nextcloud-local-minio1-1 2&> /dev/null || true
-	docker kill nextcloud-local-minio2-1 2&> /dev/null || true
-	docker kill nextcloud-local-minio3-1 2&> /dev/null || true
-	docker kill nextcloud-local-minio4-1 2&> /dev/null || true
+	docker kill nextcloud-local-nginx 2&> /dev/null || true
+	docker kill nextcloud-local-minio1 2&> /dev/null || true
+	docker kill nextcloud-local-minio2 2&> /dev/null || true
+	docker kill nextcloud-local-minio3 2&> /dev/null || true
+	docker kill nextcloud-local-minio4 2&> /dev/null || true
 
 .PHONY: docker
 docker: selfsignedcert docker_kill
@@ -116,9 +116,15 @@ expected:
 	cp -f ../expected_localhost_template.yaml ../expected_localhost.yaml
 	python ../expected_localhost.py
 
-.PHONY: clean
-clean: docker_kill
+.PHONY: cleanall
+cleanall: docker_kill
 	-./cleanall.sh
+	-rm .env
+	-cd .. && rm expected_localhost.yaml
+
+.PHONY: clean
+clean:
+	-./cleangentle.sh
 	-rm .env
 	-cd .. && rm expected_localhost.yaml
 
@@ -126,7 +132,7 @@ clean: docker_kill
 preparetest: expected apppasswords
 
 .PHONY: cleantest
-cleantest: clean docker expected apppasswords acceptancetest
+cleantest: cleanall docker expected apppasswords acceptancetest
 
 .PHONY: acceptancetest
 acceptancetest:
