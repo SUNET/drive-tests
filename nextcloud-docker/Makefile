@@ -100,10 +100,10 @@ docker: selfsignedcert docker_kill
 	-docker exec -u www-data nextcloud-local /bin/bash -c "env NC_PASS=$(NEXTCLOUD_SELENIUM_APP_PASSWORD_LOCALHOST_LOCALHOST) /var/www/html/occ user:auth-tokens:add --password-from-env _selenium_localhost"
 	-docker exec -u www-data nextcloud-local /bin/bash -c "env NC_PASS=$(NEXTCLOUD_SELENIUM_MFA_APP_PASSWORD_LOCALHOST_LOCALHOST) /var/www/html/occ user:auth-tokens:add --password-from-env _selenium_localhost_mfa"
 
-	docker exec nextcloud-docker-minio1-1 mc config host add myminio http://nextcloud-local-minio:9000 minioadmin minioadmin
-	-docker exec nextcloud-docker-minio1-1 mc mb myminio/project-bucket
-	-docker exec nextcloud-docker-minio1-1 mc mb myminio/selenium-system
-	-docker exec nextcloud-docker-minio1-1 mc mb myminio/selenium-home
+	docker exec nextcloud-local-minio1 mc config host add myminio http://nextcloud-local-minio:9000 minioadmin minioadmin
+	-docker exec nextcloud-local-minio1 mc mb myminio/project-bucket
+	-docker exec nextcloud-local-minio1 mc mb myminio/selenium-system
+	-docker exec nextcloud-local-minio1 mc mb myminio/selenium-home
 
 	# Copy bucket configuration file to container and import mounts
 	docker cp files_external.json nextcloud-local:/var/www/html

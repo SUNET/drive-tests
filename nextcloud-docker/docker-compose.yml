@@ -29,7 +29,6 @@ x-minio-common: &minio-common
 services:
   app:
     container_name: nextcloud-local
-    # image: nextcloud:29.0.10-apache
     image: nextcloud:latest
     restart: always
     expose:
@@ -60,7 +59,7 @@ services:
 
   db:
     container_name: nextcloud-local-db
-    image: mariadb:10.6
+    image: mariadb:latest
     restart: always
     command: --transaction-isolation=READ-COMMITTED --log-bin=binlog --binlog-format=ROW
     volumes:
@@ -113,8 +112,8 @@ services:
       - data4-2:/data2
 
   nginx:
-    container_name: nextcloud-local-nginx
-    image: nginx:1.19.2-alpine
+    container_name: nextcloud-local-minio
+    image: nginx:latest
     hostname: nginx
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf:ro
