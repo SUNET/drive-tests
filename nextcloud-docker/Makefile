@@ -65,6 +65,8 @@ docker: selfsignedcert docker_kill
 	-./occ_docker  app:install twofactor_webauthn
 	-./occ_docker app:install richdocumentscode
 	-./occ_docker app:install richdocuments
+	-./occ_docker config:app:set richdocuments wopi_url --value="https://localhost:8443/custom_apps/richdocumentscode/proxy.php?req="
+	-./occ_docker config:app:set richdocuments disable_certificate_verification --value="yes"
 	./occ_docker  app:enable twofactor_totp
 	./occ_docker  app:enable files_external
 	./occ_docker  app:disable firstrunwizard
