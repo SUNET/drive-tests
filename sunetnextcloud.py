@@ -78,8 +78,18 @@ class TestTarget(object):
         logger.info(f'Working directory is {dname}')
         testcustomers = os.environ.get('NextcloudTestCustomers')
         testbrowsers = os.environ.get('NextcloudTestBrowsers')
-        
+        testrunner = os.environ.get('NextcloudTestRunner')
 
+        if testrunner is None:
+            logger.info(f'Using default xml test runner')
+            self.testrunner = 'xml'
+        elif (testrunner == 'xml') or (testrunner == 'html'):
+            logger.info(f'Using {testrunner} test runner')
+            self.testrunner = testrunner
+        else:
+            logger.warning(f'Unknown testrunner {testrunner}, using xml as default')
+            self.testrunner = 'xml'
+        
         if target is not None:
             logger.info(f'Test target initialized by caller: {target}')
             testtarget = target
