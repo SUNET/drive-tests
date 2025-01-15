@@ -131,6 +131,9 @@ clean:
 .PHONY: preparetest
 preparetest: expected apppasswords
 
+.PHONY: test
+test: clean docker expected apppasswords acceptancetest
+
 .PHONY: cleantest
 cleantest: cleanall docker expected apppasswords acceptancetest
 

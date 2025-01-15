@@ -30,9 +30,9 @@ docker rm -vf nextcloud-local-minio4-1
 
 docker rmi -f quay.io/minio/minio
 docker rmi -f nextcloud
-docker rmi -f mariadb:10.6
+docker rmi -f mariadb
 docker rmi -f ghcr.io/nextcloud-releases/whiteboard:release
-docker rmi -f nginx:1.19.2-alpine
+docker rmi -f nginx
 
 docker volume rm nextcloud-docker_db
 docker volume rm nextcloud-docker_nextcloud
