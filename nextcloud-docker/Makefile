@@ -157,6 +157,13 @@ logintest:
 	python test_tests.py; \
 	python test_login_selenium.py
 
+.PHONY: collaboratest
+collaboratest:
+	. ./.env; \
+	cd ..; \
+	python test_tests.py; \
+	python test_collabora_selenium.py
+
 # Global for all targets
 # export NextcloudTestTarget=localhost
 export NextcloudTestTarget=localhost
