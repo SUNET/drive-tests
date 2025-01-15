@@ -128,14 +128,18 @@ clean:
 	-rm .env
 	-cd .. && rm expected_localhost.yaml
 
+.PHONY: checkenv
+checkenv:
+	python ../environment_check.py ../requirements.txt -d
+
 .PHONY: preparetest
-preparetest: expected apppasswords
+preparetest: checkenv expected apppasswords
 
 .PHONY: test
-test: clean docker expected apppasswords acceptancetest
+test: clean docker checkenv expected apppasswords acceptancetest
 
 .PHONY: cleantest
-cleantest: cleanall docker expected apppasswords acceptancetest
+cleantest: cleanall docker checkenv expected apppasswords acceptancetest
 
 .PHONY: acceptancetest
 acceptancetest:
