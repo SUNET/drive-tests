@@ -109,6 +109,8 @@ class TestLoginSelenium(unittest.TestCase):
                                 if use_driver_service == False:
                                     self.logger.info(f'Initialize Firefox driver without driver service')
                                     options = FirefoxOptions()
+                                    if drv.verify == False:
+                                        options.add_argument("--ignore-certificate-errors")
                                     # options.add_argument("--headless")
                                     driver = webdriver.Firefox(options=options)
                                 else:
