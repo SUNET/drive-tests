@@ -85,7 +85,15 @@ docker: selfsignedcert docker_kill
 	./occ_docker  app:enable twofactor_totp
 	./occ_docker  app:enable files_external
 	./occ_docker  app:disable firstrunwizard
-	-./occ_docker  app:enable mfazones
+
+	wget https://github.com/SUNET/nextcloud-mfazones/releases/download/v0.2.1/mfazones-0.2.1.tar.gz
+	docker cp mfazones-0.2.1.tar.gz nextcloud-local:/var/www/html/custom_apps
+	docker exec -u www-data nextcloud-local /bin/bash -c "cd /var/www/html/custom_apps && tar -xzf mfazones-0.2.1.tar.gz && rm mfazones-0.2.1.tar.gz"
+	docker exec -u www-data nextcloud-local /bin/bash -c "sed -i -e 's/max-version=\"29\"/max-version=\"30\"/g' /var/www/html/custom_apps/mfazones/appinfo/info.xml"
+	docker exec nextcloud-local /bin/bash -c "chown -R www-data:www-data /var/www/html/custom_apps/mfazones"
+	./occ_docker app:enable mfazones
+	./occ_docker app:update --all
+
 	-./occ_docker  group:add mfa
 	./occ_docker  twofactorauth:enforce --on --group mfa
 	./occ_docker  group:adduser mfa admin
@@ -144,6 +152,9 @@ test: clean docker checkenv expected apppasswords acceptancetest
 .PHONY: cleantest
 cleantest: cleanall docker checkenv expected apppasswords acceptancetest
 
+.PHONY: cleantestall
+cleantestall: cleanall docker checkenv expected apppasswords acceptancetest logintest collaboratest
+
 .PHONY: acceptancetest
 acceptancetest:
 	. ./.env; \
@@ -175,11 +186,11 @@ export NEXTCLOUD_OCS_PASSWORD_LOCALHOST_LOCALHOST=_ocs_localhost_password
 export NEXTCLOUD_OCS_APP_PASSWORD_LOCALHOST_LOCALHOST=_ocs_localhost_app_password
 export NEXTCLOUD_SELENIUM_USER_LOCALHOST_LOCALHOST=_selenium_localhost
 export NEXTCLOUD_SELENIUM_PASSWORD_LOCALHOST_LOCALHOST=_selenium_localhost_password
-export NEXTCLOUD_SELENIUM_APP_PASSWORD_LOCALHOST_LOCALHOST=unset
+export NEXTCLOUD_SELENIUM_APP_PASSWORD_LOCALHOST_LOCALHOST=
 export NEXTCLOUD_SELENIUM_MFA_USER_LOCALHOST_LOCALHOST=_selenium_localhost_mfa
 export NEXTCLOUD_SELENIUM_MFA_PASSWORD_LOCALHOST_LOCALHOST=_selenium_localhost_mfa_password
-export NEXTCLOUD_SELENIUM_MFA_APP_PASSWORD_LOCALHOST_LOCALHOST=unset
-export NEXTCLOUD_SELENIUM_MFA_SECRET_LOCALHOST_LOCALHOST=unset
+export NEXTCLOUD_SELENIUM_MFA_APP_PASSWORD_LOCALHOST_LOCALHOST=
+export NEXTCLOUD_SELENIUM_MFA_SECRET_LOCALHOST_LOCALHOST=
 
 
 .PHONY: apppasswords
