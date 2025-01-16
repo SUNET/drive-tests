@@ -79,6 +79,8 @@ docker: selfsignedcert docker_kill
 	-./occ_docker config:app:set whiteboard collabBackendUrl --value="http://localhost:3002"
 	-./occ_docker config:app:set whiteboard jwt_secret_key --value="some-random-key"
 
+	-./occ_docker config:app:set bruteForce whitelist_1 --value='$(docker inspect -f '{{range.NetworkSettings.Networks}}{{.Gateway}}{{end}}' nextcloud-local)'
+
 	./occ_docker  app:enable twofactor_totp
 	./occ_docker  app:enable files_external
 	./occ_docker  app:disable firstrunwizard
