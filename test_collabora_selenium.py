@@ -2,11 +2,12 @@
 Author: Richard Freitag <freitag@sunet.se>
 Selenium tests to test Collabora on a local node
 """
-from datetime import datetime
-import xmlrunner
 import unittest
+import xmlrunner
+import HtmlTestRunner
 import sunetnextcloud
 import pyautogui
+from datetime import datetime
 
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
@@ -865,5 +866,7 @@ class TestCollaboraSelenium(unittest.TestCase):
                 self.logger.info('End of test!')
 
 if __name__ == '__main__':
-    # unittest.main()
-    unittest.main(testRunner=xmlrunner.XMLTestRunner(output='test-reports'))
+    if g_drv.testrunner == 'xml':
+        unittest.main(testRunner=xmlrunner.XMLTestRunner(output='test-reports'))
+    else:
+        unittest.main(testRunner=HtmlTestRunner.HTMLTestRunner(output='test-reports-html', combine_reports=True, report_name="nextcloud-local", add_timestamp=False))

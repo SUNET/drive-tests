@@ -3,6 +3,7 @@ Author: Richard Freitag <freitag@sunet.se>
 Simple test for retrieving all status.php pages from Sunet Drive nodes and comparing the output to the expected result.
 """
 
+import HtmlTestRunner
 import unittest
 import requests
 import json
@@ -20,18 +21,13 @@ import os
 
 drv = sunetnextcloud.TestTarget()
 expectedResults = drv.expectedResults
-# if drv.target == 'localhost':
-#     expectedResultsFile = 'expected_localhost.yaml'
-# else:
-#     expectedResultsFile = 'expected.yaml'
+
 testThreadsRunning = 0
 g_failedNodes = []
 g_requestTimeout=10
 logger = logging.getLogger(__name__)
 logging.basicConfig(format = '%(asctime)s - %(module)s.%(funcName)s - %(levelname)s: %(message)s',
                 datefmt = '%Y-%m-%d %H:%M:%S', level = logging.INFO)
-# with open(expectedResultsFile, "r") as stream:
-#     expectedResults=yaml.safe_load(stream)
 
 class FrontendStatusInfo(threading.Thread):
     def __init__(self, url, TestStatus, verify=True):
@@ -425,4 +421,7 @@ class TestStatus(unittest.TestCase):
             self.assertEqual(expectedResults[drv.target]['collabora']['status'], r.text)
 
 if __name__ == '__main__':
-    unittest.main(testRunner=xmlrunner.XMLTestRunner(output='test-reports'))
+    if drv.testrunner == 'xml':
+        unittest.main(testRunner=xmlrunner.XMLTestRunner(output='test-reports'))
+    else:
+        unittest.main(testRunner=HtmlTestRunner.HTMLTestRunner(output='test-reports-html', combine_reports=True, report_name="nextcloud-local", add_timestamp=False))

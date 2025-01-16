@@ -3,6 +3,7 @@ Author: Richard Freitag <freitag@sunet.se>
 """
 
 import unittest
+import HtmlTestRunner
 import requests
 from requests.auth import HTTPBasicAuth
 import json
@@ -461,4 +462,7 @@ class TestOcsCalls(unittest.TestCase):
                 self.assertTrue(g_testPassed[fullnode])
 
 if __name__ == '__main__':
-    unittest.main(testRunner=xmlrunner.XMLTestRunner(output='test-reports'))
+    if drv.testrunner == 'xml':
+        unittest.main(testRunner=xmlrunner.XMLTestRunner(output='test-reports'))
+    else:
+        unittest.main(testRunner=HtmlTestRunner.HTMLTestRunner(output='test-reports-html', combine_reports=True, report_name="nextcloud-local", add_timestamp=False))

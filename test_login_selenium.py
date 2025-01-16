@@ -2,8 +2,9 @@
 Author: Richard Freitag <freitag@sunet.se>
 Selenium tests to log on to a Sunet Drive node, and performing various operations to ensure basic operation of a node
 """
-import xmlrunner
 import unittest
+import xmlrunner
+import HtmlTestRunner
 import sunetnextcloud
 from webdav3.client import Client
 import pyotp
@@ -707,4 +708,7 @@ class TestLoginSelenium(unittest.TestCase):
     #         self.logger.info(f'And done...')
 
 if __name__ == '__main__':
-    unittest.main(testRunner=xmlrunner.XMLTestRunner(output='test-reports'))
+    if drv.testrunner == 'xml':
+        unittest.main(testRunner=xmlrunner.XMLTestRunner(output='test-reports'))
+    else:
+        unittest.main(testRunner=HtmlTestRunner.HTMLTestRunner(output='test-reports-html', combine_reports=True, report_name="nextcloud-local", add_timestamp=False))

@@ -3,6 +3,7 @@ Author: Richard Freitag <freitag@sunet.se>
 """
 
 import unittest
+import HtmlTestRunner
 import tempfile
 import requests
 from requests.auth import HTTPBasicAuth
@@ -32,6 +33,8 @@ logger = logging.getLogger(__name__)
 logging.basicConfig(format = '%(asctime)s - %(module)s.%(funcName)s - %(levelname)s: %(message)s',
                 datefmt = '%Y-%m-%d %H:%M:%S', level = logging.INFO)
 
+drv = sunetnextcloud.TestTarget()
+
 class WebDAVDneCheck(threading.Thread):
     def __init__(self, name, basicAuth, TestWebDAV):
         threading.Thread.__init__(self)
@@ -47,7 +50,6 @@ class WebDAVDneCheck(threading.Thread):
         g_testPassed[fullnode] = False
         g_testThreadsRunning += 1
         logger.info(f'WebDAVDneCheck thread started for node {self.name}')
-        drv = sunetnextcloud.TestTarget()
         logger.info(f'Setting passed for {fullnode} to {g_testPassed.get(fullnode)}')
         
         nodeuser = drv.get_seleniumuser(fullnode)
@@ -796,4 +798,7 @@ class TestWebDAV(unittest.TestCase):
                 self.assertTrue(g_testPassed[fullnode])
 
 if __name__ == '__main__':
-    unittest.main(testRunner=xmlrunner.XMLTestRunner(output='test-reports'))
+    if drv.testrunner == 'xml':
+        unittest.main(testRunner=xmlrunner.XMLTestRunner(output='test-reports'))
+    else:
+        unittest.main(testRunner=HtmlTestRunner.HTMLTestRunner(output='test-reports-html', combine_reports=True, report_name="nextcloud-local", add_timestamp=False))

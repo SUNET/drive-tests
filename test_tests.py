@@ -2,6 +2,7 @@
 Author: Richard Freitag <freitag@sunet.se>
 """
 
+import HtmlTestRunner
 import unittest
 import yaml
 import os
@@ -12,6 +13,7 @@ import xmlrunner
 
 opsbase='sunet-drive-ops/'
 globalconfigfile = opsbase + "/global/overlay/etc/hiera/data/common.yaml"
+drv = sunetnextcloud.TestTarget()
 
 class TestTests(unittest.TestCase):
     logger = logging.getLogger(__name__)
@@ -24,7 +26,6 @@ class TestTests(unittest.TestCase):
 
     def test_allnodes_tested(self):
         self.logger.info(f'TestID: {self._testMethodName}')
-        drv = sunetnextcloud.TestTarget()
         # print(len(drv.fullnodes))
         testMissing = False
 
@@ -95,4 +96,7 @@ class TestTests(unittest.TestCase):
         self.assertFalse(test_failed)
 
 if __name__ == '__main__':
-    unittest.main(testRunner=xmlrunner.XMLTestRunner(output='test-reports'))
+    if drv.testrunner == 'xml':
+        unittest.main(testRunner=xmlrunner.XMLTestRunner(output='test-reports'))
+    else:
+        unittest.main(testRunner=HtmlTestRunner.HTMLTestRunner(output='test-reports-html', combine_reports=True, report_name="nextcloud-local", add_timestamp=False))
