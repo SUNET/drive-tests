@@ -87,8 +87,8 @@ class TestTarget(object):
             logger.info(f'Using {testrunner} test runner')
             self.testrunner = testrunner
         else:
-            logger.warning(f'Unknown testrunner {testrunner}, using xml as default')
-            self.testrunner = 'xml'
+            logger.warning(f'Unknown testrunner {testrunner}, using html as default')
+            self.testrunner = 'html'
         
         if target is not None:
             logger.info(f'Test target initialized by caller: {target}')
