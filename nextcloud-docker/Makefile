@@ -74,6 +74,7 @@ docker: selfsignedcert docker_kill
 	-./occ_docker app:install richdocuments
 	-./occ_docker config:app:set richdocuments wopi_url --value="https://localhost:8443/custom_apps/richdocumentscode/proxy.php?req="
 	-./occ_docker config:app:set richdocuments disable_certificate_verification --value="yes"
+	-./occ_docker richdocuments:setup
 
 	-./occ_docker app:install whiteboard
 	-./occ_docker config:app:set whiteboard collabBackendUrl --value="http://localhost:3002"
@@ -151,19 +152,18 @@ acceptancetest:
 	python test_status_cli.py; \
 	python test_ocs.py; \
 	python test_webdav.py
+	-firefox ../test-reports-html/nextcloud-local.html
 
 .PHONY: logintest
 logintest:
 	. ./.env; \
 	cd ..; \
-	python test_tests.py; \
 	python test_login_selenium.py
 
 .PHONY: collaboratest
 collaboratest:
 	. ./.env; \
 	cd ..; \
-	python test_tests.py; \
 	python test_collabora_selenium.py
 
 # Global for all targets
