@@ -92,7 +92,7 @@ docker: selfsignedcert docker_kill
 	docker exec -u www-data nextcloud-local /bin/bash -c "sed -i -e 's/max-version=\"29\"/max-version=\"30\"/g' /var/www/html/custom_apps/mfazones/appinfo/info.xml"
 	docker exec nextcloud-local /bin/bash -c "chown -R www-data:www-data /var/www/html/custom_apps/mfazones"
 	./occ_docker app:enable mfazones
-	./occ_docker app:update --all
+	# ./occ_docker app:update --all
 
 	-./occ_docker  group:add mfa
 	./occ_docker  twofactorauth:enforce --on --group mfa
@@ -102,6 +102,8 @@ docker: selfsignedcert docker_kill
 	-docker exec -u www-data nextcloud-local /bin/bash -c "env OC_PASS=_ocs_localhost_password /var/www/html/occ user:add --password-from-env --display-name='MFA User' --group='admin' _ocs_localhost"
 	-docker exec -u www-data nextcloud-local /bin/bash -c "env OC_PASS=_selenium_localhost_mfa_password /var/www/html/occ user:add --password-from-env --display-name='Selenium MFA User' --group='mfa' _selenium_localhost_mfa"
 	-docker exec -u www-data nextcloud-local /bin/bash -c "env OC_PASS=_selenium_localhost_password /var/www/html/occ user:add --password-from-env --display-name='Selenium User' _selenium_localhost"
+	-docker exec -u www-data nextcloud-local /bin/bash -c "env OC_PASS=mfauserpassword /var/www/html/occ user:add --password-from-env --display-name='MFA User' --group='mfa' mfauser"
+	-docker exec -u www-data nextcloud-local /bin/bash -c "env OC_PASS=nomfauserpassword /var/www/html/occ user:add --password-from-env --display-name='Ordinary User' nomfauser"
 
 	-docker exec -u www-data nextcloud-local /bin/bash -c "env NC_PASS=$(NEXTCLOUD_OCS_APP_PASSWORD_LOCALHOST_LOCALHOST) /var/www/html/occ user:auth-tokens:add --password-from-env _ocs_localhost"
 	-docker exec -u www-data nextcloud-local /bin/bash -c "env NC_PASS=$(NEXTCLOUD_SELENIUM_APP_PASSWORD_LOCALHOST_LOCALHOST) /var/www/html/occ user:auth-tokens:add --password-from-env _selenium_localhost"
@@ -181,6 +183,7 @@ collaboratest:
 # export NextcloudTestTarget=localhost
 export NextcloudTestTarget=localhost
 export NextcloudTestCustomers=localhost
+export MFA_WAIT=3
 export NEXTCLOUD_OCS_USER_LOCALHOST_LOCALHOST=_ocs_localhost
 export NEXTCLOUD_OCS_PASSWORD_LOCALHOST_LOCALHOST=_ocs_localhost_password
 export NEXTCLOUD_OCS_APP_PASSWORD_LOCALHOST_LOCALHOST=_ocs_localhost_app_password
@@ -209,6 +212,7 @@ apppasswords:
 printenv:
 	echo 'export NextcloudTestTarget="$(NextcloudTestTarget)"'
 	echo 'export NextcloudTestCustomers="$(NextcloudTestCustomers)"'
+	echo 'export MFA_WAIT="$(MFA_WAIT)"'
 	echo 'export NEXTCLOUD_OCS_USER_LOCALHOST_LOCALHOST="$(NEXTCLOUD_OCS_USER_LOCALHOST_LOCALHOST)"'
 	echo 'export NEXTCLOUD_OCS_PASSWORD_LOCALHOST_LOCALHOST="$(NEXTCLOUD_OCS_PASSWORD_LOCALHOST_LOCALHOST)"'
 	echo 'export NEXTCLOUD_OCS_APP_PASSWORD_LOCALHOST_LOCALHOST="$(NEXTCLOUD_OCS_APP_PASSWORD_LOCALHOST_LOCALHOST)"'
