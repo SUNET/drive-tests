@@ -2,7 +2,6 @@
 Author: Richard Freitag <freitag@sunet.se>
 """
 
-import HtmlTestRunner
 import unittest
 import yaml
 import os
@@ -10,6 +9,7 @@ import os
 import sunetnextcloud
 import logging
 import xmlrunner
+import HtmlTestRunner
 
 opsbase='sunet-drive-ops/'
 globalconfigfile = opsbase + "/global/overlay/etc/hiera/data/common.yaml"
