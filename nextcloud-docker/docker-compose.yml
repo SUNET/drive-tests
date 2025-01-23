@@ -79,6 +79,13 @@ services:
       - NEXTCLOUD_URL=http://localhost:8080
       - JWT_SECRET_KEY=some-random-key
 
+  jupyterhub:
+    container_name: nextcloud-local-jupyterhub
+    ports:
+        - 8000:8000
+    image: quay.io/jupyterhub/jupyterhub
+    command: jupyterhub
+
   minio1:
     <<: *minio-common
     container_name: nextcloud-local-minio1
