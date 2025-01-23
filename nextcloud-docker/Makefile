@@ -100,6 +100,7 @@ docker: selfsignedcert docker_kill
 	docker exec -u www-data nextcloud-local /bin/bash -c "sed -i -e 's/max-version=\"29\"/max-version=\"30\"/g' /var/www/html/custom_apps/integration_jupyterhub/appinfo/info.xml"
 	docker exec nextcloud-local /bin/bash -c "chown -R www-data:www-data /var/www/html/custom_apps/integration_jupyterhub"
 	./occ_docker app:enable integration_jupyterhub
+	./occ_docker config:app:set integration_jupyterhub jupyter_url --value="http://localhost:8000"
 
 	-./occ_docker  group:add mfa
 	./occ_docker  twofactorauth:enforce --on --group mfa
