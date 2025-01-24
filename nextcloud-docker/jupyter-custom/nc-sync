@@ -1,0 +1,46 @@
+#!/bin/bash
+rmdir --ignore-fail-on-non-empty /home/jovyan/work
+workdir='/home/jovyan'
+mkdir -p ${workdir}
+server="https://${NEXTCLOUD_HOST}"
+json_file="/tmp/.access_token.json"
+
+# Remove any old access token files
+old_jsonfile_conflicted_pattern="${workdir}/.access_token{,\ \(*\)}.json"
+eval "rm ${old_jsonfile_conflicted_pattern} 2&> /dev/null"
+
+function refresh_token {
+  json="$(curl --header "Authorization: token ${JUPYTERHUB_API_TOKEN}" https://${JUPYTER_HOST}/services/refresh-token/tokens)"
+  # If json is empty here we are early in the process and should have a fresh token from the environment
+  if [[ -z "${json}" ]]; then
+    token="${NEXTCLOUD_ACCESS_TOKEN}"
+    json="{ \"access_token\": \"${token}\", \"token_expires\": $(date -d "10 min" +%s).0000000 }" 
+  fi
+  echo "${json}" > "${json_file}"
+  token=$(jq -r '.access_token' "${json_file}")
+  echo "${token}"
+}
+
+function get_token {
+  # First we try to use our cache
+  if [[ -f "${json_file}" ]]; then
+    now=$(date +%s)
+    token=$(jq -r '.access_token' "${json_file}")
+    expires_at=$(jq -r '.token_expires' "${json_file}"| sed 's/\..*//')
+    # If the token is expired, we fetch a new one
+    if [[ "${expires_at}" -lt ${now} ]]; then
+      token=$(refresh_token)
+    fi
+  else
+    token=$(refresh_token)
+  fi
+  echo "${token}"
+}
+
+function ncsync {
+  while true; do
+    nextcloudcmd -s --user ${JUPYTERHUB_USER} --password $(get_token) --path / "${workdir}" "${server}"
+    sleep 5s
+  done
+}
+ncsync &
