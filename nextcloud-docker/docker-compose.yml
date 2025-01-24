@@ -32,11 +32,11 @@ services:
     image: nextcloud:latest
     restart: always
     expose:
-      - "8080"
+      - "8090"
       - "8443"
     ports:
       - 8443:8443
-      - 8080:80
+      - 8090:80
     links:
       - db
     volumes:
@@ -83,8 +83,34 @@ services:
     container_name: nextcloud-local-jupyterhub
     ports:
         - 8000:8000
-    image: quay.io/jupyterhub/jupyterhub
-    command: jupyterhub
+    image: jupyterhub-local
+    # command: jupyterhub
+    # volumes:
+    #   - type: bind
+    #     source: jupyter/refresh-token.py
+    #     target: /usr/local/etc/jupyterhub/refresh-token.py
+    #   - type: bind
+    #     source: jupyter/jupyter_server_config.py
+    #     target: /home/jovyan/.jupyter/jupyter_server_config.py
+
+    # extra_hosts:
+    #     - "nextcloud-local-mock-oauth:127.0.0.1"
+
+    environment:
+      - HUB_SERVICE_HOST=localhost
+      - HUB_SERVICE_PORT_REFRESH_TOKEN=refresh-token
+      - NEXTCLOUD_HOST=localhost:8443
+      - NEXTCLOUD_CLIENT_ID=
+      - NEXTCLOUD_CLIENT_SECRET=
+      - JUPYTER_HOST=localhost:8000
+
+  mock-oauth2-server:
+    container_name: nextcloud-local-mock-oauth
+    image: ghcr.io/navikt/mock-oauth2-server:2.1.1
+    stdin_open: true
+    tty: true
+    ports:
+        - 8080:8080
 
   minio1:
     <<: *minio-common
