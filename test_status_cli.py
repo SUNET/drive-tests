@@ -196,7 +196,7 @@ class SeamlessAccessInfo(threading.Thread):
             r =requests.get(url, timeout=g_requestTimeout, verify=self.verify)
 
             if "seamlessaccess.org" not in r.text and self.node not in expectedResults[drv.target]['loginexceptions']:
-                logger.error(f'Error getting seamless access info from: {self.node}')
+                logger.error(f'Error getting seamless access info from: {self.node}. Received text: {r.text}')
                 g_failedNodes.append(url)
                 testThreadsRunning-=1
                 return
