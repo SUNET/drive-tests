@@ -112,7 +112,7 @@ def checkFile(node, foldername, filename):
         if exists == True:
             g_logger.info(f'File {fullPath} was found on try {tryCount}')
             return exists
-        g_logger.info(f'File {fullPath} not found on try {tryCount}')
+        g_logger.info(f'File {fullPath} not found on try {tryCount} in {client.list()}')
         time.sleep(3)
     g_logger.info(f'File {fullPath} on {node} not found after {tryCount} tries: {exists}')
     return exists
@@ -284,17 +284,21 @@ class TestCollaboraSelenium(unittest.TestCase):
 
                     time.sleep(3)
                     try:
+                        self.logger.info(f'Click on add icon')
                         wait.until(EC.element_to_be_clickable((By.CLASS_NAME, self.addIcon))).click()
+                        self.logger.info(f'Click on new text file')
+                        time.sleep(.5)
                         # wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'icon-filetype-text'))).click()
                         wait.until(EC.element_to_be_clickable((By.XPATH, "//*[contains(text(), 'New text file')]"))).click()
-
+                        time.sleep(.5)
                         # Starting with Nextcloud 28, we have to rename the file
                         wait.until(EC.presence_of_element_located((By.XPATH, "//*[contains(text(), 'New document')]")))
                         self.logger.info(f'Renaming the file we just created to {g_filename}.md')
+                        time.sleep(.5)
                         ActionChains(self.driver).key_down(Keys.CONTROL).send_keys('a').key_up(Keys.CONTROL).perform()
-                        time.sleep(0.5)
+                        time.sleep(.5)
                         ActionChains(self.driver).send_keys(f'{g_filename}.md').perform()
-                        time.sleep(0.5)
+                        time.sleep(.5)
                         ActionChains(self.driver).send_keys(Keys.ENTER).perform()
                     except Exception as error:
                         self.logger.warning(f'Unable to create new file: {g_filename}, saving screenshot: {error}')
@@ -463,13 +467,15 @@ class TestCollaboraSelenium(unittest.TestCase):
                             try:
                                 self.logger.info(f'Click on add icon')
                                 wait.until(EC.element_to_be_clickable((By.CLASS_NAME, self.addIcon))).click()
-                                self.logger.info(f'Click on add document')
+                                self.logger.info(f'Click on new document')
+                                time.sleep(.5)
                                 # wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'icon-filetype-document'))).click()
                                 wait.until(EC.element_to_be_clickable((By.XPATH, "//*[contains(text(), 'New document')]"))).click()
-
+                                time.sleep(.5)
                                 # Starting with Nextcloud 28, we have to rename the file
                                 wait.until(EC.presence_of_element_located((By.XPATH, "//*[contains(text(), 'New document')]")))
                                 self.logger.info(f'Renaming the file we just created to {g_filename}.odt')
+                                time.sleep(.5)
                                 ActionChains(self.driver).key_down(Keys.CONTROL).send_keys('a').key_up(Keys.CONTROL).perform()
                                 time.sleep(.5)
                                 ActionChains(self.driver).send_keys(f'{g_filename}.odt').perform()
@@ -636,17 +642,21 @@ class TestCollaboraSelenium(unittest.TestCase):
 
                     time.sleep(3)
                     try:
+                        self.logger.info(f'Click on add icon')
                         wait.until(EC.element_to_be_clickable((By.CLASS_NAME, self.addIcon))).click()
+                        self.logger.info(f'Click on new spreadsheet')
+                        time.sleep(.5)
                         # wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'icon-filetype-spreadsheet'))).click()
                         wait.until(EC.element_to_be_clickable((By.XPATH, "//*[contains(text(), 'New spreadsheet')]"))).click()
-
+                        time.sleep(.5)
                         # Starting with Nextcloud 28, we have to rename the file
                         wait.until(EC.presence_of_element_located((By.XPATH, "//*[contains(text(), 'New document')]")))
                         self.logger.info(f'Renaming the file we just created to {g_filename}.ods')
+                        time.sleep(.5)
                         ActionChains(self.driver).key_down(Keys.CONTROL).send_keys('a').key_up(Keys.CONTROL).perform()
-                        time.sleep(0.5)
+                        time.sleep(.5)
                         ActionChains(self.driver).send_keys(f'{g_filename}.ods').perform()
-                        time.sleep(0.5)
+                        time.sleep(.5)
                         ActionChains(self.driver).send_keys(Keys.ENTER).perform()
                     except Exception as error:
                         self.logger.error(f'Unable to create new file: {g_filename}, saving screenshot: {error}')
@@ -810,16 +820,20 @@ class TestCollaboraSelenium(unittest.TestCase):
 
                     time.sleep(3)
                     try:
+                        self.logger.info(f'Click on add icon')
                         wait.until(EC.element_to_be_clickable((By.CLASS_NAME, self.addIcon))).click()
+                        self.logger.info(f'Click on new presentation')
+                        time.sleep(.5)
                         wait.until(EC.element_to_be_clickable((By.XPATH, "//*[contains(text(), 'New presentation')]"))).click()
-
+                        time.sleep(.5)
                         # Starting with Nextcloud 28, we have to rename the file
                         wait.until(EC.presence_of_element_located((By.XPATH, "//*[contains(text(), 'New document')]")))
                         self.logger.info(f'Renaming the file we just created to {g_filename}.odp')
+                        time.sleep(.5)
                         ActionChains(self.driver).key_down(Keys.CONTROL).send_keys('a').key_up(Keys.CONTROL).perform()
-                        time.sleep(0.5)
+                        time.sleep(.5)
                         ActionChains(self.driver).send_keys(f'{g_filename}.odp').perform()
-                        time.sleep(0.5)
+                        time.sleep(.5)
                         ActionChains(self.driver).send_keys(Keys.ENTER).perform()
                     except Exception as error:
                         self.logger.error(f'Unable to create new file: {g_filename}, saving screenshot: {error}')
