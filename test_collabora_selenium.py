@@ -289,7 +289,7 @@ class TestCollaboraSelenium(unittest.TestCase):
                         self.logger.info(f'Click on new text file')
                         time.sleep(.5)
                         # wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'icon-filetype-text'))).click()
-                        wait.until(EC.element_to_be_clickable((By.XPATH, "//*[contains(@class, 'action-button__text') and text(), 'New text file')]"))).click()
+                        wait.until(EC.element_to_be_clickable((By.XPATH, "//*[contains(text(), 'New text file')]"))).click()
                         time.sleep(.5)
                         # Starting with Nextcloud 28, we have to rename the file
                         wait.until(EC.presence_of_element_located((By.XPATH, "//*[contains(text(), 'New document')]")))
