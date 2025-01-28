@@ -32,6 +32,7 @@ prod:
   cert_md5: '702b0112df7e6e4b2ca2af3280841196'
   ocsapps: 
     default: 70
+    sunet: 71
   collabora:
     nodes: 3
     status: 'OK'
@@ -67,6 +68,7 @@ test:
   cert_md5: '9dc0f8318dcda31e78308705449f1e2a'
   ocsapps:
     default: 71
+    sunet: 72
   collabora:
     nodes: 3
     status: 'OK'
