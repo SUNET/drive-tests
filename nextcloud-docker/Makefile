@@ -63,9 +63,6 @@ docker: selfsignedcert docker_kill jupyterhub
 	$(shell printf 'Listen 8443 \n<VirtualHost *:8443> \nServerAdmin webmaster@localhost \nDocumentRoot /var/www/html \nSSLEngine on \nSSLCertificateFile /etc/ssl/private/localhost.pem \nSSLCertificateKeyFile /etc/ssl/private/localhost.pem \nHeader always set Strict-Transport-Security "max-age=0" \nErrorLog $${APACHE_LOG_DIR}/sslerror.log \nCustomLog $${APACHE_LOG_DIR}/sslaccess.log combined \n</VirtualHost>' > /tmp/nextcloud-8443.conf)
 	docker compose up -d
 	sleep 10
-	# docker cp $(build_dir)/$(app_name)-$(version).tar.gz nextcloud:/var/www/html/custom_apps
-	# docker exec -u www-data nextcloud /bin/bash -c "cd /var/www/html/custom_apps && tar -xzf $(app_name)-$(version).tar.gz && rm $(app_name)-$(version).tar.gz"
-	# docker exec nextcloud /bin/bash -c "chown -R www-data:www-data /var/www/html/custom_apps/$(app_name)
 	-./occ_docker maintenance:install --admin-user='admin' --admin-pass='adminpassword' --database='mysql' --database-name='nextcloud' --database-host='nextcloud-local-db' --database-user='nextcloud' --database-pass='userpass'
 	-./occ_docker  app:install files_accesscontrol
 	-./occ_docker  app:install files_automatedtagging
@@ -164,6 +161,9 @@ preparetest: checkenv expected apppasswords
 
 .PHONY: test
 test: clean docker checkenv expected apppasswords acceptancetest
+
+.PHONY: testall
+testall: clean docker checkenv expected apppasswords acceptancetest logintest collaboratest
 
 .PHONY: cleantest
 cleantest: cleanall docker checkenv expected apppasswords acceptancetest
