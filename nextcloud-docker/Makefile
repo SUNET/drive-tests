@@ -117,13 +117,13 @@ docker: selfsignedcert docker_kill jupyterhub
 	-./occ_docker  group:add mfa
 	./occ_docker  twofactorauth:enforce --on --group mfa
 	./occ_docker  group:adduser mfa admin
-	-docker exec -u www-data nextcloud-local /bin/bash -c "env OC_PASS=mfauserpassword /var/www/html/occ user:add --password-from-env --display-name='MFA User' --group='mfa' mfauser
-	-docker exec -u www-data nextcloud-local /bin/bash -c "env OC_PASS=nomfauserpassword /var/www/html/occ user:add --password-from-env --display-name='Ordinary User' nomfauser
-	-docker exec -u www-data nextcloud-local /bin/bash -c "env OC_PASS=_ocs_localhost_password /var/www/html/occ user:add --password-from-env --display-name='MFA User' --group='admin' _ocs_localhost"
-	-docker exec -u www-data nextcloud-local /bin/bash -c "env OC_PASS=_selenium_localhost_mfa_password /var/www/html/occ user:add --password-from-env --display-name='Selenium MFA User' --group='mfa' _selenium_localhost_mfa"
-	-docker exec -u www-data nextcloud-local /bin/bash -c "env OC_PASS=_selenium_localhost_password /var/www/html/occ user:add --password-from-env --display-name='Selenium User' _selenium_localhost"
-	-docker exec -u www-data nextcloud-local /bin/bash -c "env OC_PASS=mfauserpassword /var/www/html/occ user:add --password-from-env --display-name='MFA User' --group='mfa' mfauser"
-	-docker exec -u www-data nextcloud-local /bin/bash -c "env OC_PASS=nomfauserpassword /var/www/html/occ user:add --password-from-env --display-name='Ordinary User' nomfauser"
+	-docker exec -u www-data nextcloud-local /bin/bash -c "env NC_PASS=mfauserpassword /var/www/html/occ user:add --password-from-env --display-name='MFA User' --group='mfa' mfauser
+	-docker exec -u www-data nextcloud-local /bin/bash -c "env NC_PASS=nomfauserpassword /var/www/html/occ user:add --password-from-env --display-name='Ordinary User' nomfauser
+	-docker exec -u www-data nextcloud-local /bin/bash -c "env NC_PASS=_ocs_localhost_password /var/www/html/occ user:add --password-from-env --display-name='MFA User' --group='admin' _ocs_localhost"
+	-docker exec -u www-data nextcloud-local /bin/bash -c "env NC_PASS=_selenium_localhost_mfa_password /var/www/html/occ user:add --password-from-env --display-name='Selenium MFA User' --group='mfa' _selenium_localhost_mfa"
+	-docker exec -u www-data nextcloud-local /bin/bash -c "env NC_PASS=_selenium_localhost_password /var/www/html/occ user:add --password-from-env --display-name='Selenium User' _selenium_localhost"
+	-docker exec -u www-data nextcloud-local /bin/bash -c "env NC_PASS=mfauserpassword /var/www/html/occ user:add --password-from-env --display-name='MFA User' --group='mfa' mfauser"
+	-docker exec -u www-data nextcloud-local /bin/bash -c "env NC_PASS=nomfauserpassword /var/www/html/occ user:add --password-from-env --display-name='Ordinary User' nomfauser"
 
 	-docker exec -u www-data nextcloud-local /bin/bash -c "env NC_PASS=$(NEXTCLOUD_OCS_APP_PASSWORD_LOCALHOST_LOCALHOST) /var/www/html/occ user:auth-tokens:add --password-from-env _ocs_localhost"
 	-docker exec -u www-data nextcloud-local /bin/bash -c "env NC_PASS=$(NEXTCLOUD_SELENIUM_APP_PASSWORD_LOCALHOST_LOCALHOST) /var/www/html/occ user:auth-tokens:add --password-from-env _selenium_localhost"
@@ -142,7 +142,7 @@ docker: selfsignedcert docker_kill jupyterhub
 	docker cp files_external.json nextcloud-local:/var/www/html
 	-./occ_docker files_external:import files_external.json
 	
-	-firefox -new-tab https://localhost:8443/ http://localhost:9001 http://localhost:8100
+	-firefox -new-tab https://localhost:8443/ -new-tab http://localhost:9001 -new-tab http://localhost:8100
 
 .PHONY: expected
 expected: 
@@ -236,10 +236,13 @@ apppasswords:
 
 .PHONY: rds-ng-dev
 rds-ng-dev:
-	git clone https://github.com/Sciebo-RDS/rds-ng.git
+	-git clone https://github.com/Sciebo-RDS/rds-ng.git
 	mkdir -p rds-ng/deployment/containers/env
 	cp rds-ng/deployment/env/examples/* rds-ng/deployment/env
 	cd rds-ng/deployment/containers && docker compose -p rds -f dev.docker-compose.yaml build
+	cd rds-ng/deployment/containers && docker compose -p rds -f dev-min.docker-compose.yaml up -d
+	sleep 5
+	-firefox -new-tab http://localhost:8000
 
 # To set environment variables in your local shell run:
 # eval "$(make printenv)"
