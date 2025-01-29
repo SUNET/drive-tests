@@ -106,6 +106,14 @@ docker: selfsignedcert docker_kill jupyterhub
 	./occ_docker app:enable integration_jupyterhub
 	./occ_docker config:app:set integration_jupyterhub jupyter_url --value="http://localhost:8000"
 
+	# RDS NG app
+	git clone https://github.com/Sciebo-RDS/rds-ng-nextcloud.git
+	-docker cp rds-ng-nextcloud nextcloud-local:/var/www/html/custom_apps/rdsng
+	docker exec -w /var/www/html/custom_apps/rdsng nextcloud-local make build
+	-docker exec nextcloud-local /bin/bash -c "chown -R www-data:www-data /var/www/html/custom_apps/rdsng"
+	-docker exec -u www-data nextcloud-local /bin/bash -c "sed -i -e 's/max-version=\"28\"/max-version=\"30\"/g' /var/www/html/custom_apps/rdsng/appinfo/info.xml"
+	./occ_docker app:enable rdsng
+
 	-./occ_docker  group:add mfa
 	./occ_docker  twofactorauth:enforce --on --group mfa
 	./occ_docker  group:adduser mfa admin
@@ -134,7 +142,7 @@ docker: selfsignedcert docker_kill jupyterhub
 	docker cp files_external.json nextcloud-local:/var/www/html
 	-./occ_docker files_external:import files_external.json
 	
-	-firefox -new-tab https://localhost:8443/ http://localhost:9001 http://localhost:8000
+	-firefox -new-tab https://localhost:8443/ http://localhost:9001 http://localhost:8100
 
 .PHONY: expected
 expected: 
@@ -149,6 +157,8 @@ jupyterhub:
 cleanall: docker_kill
 	-./cleanall.sh
 	-rm .env
+	-rm -rf rds-ng-nextcloud
+	-rm -rf rds-ng
 	-cd .. && rm expected_localhost.yaml
 
 .PHONY: clean
@@ -214,7 +224,6 @@ export NEXTCLOUD_SELENIUM_MFA_PASSWORD_LOCALHOST_LOCALHOST=_selenium_localhost_m
 export NEXTCLOUD_SELENIUM_MFA_APP_PASSWORD_LOCALHOST_LOCALHOST=
 export NEXTCLOUD_SELENIUM_MFA_SECRET_LOCALHOST_LOCALHOST=
 
-
 .PHONY: apppasswords
 apppasswords:
 	-rm .env
@@ -224,6 +233,13 @@ apppasswords:
 	echo export NEXTCLOUD_OCS_APP_PASSWORD_LOCALHOST_LOCALHOST=$$OCS_APP_PASSWORD >> .env; \
 	echo export NEXTCLOUD_SELENIUM_APP_PASSWORD_LOCALHOST_LOCALHOST=$$SELENIUM_APP_PASSWORD >> .env; \
 	echo export NEXTCLOUD_SELENIUM_MFA_APP_PASSWORD_LOCALHOST_LOCALHOST=$$SELENIUM_MFA_APP_PASSWORD >> .env
+
+.PHONY: rds-ng-dev
+rds-ng-dev:
+	git clone https://github.com/Sciebo-RDS/rds-ng.git
+	mkdir -p rds-ng/deployment/containers/env
+	cp rds-ng/deployment/env/examples/* rds-ng/deployment/env
+	cd rds-ng/deployment/containers && docker compose -p rds -f dev.docker-compose.yaml build
 
 # To set environment variables in your local shell run:
 # eval "$(make printenv)"
