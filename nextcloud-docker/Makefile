@@ -81,6 +81,11 @@ docker: selfsignedcert docker_kill jupyterhub
 
 	./occ_docker  app:enable twofactor_totp
 	./occ_docker  app:enable files_external
+	./occ_docker  app:enable tasks
+	./occ_docker  app:enable calendar
+	./occ_docker  app:enable polls
+	./occ_docker  app:enable forms
+	./occ_docker  app:enable deck
 	./occ_docker  app:disable firstrunwizard
 
 	wget https://github.com/SUNET/nextcloud-mfazones/releases/download/v0.2.1/mfazones-0.2.1.tar.gz
