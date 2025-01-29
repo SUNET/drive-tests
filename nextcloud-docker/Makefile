@@ -39,6 +39,22 @@
 
 cert_dir=$(HOME)/.nextcloud/certificates
 
+# Global for all targets
+# export NextcloudTestTarget=localhost
+export NextcloudTestTarget=localhost
+export NextcloudTestCustomers=localhost
+export MFA_WAIT=3
+export NEXTCLOUD_OCS_USER_LOCALHOST_LOCALHOST=_ocs_localhost
+export NEXTCLOUD_OCS_PASSWORD_LOCALHOST_LOCALHOST=_ocs_localhost_password
+export NEXTCLOUD_OCS_APP_PASSWORD_LOCALHOST_LOCALHOST=_ocs_localhost_app_password
+export NEXTCLOUD_SELENIUM_USER_LOCALHOST_LOCALHOST=_selenium_localhost
+export NEXTCLOUD_SELENIUM_PASSWORD_LOCALHOST_LOCALHOST=_selenium_localhost_password
+export NEXTCLOUD_SELENIUM_APP_PASSWORD_LOCALHOST_LOCALHOST=
+export NEXTCLOUD_SELENIUM_MFA_USER_LOCALHOST_LOCALHOST=_selenium_localhost_mfa
+export NEXTCLOUD_SELENIUM_MFA_PASSWORD_LOCALHOST_LOCALHOST=_selenium_localhost_mfa_password
+export NEXTCLOUD_SELENIUM_MFA_APP_PASSWORD_LOCALHOST_LOCALHOST=
+export NEXTCLOUD_SELENIUM_MFA_SECRET_LOCALHOST_LOCALHOST=
+
 all: docker
 release: docker
 .PHONY: selfsignedcert
@@ -107,7 +123,7 @@ docker: selfsignedcert docker_kill jupyterhub
 	./occ_docker config:app:set integration_jupyterhub jupyter_url --value="http://localhost:8000"
 
 	# RDS NG app
-	git clone https://github.com/Sciebo-RDS/rds-ng-nextcloud.git
+	-git clone https://github.com/Sciebo-RDS/rds-ng-nextcloud.git
 	-docker cp rds-ng-nextcloud nextcloud-local:/var/www/html/custom_apps/rdsng
 	docker exec -w /var/www/html/custom_apps/rdsng nextcloud-local make build
 	-docker exec nextcloud-local /bin/bash -c "chown -R www-data:www-data /var/www/html/custom_apps/rdsng"
@@ -117,21 +133,21 @@ docker: selfsignedcert docker_kill jupyterhub
 	-./occ_docker  group:add mfa
 	./occ_docker  twofactorauth:enforce --on --group mfa
 	./occ_docker  group:adduser mfa admin
-	-docker exec -u www-data nextcloud-local /bin/bash -c "env NC_PASS=mfauserpassword /var/www/html/occ user:add --password-from-env --display-name='MFA User' --group='mfa' mfauser
-	-docker exec -u www-data nextcloud-local /bin/bash -c "env NC_PASS=nomfauserpassword /var/www/html/occ user:add --password-from-env --display-name='Ordinary User' nomfauser
+	-docker exec -u www-data nextcloud-local /bin/bash -c "env NC_PASS=mfauserpassword /var/www/html/occ user:add --password-from-env --display-name='MFA User' --group='mfa' mfauser"
+	-docker exec -u www-data nextcloud-local /bin/bash -c "env NC_PASS=nomfauserpassword /var/www/html/occ user:add --password-from-env --display-name='Ordinary User' nomfauser"
 	-docker exec -u www-data nextcloud-local /bin/bash -c "env NC_PASS=_ocs_localhost_password /var/www/html/occ user:add --password-from-env --display-name='MFA User' --group='admin' _ocs_localhost"
 	-docker exec -u www-data nextcloud-local /bin/bash -c "env NC_PASS=_selenium_localhost_mfa_password /var/www/html/occ user:add --password-from-env --display-name='Selenium MFA User' --group='mfa' _selenium_localhost_mfa"
 	-docker exec -u www-data nextcloud-local /bin/bash -c "env NC_PASS=_selenium_localhost_password /var/www/html/occ user:add --password-from-env --display-name='Selenium User' _selenium_localhost"
 	-docker exec -u www-data nextcloud-local /bin/bash -c "env NC_PASS=mfauserpassword /var/www/html/occ user:add --password-from-env --display-name='MFA User' --group='mfa' mfauser"
 	-docker exec -u www-data nextcloud-local /bin/bash -c "env NC_PASS=nomfauserpassword /var/www/html/occ user:add --password-from-env --display-name='Ordinary User' nomfauser"
 
-	-docker exec -u www-data nextcloud-local /bin/bash -c "env NC_PASS=$(NEXTCLOUD_OCS_APP_PASSWORD_LOCALHOST_LOCALHOST) /var/www/html/occ user:auth-tokens:add --password-from-env _ocs_localhost"
-	-docker exec -u www-data nextcloud-local /bin/bash -c "env NC_PASS=$(NEXTCLOUD_SELENIUM_APP_PASSWORD_LOCALHOST_LOCALHOST) /var/www/html/occ user:auth-tokens:add --password-from-env _selenium_localhost"
-	-docker exec -u www-data nextcloud-local /bin/bash -c "env NC_PASS=$(NEXTCLOUD_SELENIUM_MFA_APP_PASSWORD_LOCALHOST_LOCALHOST) /var/www/html/occ user:auth-tokens:add --password-from-env _selenium_localhost_mfa"
+	# -docker exec -u www-data nextcloud-local /bin/bash -c "env NC_PASS=$(NEXTCLOUD_OCS_APP_PASSWORD_LOCALHOST_LOCALHOST) /var/www/html/occ user:auth-tokens:add --password-from-env _ocs_localhost"
+	# -docker exec -u www-data nextcloud-local /bin/bash -c "env NC_PASS=$(NEXTCLOUD_SELENIUM_APP_PASSWORD_LOCALHOST_LOCALHOST) /var/www/html/occ user:auth-tokens:add --password-from-env _selenium_localhost"
+	# -docker exec -u www-data nextcloud-local /bin/bash -c "env NC_PASS=$(NEXTCLOUD_SELENIUM_MFA_APP_PASSWORD_LOCALHOST_LOCALHOST) /var/www/html/occ user:auth-tokens:add --password-from-env _selenium_localhost_mfa"
 
-	-docker exec -u www-data nextcloud-local /bin/bash -c "env NC_PASS=bla /var/www/html/occ user:auth-tokens:add --password-from-env _ocs_localhost"
-	-docker exec -u www-data nextcloud-local /bin/bash -c "env NC_PASS=$(NEXTCLOUD_SELENIUM_APP_PASSWORD_LOCALHOST_LOCALHOST) /var/www/html/occ user:auth-tokens:add --password-from-env _selenium_localhost"
-	-docker exec -u www-data nextcloud-local /bin/bash -c "env NC_PASS=$(NEXTCLOUD_SELENIUM_MFA_APP_PASSWORD_LOCALHOST_LOCALHOST) /var/www/html/occ user:auth-tokens:add --password-from-env _selenium_localhost_mfa"
+	# -docker exec -u www-data nextcloud-local /bin/bash -c "env NC_PASS=notimportant /var/www/html/occ user:auth-tokens:add --password-from-env _ocs_localhost"
+	# -docker exec -u www-data nextcloud-local /bin/bash -c "env NC_PASS=notimportant /var/www/html/occ user:auth-tokens:add --password-from-env _selenium_localhost"
+	# -docker exec -u www-data nextcloud-local /bin/bash -c "env NC_PASS=notimportant /var/www/html/occ user:auth-tokens:add --password-from-env _selenium_localhost_mfa"
 
 	docker exec nextcloud-local-minio1 mc config host add myminio http://nextcloud-local-minio:9000 minioadmin minioadmin
 	-docker exec nextcloud-local-minio1 mc mb myminio/project-bucket
@@ -143,6 +159,10 @@ docker: selfsignedcert docker_kill jupyterhub
 	-./occ_docker files_external:import files_external.json
 	
 	-firefox -new-tab https://localhost:8443/ -new-tab http://localhost:9001 -new-tab http://localhost:8100
+
+.PHONY: commandtest
+commandtest:
+	docker exec -u www-data nextcloud-local /bin/bash -c "env NC_PASS=$(NEXTCLOUD_OCS_APP_PASSWORD_LOCALHOST_LOCALHOST) /var/www/html/occ user:auth-tokens:add --password-from-env _ocs_localhost"
 
 .PHONY: expected
 expected: 
@@ -207,22 +227,6 @@ collaboratest:
 	. ./.env; \
 	cd ..; \
 	python test_collabora_selenium.py
-
-# Global for all targets
-# export NextcloudTestTarget=localhost
-export NextcloudTestTarget=localhost
-export NextcloudTestCustomers=localhost
-export MFA_WAIT=3
-export NEXTCLOUD_OCS_USER_LOCALHOST_LOCALHOST=_ocs_localhost
-export NEXTCLOUD_OCS_PASSWORD_LOCALHOST_LOCALHOST=_ocs_localhost_password
-export NEXTCLOUD_OCS_APP_PASSWORD_LOCALHOST_LOCALHOST=_ocs_localhost_app_password
-export NEXTCLOUD_SELENIUM_USER_LOCALHOST_LOCALHOST=_selenium_localhost
-export NEXTCLOUD_SELENIUM_PASSWORD_LOCALHOST_LOCALHOST=_selenium_localhost_password
-export NEXTCLOUD_SELENIUM_APP_PASSWORD_LOCALHOST_LOCALHOST=
-export NEXTCLOUD_SELENIUM_MFA_USER_LOCALHOST_LOCALHOST=_selenium_localhost_mfa
-export NEXTCLOUD_SELENIUM_MFA_PASSWORD_LOCALHOST_LOCALHOST=_selenium_localhost_mfa_password
-export NEXTCLOUD_SELENIUM_MFA_APP_PASSWORD_LOCALHOST_LOCALHOST=
-export NEXTCLOUD_SELENIUM_MFA_SECRET_LOCALHOST_LOCALHOST=
 
 .PHONY: apppasswords
 apppasswords:
