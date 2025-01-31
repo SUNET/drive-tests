@@ -27,6 +27,33 @@ x-minio-common: &minio-common
     retries: 5
 
 services:
+
+  jupyter-https-portal:
+    container_name: nextcloud-local-jupyterhub-https-portal
+    image: steveltn/https-portal:1
+    ports:
+      - '9080:80'
+      - '9443:443'
+    links:
+      - jupyterhub
+    restart: always
+    environment:
+      STAGE: local
+      DOMAINS: 'localhost -> http://jupyterhub:8000'
+
+  rds-https-portal:
+    container_name: nextcloud-local-rds-https-portal
+    image: steveltn/https-portal:1
+    ports:
+      - '7080:80'
+      - '7443:443'
+    links:
+      - frontend
+    restart: always
+    environment:
+      STAGE: local
+      DOMAINS: 'localhost -> http://frontend:6969'
+
   app:
     container_name: nextcloud-local
     image: nextcloud:latest
@@ -273,6 +300,7 @@ services:
   # Web frontend
   frontend:
       image: rds-ng/frontend:develop
+      container_name: rds-frontend
       volumes:
           -   type: bind
               source: rds-ng/src/frontend/src
