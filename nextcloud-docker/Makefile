@@ -91,7 +91,7 @@ docker: selfsignedcert docker_kill jupyterhub
 	-./occ_docker  app:install twofactor_webauthn
 	-./occ_docker app:install richdocumentscode
 	-./occ_docker app:install richdocuments
-	-./occ_docker config:app:set richdocuments wopi_url --value="https://localhost:8443/custom_apps/richdocumentscode/proxy.php?req="
+	-./occ_docker config:app:set richdocuments wopi_url --value="https://localhost/custom_apps/richdocumentscode/proxy.php?req="
 	-./occ_docker config:app:set richdocuments disable_certificate_verification --value="yes"
 	-./occ_docker richdocuments:setup
 
@@ -164,7 +164,7 @@ docker: selfsignedcert docker_kill jupyterhub
 	docker cp files_external.json nextcloud-local:/var/www/html
 	-./occ_docker files_external:import files_external.json
 	
-	-firefox -new-tab https://localhost:8443/ -new-tab http://localhost:9001 -new-tab http://localhost:8100
+	-firefox -new-tab http://localhost:9001 -new-tab http://localhost:8100 -new-tab https://localhost/
 
 .PHONY: commandtest
 commandtest:

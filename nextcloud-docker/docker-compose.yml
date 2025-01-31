@@ -59,11 +59,11 @@ services:
     image: nextcloud:latest
     restart: always
     expose:
-      - "8090"
-      - "8443"
+      - "80"
+      - "443"
     ports:
-      - 8443:8443
-      - 8090:80
+      - 443:8443
+      - 80:80
     links:
       - db
     volumes:
@@ -126,7 +126,7 @@ services:
     environment:
       - HUB_SERVICE_HOST=localhost
       - HUB_SERVICE_PORT_REFRESH_TOKEN=refresh-token
-      - NEXTCLOUD_HOST=localhost:8443
+      - NEXTCLOUD_HOST=nextcloud-local:443
       - NEXTCLOUD_CLIENT_ID=
       - NEXTCLOUD_CLIENT_SECRET=
       - JUPYTER_HOST=localhost:8100
