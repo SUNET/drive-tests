@@ -4,6 +4,7 @@ Author: Richard Freitag <freitag@sunet.se>
 
 import unittest
 import HtmlTestRunner
+import xmlrunner
 import requests
 import json
 import logging
