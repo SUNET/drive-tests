@@ -74,24 +74,24 @@ docker_kill:
 	docker kill nextcloud-local-minio4 2&> /dev/null || true
 
 .PHONY: docker
-docker: selfsignedcert docker_kill jupyterhub
+docker: docker_kill jupyterhub
 	# prepare and build rds
 	-git clone https://github.com/Sciebo-RDS/rds-ng.git
 	mkdir -p rds-ng/deployment/containers/env
 	cp rds-ng/deployment/env/examples/* rds-ng/deployment/env
 	docker compose -p rds -f docker-compose.yml build
 
-	$(shell printf 'LoadModule socache_shmcb_module /usr/lib/apache2/modules/mod_socache_shmcb.so \nLoadModule ssl_module /usr/lib/apache2/modules/mod_ssl.so \nSSLRandomSeed startup builtin \nSSLRandomSeed startup file:/dev/urandom 512 \nSSLRandomSeed connect builtin \nSSLRandomSeed connect file:/dev/urandom 512 \nAddType application/x-x509-ca-cert .crt \nAddType application/x-pkcs7-crl .crl \nSSLPassPhraseDialog  exec:/usr/share/apache2/ask-for-passphrase \nSSLSessionCache     shmcb:$${APACHE_RUN_DIR}/ssl_scache(512000) \nSSLSessionCacheTimeout  300 \nSSLCipherSuite HIGH:!aNULL \nSSLProtocol all -SSLv3 \nSSLSessionTickets off' > /tmp/nextcloud-ssl.conf )
-	$(shell printf 'Listen 8443 \n<VirtualHost *:8443> \nServerAdmin webmaster@localhost \nDocumentRoot /var/www/html \nSSLEngine on \nSSLCertificateFile /etc/ssl/private/localhost.pem \nSSLCertificateKeyFile /etc/ssl/private/localhost.pem \nHeader always set Strict-Transport-Security "max-age=0" \nErrorLog $${APACHE_LOG_DIR}/sslerror.log \nCustomLog $${APACHE_LOG_DIR}/sslaccess.log combined \n</VirtualHost>' > /tmp/nextcloud-8443.conf)
 	docker compose -p rds up -d
 	sleep 15
 	-./occ_docker maintenance:install --admin-user='admin' --admin-pass='adminpassword' --database='mysql' --database-name='nextcloud' --database-host='nextcloud-local-db' --database-user='nextcloud' --database-pass='userpass'
-	-./occ_docker  app:install files_accesscontrol
-	-./occ_docker  app:install files_automatedtagging
-	-./occ_docker  app:install twofactor_webauthn
+	-./occ_docker config:system:set overwrite.cli.url --value=localhost
+	-./occ_docker app:install files_accesscontrol
+	-./occ_docker app:install files_automatedtagging
+	-./occ_docker app:install twofactor_webauthn
 	-./occ_docker app:install richdocumentscode
 	-./occ_docker app:install richdocuments
-	-./occ_docker config:app:set richdocuments wopi_url --value="https://localhost/custom_apps/richdocumentscode/proxy.php?req="
+	-./occ_docker config:app:set richdocuments wopi_url --value="http://127.0.0.1:80/custom_apps/richdocumentscode/proxy.php?req=/hosting/discovery"
+	-./occ_docker config:app:set richdocuments wopi_allowlist --value="127.0.0.1,localhost,172.18.0.0/12"
 	-./occ_docker config:app:set richdocuments disable_certificate_verification --value="yes"
 	-./occ_docker richdocuments:setup
 
