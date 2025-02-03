@@ -3,6 +3,7 @@ Author: Richard Freitag <freitag@sunet.se>
 """
 
 import unittest
+import HtmlTestRunner
 import requests
 import json
 import logging
@@ -56,6 +57,7 @@ class TestCollabora(unittest.TestCase):
         logger.info(f'Collabora capabilities tested')
 
 if __name__ == '__main__':
-    import xmlrunner
-    # unittest.main()
-    unittest.main(testRunner=xmlrunner.XMLTestRunner(output='test-reports'))
+    if drv.testrunner == 'xml':
+        unittest.main(testRunner=xmlrunner.XMLTestRunner(output='test-reports'))
+    else:
+        unittest.main(testRunner=HtmlTestRunner.HTMLTestRunner(output='test-reports-html', combine_reports=True, report_name="nextcloud-acceptance", add_timestamp=False))

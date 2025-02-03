@@ -232,7 +232,7 @@ acceptancetest:
 	python test_status_cli.py; \
 	python test_ocs.py; \
 	python test_webdav.py
-	-firefox ../test-reports-html/nextcloud-local.html
+	-firefox ../test-reports-html/nextcloud-acceptancetest.html
 
 .PHONY: logintest
 logintest:

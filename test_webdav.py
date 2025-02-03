@@ -204,7 +204,7 @@ class WebDAVMultiCheckAndRemove(threading.Thread):
         try:
             self.TestWebDAV.assertFalse(client.check(g_testFolder))
         except Exception as error:
-            logger.error(f'Error in WebDAVMultiCheckAndRemove for node {self.name}: {error}')
+            logger.error(f'Error in WebDAVMultiCheckAndRemove for node {self.name} on check {count}: {error}. Folder {g_testFolder} reported existing despite not in list: {client.list()}')
             g_testPassed[fullnode] = False
             g_testThreadsRunning -= 1
             return
@@ -801,4 +801,4 @@ if __name__ == '__main__':
     if drv.testrunner == 'xml':
         unittest.main(testRunner=xmlrunner.XMLTestRunner(output='test-reports'))
     else:
-        unittest.main(testRunner=HtmlTestRunner.HTMLTestRunner(output='test-reports-html', combine_reports=True, report_name="nextcloud-local", add_timestamp=False))
+        unittest.main(testRunner=HtmlTestRunner.HTMLTestRunner(output='test-reports-html', combine_reports=True, report_name="nextcloud-acceptance", add_timestamp=False))

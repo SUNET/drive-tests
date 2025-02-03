@@ -3,6 +3,7 @@ import requests
 from requests.auth import HTTPBasicAuth
 import json
 import unittest
+import HtmlTestRunner
 import yaml
 import sunetnextcloud
 import logging
@@ -297,4 +298,7 @@ class TestAppsOcs(unittest.TestCase):
                 self.assertTrue(g_testPassed[fullnode])
 
 if __name__ == '__main__':
-    unittest.main(testRunner=xmlrunner.XMLTestRunner(output='test-reports'))
+    if drv.testrunner == 'xml':
+        unittest.main(testRunner=xmlrunner.XMLTestRunner(output='test-reports'))
+    else:
+        unittest.main(testRunner=HtmlTestRunner.HTMLTestRunner(output='test-reports-html', combine_reports=True, report_name="nextcloud-acceptance", add_timestamp=False))
