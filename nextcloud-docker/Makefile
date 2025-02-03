@@ -43,6 +43,7 @@ cert_dir=$(HOME)/.nextcloud/certificates
 # export NextcloudTestTarget=localhost
 export NextcloudTestTarget=localhost
 export NextcloudTestCustomers=localhost
+export NextcloudTestRunner=html
 export MFA_WAIT=3
 export NEXTCLOUD_OCS_USER_LOCALHOST_LOCALHOST=_ocs_localhost
 export NEXTCLOUD_OCS_PASSWORD_LOCALHOST_LOCALHOST=_ocs_localhost_password
@@ -269,6 +270,7 @@ rds-ng-dev:
 printenv:
 	echo 'export NextcloudTestTarget="$(NextcloudTestTarget)"'
 	echo 'export NextcloudTestCustomers="$(NextcloudTestCustomers)"'
+	echo 'export NextcloudTestRunner="html"'
 	echo 'export MFA_WAIT="$(MFA_WAIT)"'
 	echo 'export NEXTCLOUD_OCS_USER_LOCALHOST_LOCALHOST="$(NEXTCLOUD_OCS_USER_LOCALHOST_LOCALHOST)"'
 	echo 'export NEXTCLOUD_OCS_PASSWORD_LOCALHOST_LOCALHOST="$(NEXTCLOUD_OCS_PASSWORD_LOCALHOST_LOCALHOST)"'
