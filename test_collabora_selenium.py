@@ -118,6 +118,42 @@ def checkFile(node, foldername, filename):
     g_logger.info(f'File {fullPath} on {node} not found after {tryCount} tries: {exists}')
     return exists
 
+def checkFolder(node, foldername, create=False):
+    g_logger.info(f'Check if file {foldername} exists on {node}')
+    nodeuser = g_drv.get_seleniumuser(node)
+    nodepwd = g_drv.get_seleniumuserpassword(node)
+    url = g_drv.get_webdav_url(node, nodeuser)
+    options = {
+        'webdav_hostname': url,
+        'webdav_login' : nodeuser,
+        'webdav_password' : nodepwd, 
+        'webdav_timeout': g_webdav_timeout
+    }
+    client = Client(options)
+    client.verify = g_drv.verify
+    if create == False:
+        return client.check(foldername)
+    else:
+        if client.check(foldername) == False:
+            g_logger.info(f'Creating folder {foldername}')
+            client.mkdir(foldername)
+        return client.check(foldername)
+
+def hasFiles(node, foldername):
+    g_logger.info(f'Check if file {foldername} exists on {node}')
+    nodeuser = g_drv.get_seleniumuser(node)
+    nodepwd = g_drv.get_seleniumuserpassword(node)
+    url = g_drv.get_webdav_url(node, nodeuser)
+    options = {
+        'webdav_hostname': url,
+        'webdav_login' : nodeuser,
+        'webdav_password' : nodepwd, 
+        'webdav_timeout': g_webdav_timeout
+    }
+    client = Client(options)
+    client.verify = g_drv.verify
+    return len(client.list(foldername))
+
 class TestCollaboraSelenium(unittest.TestCase):
     global g_loggedInNodes, g_logger, g_drv, g_wait, g_driver
     g_drv = sunetnextcloud.TestTarget()
@@ -237,20 +273,9 @@ class TestCollaboraSelenium(unittest.TestCase):
                 self.logger.info(f'All files found!')
 
                 self.logger.info(f'Looking for SeleniumCollaboraTest folder')
+                folderExists = checkFolder(collaboranode, "SeleniumCollaboraTest", create=True)
+                self.assertTrue(folderExists)
 
-                try:
-                    self.driver.find_element(By.XPATH, "//*[contains(text(), 'SeleniumCollaboraTest')]")
-                    self.logger.info(f'SeleniumCollaboraTest folder found')
-                except Exception as error:
-                    self.logger.info(f'SeleniumCollaboraTest folder not found, creating; {error}')
-                    wait.until(EC.element_to_be_clickable((By.CLASS_NAME, self.addIcon))).click()
-                    time.sleep(1)
-
-                    wait.until(EC.element_to_be_clickable((By.XPATH, "//*[contains(@class, 'action-button__text') and text()='New folder']"))).click()
-                    wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, 'input[id^=\'input\']')))
-                    ActionChains(self.driver).key_down(Keys.CONTROL).send_keys('a').key_up(Keys.CONTROL).perform()
-                    ActionChains(self.driver).send_keys(f'SeleniumCollaboraTest{Keys.ENTER}').perform()
-                    time.sleep(1)
                 folderurl = g_drv.get_folder_url(collaboranode, "SeleniumCollaboraTest")
                 self.driver.get(folderurl)
 
@@ -267,23 +292,21 @@ class TestCollaboraSelenium(unittest.TestCase):
                         break
 
                     # Check if the folder is empty
-                    try:
-                        wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'files-list__table')))
+                    if hasFiles(collaboranode, "SeleniumCollaboraTest") > 1:
                         isEmpty = False
-                        self.logger.info(f'Folder is not empty, adding new content')
-                    except Exception as error:
-                        self.logger.info(f'Folder seems empty, creating new files')
+                    else:
                         isEmpty = True
+                    time.sleep(3)
 
                     # Sort file list so that new files are created at the beginning of the list
-                    if isEmpty == False:
-                        try:
-                            wait.until(EC.element_to_be_clickable((By.CLASS_NAME, 'files-list__column-sort-button'))).click()
-                            self.logger.info(f'Changed sort order to descending')
-                        except Exception as error:
-                            self.logger.warning(f'Unable to change sort order to descending: {error}')
+                    # if isEmpty == False:
+                    #     try:
+                    #         wait.until(EC.element_to_be_clickable((By.CLASS_NAME, 'files-list__column-sort-button'))).click()
+                    #         self.logger.info(f'Changed sort order to descending')
+                    #     except Exception as error:
+                    #         self.logger.warning(f'Unable to change sort order to descending: {error}')
+                    # time.sleep(3)
 
-                    time.sleep(3)
                     try:
                         self.logger.info(f'Click on add icon')
                         wait.until(EC.element_to_be_clickable((By.CLASS_NAME, self.addIcon))).click()
@@ -415,21 +438,8 @@ class TestCollaboraSelenium(unittest.TestCase):
                         self.logger.info(f'All files found!')
 
                         self.logger.info(f'Looking for {testfolder} folder')
-                        
-                        try:
-                            self.driver.find_element(By.XPATH, f"//*[contains(text(), '{testfolder}')]")
-                            self.logger.info(f'{testfolder} folder found')
-                        except Exception as error:
-                            self.logger.info(f'{testfolder} folder not found, creating; Exception was: {error}')
-                            wait.until(EC.element_to_be_clickable((By.CLASS_NAME, self.addIcon))).click()
-                            time.sleep(1)
-
-                            self.logger.info(f'Creating {testfolder} on {self.version}')
-                            wait.until(EC.element_to_be_clickable((By.XPATH, "//*[contains(@class, 'action-button__text') and text()='New folder']"))).click()
-                            wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, 'input[id^=\'input\']')))
-                            ActionChains(self.driver).key_down(Keys.CONTROL).send_keys('a').key_up(Keys.CONTROL).perform()
-                            ActionChains(self.driver).send_keys(f'{testfolder}{Keys.ENTER}').perform()
-                            time.sleep(1)
+                        folderExists = checkFolder(collaboranode, testfolder, create=True)
+                        self.assertTrue(folderExists)
 
                         folderurl = g_drv.get_folder_url(collaboranode, testfolder)
                         self.driver.get(folderurl)
@@ -447,22 +457,10 @@ class TestCollaboraSelenium(unittest.TestCase):
                                 break
 
                             # Check if the folder is empty
-                            try:
-                                wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'files-list__table')))
+                            if hasFiles(collaboranode, testfolder) > 1:
                                 isEmpty = False
-                                self.logger.info(f'Folder is not empty, adding new content')
-                            except Exception as error:
-                                self.logger.info(f'Folder seems empty, creating new files;')
+                            else:
                                 isEmpty = True
-
-                            # Sort file list so that new files are created at the beginning of the list
-                            # if isEmpty == False:
-                            #     try:
-                            #         wait.until(EC.element_to_be_clickable((By.CLASS_NAME, 'files-list__column-sort-button'))).click()
-                            #         self.logger.info(f'Changed sort order to descending')
-                            #     except Exception as error:
-                            #         self.logger.warning(f'Unable to change sort order to descending; Exception was {error}')
-
                             time.sleep(3)
                         
                             try:
@@ -595,20 +593,9 @@ class TestCollaboraSelenium(unittest.TestCase):
                 self.logger.info(f'All files found!')                
 
                 self.logger.info(f'Looking for SeleniumCollaboraTest folder')
-                
-                try:
-                    self.driver.find_element(By.XPATH, "//*[contains(text(), 'SeleniumCollaboraTest')]")
-                    self.logger.info(f'SeleniumCollaboraTest folder found')
-                except Exception as error:
-                    self.logger.info(f'SeleniumCollaboraTest folder not found, creating; {error}')
-                    wait.until(EC.element_to_be_clickable((By.CLASS_NAME, self.addIcon))).click()
-                    time.sleep(1)
+                folderExists = checkFolder(collaboranode, "SeleniumCollaboraTest", create=True)
+                self.assertTrue(folderExists)
 
-                    wait.until(EC.element_to_be_clickable((By.XPATH, "//*[contains(@class, 'action-button__text') and text()='New folder']"))).click()
-                    wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, 'input[id^=\'input\']')))
-                    ActionChains(self.driver).key_down(Keys.CONTROL).send_keys('a').key_up(Keys.CONTROL).perform()
-                    ActionChains(self.driver).send_keys(f'SeleniumCollaboraTest{Keys.ENTER}').perform()
-                    time.sleep(1)
                 folderurl = g_drv.get_folder_url(collaboranode, "SeleniumCollaboraTest")
                 self.driver.get(folderurl)
 
@@ -624,21 +611,26 @@ class TestCollaboraSelenium(unittest.TestCase):
                         break
 
                     # Check if the folder is empty
-                    try:
-                        wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'files-list__table')))
+                    if hasFiles(collaboranode, "SeleniumCollaboraTest") > 1:
                         isEmpty = False
-                        self.logger.info(f'Folder is not empty, adding new content')
-                    except Exception as error:
-                        self.logger.info(f'Folder seems empty, creating new files.')
+                    else:
                         isEmpty = True
 
-                    # Sort file list so that new files are created at the beginning of the list
-                    if isEmpty == False:
-                        try:
-                            wait.until(EC.element_to_be_clickable((By.CLASS_NAME, 'files-list__column-sort-button'))).click()
-                            self.logger.info(f'Changed sort order to descending')
-                        except Exception as error:
-                            self.logger.warning(f'Unable to change sort order to descending: {error}')
+                    # try:
+                    #     wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'files-list__table')))
+                    #     isEmpty = False
+                    #     self.logger.info(f'Folder is not empty, adding new content')
+                    # except Exception as error:
+                    #     self.logger.info(f'Folder seems empty, creating new files.')
+                    #     isEmpty = True
+
+                    # # Sort file list so that new files are created at the beginning of the list
+                    # if isEmpty == False:
+                    #     try:
+                    #         wait.until(EC.element_to_be_clickable((By.CLASS_NAME, 'files-list__column-sort-button'))).click()
+                    #         self.logger.info(f'Changed sort order to descending')
+                    #     except Exception as error:
+                    #         self.logger.warning(f'Unable to change sort order to descending: {error}')
 
                     time.sleep(3)
                     try:
@@ -772,20 +764,9 @@ class TestCollaboraSelenium(unittest.TestCase):
                 self.logger.info(f'All files found!')                
 
                 self.logger.info(f'Looking for SeleniumCollaboraTest folder')
+                folderExists = checkFolder(collaboranode, "SeleniumCollaboraTest", create=True)
+                self.assertTrue(folderExists)
                 
-                try:
-                    self.driver.find_element(By.XPATH, "//*[contains(text(), 'SeleniumCollaboraTest')]")
-                    self.logger.info(f'SeleniumCollaboraTest folder found')
-                except Exception as error:
-                    self.logger.info(f'SeleniumCollaboraTest folder not found, creating; {error}')
-                    wait.until(EC.element_to_be_clickable((By.CLASS_NAME, self.addIcon))).click()
-                    time.sleep(1)
-
-                    wait.until(EC.element_to_be_clickable((By.XPATH, "//*[contains(@class, 'action-button__text') and text()='New folder']"))).click()
-                    wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, 'input[id^=\'input\']')))
-                    ActionChains(self.driver).key_down(Keys.CONTROL).send_keys('a').key_up(Keys.CONTROL).perform()
-                    ActionChains(self.driver).send_keys(f'SeleniumCollaboraTest{Keys.ENTER}').perform()
-                    time.sleep(1)
                 folderurl = g_drv.get_folder_url(collaboranode, "SeleniumCollaboraTest")
                 self.driver.get(folderurl)
 
@@ -802,21 +783,26 @@ class TestCollaboraSelenium(unittest.TestCase):
                         break
 
                     # Check if the folder is empty
-                    try:
-                        wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'files-list__table')))
+                    if hasFiles(collaboranode, "SeleniumCollaboraTest") > 1:
                         isEmpty = False
-                        self.logger.info(f'Folder is not empty, adding new content')
-                    except Exception as error:
-                        self.logger.info(f'Folder seems empty, creating new files.')
+                    else:
                         isEmpty = True
 
-                    # Sort file list so that new files are created at the beginning of the list
-                    if isEmpty == False:
-                        try:
-                            wait.until(EC.element_to_be_clickable((By.CLASS_NAME, 'files-list__column-sort-button'))).click()
-                            self.logger.info(f'Changed sort order to descending')
-                        except Exception as error:
-                            self.logger.warning(f'Unable to change sort order to descending: {error}')
+                    # try:
+                    #     wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'files-list__table')))
+                    #     isEmpty = False
+                    #     self.logger.info(f'Folder is not empty, adding new content')
+                    # except Exception as error:
+                    #     self.logger.info(f'Folder seems empty, creating new files.')
+                    #     isEmpty = True
+
+                    # # Sort file list so that new files are created at the beginning of the list
+                    # if isEmpty == False:
+                    #     try:
+                    #         wait.until(EC.element_to_be_clickable((By.CLASS_NAME, 'files-list__column-sort-button'))).click()
+                    #         self.logger.info(f'Changed sort order to descending')
+                    #     except Exception as error:
+                    #         self.logger.warning(f'Unable to change sort order to descending: {error}')
 
                     time.sleep(3)
                     try:
