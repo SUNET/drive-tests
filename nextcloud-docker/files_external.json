@@ -97,11 +97,11 @@
     },
     {
         "mount_id": 4,
-        "mount_point": "\/selenium-home",
+        "mount_point": "\/selenium-personal",
         "storage": "\\OCA\\Files_External\\Lib\\Storage\\AmazonS3",
         "authentication_type": "amazons3::accesskey",
         "configuration": {
-            "bucket": "selenium-home",
+            "bucket": "selenium-personal",
             "hostname": "nextcloud-local-minio",
             "key": "minioadmin",
             "legacy_auth": false,

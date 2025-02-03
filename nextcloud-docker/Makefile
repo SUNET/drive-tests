@@ -169,7 +169,7 @@ docker: selfsignedcert docker_kill jupyterhub
 	docker exec nextcloud-local-minio1 mc config host add myminio http://nextcloud-local-minio:9000 minioadmin minioadmin
 	-docker exec nextcloud-local-minio1 mc mb myminio/project-bucket
 	-docker exec nextcloud-local-minio1 mc mb myminio/selenium-system
-	-docker exec nextcloud-local-minio1 mc mb myminio/selenium-home
+	-docker exec nextcloud-local-minio1 mc mb myminio/selenium-personal
 
 	# Copy bucket configuration file to container and import mounts
 	docker cp files_external.json nextcloud-local:/var/www/html
@@ -240,12 +240,14 @@ logintest:
 	. ./.env; \
 	cd ..; \
 	python test_login_selenium.py
+	-firefox ../test-reports-html/nextcloud-selenium.html
 
 .PHONY: collaboratest
 collaboratest:
 	. ./.env; \
 	cd ..; \
 	python test_collabora_selenium.py
+	-firefox ../test-reports-html/nextcloud-collabora.html
 
 .PHONY: apppasswords
 apppasswords:
