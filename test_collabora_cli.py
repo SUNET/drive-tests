@@ -25,6 +25,8 @@ logging.basicConfig(format = '%(asctime)s - %(module)s.%(funcName)s - %(levelnam
 with open(expectedResultsFile, "r") as stream:
     expectedResults=yaml.safe_load(stream)
 
+drv = sunetnextcloud.TestTarget()
+
 class TestCollabora(unittest.TestCase):
     def test_logger(self):
         global logger
