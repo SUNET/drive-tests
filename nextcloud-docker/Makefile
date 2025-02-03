@@ -74,26 +74,36 @@ docker_kill:
 	docker kill nextcloud-local-minio4 2&> /dev/null || true
 
 .PHONY: docker
-docker: docker_kill jupyterhub
+docker: selfsignedcert docker_kill jupyterhub
 	# prepare and build rds
 	-git clone https://github.com/Sciebo-RDS/rds-ng.git
 	mkdir -p rds-ng/deployment/containers/env
 	cp rds-ng/deployment/env/examples/* rds-ng/deployment/env
 	docker compose -p rds -f docker-compose.yml build
 
+	# Prepare certificates
+	$(shell printf 'LoadModule socache_shmcb_module /usr/lib/apache2/modules/mod_socache_shmcb.so \nLoadModule ssl_module /usr/lib/apache2/modules/mod_ssl.so \nSSLRandomSeed startup builtin \nSSLRandomSeed startup file:/dev/urandom 512 \nSSLRandomSeed connect builtin \nSSLRandomSeed connect file:/dev/urandom 512 \nAddType application/x-x509-ca-cert .crt \nAddType application/x-pkcs7-crl .crl \nSSLPassPhraseDialog  exec:/usr/share/apache2/ask-for-passphrase \nSSLSessionCache     shmcb:$${APACHE_RUN_DIR}/ssl_scache(512000) \nSSLSessionCacheTimeout  300 \nSSLCipherSuite HIGH:!aNULL \nSSLProtocol all -SSLv3 \nSSLSessionTickets off' > /tmp/nextcloud-ssl.conf )
+	$(shell printf 'Listen 8443 \n<VirtualHost *:8443> \nServerAdmin webmaster@localhost \nDocumentRoot /var/www/html \nSSLEngine on \nSSLCertificateFile /etc/ssl/private/localhost.pem \nSSLCertificateKeyFile /etc/ssl/private/localhost.pem \nHeader always set Strict-Transport-Security "max-age=0" \nErrorLog $${APACHE_LOG_DIR}/sslerror.log \nCustomLog $${APACHE_LOG_DIR}/sslaccess.log combined \n</VirtualHost>' > /tmp/nextcloud-8443.conf)
+
 	docker compose -p rds up -d
 	sleep 15
 	-./occ_docker maintenance:install --admin-user='admin' --admin-pass='adminpassword' --database='mysql' --database-name='nextcloud' --database-host='nextcloud-local-db' --database-user='nextcloud' --database-pass='userpass'
-	-./occ_docker config:system:set overwrite.cli.url --value=localhost
+	./occ_docker config:system:set overwrite.cli.url --value="https://localhost:8443"
+	./occ_docker config:system:set overwriteprotocol --value="https"
+	./occ_docker config:system:set overwritehost --value="localhost:8443"
+	./occ_docker config:system:set trusted_proxies --value="127.0.0.1,172.18.0.1"
+	./occ_docker config:system:set trusted_domains 10 --value=localhost
+	./occ_docker config:system:set trusted_domains 11 --value=127.0.0.1
+
 	-./occ_docker app:install files_accesscontrol
 	-./occ_docker app:install files_automatedtagging
 	-./occ_docker app:install twofactor_webauthn
 	-./occ_docker app:install richdocumentscode
 	-./occ_docker app:install richdocuments
-	-./occ_docker config:app:set richdocuments wopi_url --value="http://127.0.0.1:80/custom_apps/richdocumentscode/proxy.php?req=/hosting/discovery"
-	-./occ_docker config:app:set richdocuments wopi_allowlist --value="127.0.0.1,localhost,172.18.0.0/12"
-	-./occ_docker config:app:set richdocuments disable_certificate_verification --value="yes"
-	-./occ_docker richdocuments:setup
+	./occ_docker config:app:set richdocuments wopi_allowlist --value="127.0.0.1,172.18.0.0/12"
+	./occ_docker config:app:set richdocuments disable_certificate_verification --value="yes"
+	./occ_docker config:app:set richdocuments wopi_url --value="https://localhost:8443/custom_apps/richdocumentscode/proxy.php?req=/"
+	./occ_docker richdocuments:setup
 
 	-./occ_docker app:install whiteboard
 	-./occ_docker config:app:set whiteboard collabBackendUrl --value="http://localhost:3002"
@@ -126,7 +136,7 @@ docker: docker_kill jupyterhub
 	docker exec nextcloud-local /bin/bash -c "chown -R www-data:www-data /var/www/html/custom_apps/integration_jupyterhub"
 	rm integration_jupyterhub-0.1.2.tar.gz
 	./occ_docker app:enable integration_jupyterhub
-	./occ_docker config:app:set integration_jupyterhub jupyter_url --value="http://localhost:8100"
+	./occ_docker config:app:set integration_jupyterhub jupyter_url --value="https://localhost:9443"
 
 	# RDS NG app
 	-git clone https://github.com/Sciebo-RDS/rds-ng-nextcloud.git
@@ -164,7 +174,7 @@ docker: docker_kill jupyterhub
 	docker cp files_external.json nextcloud-local:/var/www/html
 	-./occ_docker files_external:import files_external.json
 	
-	-firefox -new-tab http://localhost:9001 -new-tab http://localhost:8100 -new-tab https://localhost/
+	-firefox -new-tab https://localhost:8443/ -new-tab http://localhost:9001 -new-tab https://localhost:9443
 
 .PHONY: commandtest
 commandtest:

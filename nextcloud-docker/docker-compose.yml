@@ -32,8 +32,8 @@ services:
     container_name: nextcloud-local-nextcloud-https-portal
     image: steveltn/https-portal:1
     ports:
-      - '80:80'
-      - '443:443'
+      - '9083:80'
+      - '9443:443'
     links:
       - nextcloud-app
     restart: always
@@ -45,8 +45,8 @@ services:
     container_name: nextcloud-local-jupyterhub-https-portal
     image: steveltn/https-portal:1
     ports:
-      - '9080:80'
-      - '9443:443'
+      - '9084:80'
+      - '9444:443'
     links:
       - jupyterhub
     restart: always
@@ -58,8 +58,8 @@ services:
     container_name: nextcloud-local-rds-https-portal
     image: steveltn/https-portal:1
     ports:
-      - '7080:80'
-      - '7443:443'
+      - '9085:80'
+      - '9445:443'
     links:
       - frontend
     restart: always
@@ -71,8 +71,8 @@ services:
     container_name: nextcloud-local-oauth-https-portal
     image: steveltn/https-portal:1
     ports:
-      - '6080:80'
-      - '6443:443'
+      - '9086:80'
+      - '9446:443'
     links:
       - mock-oauth2-server
     restart: always
@@ -80,30 +80,44 @@ services:
       STAGE: local
       DOMAINS: 'localhost -> http://mock-oauth2-server:8080'
 
+  collabora-https-portal:
+    container_name: nextcloud-local-collabora-https-portal
+    image: steveltn/https-portal:1
+    ports:
+      - '9087:80'
+      - '9447:443'
+    links:
+      - nextcloud-app
+    restart: always
+    environment:
+      STAGE: local
+      DOMAINS: 'localhost -> http://collabora-server:9980'
+
   nextcloud-app:
     container_name: nextcloud-local
     image: nextcloud:latest
     restart: always
-    # expose:
-    #   - "80"
-    #   - "443"
+    expose:
+      - "8880"
+      - "8443"
     ports:
       - 8443:8443
-      - 8081:80
+      - 8880:80
     links:
       - db
+      - collabora-server
     volumes:
       - nextcloud:/var/www/html
 
-      # - type: bind
-      #   source: /tmp/nextcloud-ssl.conf
-      #   target: /etc/apache2/mods-enabled/nextcloud.conf
-      # - type: bind
-      #   source: /tmp/nextcloud-8443.conf
-      #   target: /etc/apache2/sites-enabled/nextcloud.conf
-      # - type: bind
-      #   source: /tmp/localhost.pem
-      #   target: /etc/ssl/private/localhost.pem
+      - type: bind
+        source: /tmp/nextcloud-ssl.conf
+        target: /etc/apache2/mods-enabled/nextcloud.conf
+      - type: bind
+        source: /tmp/nextcloud-8443.conf
+        target: /etc/apache2/sites-enabled/nextcloud.conf
+      - type: bind
+        source: /tmp/localhost.pem
+        target: /etc/ssl/private/localhost.pem
     environment:
       - MYSQL_PASSWORD=userpass
       - MYSQL_DATABASE=nextcloud
@@ -122,6 +136,27 @@ services:
       - MYSQL_PASSWORD=userpass
       - MYSQL_DATABASE=nextcloud
       - MYSQL_USER=nextcloud
+
+  collabora-server:
+    image: collabora/code:latest
+    container_name: collabora-server
+    restart: always
+    expose:
+      - "9980"
+    ports:
+      - 9980:9980
+    environment:
+      # https://sdk.collaboraonline.com/docs/installation/CODE_Docker_image.html
+      # - aliasgroup1=${NEXTCLOUD1}
+      # - aliasgroup2=${NEXTCLOUD2}
+      # - aliasgroup3=${NEXTCLOUD3}
+      - dictionaries=de_DE en_US es_ES ru
+      - VIRTUAL_PROTO=http
+      - VIRTUAL_PORT=9980
+      - VIRTUAL_HOST=collabora
+      - extra_params=--o:ssl.enable=false --o:ssl.termination=true --o:user_interface.mode=compact --o:net.proto=IPv4 --o:hexify_embedded_urls=true --o:logging.level=warning
+      - username=admin
+      - password=adminpassword
 
   whiteboard-server:
     container_name: nextcloud-local-whiteboard
