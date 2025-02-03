@@ -21,6 +21,8 @@ logger = logging.getLogger(__name__)
 logging.basicConfig(format = '%(asctime)s - %(module)s.%(funcName)s - %(levelname)s: %(message)s',
                 datefmt = '%Y-%m-%d %H:%M:%S', level = logging.INFO)
 
+drv = sunetnextcloud.TestTarget()
+
 with open(expectedResultsFile, "r") as stream:
     expectedResults=yaml.safe_load(stream)
 
