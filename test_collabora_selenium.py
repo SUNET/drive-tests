@@ -33,7 +33,7 @@ g_filename=datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 g_isLoggedIn=False
 g_webdav_timeout = 30
 g_collaboraRetryCount = 5
-g_clickWait = 1
+g_clickWait = 2
 g_loggedInNodes={}
 g_logger={}
 g_driver={}
@@ -507,7 +507,7 @@ class TestCollaboraSelenium(unittest.TestCase):
                             self.logger.info(f'Waiting for collabora frame')
                             wait.until(EC.frame_to_be_available_and_switch_to_it((By.CSS_SELECTOR, "iframe[id^='collaboraframe']")))
                             self.logger.info(f'Collabora loaded... Let\'s type some text')
-                            time.sleep(3)
+                            time.sleep(5)
                             ActionChains(self.driver).send_keys(f'Lorem Ipsum! {Keys.ENTER} {g_filename}').perform()
                             time.sleep(3)
                         except Exception as error:
@@ -679,7 +679,7 @@ class TestCollaboraSelenium(unittest.TestCase):
                     self.logger.info(f'Waiting for collabora frame')
                     wait.until(EC.frame_to_be_available_and_switch_to_it((By.CSS_SELECTOR, "iframe[id^='collaboraframe']")))
                     self.logger.info(f'Collabora loaded... Let\'s type some text')
-                    time.sleep(1)
+                    time.sleep(5)
                     ActionChains(self.driver).key_down(Keys.CONTROL).send_keys(Keys.UP).key_up(Keys.CONTROL).perform()
                     ActionChains(self.driver).key_down(Keys.CONTROL).send_keys(Keys.LEFT).key_up(Keys.CONTROL).perform()
                     ActionChains(self.driver).send_keys(f'{g_filename}{Keys.ENTER}{Keys.SPACE}1{Keys.ENTER}{Keys.SPACE}2{Keys.ENTER}{Keys.SPACE}3{Keys.ENTER}{Keys.SPACE}4{Keys.ENTER}{Keys.SPACE}').perform()
@@ -850,7 +850,7 @@ class TestCollaboraSelenium(unittest.TestCase):
                     self.logger.info(f'Waiting for collabora frame')
                     wait.until(EC.frame_to_be_available_and_switch_to_it((By.CSS_SELECTOR, "iframe[id^='collaboraframe']")))
                     self.logger.info(f'Collabora loaded... Let\'s type some text')
-                    time.sleep(3)
+                    time.sleep(5)
                     ActionChains(self.driver).send_keys(f'Lorem ipsum! {Keys.ENTER}{g_filename}').perform()
                     time.sleep(1)
                 except Exception as error:
