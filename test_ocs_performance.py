@@ -25,6 +25,7 @@ expectedResults = drv.expectedResults
 g_testPassed = {}
 g_testThreadsRunning = 0
 g_requestTimeout = 10
+g_ocsPerformanceResults = []
 
 logger = logging.getLogger('TestLogger')
 logging.basicConfig(format = '%(asctime)s - %(module)s.%(funcName)s - %(levelname)s: %(message)s',
@@ -38,9 +39,7 @@ class NodeOcsUserPerformance(threading.Thread):
         self.verify = verify
 
     def run(self):
-        global logger
-        global g_testPassed
-        global g_testThreadsRunning
+        global logger, g_testPassed, g_testThreadsRunning, g_ocsPerformanceResults
         g_testThreadsRunning += 1
         logger.info(f'NodeOcsUserPerformance thread started for node {self.name}')
         drv = sunetnextcloud.TestTarget()
@@ -60,7 +59,9 @@ class NodeOcsUserPerformance(threading.Thread):
             url = drv.get_add_user_url(fullnode)
             print(url)
             url = url.replace("$USERNAME$", nodeuser)
-            url = url.replace("$PASSWORD$", nodepwd)      
+            url = url.replace("$PASSWORD$", nodepwd)
+
+            message = f'{nodebaseurl:<30}'
 
             for fe in range(1,4):
                 serverid = f'node{fe}.{nodebaseurl}'
@@ -68,7 +69,9 @@ class NodeOcsUserPerformance(threading.Thread):
                 startTime = datetime.now()
                 r = s.get(url, headers=ocsheaders)
                 totalTime = (datetime.now() - startTime).total_seconds()
+                message += f' - {totalTime:.1f}s'
                 logger.info(f'Request to {serverid} took {totalTime:.1f}s')
+            g_ocsPerformanceResults.append(message)
         except Exception as error:
             logger.error(f'{error}')
             g_testPassed[fullnode] = False
@@ -85,7 +88,7 @@ class TestOcsPerformance(unittest.TestCase):
         logger.info(f'TestID: {self._testMethodName}')
         pass
 
-    def test_nodeusers(self):
+    def test_ocs_nodeuserperformance(self):
         drv = sunetnextcloud.TestTarget()
         for fullnode in drv.fullnodes:
             with self.subTest(mynode=fullnode):
@@ -99,6 +102,9 @@ class TestOcsPerformance(unittest.TestCase):
         for fullnode in drv.fullnodes:
             with self.subTest(mynode=fullnode):
                 self.assertTrue(g_testPassed[fullnode])
+
+        for message in g_ocsPerformanceResults:
+            logger.info(f'{message}')
 
 
 if __name__ == '__main__':
