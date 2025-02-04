@@ -145,6 +145,9 @@ class TestTarget(object):
     def get_node_url(self, node):
         return 'https://' + self.getnodeprefix(node) + self.targetprefix + self.delimiter + self.baseurl
 
+    def get_node_base_url(self, node):
+        return self.getnodeprefix(node) + self.targetprefix + self.delimiter + self.baseurl
+
     def get_node_login_url(self, node, direct = True):
         if direct == True:
             return 'https://' + self.getnodeprefix(node) + self.targetprefix + self.delimiter + self.baseurl + self.indexsuffix + '/login?direct=1'
@@ -177,6 +180,9 @@ class TestTarget(object):
 
     def get_add_user_url(self, node):
         return 'https://$USERNAME$:$PASSWORD$@' + self.getnodeprefix(node) + self.targetprefix + self.delimiter + self.baseurl + '/ocs/v1.php/cloud/users?format=json'
+
+    def get_userinfo_url(self, node, userid):
+        return 'https://$USERNAME$:$PASSWORD$@' + self.getnodeprefix(node) + self.targetprefix + self.delimiter + self.baseurl + '/ocs/v1.php/cloud/users/' + userid + '?format=json'
 
     def get_user_url(self, node, username):
         return 'https://$USERNAME$:$PASSWORD$@' + self.getnodeprefix(node) + self.targetprefix + self.delimiter + self.baseurl + '/ocs/v1.php/cloud/users/' + username + '?format=json'
