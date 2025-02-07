@@ -181,7 +181,7 @@ def nodelogin(nextcloudnode,user='selenium'):
         try:
             totp = pyotp.TOTP(nodetotpsecret)
             time.sleep(3)
-            g_wait.until(EC.presence_of_element_located((By.XPATH, '//*[@id="body-login"]/div[1]/div/main/div/form/input'))).send_keys(totp.now() + Keys.ENTER)
+            g_wait.until(EC.presence_of_element_located((By.NAME, 'challenge'))).send_keys(totp.now() + Keys.ENTER)
             checkForTotp=False
         except:
             checkForTotp=True
