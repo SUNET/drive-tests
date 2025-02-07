@@ -315,8 +315,8 @@ class TestCollaboraSelenium(unittest.TestCase):
                         # wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'icon-filetype-text'))).click()
                         wait.until(EC.element_to_be_clickable((By.XPATH, "//*[contains(@class, 'action-button__text') and text()='New text file']"))).click()
                         time.sleep(g_clickWait)
-                        # Starting with Nextcloud 28, we have to rename the file
-                        wait.until(EC.presence_of_element_located((By.XPATH, "//*[contains(text(), 'New document')]")))
+                        self.logger.info(f'Wait for dialog actions window')
+                        wait.until(EC.presence_of_element_located((By.XPATH, "//*[contains(@class, 'dialog__actions')]")))
                         self.logger.info(f'Renaming the file we just created to {g_filename}.md')
                         time.sleep(g_clickWait)
                         ActionChains(self.driver).key_down(Keys.CONTROL).send_keys('a').key_up(Keys.CONTROL).perform()
@@ -470,8 +470,8 @@ class TestCollaboraSelenium(unittest.TestCase):
                                 self.logger.info(f'Click on new document')
                                 wait.until(EC.element_to_be_clickable((By.XPATH, "//*[contains(@class, 'action-button__text') and text()='New document']"))).click()
                                 time.sleep(g_clickWait)
-                                # Starting with Nextcloud 28, we have to rename the file
-                                wait.until(EC.presence_of_element_located((By.XPATH, "//*[contains(text(), 'New document')]")))
+                                self.logger.info(f'Wait for dialog actions window')
+                                wait.until(EC.presence_of_element_located((By.XPATH, "//*[contains(@class, 'dialog__actions')]")))
                                 self.logger.info(f'Renaming the file we just created to {g_filename}.odt')
                                 time.sleep(g_clickWait)
                                 ActionChains(self.driver).key_down(Keys.CONTROL).send_keys('a').key_up(Keys.CONTROL).perform()
@@ -641,8 +641,8 @@ class TestCollaboraSelenium(unittest.TestCase):
                         # wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'icon-filetype-spreadsheet'))).click()
                         wait.until(EC.element_to_be_clickable((By.XPATH, "//*[contains(@class, 'action-button__text') and text()='New spreadsheet']"))).click()
                         time.sleep(g_clickWait)
-                        # Starting with Nextcloud 28, we have to rename the file
-                        wait.until(EC.presence_of_element_located((By.XPATH, "//*[contains(text(), 'New document')]")))
+                        self.logger.info(f'Wait for dialog actions window')
+                        wait.until(EC.presence_of_element_located((By.XPATH, "//*[contains(@class, 'dialog__actions')]")))
                         self.logger.info(f'Renaming the file we just created to {g_filename}.ods')
                         time.sleep(g_clickWait)
                         ActionChains(self.driver).key_down(Keys.CONTROL).send_keys('a').key_up(Keys.CONTROL).perform()
@@ -812,8 +812,8 @@ class TestCollaboraSelenium(unittest.TestCase):
                         time.sleep(g_clickWait)
                         wait.until(EC.element_to_be_clickable((By.XPATH, "//*[contains(@class, 'action-button__text') and text()='New presentation']"))).click()
                         time.sleep(g_clickWait)
-                        # Starting with Nextcloud 28, we have to rename the file
-                        wait.until(EC.presence_of_element_located((By.XPATH, "//*[contains(text(), 'New document')]")))
+                        self.logger.info(f'Wait for dialog actions window')
+                        wait.until(EC.presence_of_element_located((By.XPATH, "//*[contains(@class, 'dialog__actions')]")))
                         self.logger.info(f'Renaming the file we just created to {g_filename}.odp')
                         time.sleep(g_clickWait)
                         ActionChains(self.driver).key_down(Keys.CONTROL).send_keys('a').key_up(Keys.CONTROL).perform()
