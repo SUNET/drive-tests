@@ -24,3 +24,4 @@ node:
   - test_collabora_selenium.py
 performance:
   - test_performance_ocs.py
+  - test_performance_webdav.py
