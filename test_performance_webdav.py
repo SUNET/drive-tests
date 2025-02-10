@@ -196,8 +196,8 @@ class TestWebDavPerformance(unittest.TestCase):
         maxUploads = 1
         maxDeletes = 1
         # fileSizes=[1,10,100,1024,10240,102400,1024000,10240000,102400000,204800000]
-        # fileSizes=[102400000,204800000]
-        fileSizes=[1024,2048]
+        # fileSizes=[1024,2048]
+        fileSizes=[102400000,204800000]
         drv = sunetnextcloud.TestTarget()
         for fullnode in drv.fullnodes:
             with self.subTest(mynode=fullnode):
