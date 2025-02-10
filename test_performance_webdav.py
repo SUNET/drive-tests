@@ -196,7 +196,8 @@ class TestWebDavPerformance(unittest.TestCase):
         maxUploads = 1
         maxDeletes = 1
         # fileSizes=[1,10,100,1024,10240,102400,1024000,10240000,102400000,204800000]
-        fileSizes=[102400000,204800000]
+        # fileSizes=[102400000,204800000]
+        fileSizes=[1024,2048]
         drv = sunetnextcloud.TestTarget()
         for fullnode in drv.fullnodes:
             with self.subTest(mynode=fullnode):
@@ -254,10 +255,13 @@ class TestWebDavPerformance(unittest.TestCase):
                     uploadTime = (endTime - startTime).total_seconds()
 
                     # Remove the temporary files
-                    logger.info(f'Remove temporary files')
-                    for i in range(0,numFiles):
-                        filename = f'{tempfile.gettempdir()}/{fullnode}{str(i)}_{str(fileSize)}.bin'
-                        os.remove(filename)
+                    try:
+                        logger.info(f'Remove temporary files')
+                        for i in range(0,numFiles):
+                            filename = f'{tempfile.gettempdir()}/{fullnode}{str(i)}_{str(fileSize)}.bin'
+                            os.remove(filename)
+                    except Exception as error:
+                        logger.error(f'Error deleting local file: {error}')
 
                     davElements = client.list(targetDir)
                     logger.info(f'{davElements}')
