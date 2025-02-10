@@ -90,8 +90,8 @@ class TestWebDavPerformance(unittest.TestCase):
     def test_basic_performance(self):
         global logger, g_testThreadsRunning, g_davPerformanceResults
         numFiles = 100
-        maxUploads = 4
-        maxDeletes = 8
+        maxUploads = 2
+        maxDeletes = 4
         drv = sunetnextcloud.TestTarget()
         for fullnode in drv.fullnodes:
             with self.subTest(mynode=fullnode):
