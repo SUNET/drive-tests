@@ -50,44 +50,48 @@ class CleanWebDAV(threading.Thread):
         'webdav_password' : nodepwd 
         }
 
-        client = Client(options)
+        try:
+            client = Client(options)
+            client.list()
+            davElements = client.list()
+            self.logger.info(f'DAV elements: {davElements}')
+            davElements.pop(0)
+            self.logger.info(f'After removing first element: {davElements}')
 
-        client.list()
-        davElements = client.list()
-        self.logger.info(f'DAV elements: {davElements}')
-        davElements.pop(0)
-        self.logger.info(f'After removing first element: {davElements}')
-
-        startTime = datetime.now()
-        count = 0
-        for rootElem in davElements:
-            if rootElem in g_excludeList:
-                self.logger.info(f'Cleaning subfolders in : {rootElem}')
-                subElements = client.list(rootElem)
-                subElements.pop(0)
-                for subElement in subElements:
-                    self.logger.info(f'Removing {fullnode} - {drv.target} - {subElement}')
+            startTime = datetime.now()
+            count = 0
+            for rootElem in davElements:
+                if rootElem in g_excludeList:
+                    self.logger.info(f'Cleaning subfolders in : {rootElem}')
+                    subElements = client.list(rootElem)
+                    subElements.pop(0)
+                    for subElement in subElements:
+                        self.logger.info(f'Removing {fullnode} - {drv.target} - {subElement}')
+                        try:
+                            client.clean(rootElem + subElement)
+                            count += 1
+                        except:
+                            self.logger.error(f'Could not delete sub element - {fullnode} - {rootElem}\\{subElement}')
+                else:
+                    self.logger.info(f'Removing {fullnode} - {drv.target} - {rootElem}')
                     try:
-                        client.clean(rootElem + subElement)
-                        count += 1
+                        client.clean(rootElem)
                     except:
-                        self.logger.error(f'Could not delete sub element - {fullnode} - {rootElem}\\{subElement}')
-            else:
-                self.logger.info(f'Removing {fullnode} - {drv.target} - {rootElem}')
-                try:
-                    client.clean(rootElem)
-                except:
-                    self.logger.error(f'Could not delete {fullnode} - {drv.target} - {rootElem}')
+                        self.logger.error(f'Could not delete {fullnode} - {drv.target} - {rootElem}')
 
-        totalTime = (datetime.now() - startTime).total_seconds()
-        if count == 0:
-            message = f'{self.name} - no elements deleted'
-            g_davPerformanceResults.append(message)
-            self.logger.info(f'DAV cleaning thread done: {message}')
-        else:
-            message = f'{self.name} - {count} elements in {totalTime:.1f}s at {count/totalTime:.2f} elements/s or {totalTime/count:.2f} s/element'
-            g_davPerformanceResults.append(message)
-            self.logger.info(f'DAV cleaning thread done: {message}')
+            totalTime = (datetime.now() - startTime).total_seconds()
+            if count == 0:
+                message = f'{self.name} - no elements deleted'
+                g_davPerformanceResults.append(message)
+                self.logger.info(f'DAV cleaning thread done: {message}')
+            else:
+                message = f'{self.name} - {count} elements in {totalTime:.1f}s at {count/totalTime:.2f} elements/s or {totalTime/count:.2f} s/element'
+                g_davPerformanceResults.append(message)
+                self.logger.info(f'DAV cleaning thread done: {message}')
+        except Exception as e:
+            self.logger.error(f'Unable to delete files for {fullnode}: {e}')
+            davThreadRunning -= 1
+            return
 
         davThreadRunning -= 1
 
