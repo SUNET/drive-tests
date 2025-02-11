@@ -195,11 +195,21 @@ class TestWebDavPerformance(unittest.TestCase):
         numFiles = 1
         maxUploads = 1
         maxDeletes = 1
-        # fileSizes=[1,10,100,1024,10240,102400,1024000,10240000,102400000,204800000]
-        # fileSizes=[1024,2048]
-        fileSizes=[102400000,204800000]
+        # fileSizes=[1,10,100,1024,10240,102400,1024000,10240000,102400000,204800000,409600000]
+        # fileSizes=[1024,2048,4096]
+        fileSizes=[102400000,204800000,409600000]
+
+        header = f'{"Size" : <16}'
+        for size in fileSizes:
+            header += f'{size : <10}'
+        g_davPerformanceResults.append(header)
+
+
+        logger.info(f'{header}')
+
         drv = sunetnextcloud.TestTarget()
         for fullnode in drv.fullnodes:
+            result = f'{fullnode : <16}'
             with self.subTest(mynode=fullnode):
                 logger.info(f'TestID: {fullnode}')
 
@@ -236,7 +246,7 @@ class TestWebDavPerformance(unittest.TestCase):
                     try:
                         for i in range(0,numFiles,maxUploads):
                             x = i
-                            logger.info(f'Batch upload {files[x:x+maxUploads]}')
+                            logger.info(f'Batch upload {files[x:x+maxUploads]} to {targetDir}')
                             for file in files[x:x+maxUploads]:
                                 try:
                                     g_testThreadsRunning += 1
@@ -288,14 +298,17 @@ class TestWebDavPerformance(unittest.TestCase):
                     
                     deleteTime = (datetime.now() - startTime).total_seconds()
 
-                    lText = f'{fullnode} '
-                    mText = f'Size: {fileSize}'
-                    rText = f'Upload: {uploadTime:.1f}s' 
+                    result += f'{uploadTime:<10.1f}'
 
-                    message = f'{lText : <16}{mText : <40}{rText : <40}'
-                    # message = f'{fullnode} - Upload: {uploadTime:.1f}s at {uploadTime/numFiles:.2f} s/file - Delete: {deleteTime:.1f}s at {deleteTime/numFiles:.2f} s/file'
-                    logger.info(f'{message}')
-                    g_davPerformanceResults.append(message)
+                    # lText = f'{fullnode} '
+                    # mText = f'Size: {fileSize}'
+                    # rText = f'Upload: {uploadTime:.1f}s' 
+
+                    # message = f'{lText : <16}{mText : <40}{rText : <40}'
+                    # # message = f'{fullnode} - Upload: {uploadTime:.1f}s at {uploadTime/numFiles:.2f} s/file - Delete: {deleteTime:.1f}s at {deleteTime/numFiles:.2f} s/file'
+                    # logger.info(f'{message}')
+
+                g_davPerformanceResults.append(result)
 
         logger.info(f'Results for {numFiles} with max {maxUploads} concurrent uploads and max {maxDeletes} concurrent deletes')
         for message in g_davPerformanceResults:
