@@ -355,7 +355,7 @@ apps:
     enabled: false
   user_saml:
     prod:
-      version: 6.3.0
+      version: 6.4.1
       installed:  true
       enabled: false
       exceptenabled:
