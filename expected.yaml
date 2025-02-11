@@ -17,8 +17,8 @@ prod:
     installed: true
     maintenance: false
     needsDbUpgrade: false
-    version: '29.0.8.2'
-    versionstring: '29.0.8 Enterprise'
+    version: '30.0.5.2'
+    versionstring: '30.0.5 Enterprise'
     edition: ''
     productname: 'Nextcloud'
     extendedSupport: false
