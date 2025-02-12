@@ -169,8 +169,8 @@ services:
 
   jupyterhub:
     container_name: nextcloud-local-jupyterhub
-    # ports:
-    #     - 8100:8000
+    ports:
+        - 8100:8000
     image: jupyterhub-local
     # command: jupyterhub
     # volumes:
