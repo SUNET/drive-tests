@@ -154,11 +154,8 @@ class TestTarget(object):
         else:
             return 'https://' + self.getnodeprefix(node) + self.targetprefix + self.delimiter + self.baseurl + self.indexsuffix
 
-    def get_portal_login_url(self):
-        if self.target == "prod":
-            return 'https://portal.drive.' +  self.baseurl
-        else:
-            return 'https://portal.drive.test.' + self.baseurl
+    def get_login_url(self):
+        return 'https://' + self.nodeprefix + self.targetprefix + self.delimiter + self.baseurl 
 
     def get_node_post_logout_url(self, node):
         return 'https://' + self.getnodeprefix(node) + self.targetprefix + self.delimiter + self.baseurl + self.indexsuffix + '/login?clear=1'
@@ -168,6 +165,14 @@ class TestTarget(object):
 
     def get_node_post_logout_saml_url(self, node):
         return 'https://' + self.getnodeprefix(node) + self.targetprefix + self.delimiter + self.baseurl + self.indexsuffix + '/apps/user_saml/saml/selectUserBackEnd?redirectUrl='
+
+    def get_post_logout_url(self):
+        if self.target == 'test':
+            return 'https://service.seamlessaccess.org/ds/?entityID=https%3A%2F%2Fidp-proxy.drive.test.sunet.se%2Fsp&return=https%3A%2F%2Fdrive.test.sunet.se'
+        elif self.target == 'prod':
+            return 'https://service.seamlessaccess.org/ds/?entityID=https%3A%2F%2Fdrive-idp-proxy.sunet.se%2Fsp&return=https%3A%2F%2Fdrive.sunet.se'
+        else:
+            return 'TBD'
 
     def get_ocs_capabilities_url(self, node):
         return 'https://' + self.getnodeprefix(node) + self.targetprefix + self.delimiter + self.baseurl + '/ocs/v2.php/cloud/capabilities?format=json'
