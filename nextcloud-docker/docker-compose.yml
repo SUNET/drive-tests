@@ -78,7 +78,7 @@ services:
     restart: always
     environment:
       STAGE: local
-      DOMAINS: 'localhost -> http://mock-oauth2-server:8080'
+      DOMAINS: 'localhost -> http://mock-oauth2-server:8880'
 
   collabora-https-portal:
     container_name: nextcloud-local-collabora-https-portal
@@ -98,11 +98,11 @@ services:
     image: nextcloud:latest
     restart: always
     expose:
-      - "8880"
+      - "8080"
       - "8443"
     ports:
       - 8443:8443
-      - 8880:80
+      - 8080:80
     links:
       - db
       - collabora-server
@@ -190,7 +190,9 @@ services:
       - NEXTCLOUD_HOST=nextcloud-local:443
       - NEXTCLOUD_CLIENT_ID=
       - NEXTCLOUD_CLIENT_SECRET=
-      - JUPYTER_HOST=localhost:8100
+      # - JUPYTER_HOST=localhost:8100
+      - JUPYTER_HOST=localhost
+      - JUPYTER_PORT=9444
 
   mock-oauth2-server:
     container_name: nextcloud-local-mock-oauth
@@ -198,7 +200,9 @@ services:
     stdin_open: true
     tty: true
     ports:
-        - 8080:8080
+        - 8880:8880
+    environment:
+      - SERVER_PORT=8880
 
   minio1:
     <<: *minio-common
