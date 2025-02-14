@@ -5,13 +5,15 @@ c.JupyterHub.authenticator_class = "generic-oauth"
 # assumes oauth provider run with:
 # docker run --rm -it -p 127.0.0.1:8080:8080 ghcr.io/navikt/mock-oauth2-server:2.1.1
 
-provider = "https://localhost:9446/default"
+# provider = "https://localhost:9446/default"
+# provider = "http://localhost:8880/default"
+provider = "http://mock-oauth2-server:8880/default"
 c.GenericOAuthenticator.authorize_url = f"{provider}/authorize"
 c.GenericOAuthenticator.token_url = f"{provider}/token"
 c.GenericOAuthenticator.userdata_url = f"{provider}/userinfo"
 c.GenericOAuthenticator.scope = ["openid", "somescope", "otherscope"]
 
-# these are the defaults. They can be configured at http://localhost:8080/default/debugger
+# these are the defaults. They can be configured at {provider}/debugger
 c.GenericOAuthenticator.client_id = "debugger"
 c.GenericOAuthenticator.client_secret = "someSecret"
 
