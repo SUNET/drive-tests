@@ -273,21 +273,25 @@ rds-ng-dev:
 nextcloud-http-ip:
 	./occ_docker config:system:set overwrite.cli.url --value="http://$(LOCALIP):8080"
 	./occ_docker config:system:set overwritehost --value="$(LOCALIP):8080"
+	./occ_docker config:system:set overwriteprotocol --value="http"
 
 .PHONY: nextcloud-https-ip
 nextcloud-https-ip:
 	./occ_docker config:system:set overwrite.cli.url --value="https://$(LOCALIP):8443"
 	./occ_docker config:system:set overwritehost --value="$(LOCALIP):8443"
+	./occ_docker config:system:set overwriteprotocol --value="https"
 
 .PHONY: nextcloud-http-localhost
 nextcloud-http-localhost:
 	./occ_docker config:system:set overwrite.cli.url --value="http://$localhost:8080"
 	./occ_docker config:system:set overwritehost --value="localhost:8080"
+	./occ_docker config:system:set overwriteprotocol --value="http"
 
 .PHONY: nextcloud-https-localhost
 nextcloud-https-localhost:
 	./occ_docker config:system:set overwrite.cli.url --value="https://localhost:8443"
 	./occ_docker config:system:set overwritehost --value="localhost:8443"
+	./occ_docker config:system:set overwriteprotocol --value="https"
 
 # To set environment variables in your local shell run:
 # eval "$(make printenv)"
