@@ -171,28 +171,20 @@ services:
     container_name: nextcloud-local-jupyterhub
     ports:
         - 8100:8000
+        - 8081:8081
+        - 8082:8082
     image: jupyterhub-local
-    # command: jupyterhub
-    # volumes:
-    #   - type: bind
-    #     source: jupyter/refresh-token.py
-    #     target: /usr/local/etc/jupyterhub/refresh-token.py
-    #   - type: bind
-    #     source: jupyter/jupyter_server_config.py
-    #     target: /home/jovyan/.jupyter/jupyter_server_config.py
-
-    # extra_hosts:
-    #     - "nextcloud-local-mock-oauth:127.0.0.1"
-
     environment:
       - HUB_SERVICE_HOST=localhost
-      - HUB_SERVICE_PORT_REFRESH_TOKEN=refresh-token
-      - NEXTCLOUD_HOST=nextcloud-local:443
-      - NEXTCLOUD_CLIENT_ID=
-      - NEXTCLOUD_CLIENT_SECRET=
-      # - JUPYTER_HOST=localhost:8100
+      - HUB_SERVICE_PORT_REFRESH_TOKEN=8082
+      - NEXTCLOUD_HOST=localhost:8080
+      - NEXTCLOUD_CLIENT_ID=YOy5shZle8dAk3NRWgL87BQ7LRhp0HUBlZTwvfYDvdjlhCRw6l3bXHB2eUNSi4gy
+      - NEXTCLOUD_CLIENT_SECRET=WhT7TOzO0pqty7tzY3NrEbOHWKraEH374xLdYQ9w82jsgaZWoPCcI54UTqUXkj8H
+      - JUPYTERHUB_CRYPT_KEY=4195e318e435326c21739c3b398d841592c780e824320f1729be43ff56b15681
       - JUPYTER_HOST=localhost
       - JUPYTER_PORT=9444
+      - JUPYTERHUB_API_KEY=randomapikey
+      - JUPYTERHUB_SERVICE_URL=http://localhost:8100
 
   mock-oauth2-server:
     container_name: nextcloud-local-mock-oauth

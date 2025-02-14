@@ -1,8 +1,25 @@
 import time
 import requests
+import os
 from datetime import datetime
 from oauthenticator.generic import GenericOAuthenticator
-token_url = 'https://' + os.environ['NEXTCLOUD_HOST'] + '/index.php/apps/oauth2/api/v1/token'
+
+import pprint
+import getpass
+
+env_var = os.environ
+
+os.environ['NEXTCLOUD_HOST'] = 'localhost:8080'
+os.environ['NEXTCLOUD_CLIENT_ID'] = 'YOy5shZle8dAk3NRWgL87BQ7LRhp0HUBlZTwvfYDvdjlhCRw6l3bXHB2eUNSi4gy'
+os.environ['NEXTCLOUD_CLIENT_SECRET'] = 'WhT7TOzO0pqty7tzY3NrEbOHWKraEH374xLdYQ9w82jsgaZWoPCcI54UTqUXkj8H' 
+
+# print(f"User's Environment variable in nextcloud-oauth.py for user {getpass.getuser()}") 
+# pprint.pprint(dict(env_var), width = 1) 
+
+# print(f'Done...')
+
+token_url = 'http://' + os.environ['NEXTCLOUD_HOST'] + '/index.php/apps/oauth2/api/v1/token'
+print(f'Token url: {token_url}')
 debug = os.environ.get('NEXTCLOUD_DEBUG_OAUTH', 'false').lower() in ['true', '1', 'yes']
       
 def get_nextcloud_access_token(refresh_token):
@@ -81,17 +98,17 @@ class NextcloudOAuthenticator(GenericOAuthenticator):
       print(f'Time is: {now_hr}, token expires: {expires_hr}')
     return True
 
-c.JupyterHub.authenticator_class = NextcloudOAuthenticator
-c.NextcloudOAuthenticator.client_id = os.environ['NEXTCLOUD_CLIENT_ID']
-c.NextcloudOAuthenticator.client_secret = os.environ['NEXTCLOUD_CLIENT_SECRET']
-c.NextcloudOAuthenticator.login_service = 'Sunet Drive'
-c.NextcloudOAuthenticator.username_claim = lambda r: r.get('ocs', {}).get('data', {}).get('id')
-c.NextcloudOAuthenticator.userdata_url = 'https://' + os.environ['NEXTCLOUD_HOST'] + '/ocs/v2.php/cloud/user?format=json'
-c.NextcloudOAuthenticator.authorize_url = 'https://' + os.environ['NEXTCLOUD_HOST'] + '/index.php/apps/oauth2/authorize'
-c.NextcloudOAuthenticator.token_url = token_url
-c.NextcloudOAuthenticator.oauth_callback_url = 'https://' + os.environ['JUPYTER_HOST'] + ':' + os.environ['JUPYTER_PORT'] + '/hub/oauth_callback'
-c.NextcloudOAuthenticator.allow_all = True
-c.NextcloudOAuthenticator.refresh_pre_spawn = True
-c.NextcloudOAuthenticator.enable_auth_state = True
-c.NextcloudOAuthenticator.auth_refresh_age = 3600
-c.NextcloudOAuthenticator.post_auth_hook = post_auth_hook
+# c.JupyterHub.authenticator_class = NextcloudOAuthenticator
+# c.NextcloudOAuthenticator.client_id = os.environ['NEXTCLOUD_CLIENT_ID']
+# c.NextcloudOAuthenticator.client_secret = os.environ['NEXTCLOUD_CLIENT_SECRET']
+# c.NextcloudOAuthenticator.login_service = 'Sunet Drive'
+# c.NextcloudOAuthenticator.username_claim = lambda r: r.get('ocs', {}).get('data', {}).get('id')
+# c.NextcloudOAuthenticator.userdata_url = 'http://' + os.environ['NEXTCLOUD_HOST'] + '/ocs/v2.php/cloud/user?format=json'
+# c.NextcloudOAuthenticator.authorize_url = 'http://' + os.environ['NEXTCLOUD_HOST'] + '/index.php/apps/oauth2/authorize'
+# c.NextcloudOAuthenticator.token_url = token_url
+# c.NextcloudOAuthenticator.oauth_callback_url = 'http://' + os.environ['JUPYTER_HOST'] + ':' + os.environ['JUPYTER_PORT'] + '/hub/oauth_callback'
+# c.NextcloudOAuthenticator.allow_all = True
+# c.NextcloudOAuthenticator.refresh_pre_spawn = True
+# c.NextcloudOAuthenticator.enable_auth_state = True
+# c.NextcloudOAuthenticator.auth_refresh_age = 3600
+# c.NextcloudOAuthenticator.post_auth_hook = post_auth_hook
