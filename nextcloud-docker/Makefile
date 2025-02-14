@@ -55,6 +55,7 @@ export NEXTCLOUD_SELENIUM_MFA_USER_LOCALHOST_LOCALHOST=_selenium_localhost_mfa
 export NEXTCLOUD_SELENIUM_MFA_PASSWORD_LOCALHOST_LOCALHOST=_selenium_localhost_mfa_password
 export NEXTCLOUD_SELENIUM_MFA_APP_PASSWORD_LOCALHOST_LOCALHOST=
 export NEXTCLOUD_SELENIUM_MFA_SECRET_LOCALHOST_LOCALHOST=
+LOCALIP = $(shell hostname -i | awk '{print $$1; exit}')
 
 all: docker
 release: docker
@@ -89,10 +90,12 @@ docker: selfsignedcert docker_kill jupyterhub
 	docker compose -p rds up -d
 	sleep 15
 	-./occ_docker maintenance:install --admin-user='admin' --admin-pass='adminpassword' --database='mysql' --database-name='nextcloud' --database-host='nextcloud-local-db' --database-user='nextcloud' --database-pass='userpass'
+
 	./occ_docker config:system:set overwrite.cli.url --value="https://localhost:8443"
 	./occ_docker config:system:set overwriteprotocol --value="https"
 	./occ_docker config:system:set overwritehost --value="localhost:8443"
-	./occ_docker config:system:set trusted_proxies --value="127.0.0.1,172.18.0.1"
+
+	./occ_docker config:system:set trusted_proxies --value="127.0.0.1,172.18.0.1,$(LOCALIP)"
 	./occ_docker config:system:set trusted_domains 10 --value=localhost
 	./occ_docker config:system:set trusted_domains 11 --value=127.0.0.1
 
@@ -265,6 +268,26 @@ rds-ng-dev:
 	cd rds-ng/deployment/containers && docker compose -p rds -f dev-min.docker-compose.yaml up -d
 	sleep 5
 	-firefox -new-tab http://localhost:8000
+
+.PHONY: nextcloud-http-ip
+nextcloud-http-ip:
+	./occ_docker config:system:set overwrite.cli.url --value="http://$(LOCALIP):8080"
+	./occ_docker config:system:set overwritehost --value="$(LOCALIP):8080"
+
+.PHONY: nextcloud-https-ip
+nextcloud-https-ip:
+	./occ_docker config:system:set overwrite.cli.url --value="https://$(LOCALIP):8443"
+	./occ_docker config:system:set overwritehost --value="$(LOCALIP):8443"
+
+.PHONY: nextcloud-http-localhost
+nextcloud-http-localhost:
+	./occ_docker config:system:set overwrite.cli.url --value="http://$localhost:8080"
+	./occ_docker config:system:set overwritehost --value="localhost:8080"
+
+.PHONY: nextcloud-https-localhost
+nextcloud-https-localhost:
+	./occ_docker config:system:set overwrite.cli.url --value="https://localhost:8443"
+	./occ_docker config:system:set overwritehost --value="localhost:8443"
 
 # To set environment variables in your local shell run:
 # eval "$(make printenv)"
