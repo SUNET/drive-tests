@@ -111,7 +111,7 @@ class TestLoginMultiSelenium(unittest.TestCase):
                 #     logonTries += 1
                 #     try:
                 #         self.logger.info(f'Check if TOTP selection dialogue is visible')
-                #         totpselect = driver.find_element(By.XPATH, '//a[@href="'+ '/index.php/login/challenge/totp' +'"]')
+                #         totpselect = driver.find_element(By.XPATH, '//a[@href="'+ g_drv.indexsuffix + '/login/challenge/totp' +'"]')
                 #         self.logger.warning(f'Found TOTP selection dialogue')
                 #         totpselect.click()
                 #     except:
@@ -139,13 +139,13 @@ class TestLoginMultiSelenium(unittest.TestCase):
 
                 try:
                     self.logger.info(f'Waiting for files app button')
-                    wait.until(EC.presence_of_element_located((By.XPATH, '//a[@href="'+ '/index.php/apps/files/' +'"]')))
-                    files = driver.find_element(By.XPATH, '//a[@href="'+ '/index.php/apps/files/' +'"]')
+                    wait.until(EC.presence_of_element_located((By.XPATH, '//a[@href="'+ g_drv.indexsuffix + '/apps/files/' +'"]')))
+                    files = driver.find_element(By.XPATH, '//a[@href="'+ g_drv.indexsuffix + '/apps/files/' +'"]')
                     files.click()
                 except:
                     self.logger.warning(f'Files app button not found, do we have to totp again?')
 
-                    totpselect = driver.find_element(By.XPATH, '//a[@href="'+ '/index.php/login/challenge/totp' +'"]')
+                    totpselect = driver.find_element(By.XPATH, '//a[@href="'+ g_drv.indexsuffix + '/login/challenge/totp' +'"]')
                     self.logger.warning(f'Found TOTP selection dialogue')
                     totpselect.click()
                     totp = pyotp.TOTP(nodetotpsecret)
@@ -208,7 +208,7 @@ class TestLoginMultiSelenium(unittest.TestCase):
 
                 sel.nodelogin(sel.UserType.SELENIUM)
 
-                files = driver.find_element(By.XPATH, '//a[@href="'+ '/index.php/apps/files/' +'"]')
+                files = driver.find_element(By.XPATH, '//a[@href="'+ g_drv.indexsuffix + '/apps/files/' +'"]')
                 files.click()
 
                 wait.until(EC.presence_of_element_located((By.XPATH, '//*[@title="Show sharing options"]')))

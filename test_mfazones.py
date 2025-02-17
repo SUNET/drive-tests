@@ -190,8 +190,8 @@ def nodelogin(nextcloudnode,user='selenium'):
         if checkForTotp:
             try:
                 g_logger.info(f'Check if TOTP selection dialogue is visible')
-                g_wait.until(EC.presence_of_element_located((By.XPATH, '//a[@href="'+ '/index.php/login/challenge/totp' +'"]')))
-                totpselect = g_driver.find_element(By.XPATH, '//a[@href="'+ '/index.php/login/challenge/totp' +'"]')
+                g_wait.until(EC.presence_of_element_located((By.XPATH, '//a[@href="'+ g_drv.indexsuffix + '/login/challenge/totp' +'"]')))
+                totpselect = g_driver.find_element(By.XPATH, '//a[@href="'+ g_drv.indexsuffix + '/login/challenge/totp' +'"]')
                 g_logger.warning(f'Found TOTP selection dialogue')
                 totpselect.click()
             except:

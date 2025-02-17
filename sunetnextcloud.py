@@ -113,6 +113,7 @@ class TestTarget(object):
         else:
             self.target = "test"
             self.targetprefix = "." + self.testprefix
+            self.indexsuffix = ''
 
         if testcustomers in self.allnodes:
             self.singlenodetesting = True
@@ -618,7 +619,7 @@ class SeleniumHelper():
             logger.info(f'MFA login {currentUrl}')
             if 'selectchallenge' in currentUrl:
                 logger.info(f'Select TOTP provider')
-                totpselect = self.driver.find_element(By.XPATH, '//a[@href="'+ '/index.php/login/challenge/totp' +'"]')
+                totpselect = self.driver.find_element(By.XPATH, '//a[@href="'+ self.drv.indexsuffix + '/login/challenge/totp' +'"]')
                 totpselect.click()
             elif 'challenge/totp' in currentUrl:
                 logger.info(f'No need to select TOTP provider')

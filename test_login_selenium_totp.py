@@ -96,8 +96,8 @@ class TestLoginSeleniumTotp(unittest.TestCase):
                 sel.nodelogin(sel.UserType.SELENIUM_MFA)
                 wait = WebDriverWait(driver, delay)
 
-                wait.until(EC.presence_of_element_located((By.XPATH, '//a[@href="'+ '/index.php/apps/files/' +'"]')))
-                files = driver.find_element(By.XPATH, '//a[@href="'+ '/index.php/apps/files/' +'"]')
+                wait.until(EC.presence_of_element_located((By.XPATH, '//a[@href="'+ drv.indexsuffix + '/apps/files/' +'"]')))
+                files = driver.find_element(By.XPATH, '//a[@href="'+ drv.indexsuffix + '/apps/files/' +'"]')
                 files.click()
 
                 try:
