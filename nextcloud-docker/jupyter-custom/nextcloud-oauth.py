@@ -4,19 +4,12 @@ import os
 from datetime import datetime
 from oauthenticator.generic import GenericOAuthenticator
 
-import pprint
-import getpass
+# import pprint
+# import getpass
 
-env_var = os.environ
-
-os.environ['NEXTCLOUD_HOST'] = 'localhost:8080'
-os.environ['NEXTCLOUD_CLIENT_ID'] = 'YOy5shZle8dAk3NRWgL87BQ7LRhp0HUBlZTwvfYDvdjlhCRw6l3bXHB2eUNSi4gy'
-os.environ['NEXTCLOUD_CLIENT_SECRET'] = 'WhT7TOzO0pqty7tzY3NrEbOHWKraEH374xLdYQ9w82jsgaZWoPCcI54UTqUXkj8H' 
-
-# print(f"User's Environment variable in nextcloud-oauth.py for user {getpass.getuser()}") 
+# env_var = os.environ
+# print(f"User's Environment variable in nextcloud-oauth.py for user {getpass.getuser()} in {__file__}") 
 # pprint.pprint(dict(env_var), width = 1) 
-
-# print(f'Done...')
 
 token_url = 'http://' + os.environ['NEXTCLOUD_HOST'] + '/index.php/apps/oauth2/api/v1/token'
 print(f'Token url: {token_url}')

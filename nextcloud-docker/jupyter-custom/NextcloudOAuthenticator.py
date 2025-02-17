@@ -27,7 +27,6 @@ def get_nextcloud_access_token(refresh_token):
         print(response.text)
     return response.json()
 
-
 def post_auth_hook(authenticator, handler, authentication):
     # user = authentication['auth_state']['oauth_user']['ocs']['data']['id']
     auth_state = authentication['auth_state']
