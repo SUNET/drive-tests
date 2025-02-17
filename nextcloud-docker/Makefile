@@ -137,6 +137,7 @@ docker: selfsignedcert docker_kill jupyterhub
 	docker cp integration_jupyterhub-0.1.2.tar.gz nextcloud-local:/var/www/html/custom_apps
 	docker exec -u www-data nextcloud-local /bin/bash -c "cd /var/www/html/custom_apps && tar -xzf integration_jupyterhub-0.1.2.tar.gz && rm integration_jupyterhub-0.1.2.tar.gz"
 	docker exec -u www-data nextcloud-local /bin/bash -c "sed -i -e 's/max-version=\"29\"/max-version=\"30\"/g' /var/www/html/custom_apps/integration_jupyterhub/appinfo/info.xml"
+
 	docker exec nextcloud-local /bin/bash -c "chown -R www-data:www-data /var/www/html/custom_apps/integration_jupyterhub"
 	rm integration_jupyterhub-0.1.2.tar.gz
 	./occ_docker app:enable integration_jupyterhub
@@ -283,7 +284,7 @@ nextcloud-https-ip:
 
 .PHONY: nextcloud-http-localhost
 nextcloud-http-localhost:
-	./occ_docker config:system:set overwrite.cli.url --value="http://$localhost:8080"
+	./occ_docker config:system:set overwrite.cli.url --value="http://localhost:8080"
 	./occ_docker config:system:set overwritehost --value="localhost:8080"
 	./occ_docker config:system:set overwriteprotocol --value="http"
 
@@ -292,6 +293,12 @@ nextcloud-https-localhost:
 	./occ_docker config:system:set overwrite.cli.url --value="https://localhost:8443"
 	./occ_docker config:system:set overwritehost --value="localhost:8443"
 	./occ_docker config:system:set overwriteprotocol --value="https"
+
+.PHONY: nextcloud-http-localhost
+nextcloud-http-nextcloud-local:
+	./occ_docker config:system:set overwrite.cli.url --value="http://nextcloud-local"
+	./occ_docker config:system:set overwritehost --value="nextcloud-local"
+	./occ_docker config:system:set overwriteprotocol --value="http"
 
 # To set environment variables in your local shell run:
 # eval "$(make printenv)"
