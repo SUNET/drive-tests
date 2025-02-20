@@ -113,7 +113,6 @@ class TestTarget(object):
         else:
             self.target = "test"
             self.targetprefix = "." + self.testprefix
-            self.indexsuffix = ''
 
         if testcustomers in self.allnodes:
             self.singlenodetesting = True
