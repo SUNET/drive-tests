@@ -17,3 +17,15 @@ docker volume rm nextcloud-docker_data3-1
 docker volume rm nextcloud-docker_data3-2
 docker volume rm nextcloud-docker_data4-1
 docker volume rm nextcloud-docker_data4-2
+docker volume rm nextcloud
+docker volume rm rds_data1-1
+docker volume rm rds_data1-2
+docker volume rm rds_data2-1
+docker volume rm rds_data2-2
+docker volume rm rds_data3-1
+docker volume rm rds_data3-2
+docker volume rm rds_data4-1
+docker volume rm rds_data4-2
+docker volume rm rds_db
+docker volume rm rds_nextcloud
+docker volume rm $(docker volume ls -qf dangling=true)
