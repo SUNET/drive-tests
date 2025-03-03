@@ -195,6 +195,7 @@ for user in mfaUsers:
     userMfaSecret = g_envVariables[f'MFA_NEXTCLOUD_{prefix}_SECRET']
     if len(userMfaSecret) > 0:
         userTotpConfigured = True
+        g_logger.warning(f'TOTP secret for {user} is {userMfaSecret}')
     else:
         g_logger.warning(f'TOTP secret for {user} not set')
 
