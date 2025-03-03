@@ -40,6 +40,8 @@ services:
     environment:
       STAGE: local
       DOMAINS: 'localhost -> http://nextcloud-app:80'
+    networks:
+      - nextcloud-local-network
 
   jupyter-https-portal:
     container_name: nextcloud-local-jupyterhub-https-portal
@@ -53,6 +55,8 @@ services:
     environment:
       STAGE: local
       DOMAINS: 'localhost -> http://jupyterhub:8000'
+    networks:
+      - nextcloud-local-network
 
   rds-https-portal:
     container_name: nextcloud-local-rds-https-portal
@@ -66,6 +70,8 @@ services:
     environment:
       STAGE: local
       DOMAINS: 'localhost -> http://frontend:6969'
+    networks:
+      - nextcloud-local-network
 
   oauth-https-portal:
     container_name: nextcloud-local-oauth-https-portal
@@ -79,6 +85,8 @@ services:
     environment:
       STAGE: local
       DOMAINS: 'localhost -> http://mock-oauth2-server:8880'
+    networks:
+      - nextcloud-local-network
 
   collabora-https-portal:
     container_name: nextcloud-local-collabora-https-portal
@@ -92,17 +100,21 @@ services:
     environment:
       STAGE: local
       DOMAINS: 'localhost -> http://collabora-server:9980'
+    networks:
+      - nextcloud-local-network
 
   nextcloud-app:
     container_name: nextcloud-local
     image: nextcloud:latest
     restart: always
     expose:
+      - 8080:80
       - "8080"
       - "8443"
     ports:
       - 8443:8443
       - 8080:80
+      - 80:80
     links:
       - db
       - collabora-server
@@ -123,6 +135,8 @@ services:
       - MYSQL_DATABASE=nextcloud
       - MYSQL_USER=nextcloud
       - MYSQL_HOST=db
+    networks:
+      - nextcloud-local-network
 
   db:
     container_name: nextcloud-local-db
@@ -136,6 +150,8 @@ services:
       - MYSQL_PASSWORD=userpass
       - MYSQL_DATABASE=nextcloud
       - MYSQL_USER=nextcloud
+    networks:
+      - nextcloud-local-network
 
   collabora-server:
     image: collabora/code:latest
@@ -157,6 +173,8 @@ services:
       - extra_params=--o:ssl.enable=false --o:ssl.termination=true --o:user_interface.mode=compact --o:net.proto=IPv4 --o:hexify_embedded_urls=true --o:logging.level=warning
       - username=admin
       - password=adminpassword
+    networks:
+      - nextcloud-local-network
 
   whiteboard-server:
     container_name: nextcloud-local-whiteboard
@@ -166,6 +184,8 @@ services:
     environment:
       - NEXTCLOUD_URL=https://localhost
       - JWT_SECRET_KEY=some-random-key
+    networks:
+      - nextcloud-local-network
 
   jupyterhub:
     container_name: nextcloud-local-jupyterhub
@@ -175,16 +195,30 @@ services:
         - 8082:8082
     image: jupyterhub-local
     environment:
-      - HUB_SERVICE_HOST=localhost
+      - HUB_SERVICE_HOST=nextcloud-local-jupyterhub
       - HUB_SERVICE_PORT_REFRESH_TOKEN=8082
-      - NEXTCLOUD_HOST=localhost:8080
-      - NEXTCLOUD_CLIENT_ID=YOy5shZle8dAk3NRWgL87BQ7LRhp0HUBlZTwvfYDvdjlhCRw6l3bXHB2eUNSi4gy
-      - NEXTCLOUD_CLIENT_SECRET=WhT7TOzO0pqty7tzY3NrEbOHWKraEH374xLdYQ9w82jsgaZWoPCcI54UTqUXkj8H
+      - NEXTCLOUD_HOST=nextcloud-local
+      - NEXTCLOUD_CLIENT_ID=AdHJg6nsDeNdYGYxHfisUojXHYw7YBx4SR7DjRWIB8E9FFdfwky21tO7pD9uJ6sV
+      - NEXTCLOUD_CLIENT_SECRET=9belLuRY4h12UsHWMO6kO3IhH01EiLeueNprnTe1PyhxKiMW6vnKfKAQpzJ3qUbT
       - JUPYTERHUB_CRYPT_KEY=4195e318e435326c21739c3b398d841592c780e824320f1729be43ff56b15681
-      - JUPYTER_HOST=localhost
+      - JUPYTER_HOST=nextcloud-local-jupyterhub
       - JUPYTER_PORT=9444
       - JUPYTERHUB_API_KEY=randomapikey
-      - JUPYTERHUB_SERVICE_URL=http://localhost:8100
+      - JUPYTERHUB_SERVICE_URL=http://nextcloud-local-jupyterhub:8100
+      # Prepare for DockerSpawner
+      # This username will be a JupyterHub admin
+      - JUPYTERHUB_ADMIN=admin
+      # All containers will join this network
+      - DOCKER_NETWORK_NAME=jupyterhub-network
+      # JupyterHub will spawn this Notebook image for users
+      # - DOCKER_NOTEBOOK_IMAGE=quay.io/jupyter/base-notebook:latest
+      - DOCKER_NOTEBOOK_IMAGE=jupyterhub-local
+      # Notebook directory inside user image
+      - DOCKER_NOTEBOOK_DIR=/home/jovyan/work
+    volumes:
+        - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - nextcloud-local-network
 
   mock-oauth2-server:
     container_name: nextcloud-local-mock-oauth
@@ -195,6 +229,8 @@ services:
         - 8880:8880
     environment:
       - SERVER_PORT=8880
+    networks:
+      - nextcloud-local-network
 
   minio1:
     <<: *minio-common
@@ -203,6 +239,8 @@ services:
     volumes:
       - data1-1:/data1
       - data1-2:/data2
+    networks:
+      - nextcloud-local-network
 
   minio2:
     <<: *minio-common
@@ -211,6 +249,8 @@ services:
     volumes:
       - data2-1:/data1
       - data2-2:/data2
+    networks:
+      - nextcloud-local-network
 
   minio3:
     <<: *minio-common
@@ -219,6 +259,8 @@ services:
     volumes:
       - data3-1:/data1
       - data3-2:/data2
+    networks:
+      - nextcloud-local-network
 
   minio4:
     <<: *minio-common
@@ -227,6 +269,8 @@ services:
     volumes:
       - data4-1:/data1
       - data4-2:/data2
+    networks:
+      - nextcloud-local-network
 
   nginx:
     container_name: nextcloud-local-minio
@@ -242,138 +286,158 @@ services:
       - minio2
       - minio3
       - minio4
+    networks:
+      - nextcloud-local-network
 
 ### RDS NG ###
   # -- Base images --
   # Build-only Python base image
   py-base:
-      image: rds-ng/py-base:develop
-      build:
-          context: rds-ng/
-          dockerfile: deployment/containers/py-base/dev.Dockerfile
-      deploy:
-          mode: replicated
-          replicas: 0
+    image: rds-ng/py-base:develop
+    build:
+        context: rds-ng/
+        dockerfile: deployment/containers/py-base/dev.Dockerfile
+    deploy:
+        mode: replicated
+        replicas: 0
+    networks:
+      - nextcloud-local-network
 
   # Build-only Node base image
   node-base:
-      image: rds-ng/node-base:develop
-      build:
-          context: rds-ng/
-          dockerfile: deployment/containers/node-base/dev.Dockerfile
-      deploy:
-          mode: replicated
-          replicas: 0
+    image: rds-ng/node-base:develop
+    build:
+        context: rds-ng/
+        dockerfile: deployment/containers/node-base/dev.Dockerfile
+    deploy:
+        mode: replicated
+        replicas: 0
+    networks:
+      - nextcloud-local-network
 
   # -- Component images --
   # Server service
   server:
-      image: rds-ng/server:develop
-      volumes:
-          -   type: bind
-              source: rds-ng/src
-              target: /component
-          -   type: bind
-              source: rds-ng/.data
-              target: /data
-      build:
-          context: rds-ng/
-          dockerfile: deployment/containers/backend-component/dev.Dockerfile
-          args:
-              COMPONENT_NAME: "server"
-      depends_on:
-          - py-base
-      ports:
-          - "4200:6969"
-      env_file:
-          - rds-ng/deployment/env/dev.server.env
+    image: rds-ng/server:develop
+    volumes:
+        -   type: bind
+            source: rds-ng/src
+            target: /component
+        -   type: bind
+            source: rds-ng/.data
+            target: /data
+    build:
+        context: rds-ng/
+        dockerfile: deployment/containers/backend-component/dev.Dockerfile
+        args:
+            COMPONENT_NAME: "server"
+    depends_on:
+        - py-base
+    ports:
+        - "4200:6969"
+    env_file:
+        - rds-ng/deployment/env/dev.server.env
+    networks:
+      - nextcloud-local-network
 
   # Connector: OSF
   connector-osf:
-      image: rds-ng/connector-osf:develop
-      volumes:
-          -   type: bind
-              source: rds-ng/src
-              target: /component
-          -   type: bind
-              source: rds-ng/.data
-              target: /data
-      build:
-          context: rds-ng/
-          dockerfile: deployment/containers/backend-component/dev.Dockerfile
-          args:
-              COMPONENT_NAME: "connectors/osf"
-      depends_on:
-          - py-base
-      ports:
-          - "4300:6969"
-      env_file:
-          - rds-ng/deployment/env/dev.connector-osf.env
+    image: rds-ng/connector-osf:develop
+    volumes:
+        -   type: bind
+            source: rds-ng/src
+            target: /component
+        -   type: bind
+            source: rds-ng/.data
+            target: /data
+    build:
+        context: rds-ng/
+        dockerfile: deployment/containers/backend-component/dev.Dockerfile
+        args:
+            COMPONENT_NAME: "connectors/osf"
+    depends_on:
+        - py-base
+    ports:
+        - "4300:6969"
+    env_file:
+        - rds-ng/deployment/env/dev.connector-osf.env
+    networks:
+      - nextcloud-local-network
 
   # Connector: Zenodo
   connector-zenodo:
-      image: rds-ng/connector-zenodo:develop
-      volumes:
-          -   type: bind
-              source: rds-ng/src
-              target: /component
-          -   type: bind
-              source: rds-ng/.data
-              target: /data
-      build:
-          context: rds-ng/
-          dockerfile: deployment/containers/backend-component/dev.Dockerfile
-          args:
-              COMPONENT_NAME: "connectors/zenodo"
-      depends_on:
-          - py-base
-      ports:
-          - "4400:6969"
-      env_file:
-          - rds-ng/deployment/env/dev.connector-zenodo.env
+    image: rds-ng/connector-zenodo:develop
+    volumes:
+        -   type: bind
+            source: rds-ng/src
+            target: /component
+        -   type: bind
+            source: rds-ng/.data
+            target: /data
+    build:
+        context: rds-ng/
+        dockerfile: deployment/containers/backend-component/dev.Dockerfile
+        args:
+            COMPONENT_NAME: "connectors/zenodo"
+    depends_on:
+        - py-base
+    ports:
+        - "4400:6969"
+    env_file:
+        - rds-ng/deployment/env/dev.connector-zenodo.env
+    networks:
+      - nextcloud-local-network
 
   # Connector: Stub
   connector-stub:
-      image: rds-ng/connector-stub:develop
-      volumes:
-          -   type: bind
-              source: rds-ng/src
-              target: /component
-          -   type: bind
-              source: rds-ng/.data
-              target: /data
-      build:
-          context: rds-ng/
-          dockerfile: deployment/containers/backend-component/dev.Dockerfile
-          args:
-              COMPONENT_NAME: "connectors/stub"
-      depends_on:
-          - py-base
-      ports:
-          - "4900:6969"
-      env_file:
-          - rds-ng/deployment/env/dev.connector-stub.env
+    image: rds-ng/connector-stub:develop
+    volumes:
+        -   type: bind
+            source: rds-ng/src
+            target: /component
+        -   type: bind
+            source: rds-ng/.data
+            target: /data
+    build:
+        context: rds-ng/
+        dockerfile: deployment/containers/backend-component/dev.Dockerfile
+        args:
+            COMPONENT_NAME: "connectors/stub"
+    depends_on:
+        - py-base
+    ports:
+        - "4900:6969"
+    env_file:
+        - rds-ng/deployment/env/dev.connector-stub.env
+    networks:
+      - nextcloud-local-network
 
   # Web frontend
   frontend:
-      image: rds-ng/frontend:develop
-      container_name: rds-frontend
-      volumes:
-          -   type: bind
-              source: rds-ng/src/frontend/src
-              target: /app/frontend/src
-          -   type: bind
-              source: rds-ng/src/common
-              target: /app/common
-          - /app/common/node_modules
-      build:
-          context: rds-ng/
-          dockerfile: deployment/containers/web-component/dev.Dockerfile
-          args:
-              COMPONENT_NAME: "frontend"
-      depends_on:
-          - node-base
-      ports:
-          - "8000:6969"
-      env_file:
-          - rds-ng/deployment/env/dev.frontend.env
+    image: rds-ng/frontend:develop
+    container_name: rds-frontend
+    volumes:
+        -   type: bind
+            source: rds-ng/src/frontend/src
+            target: /app/frontend/src
+        -   type: bind
+            source: rds-ng/src/common
+            target: /app/common
+        - /app/common/node_modules
+    build:
+        context: rds-ng/
+        dockerfile: deployment/containers/web-component/dev.Dockerfile
+        args:
+            COMPONENT_NAME: "frontend"
+    depends_on:
+        - node-base
+    ports:
+        - "8000:6969"
+    env_file:
+        - rds-ng/deployment/env/dev.frontend.env
+    networks:
+      - nextcloud-local-network
+
+networks:
+  nextcloud-local-network:
+    name: nextcloud-local-network
