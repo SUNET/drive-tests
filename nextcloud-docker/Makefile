@@ -56,6 +56,7 @@ export NEXTCLOUD_SELENIUM_MFA_PASSWORD_LOCALHOST_LOCALHOST=_selenium_localhost_m
 export NEXTCLOUD_SELENIUM_MFA_APP_PASSWORD_LOCALHOST_LOCALHOST=
 export NEXTCLOUD_SELENIUM_MFA_SECRET_LOCALHOST_LOCALHOST=
 LOCALIP = $(shell hostname -i | awk '{print $$1; exit}')
+NEXTCLOUD_VERSION = $(shell yq '.localhost.status.version' ../expected_localhost.yaml -r)
 
 all: docker
 release: docker
@@ -237,21 +238,21 @@ acceptancetest:
 	python test_status_cli.py; \
 	python test_ocs.py; \
 	python test_webdav.py
-	-firefox ../test-reports-html/nextcloud-acceptance.html
+	-firefox ../test-reports-html/nextcloud-${NEXTCLOUD_VERSION}-acceptance.html
 
 .PHONY: logintest
 logintest:
 	. ./.env; \
 	cd ..; \
 	python test_login_selenium.py
-	-firefox ../test-reports-html/nextcloud-selenium.html
+	-firefox ../test-reports-html/nextcloud-${NEXTCLOUD_VERSION}-selenium.html
 
 .PHONY: collaboratest
 collaboratest:
 	. ./.env; \
 	cd ..; \
 	python test_collabora_selenium.py
-	-firefox ../test-reports-html/nextcloud-collabora.html
+	-firefox ../test-reports-html/nextcloud-${NEXTCLOUD_VERSION}-collabora.html
 
 .PHONY: apppasswords
 apppasswords:
