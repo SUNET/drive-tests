@@ -303,4 +303,4 @@ if __name__ == '__main__':
     if drv.testrunner == 'xml':
         unittest.main(testRunner=xmlrunner.XMLTestRunner(output='test-reports'))
     else:
-        unittest.main(testRunner=HtmlTestRunner.HTMLTestRunner(output='test-reports-html', combine_reports=True, report_name=f"nextcloud-{drv.expectedResults[drv.target][status][version]}-acceptance", add_timestamp=False))
+        unittest.main(testRunner=HtmlTestRunner.HTMLTestRunner(output='test-reports-html', combine_reports=True, report_name=f"nextcloud-{drv.expectedResults[drv.target]['status']['version']}-acceptance", add_timestamp=False))
