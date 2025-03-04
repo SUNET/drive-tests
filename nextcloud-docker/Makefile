@@ -124,12 +124,12 @@ docker: selfsignedcert docker_kill jupyterhub
 	./occ_docker  app:enable deck
 	./occ_docker  app:disable firstrunwizard
 
-	wget https://github.com/SUNET/nextcloud-mfazones/releases/download/v0.2.1/mfazones-0.2.1.tar.gz
-	docker cp mfazones-0.2.1.tar.gz nextcloud-local:/var/www/html/custom_apps
-	docker exec -u www-data nextcloud-local /bin/bash -c "cd /var/www/html/custom_apps && tar -xzf mfazones-0.2.1.tar.gz && rm mfazones-0.2.1.tar.gz"
-	docker exec -u www-data nextcloud-local /bin/bash -c "sed -i -e 's/max-version=\"29\"/max-version=\"30\"/g' /var/www/html/custom_apps/mfazones/appinfo/info.xml"
+	wget https://github.com/SUNET/nextcloud-mfazones/releases/download/v0.2.3/mfazones-0.2.3.tar.gz
+	docker cp mfazones-0.2.3.tar.gz nextcloud-local:/var/www/html/custom_apps
+	docker exec -u www-data nextcloud-local /bin/bash -c "cd /var/www/html/custom_apps && tar -xzf mfazones-0.2.3.tar.gz && rm mfazones-0.2.3.tar.gz"
+	docker exec -u www-data nextcloud-local /bin/bash -c "sed -i -e 's/max-version=\"29\"/max-version=\"31\"/g' /var/www/html/custom_apps/mfazones/appinfo/info.xml"
 	docker exec nextcloud-local /bin/bash -c "chown -R www-data:www-data /var/www/html/custom_apps/mfazones"
-	rm mfazones-0.2.1.tar.gz
+	rm mfazones-0.2.3.tar.gz
 	./occ_docker app:enable mfazones
 	# ./occ_docker app:update --all
 
