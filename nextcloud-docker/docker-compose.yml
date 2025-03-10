@@ -1,6 +1,8 @@
 volumes:
   nextcloud:
+  nextcloud2:
   db:
+  db2:
   data1-1:
   data1-2:
   data2-1:
@@ -28,95 +30,31 @@ x-minio-common: &minio-common
 
 services:
 
-  nextcloud-https-portal:
-    container_name: nextcloud-local-nextcloud-https-portal
-    image: steveltn/https-portal:1
-    ports:
-      - '9083:80'
-      - '9443:443'
-    links:
-      - nextcloud-app
-    restart: always
-    environment:
-      STAGE: local
-      DOMAINS: 'localhost -> http://nextcloud-app:80'
-    networks:
-      - nextcloud-local-network
+  haproxy-alpine:
+      container_name: haproxy
+      networks:
+          - sciencemesh-federation
+      volumes:
+          - ./haproxy:/usr/local/etc/haproxy:ro
+      ports:
+          - 80:80
+          - 8404:8404
+      image: haproxytech/haproxy-alpine:2.4
 
-  jupyter-https-portal:
-    container_name: nextcloud-local-jupyterhub-https-portal
-    image: steveltn/https-portal:1
-    ports:
-      - '9084:80'
-      - '9444:443'
-    links:
-      - jupyterhub
+  nextcloud-app1:
+    container_name: nextcloud-local1
+    image: nextcloud:30
     restart: always
-    environment:
-      STAGE: local
-      DOMAINS: 'localhost -> http://jupyterhub:8000'
-    networks:
-      - nextcloud-local-network
-
-  rds-https-portal:
-    container_name: nextcloud-local-rds-https-portal
-    image: steveltn/https-portal:1
-    ports:
-      - '9085:80'
-      - '9445:443'
-    links:
-      - frontend
-    restart: always
-    environment:
-      STAGE: local
-      DOMAINS: 'localhost -> http://frontend:6969'
-    networks:
-      - nextcloud-local-network
-
-  oauth-https-portal:
-    container_name: nextcloud-local-oauth-https-portal
-    image: steveltn/https-portal:1
-    ports:
-      - '9086:80'
-      - '9446:443'
-    links:
-      - mock-oauth2-server
-    restart: always
-    environment:
-      STAGE: local
-      DOMAINS: 'localhost -> http://mock-oauth2-server:8880'
-    networks:
-      - nextcloud-local-network
-
-  collabora-https-portal:
-    container_name: nextcloud-local-collabora-https-portal
-    image: steveltn/https-portal:1
-    ports:
-      - '9087:80'
-      - '9447:443'
-    links:
-      - nextcloud-app
-    restart: always
-    environment:
-      STAGE: local
-      DOMAINS: 'localhost -> http://collabora-server:9980'
-    networks:
-      - nextcloud-local-network
-
-  nextcloud-app:
-    container_name: nextcloud-local
-    image: nextcloud:latest
-    restart: always
-    expose:
-      - 8080:80
-      - "8080"
-      - "8443"
+    # expose:
+    #   - 8080:80
+    #   - "8080"
+    #   - "8443"
     ports:
       - 8443:8443
       - 8080:80
       - 80:80
     links:
-      - db
+      - db1
       - collabora-server
     volumes:
       - nextcloud:/var/www/html
@@ -136,10 +74,45 @@ services:
       - MYSQL_USER=nextcloud
       - MYSQL_HOST=db
     networks:
-      - nextcloud-local-network
+      - sciencemesh-federation
 
-  db:
-    container_name: nextcloud-local-db
+  nextcloud-app2:
+    container_name: nextcloud-local2
+    image: nextcloud:30
+    restart: always
+    # expose:
+    #   - 8080:80
+    #   - "8080"
+    #   - "8443"
+    ports:
+      - 7443:8443
+      - 7080:80
+      # - 80:80
+    links:
+      - db2
+      - collabora-server
+    volumes:
+      - nextcloud2:/var/www/html
+
+      - type: bind
+        source: /tmp/nextcloud-ssl.conf
+        target: /etc/apache2/mods-enabled/nextcloud.conf
+      - type: bind
+        source: /tmp/nextcloud-8443.conf
+        target: /etc/apache2/sites-enabled/nextcloud.conf
+      - type: bind
+        source: /tmp/localhost.pem
+        target: /etc/ssl/private/localhost.pem
+    environment:
+      - MYSQL_PASSWORD=userpass
+      - MYSQL_DATABASE=nextcloud
+      - MYSQL_USER=nextcloud
+      - MYSQL_HOST=db
+    networks:
+      - sciencemesh-federation
+
+  db1:
+    container_name: nextcloud-local-db1
     image: mariadb:latest
     restart: always
     command: --transaction-isolation=READ-COMMITTED --log-bin=binlog --binlog-format=ROW
@@ -151,14 +124,29 @@ services:
       - MYSQL_DATABASE=nextcloud
       - MYSQL_USER=nextcloud
     networks:
-      - nextcloud-local-network
+      - sciencemesh-federation
+
+  db2:
+    container_name: nextcloud-local-db2
+    image: mariadb:latest
+    restart: always
+    command: --transaction-isolation=READ-COMMITTED --log-bin=binlog --binlog-format=ROW
+    volumes:
+      - db2:/var/lib/mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD=rootpass
+      - MYSQL_PASSWORD=userpass
+      - MYSQL_DATABASE=nextcloud
+      - MYSQL_USER=nextcloud
+    networks:
+      - sciencemesh-federation
 
   collabora-server:
     image: collabora/code:latest
     container_name: collabora-server
     restart: always
-    expose:
-      - "9980"
+    # expose:
+    #   - "9980"
     ports:
       - 9980:9980
     environment:
@@ -174,7 +162,7 @@ services:
       - username=admin
       - password=adminpassword
     networks:
-      - nextcloud-local-network
+      - sciencemesh-federation
 
   whiteboard-server:
     container_name: nextcloud-local-whiteboard
@@ -185,7 +173,7 @@ services:
       - NEXTCLOUD_URL=https://localhost
       - JWT_SECRET_KEY=some-random-key
     networks:
-      - nextcloud-local-network
+      - sciencemesh-federation
 
   jupyterhub:
     container_name: nextcloud-local-jupyterhub
@@ -218,7 +206,7 @@ services:
     volumes:
         - /var/run/docker.sock:/var/run/docker.sock
     networks:
-      - nextcloud-local-network
+      - sciencemesh-federation
 
   mock-oauth2-server:
     container_name: nextcloud-local-mock-oauth
@@ -230,7 +218,7 @@ services:
     environment:
       - SERVER_PORT=8880
     networks:
-      - nextcloud-local-network
+      - sciencemesh-federation
 
   minio1:
     <<: *minio-common
@@ -240,7 +228,7 @@ services:
       - data1-1:/data1
       - data1-2:/data2
     networks:
-      - nextcloud-local-network
+      - sciencemesh-federation
 
   minio2:
     <<: *minio-common
@@ -250,7 +238,7 @@ services:
       - data2-1:/data1
       - data2-2:/data2
     networks:
-      - nextcloud-local-network
+      - sciencemesh-federation
 
   minio3:
     <<: *minio-common
@@ -260,7 +248,7 @@ services:
       - data3-1:/data1
       - data3-2:/data2
     networks:
-      - nextcloud-local-network
+      - sciencemesh-federation
 
   minio4:
     <<: *minio-common
@@ -270,7 +258,7 @@ services:
       - data4-1:/data1
       - data4-2:/data2
     networks:
-      - nextcloud-local-network
+      - sciencemesh-federation
 
   nginx:
     container_name: nextcloud-local-minio
@@ -287,7 +275,7 @@ services:
       - minio3
       - minio4
     networks:
-      - nextcloud-local-network
+      - sciencemesh-federation
 
 ### RDS NG ###
   # -- Base images --
@@ -301,7 +289,7 @@ services:
         mode: replicated
         replicas: 0
     networks:
-      - nextcloud-local-network
+      - sciencemesh-federation
 
   # Build-only Node base image
   node-base:
@@ -313,11 +301,12 @@ services:
         mode: replicated
         replicas: 0
     networks:
-      - nextcloud-local-network
+      - sciencemesh-federation
 
   # -- Component images --
   # Server service
   server:
+    container_name: rds-local
     image: rds-ng/server:develop
     volumes:
         -   type: bind
@@ -338,7 +327,7 @@ services:
     env_file:
         - rds-ng/deployment/env/dev.server.env
     networks:
-      - nextcloud-local-network
+      - sciencemesh-federation
 
   # Connector: OSF
   connector-osf:
@@ -362,7 +351,7 @@ services:
     env_file:
         - rds-ng/deployment/env/dev.connector-osf.env
     networks:
-      - nextcloud-local-network
+      - sciencemesh-federation
 
   # Connector: Zenodo
   connector-zenodo:
@@ -386,7 +375,7 @@ services:
     env_file:
         - rds-ng/deployment/env/dev.connector-zenodo.env
     networks:
-      - nextcloud-local-network
+      - sciencemesh-federation
 
   # Connector: Stub
   connector-stub:
@@ -410,7 +399,7 @@ services:
     env_file:
         - rds-ng/deployment/env/dev.connector-stub.env
     networks:
-      - nextcloud-local-network
+      - sciencemesh-federation
 
   # Web frontend
   frontend:
@@ -436,8 +425,9 @@ services:
     env_file:
         - rds-ng/deployment/env/dev.frontend.env
     networks:
-      - nextcloud-local-network
+      - sciencemesh-federation
 
 networks:
-  nextcloud-local-network:
-    name: nextcloud-local-network
+  sciencemesh-federation:
+    external: true
+    name: sciencemesh-federation
