@@ -89,6 +89,8 @@ class TestWebDavPerformance(unittest.TestCase):
 
     def test_basic_performance(self):
         global logger, g_testThreadsRunning, g_davPerformanceResults
+        g_davPerformanceResults.clear()
+
         numFiles = 100
         maxUploads = 2
         maxDeletes = 4
@@ -208,6 +210,7 @@ class TestWebDavPerformance(unittest.TestCase):
         header = f'{"Size" : <16}'
         for size in fileSizes:
             header += f'{size : <10}'
+        g_davPerformanceResults.clear()
         g_davPerformanceResults.append(header)
 
 
