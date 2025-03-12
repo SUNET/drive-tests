@@ -204,7 +204,7 @@ class TestWebDavPerformance(unittest.TestCase):
         maxUploads = 1
         maxDeletes = 1
         # fileSizes=[1,10,100,1024,10240,102400,1024000,10240000,102400000,204800000,409600000]
-        # fileSizes=[1024,2048,4096]
+        # fileSizes=[10240,20480,40960]
         fileSizes=[102400000,204800000,409600000]
 
         header = f'{"Size" : <16}'
@@ -219,6 +219,19 @@ class TestWebDavPerformance(unittest.TestCase):
         drv = sunetnextcloud.TestTarget()
         for fullnode in drv.fullnodes:
             with self.subTest(mynode=fullnode):
+                logger.info(f'Generate local files')
+                files = []
+                for i in range(0,numFiles):
+                    for fileSize in fileSizes:
+                        filename = f'{fullnode}{str(i)}_{str(fileSize)}.bin'
+                        pathname = f'{tempfile.gettempdir()}/{filename}'
+                        fileSizeInBytes = fileSize
+                        with open(pathname, 'wb') as fout:
+                            fout.write(os.urandom(fileSizeInBytes))
+                        files.append(filename)
+
+                logger.info(f'Generated files: {files}')
+
                 for fe in range(1,4):
                     nodebaseurl = drv.get_node_base_url(fullnode)
                     serverid = f'node{fe}.{nodebaseurl}'
@@ -243,34 +256,36 @@ class TestWebDavPerformance(unittest.TestCase):
                     targetDir='selenium-system/TestWebDavPerformance_file_sizes'
                     client.mkdir(targetDir)
 
-                    for fileSize in fileSizes:
-
-                        logger.info(f'Generate local files')
-                        files = []
-                        for i in range(0,numFiles):
-                            filename = f'{fullnode}{str(i)}_{str(fileSize)}.bin'
-                            pathname = f'{tempfile.gettempdir()}/{filename}'
-                            fileSizeInBytes = fileSize
-                            with open(pathname, 'wb') as fout:
-                                fout.write(os.urandom(fileSizeInBytes))
-                            files.append(filename)
-
+                    for file in files:
                         startTime = datetime.now()
-                        logger.info(f'Async upload of {maxUploads} files concurrently')
+                        logger.info(f'Async upload of {file} to node{fe}')
                         try:
-                            for i in range(0,numFiles,maxUploads):
-                                x = i
-                                logger.info(f'Batch upload node{fe} {files[x:x+maxUploads]} to {targetDir}')
-                                for file in files[x:x+maxUploads]:
-                                    try:
-                                        g_testThreadsRunning += 1
-                                        client.upload_async(remote_path=f'{targetDir}/{file}',local_path=f'{tempfile.gettempdir()}/{file}', callback=decreaseUploadCount)
-                                        # client.upload_sync(remote_path=f'{targetDir}/{file}',local_path=f'{tempfile.gettempdir()}/{file}', callback=decreaseUploadCount)
-                                    except WebDavException as exception:
-                                        logger.error(f'Error uploading {filename}: {exception}')
-                                        g_testThreadsRunning -= 1
-                                while g_testThreadsRunning > 0:
-                                    time.sleep(0.01)
+                            try:
+                                g_testThreadsRunning += 1
+                                client.upload_async(remote_path=f'{targetDir}/{file}',local_path=f'{tempfile.gettempdir()}/{file}', callback=decreaseUploadCount)
+                                # client.upload_sync(remote_path=f'{targetDir}/{file}',local_path=f'{tempfile.gettempdir()}/{file}', callback=decreaseUploadCount)
+                            except WebDavException as exception:
+                                logger.error(f'Error uploading {filename}: {exception}')
+                                g_testThreadsRunning -= 1
+                            while g_testThreadsRunning > 0:
+                                time.sleep(0.01)                            
+
+
+
+                            # for i in range(0,numFiles,maxUploads):
+                            #     x = i
+                            #     logger.info(f'Batch upload node{fe} {files[x:x+maxUploads]} to {targetDir}')
+                            #     for file in files[x:x+maxUploads]:
+                            #         try:
+                            #             g_testThreadsRunning += 1
+                            #             client.upload_async(remote_path=f'{targetDir}/{file}',local_path=f'{tempfile.gettempdir()}/{file}', callback=decreaseUploadCount)
+                            #             # client.upload_sync(remote_path=f'{targetDir}/{file}',local_path=f'{tempfile.gettempdir()}/{file}', callback=decreaseUploadCount)
+                            #         except WebDavException as exception:
+                            #             logger.error(f'Error uploading {filename}: {exception}')
+                            #             g_testThreadsRunning -= 1
+                            #     while g_testThreadsRunning > 0:
+                            #         time.sleep(0.01)
+
                             endTime = datetime.now()
                         except Exception as error:
                             logger.error(f'Error during async upload: {error}')
@@ -278,14 +293,7 @@ class TestWebDavPerformance(unittest.TestCase):
                         # Calculate time to upload
                         uploadTime = (endTime - startTime).total_seconds()
 
-                        # Remove the temporary files
-                        try:
-                            logger.info(f'Remove temporary files')
-                            for i in range(0,numFiles):
-                                filename = f'{tempfile.gettempdir()}/{fullnode}{str(i)}_{str(fileSize)}.bin'
-                                os.remove(filename)
-                        except Exception as error:
-                            logger.error(f'Error deleting local file: {error}')
+
 
                         davElements = client.list(targetDir)
                         logger.info(f'{davElements}')
@@ -323,6 +331,15 @@ class TestWebDavPerformance(unittest.TestCase):
                         # logger.info(f'{message}')
 
                     g_davPerformanceResults.append(result)
+
+                # Remove the temporary files
+                try:
+                    logger.info(f'Remove temporary files')
+                    for i in range(0,numFiles):
+                        filename = f'{tempfile.gettempdir()}/{fullnode}{str(i)}_{str(fileSize)}.bin'
+                        os.remove(filename)
+                except Exception as error:
+                    logger.error(f'Error deleting local file: {error}')
 
         logger.info(f'Results for {numFiles} with max {maxUploads} concurrent uploads and max {maxDeletes} concurrent deletes')
         for message in g_davPerformanceResults:
