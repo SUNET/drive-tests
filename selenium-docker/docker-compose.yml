@@ -1,0 +1,37 @@
+name: selenium-docker
+services:
+    hub:
+        ports:
+            - 4444:4444
+        container_name: selenium-hub
+        image: selenium/hub
+
+    node-chrome:
+        links:
+            - hub
+        image: selenium/node-chrome
+        environment:
+          - SE_EVENT_BUS_HOST=hub
+          - SE_EVENT_BUS_PUBLISH_PORT=4442
+          - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
+          - SE_NODE_GRID_URL=http://localhost:4444
+
+    node-firefox:
+        links:
+            - hub
+        image: selenium/node-firefox
+        environment:
+          - SE_EVENT_BUS_HOST=hub
+          - SE_EVENT_BUS_PUBLISH_PORT=4442
+          - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
+          - SE_NODE_GRID_URL=http://localhost:4444
+
+    node-edge:
+        links:
+            - hub
+        image: selenium/node-edge
+        environment:
+          - SE_EVENT_BUS_HOST=hub
+          - SE_EVENT_BUS_PUBLISH_PORT=4442
+          - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
+          - SE_NODE_GRID_URL=http://localhost:4444
