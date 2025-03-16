@@ -18,8 +18,10 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
 from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.common.action_chains import ActionChains
-from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.chrome.options import Options as ChromeOptions
 from selenium.webdriver import FirefoxOptions
+from selenium.webdriver.edge.options import Options as EdgeOptions
+from selenium.webdriver.safari.options import Options as SafariOptions
 import os
 import yaml
 import time
@@ -97,7 +99,7 @@ class TestLoginSelenium(unittest.TestCase):
 
                         try:
                             if browser == 'chrome':
-                                options = Options()
+                                options = ChromeOptions()
                                 options.add_argument("--no-sandbox")
                                 options.add_argument("--disable-dev-shm-usage")
                                 options.add_argument("--disable-gpu")
@@ -117,6 +119,16 @@ class TestLoginSelenium(unittest.TestCase):
                                     self.logger.info(f'Initialize Firefox driver using snap geckodriver and driver service')
                                     driver_service = webdriver.FirefoxService(executable_path=geckodriver_path)
                                     driver = webdriver.Firefox(service=driver_service, options=options)
+                            elif browser == 'firefox_grid':
+                                    self.logger.info(f'Initialize Safari driver using firefox grid')
+                                    options = SafariOptions()
+                                    # options.add_argument("--no-sandbox")
+                                    # options.add_argument("--disable-dev-shm-usage")
+                                    # options.add_argument("--disable-gpu")
+                                    # options.add_argument("--disable-extensions")
+                                    if drv.verify == False:
+                                        options.add_argument("--ignore-certificate-errors")
+                                    driver = webdriver.Remote(command_executor='http://127.0.0.1:4444/wd/hub', options=options)
                             else:
                                 self.logger.error(f'Unknown browser {browser}')
                                 self.assertTrue(False)
@@ -185,7 +197,7 @@ class TestLoginSelenium(unittest.TestCase):
         samlpassword=drv.get_samluserpassword("eduidtest")
         
         try:
-            options = Options()
+            options = ChromeOptions()
             driver = webdriver.Chrome(options=options)
         except Exception as e:
             self.logger.error(f'Error initializing driver: {e}')
@@ -261,7 +273,7 @@ class TestLoginSelenium(unittest.TestCase):
 
             try:
                 if browser == 'chrome':
-                    options = Options()
+                    options = ChromeOptions()
                     options.add_argument("--no-sandbox")
                     options.add_argument("--disable-dev-shm-usage")
                     options.add_argument("--disable-gpu")
