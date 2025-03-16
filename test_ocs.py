@@ -96,7 +96,14 @@ class AppVersions(threading.Thread):
             nodeuser = drv.get_ocsuser(fullnode)
             nodepwd = drv.get_ocsuserpassword(fullnode)
 
-            r=session.get(url, headers=ocsheaders)
+            try:
+                r=session.get(url, headers=ocsheaders, verify=self.verify)
+            except Exception as error:
+                logger.error(f'Error getting {url}:{error}')
+                g_testPassed[fullnode] = False
+                g_testThreadsRunning -= 1
+                return
+
             try:
                 j = json.loads(r.text)
                 # print(json.dumps(j, indent=4, sort_keys=True))
