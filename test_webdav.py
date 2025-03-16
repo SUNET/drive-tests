@@ -510,7 +510,15 @@ class WebDAVCreateMoveDelete(threading.Thread):
 
         filename = fullnode + '_' + g_filename + '.txt'
         mvfilename = 'mv_' + filename
-        tmpfilename = tempfile.gettempdir() + '/' + fullnode + '_' + g_filename + '.txt'
+
+        try:
+            tmpfilename = tempfile.gettempdir() + '/' + fullnode + '_' + g_filename + '.txt'
+        except Exception as error:
+            logger.error(f'Getting temp dir for {fullnode}: {error}')
+            g_testPassed[fullnode] = False
+            g_testThreadsRunning -= 1
+            return
+        
         with open(tmpfilename, 'w') as f:
             f.write('Lorem ipsum')
             f.close()
