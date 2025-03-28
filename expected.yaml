@@ -32,6 +32,7 @@ prod:
   cert_md5: '702b0112df7e6e4b2ca2af3280841196'
   ocsapps: 
     default: 72
+    sunet: 73
   collabora:
     nodes: 3
     status: 'OK'
