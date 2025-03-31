@@ -31,8 +31,8 @@ prod:
     ocs_data_capabilities_globalscale_enabled: true
   cert_md5: '702b0112df7e6e4b2ca2af3280841196'
   ocsapps: 
-    default: 72
-    sunet: 73
+    default: 73
+    known_apps: ['nextcloud_announcements', 'twofactor_totp', 'related_resources', 'systemtags', 'security_guard', 'user_ldap', 'support', 'files_versions', 'text', 'files_sharing', 'files_external', 'notifications', 'files_reminders', 'weather_status', 'photos', 'encryption', 'files_downloadlimit', 'twofactor_nextcloud_notification', 'privacy', 'app_api', 'webhook_listeners', 'files_trashbin', 'globalsiteselector', 'federation', 'bruteforcesettings', 'user_status', 'logreader', 'admin_audit', 'files_confidential', 'comments', 'recommendations', 'updatenotification', 'serverinfo', 'firstrunwizard', 'files_lock', 'sharebymail', 'circles', 'activity', 'files_pdfviewer', 'dashboard', 'contactsinteraction', 'user_saml', 'password_policy', 'survey_client', 'suspicious_login', 'files_accesscontrol', 'richdocuments', 'checksum', 'deck', 'dicomviewer', 'calendar', 'announcementcenter', 'collectives', 'contacts', 'tasks', 'twofactor_admin', 'twofactor_webauthn', 'polls', 'edusign', 'files_automatedtagging', 'rds', 'forms', 'mfazones', 'mail', 'sciencemesh', 'stepupauth', 'drive_email_template', 'assistant', 'theming_customcss', 'login_notes', 'integration_openai', 'integration_jupyterhub']
   collabora:
     nodes: 3
     status: 'OK'
@@ -67,7 +67,8 @@ test:
     ocs_data_capabilities_globalscale_enabled: true
   cert_md5: '9dc0f8318dcda31e78308705449f1e2a'
   ocsapps:
-    default: 72
+    default: 73
+    known_apps: ['nextcloud_announcements', 'twofactor_totp', 'related_resources', 'systemtags', 'security_guard', 'user_ldap', 'support', 'files_versions', 'text', 'files_sharing', 'files_external', 'notifications', 'files_reminders', 'weather_status', 'photos', 'encryption', 'files_downloadlimit', 'twofactor_nextcloud_notification', 'privacy', 'app_api', 'webhook_listeners', 'files_trashbin', 'globalsiteselector', 'federation', 'bruteforcesettings', 'user_status', 'logreader', 'admin_audit', 'files_confidential', 'comments', 'recommendations', 'updatenotification', 'serverinfo', 'firstrunwizard', 'files_lock', 'sharebymail', 'circles', 'activity', 'files_pdfviewer', 'dashboard', 'contactsinteraction', 'user_saml', 'password_policy', 'survey_client', 'suspicious_login', 'files_accesscontrol', 'richdocuments', 'checksum', 'deck', 'dicomviewer', 'calendar', 'announcementcenter', 'collectives', 'contacts', 'tasks', 'twofactor_admin', 'twofactor_webauthn', 'polls', 'edusign', 'files_automatedtagging', 'rds', 'forms', 'mfazones', 'mail', 'sciencemesh', 'stepupauth', 'drive_email_template', 'assistant', 'theming_customcss', 'login_notes', 'integration_openai', 'integration_jupyterhub']
   collabora:
     nodes: 3
     status: 'OK'

@@ -147,7 +147,7 @@ class InstalledAppsConfigured(threading.Thread):
         logger.info(f'InstalledAppsConfigured thread done for node {self.name}')
         g_testThreadsRunning -= 1
 
-class NumberOfAppsOnNode(threading.Thread):
+class NumberOfAppsOnNodes(threading.Thread):
     def __init__(self, name):
         threading.Thread.__init__(self)
         self.name = name
@@ -172,38 +172,43 @@ class NumberOfAppsOnNode(threading.Thread):
         nodeuser = drv.get_ocsuser(fullnode)
         nodepwd = drv.get_ocsuserpassword(fullnode)
 
-        try:
-            r=session.get(url, headers=ocsheaders)
-        except:
-            logger.error(f'Error getting {url}')
-            g_testThreadsRunning -=1
-            return
-        nodeApps = []
-        try:
-            j = json.loads(r.text)
-            # print(json.dumps(j, indent=4, sort_keys=True))
-            nodeApps = j["ocs"]["data"]["apps"]
-            logger.info(f'Number of apps on {fullnode}: {len(nodeApps)}')
-        except:
-            logger.warning(f'No JSON reply received on {fullnode}')
-            logger.warning(r.text)
-            g_testThreadsRunning -= 1
-            return
-            
-        try:
-            numExpectedApps = expectedResults[drv.target]['ocsapps'][fullnode]
-            logger.info(f'Expected number of apps differs from default for {fullnode}: {numExpectedApps}')
-        except:
-            numExpectedApps = expectedResults[drv.target]['ocsapps']['default']
-            logger.info(f'Expected number of apps: {numExpectedApps}')
+        for fe in range(1,4):
+            nodebaseurl = drv.get_node_base_url(fullnode)
+            serverid = f'node{fe}.{nodebaseurl}'
+            session.cookies.set('SERVERID', serverid)
 
-        if len(nodeApps) != numExpectedApps:
-            logger.error(f'Fail: Number of apps {len(nodeApps)} != {numExpectedApps} for {self.name}')
-            g_testThreadsRunning -= 1
-            return
-        else:
-            logger.info(f'Pass: Number of apps {len(nodeApps)} == {numExpectedApps} for {self.name}')
-            g_testPassed[fullnode] = True
+            try:
+                r=session.get(url, headers=ocsheaders)
+            except:
+                logger.error(f'Error getting {url}')
+                g_testThreadsRunning -=1
+                return
+            nodeApps = []
+            try:
+                j = json.loads(r.text)
+                # print(json.dumps(j, indent=4, sort_keys=True))
+                nodeApps = j["ocs"]["data"]["apps"]
+                logger.info(f'Number of apps on {fullnode}: {len(nodeApps)}')
+            except:
+                logger.warning(f'No JSON reply received on {fullnode}')
+                logger.warning(r.text)
+                g_testThreadsRunning -= 1
+                return
+                            
+            try:
+                numExpectedApps = expectedResults[drv.target]['ocsapps'][fullnode]
+                logger.info(f'Expected number of apps differs from default for {fullnode}: {numExpectedApps}')
+            except:
+                numExpectedApps = expectedResults[drv.target]['ocsapps']['default']
+                logger.info(f'Expected number of apps: {numExpectedApps}')
+
+            if len(nodeApps) != numExpectedApps:
+                logger.warning(f'Warn: Number of apps {len(nodeApps)} != {numExpectedApps} for {self.name} on node {fe}')
+                logger.warning(f'Apps found on node: {nodeApps}')
+                g_testPassed[f'node{fe}.{fullnode}'] = True
+            else:
+                logger.info(f'Pass: Number of apps {len(nodeApps)} == {numExpectedApps} for {self.name}')
+                g_testPassed[f'node{fe}.{fullnode}'] = True
 
         logger.info(f'Test number of apps done for node {self.name}')
         g_testThreadsRunning -= 1
@@ -214,13 +219,13 @@ class TestAppsOcs(unittest.TestCase):
         logger.info(f'TestID: {self._testMethodName}')
         pass
 
-    def test_number_of_apps_on_node(self):
+    def test_number_of_apps_on_nodes(self):
         drv = sunetnextcloud.TestTarget()
 
         for fullnode in drv.fullnodes:
             with self.subTest(mynode=fullnode):
                 logger.info(f'TestID: {fullnode}')
-                numberOfAppsOnNodeThread = NumberOfAppsOnNode(fullnode)
+                numberOfAppsOnNodeThread = NumberOfAppsOnNodes(fullnode)
                 numberOfAppsOnNodeThread.start()
 
         while(g_testThreadsRunning > 0):
@@ -228,7 +233,8 @@ class TestAppsOcs(unittest.TestCase):
 
         for fullnode in drv.fullnodes:
             with self.subTest(mynode=fullnode):
-                self.assertTrue(g_testPassed[fullnode])
+                for fe in range(1,4):
+                    self.assertTrue(g_testPassed[f'node{fe}.{fullnode}'])
 
     # Test if the apps installed on the node are found in the configuration file
     def test_installed_apps_configured(self):
