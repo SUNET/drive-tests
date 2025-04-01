@@ -91,7 +91,7 @@ class TestLoginMultiSelenium(unittest.TestCase):
                     self.logger.error(f'Error initializing Chrome driver')
                     self.assertTrue(False)
                 wait = WebDriverWait(driver, delay)
-                driver.maximize_window()
+                driver.set_window_size(1920, 1152)
 
                 sel = sunetnextcloud.SeleniumHelper(driver, fullnode)
                 sel.delete_cookies()

@@ -62,7 +62,7 @@ def nodelogin(nextcloudnode):
     g_isLoggedIn = True
     g_loggedInNodes[nextcloudnode] = True
 
-    g_driver.maximize_window()
+    g_driver.set_window_size(1920, 1152)
     actions = ActionChains(g_driver)
     # driver2 = webdriver.Firefox()
     g_driver.get(loginurl)
