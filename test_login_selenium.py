@@ -135,7 +135,10 @@ class TestLoginSelenium(unittest.TestCase):
                         except Exception as e:
                             self.logger.error(f'Error initializing driver for {browser}: {e}')
                             self.assertTrue(False)
-                        driver.maximize_window()
+                        if browser == 'chrome':
+                            driver.set_window_size(1920, 1152)
+                        else:
+                            driver.maximize_window()        
                         # driver2 = webdriver.Firefox()
 
                         sel = sunetnextcloud.SeleniumHelper(driver, fullnode)
@@ -204,7 +207,7 @@ class TestLoginSelenium(unittest.TestCase):
             self.assertTrue(False)
         # driver2 = webdriver.Firefox()
         self.deleteCookies(driver)
-        driver.maximize_window()        
+        driver.set_window_size(1920, 1152)
         driver.get(loginurl)
 
         wait = WebDriverWait(driver, delay)
@@ -297,7 +300,10 @@ class TestLoginSelenium(unittest.TestCase):
                 self.assertTrue(False)
 
             self.deleteCookies(driver)
-            driver.maximize_window()        
+            if browser == 'chrome':
+                driver.set_window_size(1920, 1152)
+            else:
+                driver.maximize_window()        
             driver.get(loginurl)
 
             wait = WebDriverWait(driver, delay)
