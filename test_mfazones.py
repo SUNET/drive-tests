@@ -168,7 +168,7 @@ def nodelogin(nextcloudnode,user='selenium'):
     g_isLoggedIn = True
     g_loggedInNodes[nextcloudnode] = True
 
-    g_driver.maximize_window()
+    g_driver.set_window_size(1920, 1152)
     # actions = ActionChains(g_driver)
     # driver2 = webdriver.Firefox()
     g_driver.get(loginurl)
@@ -417,7 +417,7 @@ class TestMfaZonesSelenium(unittest.TestCase):
 
                 # List mfa folder, which should result in a 403 exception
                 try:
-                    client.list(mfaFolder)
+                    self.logger.info(f'{client.list(mfaFolder)}')
                     self.logger.error(f'Folder {mfaFolder} on node {fullnode} should not be listed')
                     self.assertTrue(False)
                 except Exception as e:
