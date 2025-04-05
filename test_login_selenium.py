@@ -199,13 +199,64 @@ class TestLoginSelenium(unittest.TestCase):
         self.logger.info(f'Username: {samluser}')
         samlpassword=drv.get_samluserpassword("eduidtest")
         
+        # try:
+        #     options = ChromeOptions()
+        #     options.add_argument("--no-sandbox")
+        #     options.add_argument("--disable-dev-shm-usage")
+        #     options.add_argument("--disable-gpu")
+        #     options.add_argument("--disable-extensions")
+        #     driver = webdriver.Chrome(options=options)
+        # except Exception as e:
+        #     self.logger.error(f'Error initializing driver: {e}')
+        #     self.assertTrue(False)
+        # # driver2 = webdriver.Firefox()
+
+        browser = 'firefox'
         try:
-            options = ChromeOptions()
-            driver = webdriver.Chrome(options=options)
+            if browser == 'chrome':
+                options = ChromeOptions()
+                options.add_argument("--no-sandbox")
+                options.add_argument("--disable-dev-shm-usage")
+                options.add_argument("--disable-gpu")
+                options.add_argument("--disable-extensions")
+                if drv.verify == False:
+                    options.add_argument("--ignore-certificate-errors")
+                driver = webdriver.Chrome(options=options)
+            elif browser == 'firefox':
+                if use_driver_service == False:
+                    self.logger.info(f'Initialize Firefox driver without driver service')
+                    options = FirefoxOptions()
+                    if drv.verify == False:
+                        options.add_argument("--ignore-certificate-errors")
+                    # options.add_argument("--headless")
+                    driver = webdriver.Firefox(options=options)
+                else:
+                    self.logger.info(f'Initialize Firefox driver using snap geckodriver and driver service')
+                    driver_service = webdriver.FirefoxService(executable_path=geckodriver_path)
+                    driver = webdriver.Firefox(service=driver_service, options=options)
+            elif browser == 'firefox_grid':
+                    self.logger.info(f'Initialize Safari driver using firefox grid')
+                    options = SafariOptions()
+                    # options.add_argument("--no-sandbox")
+                    # options.add_argument("--disable-dev-shm-usage")
+                    # options.add_argument("--disable-gpu")
+                    # options.add_argument("--disable-extensions")
+                    if drv.verify == False:
+                        options.add_argument("--ignore-certificate-errors")
+                    driver = webdriver.Remote(command_executor='http://127.0.0.1:4444/wd/hub', options=options)
+            else:
+                self.logger.error(f'Unknown browser {browser}')
+                self.assertTrue(False)
         except Exception as e:
-            self.logger.error(f'Error initializing driver: {e}')
+            self.logger.error(f'Error initializing driver for {browser}: {e}')
             self.assertTrue(False)
-        # driver2 = webdriver.Firefox()
+        if browser == 'chrome':
+            driver.set_window_size(1920, 1152)
+        else:
+            driver.maximize_window()        
+
+
+
         self.deleteCookies(driver)
         driver.set_window_size(1920, 1152)
         driver.get(loginurl)
@@ -228,9 +279,14 @@ class TestLoginSelenium(unittest.TestCase):
 
         wait.until(EC.element_to_be_clickable((By.ID, 'username'))).send_keys(samluser)
         self.logger.info(f'Email entered')
-        wait.until(EC.element_to_be_clickable((By.ID, 'currentPassword'))).send_keys(samlpassword + Keys.ENTER)
+        wait.until(EC.element_to_be_clickable((By.ID, 'currentPassword'))).send_keys(samlpassword)
+        # Three tabs and enter to log in
+        wait.until(EC.element_to_be_clickable((By.ID, 'currentPassword'))).send_keys(Keys.TAB + Keys.TAB + Keys.TAB + Keys.ENTER)
         self.logger.info(f'Password entered, proceeding')
-        # wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'login-form-button'))).click()
+
+        # if browser == 'firefox':
+        #     self.logger.info(f'Wait for login button and click it')
+        #     wait.until(EC.element_to_be_clickable((By.CLASS_NAME, 'login-form-button'))).click()
 
         try:
             wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'app-menu')))
