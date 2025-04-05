@@ -89,7 +89,7 @@ class TestLoginSeleniumTotp(unittest.TestCase):
                 except:
                     self.logger.error(f'Error initializing Chrome driver')
                     self.assertTrue(False)
-                driver.maximize_window()
+                driver.set_window_size(1920, 1152)
 
                 sel = sunetnextcloud.SeleniumHelper(driver, fullnode)
                 sel.delete_cookies()
