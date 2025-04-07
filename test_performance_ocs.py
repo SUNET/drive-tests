@@ -28,6 +28,7 @@ g_ocsPerformanceResults = []
 g_testPassed = {}
 
 drv = sunetnextcloud.TestTarget()
+expectedResults = drv.expectedResults
 
 ocsheaders = { "OCS-APIRequest" : "true" } 
 
@@ -55,26 +56,86 @@ class NodeOcsUserPerformance(threading.Thread):
 
         try:
             url = drv.get_status_url(fullnode)
-            s = requests.Session()
-            s.headers.update(ocsheaders)
-            s.get(url)
+            # s = requests.Session()
+            # s.headers.update(ocsheaders)
+            # s.get(url)
 
             nodebaseurl = drv.get_node_base_url(fullnode)
             url = drv.get_add_user_url(fullnode)
-            print(url)
             url = url.replace("$USERNAME$", nodeuser)
             url = url.replace("$PASSWORD$", nodepwd)
 
-            message = f'{nodebaseurl:<30}'
+            calls = 30
+            message = f'{calls} calls to {nodebaseurl:<30}'
 
-            for fe in range(1,4):
-                serverid = f'node{fe}.{nodebaseurl}'
-                s.cookies.set('SERVERID', serverid)
+
+            info = 'Main URL without cookie, new session'
+            totalTime = 0.0
+            for call in range(0,calls):
+                s = requests.Session()
+                s.headers.update(ocsheaders)
                 startTime = datetime.now()
                 r = s.get(url, headers=ocsheaders)
-                totalTime = (datetime.now() - startTime).total_seconds()
+                totalTime += (datetime.now() - startTime).total_seconds()
+                logger.info(f'SERVERID cookie: {s.cookies.get_dict()["SERVERID"]}')
+
+            message += f' - {totalTime:.1f}s'
+            logger.info(f'{calls} request to {nodebaseurl} took {totalTime:.1f}s - {info}')
+
+            info = 'Main URL without cookie, same session'
+            totalTime = 0.0
+            s = requests.Session()
+            s.headers.update(ocsheaders)
+            lastServerId = ''
+            for call in range(0,calls):
+                startTime = datetime.now()
+                r = s.get(url, headers=ocsheaders)
+                totalTime += (datetime.now() - startTime).total_seconds()
+                if call == 0:
+                    lastServerId = s.cookies.get_dict()['SERVERID']
+                newServerId = s.cookies.get_dict()['SERVERID']
+                if lastServerId != newServerId:
+                    logger.warning(f'SERVERID for the session has changed! {lastServerId} != {newServerId}')
+                lastServerId = newServerId
+
+            message += f' - {totalTime:.1f}s'
+            logger.info(f'{calls} request to {nodebaseurl} took {totalTime:.1f}s - {info}')
+
+            info = 'Main URL with cookie, same session'
+            for fe in range(1,4):
+                totalTime = 0.0
+                s = requests.Session()
+                s.headers.update(ocsheaders)
+                for call in range(0,calls):
+                    serverid = f'node{fe}.{nodebaseurl}'
+                    s.cookies.set('SERVERID', serverid)
+                    startTime = datetime.now()
+                    r = s.get(url, headers=ocsheaders)
+                    totalTime += (datetime.now() - startTime).total_seconds()
                 message += f' - {totalTime:.1f}s'
-                logger.info(f'Request to {serverid} took {totalTime:.1f}s')
+                logger.info(f'{calls} request to {serverid} took {totalTime:.1f}s - {info}')
+
+            info = 'Node url, same session'
+            if fullnode in expectedResults['global']['redundantnodes']:
+                logger.info(f'Test redundant node {fullnode}')
+                # Node URL without certificate check
+                for fe in range(1,4):
+                    totalTime = 0.0
+                    s = requests.Session()
+                    s.headers.update(ocsheaders)
+                    url = drv.get_add_user_fe_url(fullnode, fe)
+                    logger.info(f'Test direct call to {url}')
+
+                    url = url.replace("$USERNAME$", nodeuser)
+                    url = url.replace("$PASSWORD$", nodepwd)
+
+                    for call in range(0,calls):
+                        startTime = datetime.now()
+                        r = s.get(url, headers=ocsheaders, verify=False)
+                        totalTime += (datetime.now() - startTime).total_seconds()
+                    message += f' - {totalTime:.1f}s'
+                    logger.info(f'{calls} request to {serverid} took {totalTime:.1f}s - {info}')
+
             g_ocsPerformanceResults.append(message)
         except Exception as error:
             logger.error(f'{error}')
