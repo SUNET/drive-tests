@@ -215,7 +215,7 @@ class TestTarget(object):
     def get_add_user_multinode_url(self, node):
         server = self.opsCommonConfig['multinode_mapping'][node]['server']
         port = self.opsCommonConfig['multinode_mapping'][node]['port']
-        return 'https://$USERNAME$:$PASSWORD$@' + server + '.' + self.targetprefix + self.delimiter + self.baseurl + ':' + str(port) + '/ocs/v1.php/cloud/users?format=json'
+        return 'https://$USERNAME$:$PASSWORD$@' + server + '.' + self.nodeprefix + self.targetprefix + self.delimiter + self.baseurl + ':' + str(port) + '/ocs/v1.php/cloud/users?format=json'
 
     def get_userinfo_url(self, node, userid):
         return 'https://$USERNAME$:$PASSWORD$@' + self.getnodeprefix(node) + self.targetprefix + self.delimiter + self.baseurl + '/ocs/v1.php/cloud/users/' + userid + '?format=json'
