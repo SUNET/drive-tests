@@ -259,6 +259,7 @@ class NodeOcsUserPerformance(threading.Thread):
 class TestPerformanceOcs(unittest.TestCase):
     def test_performance_ocs_userlist_samesession(self):
         drv = sunetnextcloud.TestTarget()
+        g_ocsPerformanceResults = []
         for fullnode in drv.fullnodes:
             with self.subTest(mynode=fullnode):
                 logger.info(f'TestID: {fullnode}')
@@ -278,6 +279,7 @@ class TestPerformanceOcs(unittest.TestCase):
 
     def test_performance_ocs_userlist_newsession(self):
         drv = sunetnextcloud.TestTarget()
+        g_ocsPerformanceResults = []
         for fullnode in drv.fullnodes:
             with self.subTest(mynode=fullnode):
                 logger.info(f'TestID: {fullnode}')
@@ -297,6 +299,7 @@ class TestPerformanceOcs(unittest.TestCase):
 
     def test_performance_ocs_userlifecycle(self):
         drv = sunetnextcloud.TestTarget()
+        g_ocsPerformanceResults = []
         for fullnode in drv.fullnodes:
             with self.subTest(mynode=fullnode):
                 logger.info(f'TestID: {fullnode}')
