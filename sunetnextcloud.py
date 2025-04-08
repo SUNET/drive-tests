@@ -167,6 +167,9 @@ class TestTarget(object):
 
     def get_node_base_url(self, node):
         return self.getnodeprefix(node) + self.targetprefix + self.delimiter + self.baseurl
+    
+    def get_base_url(self):
+        return self.nodeprefix + self.targetprefix + self.delimiter + self.baseurl 
 
     def get_node_login_url(self, node, direct = True):
         if direct == True:
