@@ -17,12 +17,12 @@ from datetime import datetime
 import sunetnextcloud
 
 nodes = 1
-users = 1
+users = 10
 offset = 0
 createusers=True
 deleteusers=True
 disableusers=True
-calls = 3
+calls = 30
 
 g_testThreadsRunning = 0
 g_ocsPerformanceResults = []
