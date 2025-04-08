@@ -38,6 +38,10 @@ else:
 
 logger.info(f'Using test results file: {g_expectedFile}')
 
+opsbase='sunet-drive-ops/'
+opsCommonFile = opsbase + "/global/overlay/etc/hiera/data/common.yaml"
+# opsCosmosDbFile = opsbase + "/global/overlay/etc/puppet/cosmos-db.yaml"
+
 def get_value(env, raiseException = True):
     value = os.environ.get(env)
     if value == None:
@@ -52,6 +56,9 @@ def get_value(env, raiseException = True):
 class TestTarget(object):
     with open(g_expectedFile, 'r') as stream:
         expectedResults=yaml.safe_load(stream)
+
+    with open(opsCommonFile, 'r') as stream:
+        opsCommonConfig=yaml.safe_load(stream)
 
     baseurl = expectedResults['global']['baseUrl']
     testprefix = expectedResults['global']['testPrefix']
@@ -142,6 +149,19 @@ class TestTarget(object):
             prefix = node + '.' + self.nodeprefix
         return prefix
 
+    def is_multinode(self, node):
+        try:
+            self.opsCommonConfig['multinode_mapping'][node]['server']
+            return True
+        except:
+            return False
+        
+    def get_multinode(self, node):
+        return self.opsCommonConfig['multinode_mapping'][node]['server']
+    
+    def get_multinode_port(self, node):
+        return self.opsCommonConfig['multinode_mapping'][node]['port']
+
     def get_node_url(self, node):
         return 'https://' + self.getnodeprefix(node) + self.targetprefix + self.delimiter + self.baseurl
 
@@ -188,6 +208,11 @@ class TestTarget(object):
 
     def get_add_user_fe_url(self, node, id):
         return 'https://$USERNAME$:$PASSWORD$@node' + str(id) + '.' + self.getnodeprefix(node) + self.targetprefix + self.delimiter + self.baseurl + '/ocs/v1.php/cloud/users?format=json'
+
+    def get_add_user_multinode_url(self, node):
+        server = self.opsCommonConfig['multinode_mapping'][node]['server']
+        port = self.opsCommonConfig['multinode_mapping'][node]['port']
+        return 'https://$USERNAME$:$PASSWORD$@' + server + '.' + self.targetprefix + self.delimiter + self.baseurl + ':' + str(port) + '/ocs/v1.php/cloud/users?format=json'
 
     def get_userinfo_url(self, node, userid):
         return 'https://$USERNAME$:$PASSWORD$@' + self.getnodeprefix(node) + self.targetprefix + self.delimiter + self.baseurl + '/ocs/v1.php/cloud/users/' + userid + '?format=json'
