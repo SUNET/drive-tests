@@ -17,11 +17,12 @@ from datetime import datetime
 import sunetnextcloud
 
 nodes = 1
-users = 10
+users = 1
 offset = 0
 createusers=True
 deleteusers=True
 disableusers=True
+calls = 3
 
 g_testThreadsRunning = 0
 g_ocsPerformanceResults = []
@@ -137,7 +138,6 @@ class NodeOcsUserPerformance(threading.Thread):
             url = url.replace("$USERNAME$", nodeuser)
             url = url.replace("$PASSWORD$", nodepwd)
 
-            calls = 30
             message = f'{calls} calls to {nodebaseurl:<30}'
 
 
@@ -259,7 +259,6 @@ class NodeOcsUserPerformance(threading.Thread):
 class TestPerformanceOcs(unittest.TestCase):
     def test_performance_ocs_userlist_samesession(self):
         drv = sunetnextcloud.TestTarget()
-        g_ocsPerformanceResults = []
         for fullnode in drv.fullnodes:
             with self.subTest(mynode=fullnode):
                 logger.info(f'TestID: {fullnode}')
@@ -279,7 +278,6 @@ class TestPerformanceOcs(unittest.TestCase):
 
     def test_performance_ocs_userlist_newsession(self):
         drv = sunetnextcloud.TestTarget()
-        g_ocsPerformanceResults = []
         for fullnode in drv.fullnodes:
             with self.subTest(mynode=fullnode):
                 logger.info(f'TestID: {fullnode}')
@@ -299,7 +297,6 @@ class TestPerformanceOcs(unittest.TestCase):
 
     def test_performance_ocs_userlifecycle(self):
         drv = sunetnextcloud.TestTarget()
-        g_ocsPerformanceResults = []
         for fullnode in drv.fullnodes:
             with self.subTest(mynode=fullnode):
                 logger.info(f'TestID: {fullnode}')
