@@ -186,6 +186,9 @@ class TestTarget(object):
     def get_add_user_url(self, node):
         return 'https://$USERNAME$:$PASSWORD$@' + self.getnodeprefix(node) + self.targetprefix + self.delimiter + self.baseurl + '/ocs/v1.php/cloud/users?format=json'
 
+    def get_add_user_fe_url(self, node, id):
+        return 'https://$USERNAME$:$PASSWORD$@node' + str(id) + '.' + self.getnodeprefix(node) + self.targetprefix + self.delimiter + self.baseurl + '/ocs/v1.php/cloud/users?format=json'
+
     def get_userinfo_url(self, node, userid):
         return 'https://$USERNAME$:$PASSWORD$@' + self.getnodeprefix(node) + self.targetprefix + self.delimiter + self.baseurl + '/ocs/v1.php/cloud/users/' + userid + '?format=json'
 
