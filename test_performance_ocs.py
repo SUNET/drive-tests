@@ -37,11 +37,12 @@ logging.basicConfig(format = '%(asctime)s - %(module)s.%(funcName)s - %(levelnam
                 datefmt = '%Y-%m-%d %H:%M:%S', level = logging.INFO)
 
 class NodeOcsUserPerformance(threading.Thread):
-    def __init__(self, name, TestOcsCalls, verify=True):
+    def __init__(self, name, TestOcsCalls, newSession, verify=True):
         threading.Thread.__init__(self)
         self.name = name
         self.TestOcsCalls = TestOcsCalls
         self.verify = verify
+        self.newSession = newSession
 
     def run(self):
         global logger, g_testPassed, g_testThreadsRunning, g_ocsPerformanceResults
@@ -69,72 +70,108 @@ class NodeOcsUserPerformance(threading.Thread):
             message = f'{calls} calls to {nodebaseurl:<30}'
 
 
-            info = 'Main URL without cookie, new session'
-            totalTime = 0.0
-            for call in range(0,calls):
-                s = requests.Session()
-                s.headers.update(ocsheaders)
-                startTime = datetime.now()
-                r = s.get(url, headers=ocsheaders)
-                totalTime += (datetime.now() - startTime).total_seconds()
-                logger.info(f'SERVERID cookie: {s.cookies.get_dict()["SERVERID"]}')
-
-            message += f' - {totalTime:.1f}s'
-            logger.info(f'{calls} request to {nodebaseurl} took {totalTime:.1f}s - {info}')
-
-            info = 'Main URL without cookie, same session'
-            totalTime = 0.0
-            s = requests.Session()
-            s.headers.update(ocsheaders)
-            lastServerId = ''
-            for call in range(0,calls):
-                startTime = datetime.now()
-                r = s.get(url, headers=ocsheaders)
-                totalTime += (datetime.now() - startTime).total_seconds()
-                if call == 0:
-                    lastServerId = s.cookies.get_dict()['SERVERID']
-                newServerId = s.cookies.get_dict()['SERVERID']
-                if lastServerId != newServerId:
-                    logger.warning(f'SERVERID for the session has changed! {lastServerId} != {newServerId}')
-                lastServerId = newServerId
-
-            message += f' - {totalTime:.1f}s'
-            logger.info(f'{calls} request to {nodebaseurl} took {totalTime:.1f}s - {info}')
-
-            info = 'Main URL with cookie, same session'
-            for fe in range(1,4):
+            if self.newSession:
+                info = 'Main URL without cookie, new session'
                 totalTime = 0.0
-                s = requests.Session()
-                s.headers.update(ocsheaders)
                 for call in range(0,calls):
-                    serverid = f'node{fe}.{nodebaseurl}'
-                    s.cookies.set('SERVERID', serverid)
+                    s = requests.Session()
+                    s.headers.update(ocsheaders)
                     startTime = datetime.now()
                     r = s.get(url, headers=ocsheaders)
                     totalTime += (datetime.now() - startTime).total_seconds()
-                message += f' - {totalTime:.1f}s'
-                logger.info(f'{calls} request to {serverid} took {totalTime:.1f}s - {info}')
+                    logger.info(f'SERVERID cookie: {s.cookies.get_dict()["SERVERID"]}')
 
-            info = 'Node url, same session'
-            if fullnode in expectedResults['global']['redundantnodes']:
-                logger.info(f'Test redundant node {fullnode}')
-                # Node URL without certificate check
+                message += f' - {totalTime:<3.1f}s'
+                logger.info(f'{calls} request to {nodebaseurl} took {totalTime:<3.1f}s - {info}')
+            else:
+                info = 'Main URL without cookie, same session'
+                totalTime = 0.0
+                s = requests.Session()
+                s.headers.update(ocsheaders)
+                lastServerId = ''
+                for call in range(0,calls):
+                    startTime = datetime.now()
+                    r = s.get(url, headers=ocsheaders)
+                    totalTime += (datetime.now() - startTime).total_seconds()
+                    if call == 0:
+                        lastServerId = s.cookies.get_dict()['SERVERID']
+                    newServerId = s.cookies.get_dict()['SERVERID']
+                    if lastServerId != newServerId:
+                        logger.warning(f'SERVERID for the session has changed! {lastServerId} != {newServerId}')
+                    lastServerId = newServerId
+
+                message += f' - {totalTime:<3.1f}s'
+                logger.info(f'{calls} request to {nodebaseurl} took {totalTime:<3.1f}s - {info}')
+
+            if self.newSession:
+                info = 'Main URL with cookie, new session'
+                for fe in range(1,4):
+                    totalTime = 0.0
+                    for call in range(0,calls):
+                        s = requests.Session()
+                        s.headers.update(ocsheaders)
+                        serverid = f'node{fe}.{nodebaseurl}'
+                        s.cookies.set('SERVERID', serverid)
+                        startTime = datetime.now()
+                        r = s.get(url, headers=ocsheaders)
+                        totalTime += (datetime.now() - startTime).total_seconds()
+                    message += f' - {totalTime:<3.1f}s'
+                    logger.info(f'{calls} request to {serverid} took {totalTime:<3.1f}s - {info}')
+            else:
+                info = 'Main URL with cookie, same session'
                 for fe in range(1,4):
                     totalTime = 0.0
                     s = requests.Session()
                     s.headers.update(ocsheaders)
-                    url = drv.get_add_user_fe_url(fullnode, fe)
-                    logger.info(f'Test direct call to {url}')
-
-                    url = url.replace("$USERNAME$", nodeuser)
-                    url = url.replace("$PASSWORD$", nodepwd)
-
                     for call in range(0,calls):
+                        serverid = f'node{fe}.{nodebaseurl}'
+                        s.cookies.set('SERVERID', serverid)
                         startTime = datetime.now()
-                        r = s.get(url, headers=ocsheaders, verify=False)
+                        r = s.get(url, headers=ocsheaders)
                         totalTime += (datetime.now() - startTime).total_seconds()
-                    message += f' - {totalTime:.1f}s'
-                    logger.info(f'{calls} request to {serverid} took {totalTime:.1f}s - {info}')
+                    message += f' - {totalTime:<3.1f}s'
+                    logger.info(f'{calls} request to {serverid} took {totalTime:<3.1f}s - {info}')
+
+            if fullnode in expectedResults['global']['redundantnodes']:
+                logger.info(f'Test redundant node {fullnode}')
+                if self.newSession:
+                    info = 'Node url, new session'
+                    # Node URL without certificate check
+                    for fe in range(1,4):
+                        totalTime = 0.0
+                        url = drv.get_add_user_fe_url(fullnode, fe)
+                        logger.info(f'Test direct call to {url}')
+
+                        url = url.replace("$USERNAME$", nodeuser)
+                        url = url.replace("$PASSWORD$", nodepwd)
+
+                        for call in range(0,calls):
+                            s = requests.Session()
+                            s.headers.update(ocsheaders)
+                            startTime = datetime.now()
+                            r = s.get(url, headers=ocsheaders, verify=False)
+                            totalTime += (datetime.now() - startTime).total_seconds()
+                        message += f' - {totalTime:<3.1f}s'
+                        logger.info(f'{calls} request to {serverid} took {totalTime:<3.1f}s - {info}')
+                else:
+                    info = 'Node url, same session'
+                    # Node URL without certificate check
+                    for fe in range(1,4):
+                        totalTime = 0.0
+                        s = requests.Session()
+                        s.headers.update(ocsheaders)
+                        url = drv.get_add_user_fe_url(fullnode, fe)
+                        logger.info(f'Test direct call to {url}')
+
+                        url = url.replace("$USERNAME$", nodeuser)
+                        url = url.replace("$PASSWORD$", nodepwd)
+
+                        for call in range(0,calls):
+                            startTime = datetime.now()
+                            r = s.get(url, headers=ocsheaders, verify=False)
+                            totalTime += (datetime.now() - startTime).total_seconds()
+                        message += f' - {totalTime:<3.1f}s'
+                        logger.info(f'{calls} request to {serverid} took {totalTime:<3.1f}s - {info}')
 
             g_ocsPerformanceResults.append(message)
         except Exception as error:
@@ -149,12 +186,12 @@ class NodeOcsUserPerformance(threading.Thread):
         return
 
 class TestPerformanceOcs(unittest.TestCase):
-    def test_performance_ocs_userlist(self):
+    def test_performance_ocs_userlist_samesession(self):
         drv = sunetnextcloud.TestTarget()
         for fullnode in drv.fullnodes:
             with self.subTest(mynode=fullnode):
                 logger.info(f'TestID: {fullnode}')
-                nodeUsersThread = NodeOcsUserPerformance(fullnode, self, verify=drv.verify)
+                nodeUsersThread = NodeOcsUserPerformance(fullnode, self, newSession=False, verify=drv.verify)
                 nodeUsersThread.start()
 
         while(g_testThreadsRunning > 0):
@@ -164,6 +201,26 @@ class TestPerformanceOcs(unittest.TestCase):
             with self.subTest(mynode=fullnode):
                 self.assertTrue(g_testPassed[fullnode])
 
+        logger.info(f'Result of test_performance_ocs_userlist_samesession')
+        for message in g_ocsPerformanceResults:
+            logger.info(f'{message}')
+
+    def test_performance_ocs_userlist_newsession(self):
+        drv = sunetnextcloud.TestTarget()
+        for fullnode in drv.fullnodes:
+            with self.subTest(mynode=fullnode):
+                logger.info(f'TestID: {fullnode}')
+                nodeUsersThread = NodeOcsUserPerformance(fullnode, self, newSession=True, verify=drv.verify)
+                nodeUsersThread.start()
+
+        while(g_testThreadsRunning > 0):
+            time.sleep(1)
+
+        for fullnode in drv.fullnodes:
+            with self.subTest(mynode=fullnode):
+                self.assertTrue(g_testPassed[fullnode])
+
+        logger.info(f'Result of test_performance_ocs_userlist_newsession')
         for message in g_ocsPerformanceResults:
             logger.info(f'{message}')
 
