@@ -22,7 +22,7 @@ offset = 0
 createusers=True
 deleteusers=True
 disableusers=True
-calls = 30
+calls = 100
 
 g_testThreadsRunning = 0
 g_ocsPerformanceResults = []
