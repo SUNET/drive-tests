@@ -122,6 +122,7 @@ class NodeOcsUserPerformance(threading.Thread):
         logger.info(f'NodeOcsUserPerformance thread started for node {self.name}')
         drv = sunetnextcloud.TestTarget()
         fullnode = self.name
+        isMultinode = drv.is_multinode(fullnode)
         nodeuser = drv.get_ocsuser(fullnode)
         nodepwd = drv.get_ocsuserapppassword(fullnode)
         g_testPassed[fullnode] = False
@@ -129,17 +130,11 @@ class NodeOcsUserPerformance(threading.Thread):
 
         try:
             url = drv.get_status_url(fullnode)
-            # s = requests.Session()
-            # s.headers.update(ocsheaders)
-            # s.get(url)
-
             nodebaseurl = drv.get_node_base_url(fullnode)
             url = drv.get_add_user_url(fullnode)
             url = url.replace("$USERNAME$", nodeuser)
             url = url.replace("$PASSWORD$", nodepwd)
-
             message = f'{calls} calls to {nodebaseurl:<30}'
-
 
             if self.newSession:
                 info = 'Main URL without cookie, new session'
@@ -150,7 +145,7 @@ class NodeOcsUserPerformance(threading.Thread):
                     startTime = datetime.now()
                     r = s.get(url, headers=ocsheaders)
                     totalTime += (datetime.now() - startTime).total_seconds()
-                    logger.info(f'SERVERID cookie: {s.cookies.get_dict()["SERVERID"]}')
+                    # logger.info(f'SERVERID cookie: {s.cookies.get_dict()["SERVERID"]}')
 
                 message += f' - {totalTime:<3.1f}s'
                 logger.info(f'{calls} request to {nodebaseurl} took {totalTime:<3.1f}s - {info}')
@@ -176,38 +171,83 @@ class NodeOcsUserPerformance(threading.Thread):
 
             if self.newSession:
                 info = 'Main URL with cookie, new session'
-                for fe in range(1,4):
+                if isMultinode:
                     totalTime = 0.0
+                    serverid = f'{drv.get_multinode(fullnode)}.{drv.get_base_url()}'
                     for call in range(0,calls):
                         s = requests.Session()
                         s.headers.update(ocsheaders)
-                        serverid = f'node{fe}.{nodebaseurl}'
                         s.cookies.set('SERVERID', serverid)
                         startTime = datetime.now()
                         r = s.get(url, headers=ocsheaders)
                         totalTime += (datetime.now() - startTime).total_seconds()
                     message += f' - {totalTime:<3.1f}s'
                     logger.info(f'{calls} request to {serverid} took {totalTime:<3.1f}s - {info}')
+                else:
+                    for fe in range(1,4):
+                        totalTime = 0.0
+                        for call in range(0,calls):
+                            s = requests.Session()
+                            s.headers.update(ocsheaders)
+                            serverid = f'node{fe}.{nodebaseurl}'
+                            s.cookies.set('SERVERID', serverid)
+                            startTime = datetime.now()
+                            r = s.get(url, headers=ocsheaders)
+                            totalTime += (datetime.now() - startTime).total_seconds()
+                        message += f' - {totalTime:<3.1f}s'
+                        logger.info(f'{calls} request to {serverid} took {totalTime:<3.1f}s - {info}')
             else:
                 info = 'Main URL with cookie, same session'
-                for fe in range(1,4):
+                if isMultinode:
+                    serverid = f'{drv.get_multinode(fullnode)}.{drv.get_base_url()}'
+                    logger.info(f'Test multinode {fullnode} on {serverid}')
                     totalTime = 0.0
                     s = requests.Session()
                     s.headers.update(ocsheaders)
+                    s.cookies.set('SERVERID', serverid)
                     for call in range(0,calls):
-                        serverid = f'node{fe}.{nodebaseurl}'
-                        s.cookies.set('SERVERID', serverid)
                         startTime = datetime.now()
                         r = s.get(url, headers=ocsheaders)
                         totalTime += (datetime.now() - startTime).total_seconds()
                     message += f' - {totalTime:<3.1f}s'
                     logger.info(f'{calls} request to {serverid} took {totalTime:<3.1f}s - {info}')
+                else:
+                    for fe in range(1,4):
+                        totalTime = 0.0
+                        s = requests.Session()
+                        s.headers.update(ocsheaders)
+                        for call in range(0,calls):
+                            serverid = f'node{fe}.{nodebaseurl}'
+                            s.cookies.set('SERVERID', serverid)
+                            startTime = datetime.now()
+                            r = s.get(url, headers=ocsheaders)
+                            totalTime += (datetime.now() - startTime).total_seconds()
+                        message += f' - {totalTime:<3.1f}s'
+                        logger.info(f'{calls} request to {serverid} took {totalTime:<3.1f}s - {info}')
 
-            if fullnode in expectedResults['global']['redundantnodes']:
-                logger.info(f'Test redundant node {fullnode}')
-                if self.newSession:
-                    info = 'Node url, new session'
-                    # Node URL without certificate check
+
+            if self.newSession:
+                logger.info(f'Direct url(s), new session')
+                if isMultinode:
+                    info = 'Multinode url, new session'
+                    totalTime = 0.0
+                    url = drv.get_add_user_multinode_url(fullnode)
+                    logger.info(f'Test direct call to {url}')
+
+                    url = url.replace("$USERNAME$", nodeuser)
+                    url = url.replace("$PASSWORD$", nodepwd)
+
+                    for call in range(0,calls):
+                        s = requests.Session()
+                        s.headers.update(ocsheaders)
+                        startTime = datetime.now()
+                        r = s.get(url, headers=ocsheaders, verify=False)
+                        totalTime += (datetime.now() - startTime).total_seconds()
+                    message += f' - {totalTime:<3.1f}s'
+                    logger.info(f'{calls} request to {serverid} took {totalTime:<3.1f}s - {info}')
+                
+                else:
+                    info = 'Full node fe urls, new session'
                     for fe in range(1,4):
                         totalTime = 0.0
                         url = drv.get_add_user_fe_url(fullnode, fe)
@@ -224,9 +264,28 @@ class NodeOcsUserPerformance(threading.Thread):
                             totalTime += (datetime.now() - startTime).total_seconds()
                         message += f' - {totalTime:<3.1f}s'
                         logger.info(f'{calls} request to {serverid} took {totalTime:<3.1f}s - {info}')
+
+            else: # Same session
+                logger.info(f'Direct url(s), same session')
+                if isMultinode:
+                    info = 'Multinode url, same session'
+                    totalTime = 0.0
+                    s = requests.Session()
+                    s.headers.update(ocsheaders)
+                    url = drv.get_add_user_multinode_url(fullnode)
+                    logger.info(f'Test direct call to {url}')
+
+                    url = url.replace("$USERNAME$", nodeuser)
+                    url = url.replace("$PASSWORD$", nodepwd)
+
+                    for call in range(0,calls):
+                        startTime = datetime.now()
+                        r = s.get(url, headers=ocsheaders, verify=False)
+                        totalTime += (datetime.now() - startTime).total_seconds()
+                    message += f' - {totalTime:<3.1f}s'
+                    logger.info(f'{calls} request to {serverid} took {totalTime:<3.1f}s - {info}')
                 else:
-                    info = 'Node url, same session'
-                    # Node URL without certificate check
+                    info = 'Full node fe urls, same session'
                     for fe in range(1,4):
                         totalTime = 0.0
                         s = requests.Session()
