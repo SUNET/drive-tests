@@ -191,18 +191,25 @@ class SeamlessAccessInfo(threading.Thread):
         logger.info(f'SeamlessAccessInfo thread {testThreadsRunning} started for node {self.node}')
 
         url = drv.get_node_login_url(self.node, direct=False)
+        fe = None
         try:
-            logger.info(f'Getting node login url from: {url}')
-            r =requests.get(url, timeout=g_requestTimeout, verify=self.verify)
+            nodebaseurl = drv.get_node_base_url(self.node)
 
-            if "seamlessaccess.org" not in r.text and self.node not in expectedResults[drv.target]['loginexceptions']:
-                logger.error(f'Error getting seamless access info from: {self.node}. Received text: {r.text}')
-                g_failedNodes.append(url)
-                testThreadsRunning-=1
-                return
+            for fe in range(1,4):
+                logger.info(f'Getting node login url from: {url} node {fe}')
+                s = requests.Session()
+                serverid = f'node{fe}.{nodebaseurl}'
+                s.cookies.set('SERVERID', serverid)
+                r =s.get(url, timeout=g_requestTimeout, verify=self.verify)
+
+                if "seamlessaccess.org" not in r.text and self.node not in expectedResults[drv.target]['loginexceptions']:
+                    logger.error(f'Error getting seamless access info from: {self.node}. Received text: {r.text}')
+                    g_failedNodes.append(url)
+                    testThreadsRunning-=1
+                    return
 
         except Exception as error:
-            logger.error(f'Error seamless access info from {self.node}: {error}')
+            logger.error(f'Error getting seamless access info from {self.node} node {fe}: {error}')
             g_failedNodes.append(url)
             testThreadsRunning -= 1
             return
