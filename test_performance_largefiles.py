@@ -171,7 +171,7 @@ class TestLargeFilePerformance(unittest.TestCase):
         pass
 
     def test_webdav_home(self):
-        serverTargetFolder = 'selenium-home'
+        serverTargetFolder = 'selenium-home/largefiles'
         global logger, g_testThreadsRunning, g_davPerformanceResults
         g_davPerformanceResults.clear()
 
@@ -229,11 +229,13 @@ class TestLargeFilePerformance(unittest.TestCase):
                                 except WebDavException as exception:
                                     logger.info(f'Error uploading {filename}: {exception}')
                                     g_testThreadsRunning -= 1
+                                    self.assertTrue(False)
                             while g_testThreadsRunning > 0:
                                 time.sleep(0.01)
                         endTime = datetime.now()
                     except:
                         logger.error(f'Error during async upload')
+                        self.assertTrue(False)
 
                     # Calculate time to upload
                     uploadTime = (endTime - startTime).total_seconds()
@@ -271,7 +273,7 @@ class TestLargeFilePerformance(unittest.TestCase):
         pass
 
     def test_webdav_system(self):
-        serverTargetFolder = 'selenium-system'
+        serverTargetFolder = 'selenium-system/largefiles'
         global logger, g_testThreadsRunning, g_davPerformanceResults
         g_davPerformanceResults.clear()
 
@@ -329,11 +331,13 @@ class TestLargeFilePerformance(unittest.TestCase):
                                 except WebDavException as exception:
                                     logger.info(f'Error uploading {filename}: {exception}')
                                     g_testThreadsRunning -= 1
+                                    self.assertTrue(False)
                             while g_testThreadsRunning > 0:
                                 time.sleep(0.01)
                         endTime = datetime.now()
                     except:
                         logger.error(f'Error during async upload')
+                        self.assertTrue(False)
 
                     # Calculate time to upload
                     uploadTime = (endTime - startTime).total_seconds()
@@ -371,7 +375,7 @@ class TestLargeFilePerformance(unittest.TestCase):
         pass
 
     def test_webdav_personal(self):
-        serverTargetFolder = 'selenium-personal'
+        serverTargetFolder = 'selenium-personal/largefiles'
         global logger, g_testThreadsRunning, g_davPerformanceResults
         g_davPerformanceResults.clear()
 
@@ -429,11 +433,13 @@ class TestLargeFilePerformance(unittest.TestCase):
                                 except WebDavException as exception:
                                     logger.info(f'Error uploading {filename}: {exception}')
                                     g_testThreadsRunning -= 1
+                                    self.assertTrue(False)
                             while g_testThreadsRunning > 0:
                                 time.sleep(0.01)
                         endTime = datetime.now()
                     except:
                         logger.error(f'Error during async upload')
+                        self.assertTrue(False)
 
                     # Calculate time to upload
                     uploadTime = (endTime - startTime).total_seconds()
