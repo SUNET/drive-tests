@@ -8,6 +8,7 @@ import requests
 from requests.auth import HTTPBasicAuth
 import json
 import os
+import glob
 from pathlib import Path
 import subprocess
 import shutil
@@ -41,7 +42,7 @@ logging.basicConfig(format = '%(asctime)s - %(module)s.%(funcName)s - %(levelnam
 KB = 1024
 MB = 1024 * KB
 GB = 1024 * MB
-fileSizes=[1,4,8,29] # Only GB, larger than 1
+fileSizes=[1,4,8,28] # Only GB, larger than 1
 fileNames=[] # Array with the files 
 useTmpFolder = True # As a default, use the temp folder, alternatively use home folder of user that is testing
 
@@ -58,18 +59,27 @@ def deleteTestData():
             os.remove(pathname)
 
 def checkTestData():
+    logpath = f'{tempfile.gettempdir()}/*G.bin'
+    totalSize = 0
+
+    for full_path in glob.glob(logpath):
+        totalSize += Path(full_path).stat().st_size / GB
+    if totalSize == 0:
+        logger.info(f'No test data found in /tmp')
+        return False
+
+    expectedSize = 0
+    for size in fileSizes:
+        expectedSize += size
+
+    if totalSize != expectedSize:
+        logger.warning(f'Total size of existing files does not match, {totalSize} != {expectedSize}')
+        return False
+
     for fileSize in fileSizes:
         filename = f'{str(fileSize)}G.bin'
         pathname = f'{tempfile.gettempdir()}/{filename}'            # Check if the file exists in the temp directory
-        if Path(pathname).exists():
-            existingFileSize = Path(pathname).stat().st_size / GB
-            if existingFileSize == fileSize:
-                logger.info(f'File {pathname} exists with correct file size {fileSize}')
-            else:
-                logger.warning(f'File size for {pathname} does not match {existingFileSize} != {fileSize}')
-                return False
-
-        pathname = f'{Path.home()}/{filename}'                      # Check if the file exists in the home directory
+        logger.info(f'Checking file {pathname}')
         if Path(pathname).exists():
             existingFileSize = Path(pathname).stat().st_size / GB
             if existingFileSize == fileSize:
@@ -87,38 +97,15 @@ def generateTestData():
         useTmp = True
         logger.info(f'Using /tmp for temporary files')
     else:
-        homeFree = shutil.disk_usage(Path.home()).free /GB
-        logger.info(f'{Path.home()} has {homeFree:.2f} GB free')
-        if homeFree < 42:
-            logger.error(f'Not enough space in /tmp or {Path.home}')
-            TestLargeFilePerformance.assertTrue(False)
-        logger.info(f'Using home directory {Path.home()}')
-        useTmp = False
+        logger.error(f'Not enough space in /tmp')
 
     for fileSize in fileSizes:
         filename = f'{str(fileSize)}G.bin'
-        if useTmp:
-            pathname = f'{tempfile.gettempdir()}/{filename}'
-        else: # use home folder
-            pathname = f'{Path.home()}/{filename}'
-
-        # Check if the file already exists
-        makeFiles = True
-        if Path(pathname).exists():
-            logger.info(f'File {pathname} already exists')
-            existingFileSize = Path(pathname).stat().st_size / GB
-            if existingFileSize != fileSize:
-                logger.warning(f'File sizes do not match, recreating {existingFileSize} != {fileSize}')
-                makeFiles = True
-            else:
-                logger.info(f'File sizes match, no need to recreate {existingFileSize} == {fileSize}')
-                makeFiles = False
-
-        if makeFiles:
-            logger.info(f'Generating file {pathname}')
-            cmd=f'head -c {fileSize}G /dev/urandom > {pathname}'
-            logger.info(f'Running subprocess {cmd}')
-            os.system(cmd)
+        pathname = f'{tempfile.gettempdir()}/{filename}'
+        logger.info(f'Generating file {pathname}')
+        cmd=f'head -c {fileSize}G /dev/urandom > {pathname}'
+        logger.info(f'Running subprocess {cmd}')
+        os.system(cmd)
         # subprocess.run(cmd, stdout = subprocess.DEVNULL)        
 
 def excepthook(args):
@@ -173,7 +160,7 @@ class TestLargeFilePerformance(unittest.TestCase):
         logger.info(f'TestID: {self._testMethodName}')
         pass
 
-    def test_testdata(self):
+    def test_testdata(self):        
         if checkTestData() == False:
             logger.warning(f'File size check failed, regenerating test data')
             deleteTestData()
