@@ -42,14 +42,19 @@ logging.basicConfig(format = '%(asctime)s - %(module)s.%(funcName)s - %(levelnam
 KB = 1024
 MB = 1024 * KB
 GB = 1024 * MB
-fileSizes=[1,4,8,28] # Only GB, larger than 1
+fileSizes=[1,4,8,12] # Only GB, larger than 1
 fileNames=[] # Array with the files 
-useTmpFolder = True # As a default, use the temp folder, alternatively use home folder of user that is testing
+targetDirectory=f'{tempfile.gettempdir()}/largefiles'
+
+expectedSize = 0
+for size in fileSizes:
+    expectedSize += size
+
 
 def deleteTestData():
     for fileSize in fileSizes:
         filename = f'{str(fileSize)}G.bin'
-        pathname = f'{tempfile.gettempdir()}/{filename}'            # Check if the file exists in the temp directory
+        pathname = f'{targetDirectory}/{filename}'            # Check if the file exists in the temp directory
         if Path(pathname).exists():
             logger.info(f'Removing file {pathname}')
             os.remove(pathname)
@@ -59,26 +64,23 @@ def deleteTestData():
             os.remove(pathname)
 
 def checkTestData():
-    logpath = f'{tempfile.gettempdir()}/*G.bin'
+    Path(targetDirectory).mkdir(parents=True, exist_ok=True)
+    logpath = f'{targetDirectory}/*G.bin'
     totalSize = 0
 
     for full_path in glob.glob(logpath):
         totalSize += Path(full_path).stat().st_size / GB
     if totalSize == 0:
-        logger.info(f'No test data found in /tmp')
+        logger.info(f'No test data found in {targetDirectory}')
         return False
-
-    expectedSize = 0
-    for size in fileSizes:
-        expectedSize += size
-
+    
     if totalSize != expectedSize:
         logger.warning(f'Total size of existing files does not match, {totalSize} != {expectedSize}')
         return False
 
     for fileSize in fileSizes:
         filename = f'{str(fileSize)}G.bin'
-        pathname = f'{tempfile.gettempdir()}/{filename}'            # Check if the file exists in the temp directory
+        pathname = f'{targetDirectory}/{filename}'            # Check if the file exists in the temp directory
         logger.info(f'Checking file {pathname}')
         if Path(pathname).exists():
             existingFileSize = Path(pathname).stat().st_size / GB
@@ -91,22 +93,21 @@ def checkTestData():
 
 def generateTestData():
     # Check if we have enought space in the temp directory; we assume that check and/or delete was executed before this
-    tmpFree = shutil.disk_usage('/tmp').free / GB
-    logger.info(f'/tmp has {tmpFree:.2f} GB free')
-    if tmpFree > 42:
-        useTmp = True
-        logger.info(f'Using /tmp for temporary files')
+    Path(targetDirectory).mkdir(parents=True, exist_ok=True)
+    tmpFree = shutil.disk_usage(targetDirectory).free / GB
+    logger.info(f'{targetDirectory} has {tmpFree:.2f} GB free')
+    if tmpFree > expectedSize:
+        logger.info(f'Using {targetDirectory} for temporary files')
     else:
-        logger.error(f'Not enough space in /tmp')
+        logger.error(f'Not enough space in {targetDirectory}')
 
     for fileSize in fileSizes:
         filename = f'{str(fileSize)}G.bin'
-        pathname = f'{tempfile.gettempdir()}/{filename}'
+        pathname = f'{targetDirectory}/{filename}'
         logger.info(f'Generating file {pathname}')
         cmd=f'head -c {fileSize}G /dev/urandom > {pathname}'
         logger.info(f'Running subprocess {cmd}')
         os.system(cmd)
-        # subprocess.run(cmd, stdout = subprocess.DEVNULL)        
 
 def excepthook(args):
     logger.error(f'Threading exception: {args}')
