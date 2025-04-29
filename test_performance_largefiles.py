@@ -178,7 +178,7 @@ class TestLargeFilePerformance(unittest.TestCase):
             deleteTestData()
             generateTestData()
 
-        numFiles = 1
+        numFiles = 4
         maxUploads = 1
         maxDeletes = 1
         drv = sunetnextcloud.TestTarget()
@@ -206,13 +206,13 @@ class TestLargeFilePerformance(unittest.TestCase):
 
                     logger.info(client.list())
                     client.mkdir('largefiles')
-
-                    logger.info(f'List of local files')
                     files = []
 
                     for fileSize in fileSizes:
                         filename = f'{str(fileSize)}G.bin'
                         files.append(filename)
+
+                    logger.info(f'List of local files {files}')
 
                     startTime = datetime.now()
                     logger.info(f'Async upload of {maxUploads} files concurrently')
