@@ -171,7 +171,7 @@ class TestLargeFilePerformance(unittest.TestCase):
         pass
 
     def test_webdav_home(self):
-        serverTargetFolder = 'selenium-home/largefiles'
+        serverTargetFolder = 'selenium-home'
         global logger, g_testThreadsRunning, g_davPerformanceResults
         g_davPerformanceResults.clear()
 
@@ -271,7 +271,7 @@ class TestLargeFilePerformance(unittest.TestCase):
         pass
 
     def test_webdav_system(self):
-        serverTargetFolder = 'selenium-system/largefiles'
+        serverTargetFolder = 'selenium-system'
         global logger, g_testThreadsRunning, g_davPerformanceResults
         g_davPerformanceResults.clear()
 
@@ -371,7 +371,7 @@ class TestLargeFilePerformance(unittest.TestCase):
         pass
 
     def test_webdav_personal(self):
-        serverTargetFolder = 'selenium-personal/largefiles'
+        serverTargetFolder = 'selenium-personal'
         global logger, g_testThreadsRunning, g_davPerformanceResults
         g_davPerformanceResults.clear()
 
