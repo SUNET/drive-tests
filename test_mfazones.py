@@ -37,7 +37,7 @@ import time
 import logging
 from datetime import datetime
 
-g_browser = 'chrome'
+g_browser = 'firefox'
 expectedResultsFile = 'expected.yaml'
 geckodriver_path = "/snap/bin/geckodriver"
 g_filename=datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
