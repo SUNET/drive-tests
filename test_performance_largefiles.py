@@ -249,20 +249,12 @@ class TestLargeFilePerformance(unittest.TestCase):
                             t.start()
                         while threading.active_count() > 1:
                             time.sleep(0.01)
-
-                    # This works for single threaded delete
-                    # for element in davElements:
-                    #     logger.info(f'Delete {element}')
-                    #     try:
-                    #         client.clean('performance/' + element)
-                    #     except:
-                    #         logger.info(f'Error deleting {element}')
                     
                     deleteTime = (datetime.now() - startTime).total_seconds()
 
                     lText = f'{fullnode} '
-                    mText = f'Node {fe} - Up: {uploadTime:.1f}s at {uploadTime/numFiles:.2f} s/file'
-                    rText = f'Node {fe} - Del: {deleteTime:.1f}s at {deleteTime/numFiles:.2f} s/file' 
+                    mText = f'Node {fe} - Up: {uploadTime:.1f}s at {expectedSize*MB/uploadTime} MB/s'
+                    rText = f'Node {fe} - Del: {deleteTime:.1f}s at {expectedSize*MB/uploadTime} MB/s' 
 
                     message = f'{lText : <16}{mText : <40}{rText : <40}'
                     # message = f'{fullnode} - Upload: {uploadTime:.1f}s at {uploadTime/numFiles:.2f} s/file - Delete: {deleteTime:.1f}s at {deleteTime/numFiles:.2f} s/file'
