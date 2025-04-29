@@ -258,7 +258,7 @@ class TestLargeFilePerformance(unittest.TestCase):
 
                     lText = f'{fullnode} '
                     mText = f'Node {fe} - Up: {uploadTime:.1f}s at {expectedSize*1024/uploadTime:.1f} MB/s'
-                    rText = f'Node {fe} - Del: {deleteTime:.1f}s at {expectedSize*1024/uploadTime:.1f} MB/s' 
+                    rText = f'Node {fe} - Del: {deleteTime:.1f}s at {expectedSize*1024/deleteTime:.1f} MB/s' 
 
                     message = f'{lText : <16}{mText : <40}{rText : <40}'
                     # message = f'{fullnode} - Upload: {uploadTime:.1f}s at {uploadTime/numFiles:.2f} s/file - Delete: {deleteTime:.1f}s at {deleteTime/numFiles:.2f} s/file'
@@ -360,7 +360,7 @@ class TestLargeFilePerformance(unittest.TestCase):
 
                     lText = f'{fullnode} '
                     mText = f'Node {fe} - Up: {uploadTime:.1f}s at {expectedSize*1024/uploadTime:.1f} MB/s'
-                    rText = f'Node {fe} - Del: {deleteTime:.1f}s at {expectedSize*1024/uploadTime:.1f} MB/s' 
+                    rText = f'Node {fe} - Del: {deleteTime:.1f}s at {expectedSize*1024/deleteTime:.1f} MB/s' 
 
                     message = f'{lText : <16}{mText : <40}{rText : <40}'
                     # message = f'{fullnode} - Upload: {uploadTime:.1f}s at {uploadTime/numFiles:.2f} s/file - Delete: {deleteTime:.1f}s at {deleteTime/numFiles:.2f} s/file'
@@ -462,7 +462,7 @@ class TestLargeFilePerformance(unittest.TestCase):
 
                     lText = f'{fullnode} '
                     mText = f'Node {fe} - Up: {uploadTime:.1f}s at {expectedSize*1024/uploadTime:.1f} MB/s'
-                    rText = f'Node {fe} - Del: {deleteTime:.1f}s at {expectedSize*1024/uploadTime:.1f} MB/s' 
+                    rText = f'Node {fe} - Del: {deleteTime:.1f}s at {expectedSize*1024/deleteTime:.1f} MB/s' 
 
                     message = f'{lText : <16}{mText : <40}{rText : <40}'
                     # message = f'{fullnode} - Upload: {uploadTime:.1f}s at {uploadTime/numFiles:.2f} s/file - Delete: {deleteTime:.1f}s at {deleteTime/numFiles:.2f} s/file'
