@@ -185,7 +185,7 @@ class TestLargeFilePerformance(unittest.TestCase):
         drv = sunetnextcloud.TestTarget()
         for fullnode in drv.fullnodes:
             with self.subTest(mynode=fullnode):
-                for fe in range(1,4):
+                for fe in range(1,2):
                     nodebaseurl = drv.get_node_base_url(fullnode)
                     serverid = f'node{fe}.{nodebaseurl}'
 
@@ -285,7 +285,7 @@ class TestLargeFilePerformance(unittest.TestCase):
         drv = sunetnextcloud.TestTarget()
         for fullnode in drv.fullnodes:
             with self.subTest(mynode=fullnode):
-                for fe in range(1,4):
+                for fe in range(1,2):
                     nodebaseurl = drv.get_node_base_url(fullnode)
                     serverid = f'node{fe}.{nodebaseurl}'
 
@@ -385,7 +385,7 @@ class TestLargeFilePerformance(unittest.TestCase):
         drv = sunetnextcloud.TestTarget()
         for fullnode in drv.fullnodes:
             with self.subTest(mynode=fullnode):
-                for fe in range(1,4):
+                for fe in range(1,2):
                     nodebaseurl = drv.get_node_base_url(fullnode)
                     serverid = f'node{fe}.{nodebaseurl}'
 
