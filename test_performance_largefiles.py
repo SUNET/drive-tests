@@ -226,7 +226,7 @@ class TestLargeFilePerformance(unittest.TestCase):
                                 try:
                                     g_testThreadsRunning += 1
                                     client.upload_async(remote_path=f'{serverTargetFolder}/{file}',local_path=f'{targetDirectory}/{file}', callback=decreaseUploadCount)
-                                except WebDavException as exception:
+                                except Exception as exception:
                                     logger.info(f'Error uploading {filename}: {exception}')
                                     g_testThreadsRunning -= 1
                                     self.assertTrue(False)
@@ -328,7 +328,7 @@ class TestLargeFilePerformance(unittest.TestCase):
                                 try:
                                     g_testThreadsRunning += 1
                                     client.upload_async(remote_path=f'{serverTargetFolder}/{file}',local_path=f'{targetDirectory}/{file}', callback=decreaseUploadCount)
-                                except WebDavException as exception:
+                                except Exception as exception:
                                     logger.info(f'Error uploading {filename}: {exception}')
                                     g_testThreadsRunning -= 1
                                     self.assertTrue(False)
@@ -430,7 +430,7 @@ class TestLargeFilePerformance(unittest.TestCase):
                                 try:
                                     g_testThreadsRunning += 1
                                     client.upload_async(remote_path=f'{serverTargetFolder}/{file}',local_path=f'{targetDirectory}/{file}', callback=decreaseUploadCount)
-                                except WebDavException as exception:
+                                except Exception as exception:
                                     logger.info(f'Error uploading {filename}: {exception}')
                                     g_testThreadsRunning -= 1
                                     self.assertTrue(False)
