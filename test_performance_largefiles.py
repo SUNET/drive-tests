@@ -43,7 +43,7 @@ KB = 1024
 MB = 1024 * KB
 GB = 1024 * MB
 # fileSizes=[1,4,8,12] # Only GB, larger than 1
-fileSizes=[1,2] # Only GB, larger than 1
+fileSizes=[1,2,4,8] # Only GB, larger than 1
 fileNames=[] # Array with the files 
 targetDirectory=f'{tempfile.gettempdir()}/largefiles'
 threadingException = False
@@ -484,6 +484,24 @@ class TestLargeFilePerformance(unittest.TestCase):
             logger.info(f'{message}')
 
         self.assertFalse(threadingException)
+
+        logger.info(f'Done')
+        pass
+
+    def test_rclone_home(self):
+        serverTargetFolder = 'selenium-home/largefiles'
+        global logger, g_testThreadsRunning, g_davPerformanceResults
+        g_davPerformanceResults.clear()
+
+        if checkTestData() == False:
+            logger.warning(f'File size check failed, regenerating test data')
+            deleteTestData()
+            generateTestData()
+
+        # Commands to run for a basic sync
+        # rclone copy /tmp/largefiles/ selenium-sunet-test:selenium-home/rclone --progress
+        # rclone delete selenium-sunet-test:selenium-home/rclone
+        # rclone rmdir selenium-sunet-test:selenium-home/rclone
 
         logger.info(f'Done')
         pass
