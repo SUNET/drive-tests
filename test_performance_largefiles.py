@@ -52,16 +52,10 @@ for size in fileSizes:
     expectedSize += size
 
 def deleteTestData():
-    for fileSize in fileSizes:
-        filename = f'{str(fileSize)}G.bin'
-        pathname = f'{targetDirectory}/{filename}'            # Check if the file exists in the temp directory
-        if Path(pathname).exists():
-            logger.info(f'Removing file {pathname}')
-            os.remove(pathname)
-        pathname = f'{Path.home()}/{filename}'                      # Check if the file exists in the home directory
-        if Path(pathname).exists():
-            logger.info(f'Removing file {pathname}')
-            os.remove(pathname)
+    logpath = f'{targetDirectory}/*'
+    for full_path in glob.glob(logpath):
+        logger.info(f'Removing file {full_path}')
+        os.remove(full_path)
 
 def checkTestData():
     Path(targetDirectory).mkdir(parents=True, exist_ok=True)
