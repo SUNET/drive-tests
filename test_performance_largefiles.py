@@ -42,8 +42,8 @@ logging.basicConfig(format = '%(asctime)s - %(module)s.%(funcName)s - %(levelnam
 KB = 1024
 MB = 1024 * KB
 GB = 1024 * MB
-fileSizes=[1,4,8,12] # Only GB, larger than 1
-# fileSizes=[1] # Only GB, larger than 1
+# fileSizes=[1,4,8,12] # Only GB, larger than 1
+fileSizes=[1,2] # Only GB, larger than 1
 fileNames=[] # Array with the files 
 targetDirectory=f'{tempfile.gettempdir()}/largefiles'
 
