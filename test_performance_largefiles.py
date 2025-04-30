@@ -53,6 +53,7 @@ for size in fileSizes:
     expectedSize += size
 
 def threading_exception(args):
+    global threadingException
     logger.error(f'Threading exception: {args}')
     decreaseUploadCount()
     threadingException = True
