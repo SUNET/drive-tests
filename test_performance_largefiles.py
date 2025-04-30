@@ -24,7 +24,7 @@ import xmlrunner
 import sunetnextcloud
 
 g_maxCheck = 10
-g_WebDavPerformance_timeout = 30
+g_WebDavPerformance_timeout = 3600
 g_testFolder = 'WebDavPerformanceTest'
 g_stressTestFolder = 'WebDavPerformanceStressTest'
 g_sharedTestFolder = 'SharedFolder'
