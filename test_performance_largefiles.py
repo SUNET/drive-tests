@@ -51,6 +51,22 @@ expectedSize = 0
 for size in fileSizes:
     expectedSize += size
 
+def threading_exception(args):
+    logger.error(f'Threading exception: {args}')
+    decreaseUploadCount()
+    sys.excepthook(*sys.exc_info())
+
+threading.excepthook = threading_exception
+
+def system_exception(exc_type, exc_value, exc_traceback):
+    if issubclass(exc_type, KeyboardInterrupt):
+        sys.__excepthook__(exc_type, exc_value, exc_traceback)
+        return
+
+    logger.error("System exception", exc_info=(exc_type, exc_value, exc_traceback))
+
+sys.excepthook = system_exception
+
 def deleteTestData():
     logpath = f'{targetDirectory}/*'
     for full_path in glob.glob(logpath):
@@ -102,13 +118,6 @@ def generateTestData():
         cmd=f'head -c {fileSize}G /dev/urandom > {pathname}'
         logger.info(f'Running subprocess {cmd}')
         os.system(cmd)
-
-def excepthook(args):
-    logger.error(f'Threading exception: {args}')
-    decreaseUploadCount()
-    sys.excepthook(*sys.exc_info())
-
-threading.excepthook = excepthook
 
 def decreaseUploadCount():
     global g_testThreadsRunning
