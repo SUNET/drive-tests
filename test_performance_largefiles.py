@@ -46,6 +46,7 @@ GB = 1024 * MB
 fileSizes=[1,2] # Only GB, larger than 1
 fileNames=[] # Array with the files 
 targetDirectory=f'{tempfile.gettempdir()}/largefiles'
+threadingException = False
 
 expectedSize = 0
 for size in fileSizes:
@@ -54,6 +55,7 @@ for size in fileSizes:
 def threading_exception(args):
     logger.error(f'Threading exception: {args}')
     decreaseUploadCount()
+    threadingException = True
     sys.excepthook(*sys.exc_info())
 
 threading.excepthook = threading_exception
@@ -272,6 +274,8 @@ class TestLargeFilePerformance(unittest.TestCase):
         for message in g_davPerformanceResults:
             logger.info(f'{message}')
 
+        self.assertFalse(threadingException)
+
         logger.info(f'Done')
         pass
 
@@ -374,6 +378,8 @@ class TestLargeFilePerformance(unittest.TestCase):
         for message in g_davPerformanceResults:
             logger.info(f'{message}')
 
+        self.assertFalse(threadingException)
+
         logger.info(f'Done')
         pass
 
@@ -475,6 +481,8 @@ class TestLargeFilePerformance(unittest.TestCase):
         logger.info(f'Results for {numFiles} with max {maxUploads} concurrent uploads and max {maxDeletes} concurrent deletes')
         for message in g_davPerformanceResults:
             logger.info(f'{message}')
+
+        self.assertFalse(threadingException)
 
         logger.info(f'Done')
         pass
