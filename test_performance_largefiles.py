@@ -551,16 +551,24 @@ class TestLargeFilePerformance(unittest.TestCase):
                         while threading.active_count() > 1:
                             time.sleep(0.01)
 
-                    logger.info(f'Deleting local temp filess in {targetDirectory} before sync')
+                    logger.info(f'Deleting local temp files in {targetDirectory} before sync')
                     cmd = f'rm {targetDirectory}/.*'
+                    os.system(cmd)
+
+                    logger.info(f'Deleting local conflicted copies in {targetDirectory} before sync')
+                    cmd = f'rm {targetDirectory}/*conflicted*'
                     os.system(cmd)
 
                     cmd = f'nextcloudcmd --non-interactive --path {serverTargetFolder} -u ${{NEXTCLOUD_SELENIUM_USER_{fullnode.upper()}_{drv.target.upper()}}} -p ${{NEXTCLOUD_SELENIUM_PASSWORD_{fullnode.upper()}_{drv.target.upper()}}} {targetDirectory} https://{drv.get_node_base_url(fullnode)}'
                     logger.info(f'Executing {cmd}')
                     os.system(cmd)
 
-                    logger.info(f'Deleting local temp filess in {targetDirectory} after sync')
+                    logger.info(f'Deleting local temp files in {targetDirectory} after sync')
                     cmd = f'rm {targetDirectory}/.*'
+                    os.system(cmd)
+
+                    logger.info(f'Deleting local conflicted copies in {targetDirectory} after sync')
+                    cmd = f'rm {targetDirectory}/*conflicted*'
                     os.system(cmd)
 
                     # cmd = ['nextcloudcmd','--non-interactive','--path',serverTargetFolder,'-u',nodeuser,'-p',nodepwd,targetDirectory,f'https://{drv.get_node_base_url(fullnode)}']
@@ -665,16 +673,24 @@ class TestLargeFilePerformance(unittest.TestCase):
                         while threading.active_count() > 1:
                             time.sleep(0.01)
 
-                    logger.info(f'Deleting local temp filess in {targetDirectory} before sync')
+                    logger.info(f'Deleting local temp files in {targetDirectory} before sync')
                     cmd = f'rm {targetDirectory}/.*'
+                    os.system(cmd)
+
+                    logger.info(f'Deleting local conflicted copies in {targetDirectory} before sync')
+                    cmd = f'rm {targetDirectory}/*conflicted*'
                     os.system(cmd)
 
                     cmd = f'nextcloudcmd --non-interactive --path {serverTargetFolder} -u ${{NEXTCLOUD_SELENIUM_USER_{fullnode.upper()}_{drv.target.upper()}}} -p ${{NEXTCLOUD_SELENIUM_PASSWORD_{fullnode.upper()}_{drv.target.upper()}}} {targetDirectory} https://{drv.get_node_base_url(fullnode)}'
                     logger.info(f'Executing {cmd}')
                     os.system(cmd)
 
-                    logger.info(f'Deleting local temp filess in {targetDirectory} after sync')
+                    logger.info(f'Deleting local temp files in {targetDirectory} after sync')
                     cmd = f'rm {targetDirectory}/.*'
+                    os.system(cmd)
+
+                    logger.info(f'Deleting local conflicted copies in {targetDirectory} after sync')
+                    cmd = f'rm {targetDirectory}/*conflicted*'
                     os.system(cmd)
 
                     # cmd = ['nextcloudcmd','--non-interactive','--path',serverTargetFolder,'-u',nodeuser,'-p',nodepwd,targetDirectory,f'https://{drv.get_node_base_url(fullnode)}']
@@ -779,16 +795,24 @@ class TestLargeFilePerformance(unittest.TestCase):
                         while threading.active_count() > 1:
                             time.sleep(0.01)
 
-                    logger.info(f'Deleting local temp filess in {targetDirectory} before sync')
+                    logger.info(f'Deleting local temp files in {targetDirectory} before sync')
                     cmd = f'rm {targetDirectory}/.*'
+                    os.system(cmd)
+
+                    logger.info(f'Deleting local conflicted copies in {targetDirectory} before sync')
+                    cmd = f'rm {targetDirectory}/*conflicted*'
                     os.system(cmd)
 
                     cmd = f'nextcloudcmd --non-interactive --path {serverTargetFolder} -u ${{NEXTCLOUD_SELENIUM_USER_{fullnode.upper()}_{drv.target.upper()}}} -p ${{NEXTCLOUD_SELENIUM_PASSWORD_{fullnode.upper()}_{drv.target.upper()}}} {targetDirectory} https://{drv.get_node_base_url(fullnode)}'
                     logger.info(f'Executing {cmd}')
                     os.system(cmd)
 
-                    logger.info(f'Deleting local temp filess in {targetDirectory} after sync')
+                    logger.info(f'Deleting local temp files in {targetDirectory} after sync')
                     cmd = f'rm {targetDirectory}/.*'
+                    os.system(cmd)
+
+                    logger.info(f'Deleting local conflicted copies in {targetDirectory} after sync')
+                    cmd = f'rm {targetDirectory}/*conflicted*'
                     os.system(cmd)
 
                     # cmd = ['nextcloudcmd','--non-interactive','--path',serverTargetFolder,'-u',nodeuser,'-p',nodepwd,targetDirectory,f'https://{drv.get_node_base_url(fullnode)}']
