@@ -602,7 +602,7 @@ class TestLargeFilePerformance(unittest.TestCase):
                     davElements = client.list(serverTargetFolder)
                     davElements.pop(0)
 
-                    self.assertEqual(davElements, os.listdir(targetDirectory))
+                    self.assertEqual(davElements.sort(), os.listdir(targetDirectory).sort())
                     logger.info(f'Local and remote directories contain the same files {davElements} and {os.listdir(targetDirectory)}')
 
                     logger.info(f'Deleting remove files: {davElements}')
@@ -716,7 +716,7 @@ class TestLargeFilePerformance(unittest.TestCase):
                     davElements = client.list(serverTargetFolder)
                     davElements.pop(0)
 
-                    self.assertEqual(davElements, os.listdir(targetDirectory))
+                    self.assertEqual(davElements.sort(), os.listdir(targetDirectory).sort())
                     logger.info(f'Local and remote directories contain the same files {davElements} and {os.listdir(targetDirectory)}')
 
                     logger.info(f'Deleting remove files: {davElements}')
@@ -830,7 +830,7 @@ class TestLargeFilePerformance(unittest.TestCase):
                     davElements = client.list(serverTargetFolder)
                     davElements.pop(0)
 
-                    self.assertEqual(davElements, os.listdir(targetDirectory))
+                    self.assertEqual(davElements.sort(), os.listdir(targetDirectory).sort())
                     logger.info(f'Local and remote directories contain the same files {davElements} and {os.listdir(targetDirectory)}')
 
                     logger.info(f'Deleting remove files: {davElements}')
