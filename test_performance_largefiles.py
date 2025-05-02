@@ -507,6 +507,11 @@ class TestLargeFilePerformance(unittest.TestCase):
     def test_nextcloudcmd_home(self):
         serverTargetFolder = 'selenium-home/nextcloudcmd'
 
+        if checkTestData() == False:
+            logger.warning(f'File size check failed, regenerating test data')
+            deleteTestData()
+            generateTestData()
+
         # Command to run for a basic sync
         # rm /tmp/largefiles/.sync_*
         # nextcloudcmd --non-interactive --silent --path selenium-home/nextcloudcmd -u ${NEXTCLOUD_SELENIUM_USER_SUNET_TEST} -p ${NEXTCLOUD_SELENIUM_PASSWORD_SUNET_TEST} /tmp/largefiles https://sunet.drive.test.sunet.se 
@@ -612,6 +617,7 @@ class TestLargeFilePerformance(unittest.TestCase):
 
                     davElements = davElements.sort()
                     localElements = os.listdir(targetDirectory).sort()
+                    logger.info(f'Checking davElements and localElements: {davElements} - {localElements}')
                     self.assertEqual(len(davElements), len(localElements))
                     # Compare the elements
                     for index in range(0,len(davElements)):
@@ -633,6 +639,11 @@ class TestLargeFilePerformance(unittest.TestCase):
 
     def test_nextcloudcmd_system(self):
         serverTargetFolder = 'selenium-system/nextcloudcmd'
+
+        if checkTestData() == False:
+            logger.warning(f'File size check failed, regenerating test data')
+            deleteTestData()
+            generateTestData()
 
         # Command to run for a basic sync
         # rm /tmp/largefiles/.sync_*
@@ -760,6 +771,11 @@ class TestLargeFilePerformance(unittest.TestCase):
 
     def test_nextcloudcmd_personal(self):
         serverTargetFolder = 'selenium-home/nextcloudcmd'
+
+        if checkTestData() == False:
+            logger.warning(f'File size check failed, regenerating test data')
+            deleteTestData()
+            generateTestData()
 
         # Command to run for a basic sync
         # rm /tmp/largefiles/.sync_*
