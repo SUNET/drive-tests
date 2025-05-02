@@ -517,7 +517,7 @@ class TestLargeFilePerformance(unittest.TestCase):
             logger.warning(f'File size check failed, regenerating test data')
             deleteTestData()
             generateTestData()
-            
+
         maxDeletes = 1
 
         drv = sunetnextcloud.TestTarget()
@@ -614,9 +614,10 @@ class TestLargeFilePerformance(unittest.TestCase):
 
                     davElements = client.list(serverTargetFolder)
                     davElements.pop(0)
-
-                    davElements = davElements.sort()
-                    localElements = os.listdir(targetDirectory).sort()
+                    davElements.sort()
+                    
+                    localElements = os.listdir(targetDirectory)
+                    localElements.sort()
                     logger.info(f'Checking davElements and localElements: {davElements} - {localElements}')
                     self.assertEqual(len(davElements), len(localElements))
                     # Compare the elements
@@ -747,9 +748,10 @@ class TestLargeFilePerformance(unittest.TestCase):
 
                     davElements = client.list(serverTargetFolder)
                     davElements.pop(0)
-
-                    davElements = davElements.sort()
-                    localElements = os.listdir(targetDirectory).sort()
+                    davElements.sort()
+                    
+                    localElements = os.listdir(targetDirectory)
+                    localElements.sort()
                     self.assertEqual(len(davElements), len(localElements))
                     # Compare the elements
                     for index in range(0,len(davElements)):
@@ -879,9 +881,10 @@ class TestLargeFilePerformance(unittest.TestCase):
 
                     davElements = client.list(serverTargetFolder)
                     davElements.pop(0)
-
-                    davElements = davElements.sort()
-                    localElements = os.listdir(targetDirectory).sort()
+                    davElements.sort()
+                    
+                    localElements = os.listdir(targetDirectory)
+                    localElements.sort()
                     self.assertEqual(len(davElements), len(localElements))
                     # Compare the elements
                     for index in range(0,len(davElements)):
