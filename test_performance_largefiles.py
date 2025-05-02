@@ -507,17 +507,17 @@ class TestLargeFilePerformance(unittest.TestCase):
     def test_nextcloudcmd_home(self):
         serverTargetFolder = 'selenium-home/nextcloudcmd'
 
-        if checkTestData() == False:
-            logger.warning(f'File size check failed, regenerating test data')
-            deleteTestData()
-            generateTestData()
-
         # Command to run for a basic sync
         # rm /tmp/largefiles/.sync_*
         # nextcloudcmd --non-interactive --silent --path selenium-home/nextcloudcmd -u ${NEXTCLOUD_SELENIUM_USER_SUNET_TEST} -p ${NEXTCLOUD_SELENIUM_PASSWORD_SUNET_TEST} /tmp/largefiles https://sunet.drive.test.sunet.se 
         global logger, g_testThreadsRunning, g_davPerformanceResults
         g_davPerformanceResults.clear()
 
+        if checkTestData() == False:
+            logger.warning(f'File size check failed, regenerating test data')
+            deleteTestData()
+            generateTestData()
+            
         maxDeletes = 1
 
         drv = sunetnextcloud.TestTarget()
@@ -640,16 +640,16 @@ class TestLargeFilePerformance(unittest.TestCase):
     def test_nextcloudcmd_system(self):
         serverTargetFolder = 'selenium-system/nextcloudcmd'
 
-        if checkTestData() == False:
-            logger.warning(f'File size check failed, regenerating test data')
-            deleteTestData()
-            generateTestData()
-
         # Command to run for a basic sync
         # rm /tmp/largefiles/.sync_*
         # nextcloudcmd --non-interactive --silent --path selenium-home/nextcloudcmd -u ${NEXTCLOUD_SELENIUM_USER_SUNET_TEST} -p ${NEXTCLOUD_SELENIUM_PASSWORD_SUNET_TEST} /tmp/largefiles https://sunet.drive.test.sunet.se 
         global logger, g_testThreadsRunning, g_davPerformanceResults
         g_davPerformanceResults.clear()
+
+        if checkTestData() == False:
+            logger.warning(f'File size check failed, regenerating test data')
+            deleteTestData()
+            generateTestData()
 
         maxDeletes = 1
 
@@ -772,16 +772,16 @@ class TestLargeFilePerformance(unittest.TestCase):
     def test_nextcloudcmd_personal(self):
         serverTargetFolder = 'selenium-home/nextcloudcmd'
 
-        if checkTestData() == False:
-            logger.warning(f'File size check failed, regenerating test data')
-            deleteTestData()
-            generateTestData()
-
         # Command to run for a basic sync
         # rm /tmp/largefiles/.sync_*
         # nextcloudcmd --non-interactive --silent --path selenium-home/nextcloudcmd -u ${NEXTCLOUD_SELENIUM_USER_SUNET_TEST} -p ${NEXTCLOUD_SELENIUM_PASSWORD_SUNET_TEST} /tmp/largefiles https://sunet.drive.test.sunet.se 
         global logger, g_testThreadsRunning, g_davPerformanceResults
         g_davPerformanceResults.clear()
+
+        if checkTestData() == False:
+            logger.warning(f'File size check failed, regenerating test data')
+            deleteTestData()
+            generateTestData()
 
         maxDeletes = 1
 
