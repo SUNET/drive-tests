@@ -195,9 +195,7 @@ class TestLargeFilePerformance(unittest.TestCase):
                 for fe in range(1,2):
                     nodebaseurl = drv.get_node_base_url(fullnode)
                     serverid = f'node{fe}.{nodebaseurl}'
-
                     logger.info(f'TestID: {fullnode}')
-
                     nodeuser = drv.get_seleniumuser(fullnode)
                     nodepwd = drv.get_seleniumuserpassword(fullnode)
                     url = drv.get_webdav_url(fullnode, nodeuser)
@@ -489,7 +487,7 @@ class TestLargeFilePerformance(unittest.TestCase):
         pass
 
     def test_rclone_home(self):
-        serverTargetFolder = 'selenium-home/largefiles'
+        serverTargetFolder = 'selenium-home/rclone'
         global logger, g_testThreadsRunning, g_davPerformanceResults
         g_davPerformanceResults.clear()
 
@@ -505,6 +503,348 @@ class TestLargeFilePerformance(unittest.TestCase):
 
         logger.info(f'Done')
         pass
+
+    def test_nextcloudcmd_home(self):
+        serverTargetFolder = 'selenium-home/nextcloudcmd'
+
+        # Command to run for a basic sync
+        # rm /tmp/largefiles/.sync_*
+        # nextcloudcmd --non-interactive --silent --path selenium-home/nextcloudcmd -u ${NEXTCLOUD_SELENIUM_USER_SUNET_TEST} -p ${NEXTCLOUD_SELENIUM_PASSWORD_SUNET_TEST} /tmp/largefiles https://sunet.drive.test.sunet.se 
+        global logger, g_testThreadsRunning, g_davPerformanceResults
+        g_davPerformanceResults.clear()
+
+        maxDeletes = 1
+
+        drv = sunetnextcloud.TestTarget()
+        for fullnode in drv.fullnodes:
+            with self.subTest(mynode=fullnode):
+                for fe in range(1,2):
+                    nodebaseurl = drv.get_node_base_url(fullnode)
+                    serverid = f'node{fe}.{nodebaseurl}'
+                    logger.info(f'TestID: {fullnode}')
+                    nodeuser = drv.get_seleniumuser(fullnode)
+                    nodepwd = drv.get_seleniumuserpassword(fullnode)
+                    url = drv.get_webdav_url(fullnode, nodeuser)
+                    logger.info(f'URL: {url}')
+                    options = {
+                    'webdav_hostname': url,
+                    'webdav_login' : nodeuser,
+                    'webdav_password' : nodepwd,
+                    'webdav_timeout': g_WebDavPerformance_timeout
+                    }
+
+                    client = Client(options)
+                    client.session.cookies.set('SERVERID', serverid)
+
+                    client.mkdir(serverTargetFolder)
+                    davElements = client.list(serverTargetFolder)
+                    davElements.pop(0)
+
+                    logger.info(f'Precleaning target folder {davElements}')
+
+                    for i in range(0,len(davElements),maxDeletes):
+                        x = i
+                        logger.info(f'Batch delete {davElements[x:x+maxDeletes]}')
+                        for element in davElements[x:x+maxDeletes]:
+                            t = threading.Thread(target=client.clean, args=[f'{serverTargetFolder}/' + element])
+                            t.start()
+                        while threading.active_count() > 1:
+                            time.sleep(0.01)
+
+                    logger.info(f'Deleting local temp filess in {targetDirectory} before sync')
+                    cmd = f'rm {targetDirectory}/.*'
+                    os.system(cmd)
+
+                    cmd = f'nextcloudcmd --non-interactive --path {serverTargetFolder} -u ${{NEXTCLOUD_SELENIUM_USER_{fullnode.upper()}_{drv.target.upper()}}} -p ${{NEXTCLOUD_SELENIUM_PASSWORD_{fullnode.upper()}_{drv.target.upper()}}} {targetDirectory} https://{drv.get_node_base_url(fullnode)}'
+                    logger.info(f'Executing {cmd}')
+                    os.system(cmd)
+
+                    logger.info(f'Deleting local temp filess in {targetDirectory} after sync')
+                    cmd = f'rm {targetDirectory}/.*'
+                    os.system(cmd)
+
+                    # cmd = ['nextcloudcmd','--non-interactive','--path',serverTargetFolder,'-u',nodeuser,'-p',nodepwd,targetDirectory,f'https://{drv.get_node_base_url(fullnode)}']
+
+                    # print(cmd)
+
+                    # process = subprocess.Popen(
+                    #     cmd,
+                    #     encoding='utf-8',
+                    #     stdin=subprocess.PIPE,
+                    #     stdout=subprocess.PIPE,
+                    # )
+
+                    # while(True):
+                    #     returncode = process.poll()
+                    #     if returncode is None:
+                    #         # You describe what is going on.
+                    #         # You can describe the process every time the time elapses as needed.
+                    #         # print("running process")
+                    #         time.sleep(0.01)
+                    #         data = process.stdout
+                    #         if data:
+                    #             # If there is any response, describe it here.
+                    #             # You need to use readline () or readlines () properly, depending on how the process responds.
+                    #             msg_line = data.readline()
+                    #             print(msg_line)
+                    #         err = process.stderr
+                    #         if err:
+                    #             # If there is any error response, describe it here.
+                    #             msg_line = err.readline()
+                    #             print(msg_line)
+                    #     else:
+                    #         print(returncode)
+                    #         break
+
+                    # # Describes the processing after the process ends.
+                    # logger.info("Nextcloudcmd terminated")
+
+                    davElements = client.list(serverTargetFolder)
+                    davElements.pop(0)
+
+                    self.assertEqual(davElements, os.listdir(targetDirectory))
+                    logger.info(f'Local and remote directories contain the same files {davElements} and {os.listdir(targetDirectory)}')
+
+                    logger.info(f'Deleting remove files: {davElements}')
+
+                    for i in range(0,len(davElements),maxDeletes):
+                        x = i
+                        logger.info(f'Batch delete {davElements[x:x+maxDeletes]}')
+                        for element in davElements[x:x+maxDeletes]:
+                            t = threading.Thread(target=client.clean, args=[f'{serverTargetFolder}/' + element])
+                            t.start()
+                        while threading.active_count() > 1:
+                            time.sleep(0.01)
+
+                    logger.info(f'Done')
+
+    def test_nextcloudcmd_system(self):
+        serverTargetFolder = 'selenium-system/nextcloudcmd'
+
+        # Command to run for a basic sync
+        # rm /tmp/largefiles/.sync_*
+        # nextcloudcmd --non-interactive --silent --path selenium-home/nextcloudcmd -u ${NEXTCLOUD_SELENIUM_USER_SUNET_TEST} -p ${NEXTCLOUD_SELENIUM_PASSWORD_SUNET_TEST} /tmp/largefiles https://sunet.drive.test.sunet.se 
+        global logger, g_testThreadsRunning, g_davPerformanceResults
+        g_davPerformanceResults.clear()
+
+        maxDeletes = 1
+
+        drv = sunetnextcloud.TestTarget()
+        for fullnode in drv.fullnodes:
+            with self.subTest(mynode=fullnode):
+                for fe in range(1,2):
+                    nodebaseurl = drv.get_node_base_url(fullnode)
+                    serverid = f'node{fe}.{nodebaseurl}'
+                    logger.info(f'TestID: {fullnode}')
+                    nodeuser = drv.get_seleniumuser(fullnode)
+                    nodepwd = drv.get_seleniumuserpassword(fullnode)
+                    url = drv.get_webdav_url(fullnode, nodeuser)
+                    logger.info(f'URL: {url}')
+                    options = {
+                    'webdav_hostname': url,
+                    'webdav_login' : nodeuser,
+                    'webdav_password' : nodepwd,
+                    'webdav_timeout': g_WebDavPerformance_timeout
+                    }
+
+                    client = Client(options)
+                    client.session.cookies.set('SERVERID', serverid)
+
+                    client.mkdir(serverTargetFolder)
+                    davElements = client.list(serverTargetFolder)
+                    davElements.pop(0)
+
+                    logger.info(f'Precleaning target folder {davElements}')
+
+                    for i in range(0,len(davElements),maxDeletes):
+                        x = i
+                        logger.info(f'Batch delete {davElements[x:x+maxDeletes]}')
+                        for element in davElements[x:x+maxDeletes]:
+                            t = threading.Thread(target=client.clean, args=[f'{serverTargetFolder}/' + element])
+                            t.start()
+                        while threading.active_count() > 1:
+                            time.sleep(0.01)
+
+                    logger.info(f'Deleting local temp filess in {targetDirectory} before sync')
+                    cmd = f'rm {targetDirectory}/.*'
+                    os.system(cmd)
+
+                    cmd = f'nextcloudcmd --non-interactive --path {serverTargetFolder} -u ${{NEXTCLOUD_SELENIUM_USER_{fullnode.upper()}_{drv.target.upper()}}} -p ${{NEXTCLOUD_SELENIUM_PASSWORD_{fullnode.upper()}_{drv.target.upper()}}} {targetDirectory} https://{drv.get_node_base_url(fullnode)}'
+                    logger.info(f'Executing {cmd}')
+                    os.system(cmd)
+
+                    logger.info(f'Deleting local temp filess in {targetDirectory} after sync')
+                    cmd = f'rm {targetDirectory}/.*'
+                    os.system(cmd)
+
+                    # cmd = ['nextcloudcmd','--non-interactive','--path',serverTargetFolder,'-u',nodeuser,'-p',nodepwd,targetDirectory,f'https://{drv.get_node_base_url(fullnode)}']
+
+                    # print(cmd)
+
+                    # process = subprocess.Popen(
+                    #     cmd,
+                    #     encoding='utf-8',
+                    #     stdin=subprocess.PIPE,
+                    #     stdout=subprocess.PIPE,
+                    # )
+
+                    # while(True):
+                    #     returncode = process.poll()
+                    #     if returncode is None:
+                    #         # You describe what is going on.
+                    #         # You can describe the process every time the time elapses as needed.
+                    #         # print("running process")
+                    #         time.sleep(0.01)
+                    #         data = process.stdout
+                    #         if data:
+                    #             # If there is any response, describe it here.
+                    #             # You need to use readline () or readlines () properly, depending on how the process responds.
+                    #             msg_line = data.readline()
+                    #             print(msg_line)
+                    #         err = process.stderr
+                    #         if err:
+                    #             # If there is any error response, describe it here.
+                    #             msg_line = err.readline()
+                    #             print(msg_line)
+                    #     else:
+                    #         print(returncode)
+                    #         break
+
+                    # # Describes the processing after the process ends.
+                    # logger.info("Nextcloudcmd terminated")
+
+                    davElements = client.list(serverTargetFolder)
+                    davElements.pop(0)
+
+                    self.assertEqual(davElements, os.listdir(targetDirectory))
+                    logger.info(f'Local and remote directories contain the same files {davElements} and {os.listdir(targetDirectory)}')
+
+                    logger.info(f'Deleting remove files: {davElements}')
+
+                    for i in range(0,len(davElements),maxDeletes):
+                        x = i
+                        logger.info(f'Batch delete {davElements[x:x+maxDeletes]}')
+                        for element in davElements[x:x+maxDeletes]:
+                            t = threading.Thread(target=client.clean, args=[f'{serverTargetFolder}/' + element])
+                            t.start()
+                        while threading.active_count() > 1:
+                            time.sleep(0.01)
+
+                    logger.info(f'Done')
+
+    def test_nextcloudcmd_personal(self):
+        serverTargetFolder = 'selenium-home/nextcloudcmd'
+
+        # Command to run for a basic sync
+        # rm /tmp/largefiles/.sync_*
+        # nextcloudcmd --non-interactive --silent --path selenium-home/nextcloudcmd -u ${NEXTCLOUD_SELENIUM_USER_SUNET_TEST} -p ${NEXTCLOUD_SELENIUM_PASSWORD_SUNET_TEST} /tmp/largefiles https://sunet.drive.test.sunet.se 
+        global logger, g_testThreadsRunning, g_davPerformanceResults
+        g_davPerformanceResults.clear()
+
+        maxDeletes = 1
+
+        drv = sunetnextcloud.TestTarget()
+        for fullnode in drv.fullnodes:
+            with self.subTest(mynode=fullnode):
+                for fe in range(1,2):
+                    nodebaseurl = drv.get_node_base_url(fullnode)
+                    serverid = f'node{fe}.{nodebaseurl}'
+                    logger.info(f'TestID: {fullnode}')
+                    nodeuser = drv.get_seleniumuser(fullnode)
+                    nodepwd = drv.get_seleniumuserpassword(fullnode)
+                    url = drv.get_webdav_url(fullnode, nodeuser)
+                    logger.info(f'URL: {url}')
+                    options = {
+                    'webdav_hostname': url,
+                    'webdav_login' : nodeuser,
+                    'webdav_password' : nodepwd,
+                    'webdav_timeout': g_WebDavPerformance_timeout
+                    }
+
+                    client = Client(options)
+                    client.session.cookies.set('SERVERID', serverid)
+
+                    client.mkdir(serverTargetFolder)
+                    davElements = client.list(serverTargetFolder)
+                    davElements.pop(0)
+
+                    logger.info(f'Precleaning target folder {davElements}')
+
+                    for i in range(0,len(davElements),maxDeletes):
+                        x = i
+                        logger.info(f'Batch delete {davElements[x:x+maxDeletes]}')
+                        for element in davElements[x:x+maxDeletes]:
+                            t = threading.Thread(target=client.clean, args=[f'{serverTargetFolder}/' + element])
+                            t.start()
+                        while threading.active_count() > 1:
+                            time.sleep(0.01)
+
+                    logger.info(f'Deleting local temp filess in {targetDirectory} before sync')
+                    cmd = f'rm {targetDirectory}/.*'
+                    os.system(cmd)
+
+                    cmd = f'nextcloudcmd --non-interactive --path {serverTargetFolder} -u ${{NEXTCLOUD_SELENIUM_USER_{fullnode.upper()}_{drv.target.upper()}}} -p ${{NEXTCLOUD_SELENIUM_PASSWORD_{fullnode.upper()}_{drv.target.upper()}}} {targetDirectory} https://{drv.get_node_base_url(fullnode)}'
+                    logger.info(f'Executing {cmd}')
+                    os.system(cmd)
+
+                    logger.info(f'Deleting local temp filess in {targetDirectory} after sync')
+                    cmd = f'rm {targetDirectory}/.*'
+                    os.system(cmd)
+
+                    # cmd = ['nextcloudcmd','--non-interactive','--path',serverTargetFolder,'-u',nodeuser,'-p',nodepwd,targetDirectory,f'https://{drv.get_node_base_url(fullnode)}']
+
+                    # print(cmd)
+
+                    # process = subprocess.Popen(
+                    #     cmd,
+                    #     encoding='utf-8',
+                    #     stdin=subprocess.PIPE,
+                    #     stdout=subprocess.PIPE,
+                    # )
+
+                    # while(True):
+                    #     returncode = process.poll()
+                    #     if returncode is None:
+                    #         # You describe what is going on.
+                    #         # You can describe the process every time the time elapses as needed.
+                    #         # print("running process")
+                    #         time.sleep(0.01)
+                    #         data = process.stdout
+                    #         if data:
+                    #             # If there is any response, describe it here.
+                    #             # You need to use readline () or readlines () properly, depending on how the process responds.
+                    #             msg_line = data.readline()
+                    #             print(msg_line)
+                    #         err = process.stderr
+                    #         if err:
+                    #             # If there is any error response, describe it here.
+                    #             msg_line = err.readline()
+                    #             print(msg_line)
+                    #     else:
+                    #         print(returncode)
+                    #         break
+
+                    # # Describes the processing after the process ends.
+                    # logger.info("Nextcloudcmd terminated")
+
+                    davElements = client.list(serverTargetFolder)
+                    davElements.pop(0)
+
+                    self.assertEqual(davElements, os.listdir(targetDirectory))
+                    logger.info(f'Local and remote directories contain the same files {davElements} and {os.listdir(targetDirectory)}')
+
+                    logger.info(f'Deleting remove files: {davElements}')
+
+                    for i in range(0,len(davElements),maxDeletes):
+                        x = i
+                        logger.info(f'Batch delete {davElements[x:x+maxDeletes]}')
+                        for element in davElements[x:x+maxDeletes]:
+                            t = threading.Thread(target=client.clean, args=[f'{serverTargetFolder}/' + element])
+                            t.start()
+                        while threading.active_count() > 1:
+                            time.sleep(0.01)
+
+                    logger.info(f'Done')
 
 if __name__ == '__main__':
     unittest.main(testRunner=xmlrunner.XMLTestRunner(output='test-reports'))
