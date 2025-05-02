@@ -612,7 +612,7 @@ class TestLargeFilePerformance(unittest.TestCase):
 
                     davElements = davElements.sort()
                     localElements = os.listdir(targetDirectory).sort()
-                    self.assertEqual(len(davElements, len(localElements)))
+                    self.assertEqual(len(davElements), len(localElements))
                     # Compare the elements
                     for index in range(0,len(davElements)):
                         self.assertEqual(davElements[index], localElements[index])
@@ -739,7 +739,7 @@ class TestLargeFilePerformance(unittest.TestCase):
 
                     davElements = davElements.sort()
                     localElements = os.listdir(targetDirectory).sort()
-                    self.assertEqual(len(davElements, len(localElements)))
+                    self.assertEqual(len(davElements), len(localElements))
                     # Compare the elements
                     for index in range(0,len(davElements)):
                         self.assertEqual(davElements[index], localElements[index])
@@ -866,7 +866,7 @@ class TestLargeFilePerformance(unittest.TestCase):
 
                     davElements = davElements.sort()
                     localElements = os.listdir(targetDirectory).sort()
-                    self.assertEqual(len(davElements, len(localElements)))
+                    self.assertEqual(len(davElements), len(localElements))
                     # Compare the elements
                     for index in range(0,len(davElements)):
                         self.assertEqual(davElements[index], localElements[index])
