@@ -191,6 +191,70 @@ class NodeUsers(threading.Thread):
         logger.info(f'NodeUsers thread done for node {self.name}, test passed: {g_testPassed[fullnode]}')
         return
 
+class NodeGroups(threading.Thread):
+    def __init__(self, name, TestOcsCalls, verify=True):
+        threading.Thread.__init__(self)
+        self.name = name
+        self.TestOcsCalls = TestOcsCalls
+        self.verify = verify
+
+    def run(self):
+        global logger
+        global g_testPassed
+        global g_testThreadsRunning
+        g_testThreadsRunning += 1
+        logger.info(f'NodeGroups thread started for node {self.name}')
+        drv = sunetnextcloud.TestTarget()
+        fullnode = self.name
+        g_testPassed[fullnode] = False
+        logger.info(f'Setting passed for {fullnode} to {g_testPassed.get(fullnode)}')
+
+        try:
+            url = drv.get_add_group_url(fullnode)
+            logger.info(f'{self.TestOcsCalls._testMethodName} {url}')
+            nodeuser = drv.get_ocsuser(fullnode)
+            nodepwd = drv.get_ocsuserapppassword(fullnode)
+            url = url.replace("$USERNAME$", nodeuser)
+            url = url.replace("$PASSWORD$", nodepwd)
+        except Exception as error:
+            logger.error(f'Error getting credentials for {url}:{error}')
+            g_testThreadsRunning -= 1
+            return
+
+        try:
+            r = requests.get(url, headers=ocsheaders, timeout=g_requestTimeout, verify=self.verify)
+        except Exception as error:
+            logger.error(f'Error getting {url}:{error}')
+            g_testThreadsRunning -= 1
+            return
+        try:
+            j = json.loads(r.text)
+            # logger.info(json.dumps(j, indent=4, sort_keys=True))
+            groups = j["ocs"]["data"]["groups"]
+            logger.info(f'Received {len(groups)} from {self.name}')
+        except Exception as error:
+            logger.info(f"No JSON reply received from {fullnode}:{error}")
+            logger.info(r.text)
+            g_testPassed[fullnode] = False
+            g_testThreadsRunning -= 1
+            return
+        
+        # Test for forcemfa group
+        # logger.info(json.dumps(j, indent=4, sort_keys=True))
+        if "forcemfa" in j["ocs"]["data"]["groups"]:
+            logger.info(f'Found forcemfa on {fullnode}')
+        else:
+            logger.info(f"Group forcemfa does not exist on {fullnode}")
+            logger.info(r.text)
+            g_testPassed[fullnode] = False
+            g_testThreadsRunning -= 1
+            return
+
+        g_testPassed[fullnode] = True
+        g_testThreadsRunning -= 1
+        logger.info(f'NodeUsers thread done for node {self.name}, test passed: {g_testPassed[fullnode]}')
+        return
+
 class CapabilitiesNoUser(threading.Thread):
     def __init__(self, name, TestOcsCalls, verify=True):
         threading.Thread.__init__(self)
@@ -439,6 +503,21 @@ class TestOcsCalls(unittest.TestCase):
             with self.subTest(mynode=fullnode):
                 logger.info(f'TestID: {fullnode}')
                 nodeUsersThread = NodeUsers(fullnode, self, verify=drv.verify)
+                nodeUsersThread.start()
+
+        while(g_testThreadsRunning > 0):
+            time.sleep(1)
+
+        for fullnode in drv.fullnodes:
+            with self.subTest(mynode=fullnode):
+                self.assertTrue(g_testPassed[fullnode])
+
+    def test_nodegroups(self):
+        drv = sunetnextcloud.TestTarget()
+        for fullnode in drv.fullnodes:
+            with self.subTest(mynode=fullnode):
+                logger.info(f'TestID: {fullnode}')
+                nodeUsersThread = NodeGroups(fullnode, self, verify=drv.verify)
                 nodeUsersThread.start()
 
         while(g_testThreadsRunning > 0):
