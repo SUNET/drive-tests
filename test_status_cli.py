@@ -365,10 +365,7 @@ class TestStatus(unittest.TestCase):
         global g_failedNodes
         drv = sunetnextcloud.TestTarget()
 
-        if drv.target == 'prod':
-            logger.warning(f'We are not testing SeamlessAccess in production yet')
-            return
-        elif drv.target == 'localhost':
+        if drv.target == 'localhost':
             logger.warning(f'We are not testing SeamlessAccess for localhost')
             return
 
