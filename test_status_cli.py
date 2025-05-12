@@ -30,11 +30,16 @@ logging.basicConfig(format = '%(asctime)s - %(module)s.%(funcName)s - %(levelnam
                 datefmt = '%Y-%m-%d %H:%M:%S', level = logging.INFO)
 
 class FrontendStatusInfo(threading.Thread):
-    def __init__(self, url, TestStatus, verify=True):
+    def __init__(self, url, TestStatus, verify=True, useHttps=True):
         threading.Thread.__init__(self)
-        self.url = url
+        if useHttps:
+            self.url = url
+        else:
+            # self.url = url.replace('https://', 'http://')
+            self.url = url.replace('https://', 'http://')
         self.TestStatus = TestStatus
         self.verify = verify
+        self.useHttps = useHttps
 
     def run(self):
         global testThreadsRunning
@@ -66,7 +71,6 @@ class FrontendStatusInfo(threading.Thread):
         except Exception as error:
             g_failedNodes.append(self.url)
             logger.info(f'No valid JSON reply received for {self.url}: {error}')
-            g_failedNodes.append(self.url)
             testThreadsRunning -= 1
             logger.info(r.text)
             self.TestStatus.assertTrue(False)
@@ -293,7 +297,27 @@ class TestStatus(unittest.TestCase):
                 logger.error(f'   {node}')
             g_failedNodes = []
             self.assertTrue(False)
-            
+
+    # def test_frontend_statusinfo_http(self):
+    #     global g_failedNodes
+    #     g_failedNodes = []
+    #     drv = sunetnextcloud.TestTarget()
+
+    #     for url in drv.get_allnode_status_urls():
+    #         with self.subTest(myurl=url):
+    #             logger.info(f'TestID: {url}')
+    #             statusInfoThread = FrontendStatusInfo(url, self, verify=drv.verify, useHttps=False)
+    #             statusInfoThread.start()
+
+    #     while(testThreadsRunning > 0):
+    #         time.sleep(1)
+
+    #     if len(g_failedNodes) > 0:
+    #         logger.error(f'FrontendStatusInfo test failed for {len(g_failedNodes)} of {len(drv.allnodes)} nodes:')
+    #         for node in g_failedNodes:
+    #             logger.error(f'   {node}')
+    #         g_failedNodes = []
+    #         self.assertTrue(False)
 
 # Test status infor content for all individual loadbalanced nodes
     def test_node_statusinfo(self):
