@@ -1,0 +1,49 @@
+publiccodeYmlVersion: "0.4"
+
+name: drive-tests
+url: "https://github.com/sunet/drive-tests"
+platforms:
+  - web
+
+categories:
+  - test-management
+
+developmentStatus: development
+
+softwareType: "standalone/other"
+
+description:
+  en:
+    shortDescription: >
+      A unit test suite for Sunet Drive (based on Nextcloud)
+      that focuses on application-specific regression testing
+      to ensure functional and operational compliance.
+
+    longDescription: >
+      Sunet Drive is an EFSS based on Nextcloud with the aim of being an
+      Academic Toolbox for scientific data. Universities, institutions and
+      researchers can store, collaborate, and lifecycle manage their scientific data.
+      This test suite tests ensures functional and operational compliance with the 
+      system architecture during the lifecycle of the project and is especially of value
+      during system upgrades. Different levels/tiers of tests can be executed, including 
+      acceptance tests, selenium tests, collabora tests and performance tests.
+
+    features:
+      - unit testing
+      - acceptance testing
+      - regression testing
+      - selenium testing
+
+legal:
+  license: AGPL-3.0-or-later
+
+maintenance:
+  type: "community"
+
+  contacts:
+    - name: Richard Freitag <freitag@sunet.se>
+
+localisation:
+  localisationReady: true
+  availableLanguages:
+    - en
