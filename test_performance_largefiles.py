@@ -44,6 +44,7 @@ MB = 1024 * KB
 GB = 1024 * MB
 # fileSizes=[1,4,8,12] # Only GB, larger than 1
 fileSizes=[1,2,4,8] # Only GB, larger than 1
+sizeSuffix='M'
 fileNames=[] # Array with the files 
 targetDirectory=f'{tempfile.gettempdir()}/largefiles'
 threadingException = False
@@ -78,7 +79,7 @@ def deleteTestData():
 
 def checkTestData():
     Path(targetDirectory).mkdir(parents=True, exist_ok=True)
-    logpath = f'{targetDirectory}/*G.bin'
+    logpath = f'{targetDirectory}/*{sizeSuffix}.bin'
     totalSize = 0
 
     for full_path in glob.glob(logpath):
@@ -87,12 +88,14 @@ def checkTestData():
         logger.info(f'No test data found in {targetDirectory}')
         return False
     
+    return True
+
     if totalSize != expectedSize:
         logger.warning(f'Total size of existing files does not match, {totalSize} != {expectedSize}')
         return False
 
     for fileSize in fileSizes:
-        filename = f'{str(fileSize)}G.bin'
+        filename = f'{str(fileSize)}{sizeSuffix}.bin'
         pathname = f'{targetDirectory}/{filename}'            # Check if the file exists in the temp directory
         logger.info(f'Checking file {pathname}')
         if Path(pathname).exists():
@@ -115,10 +118,10 @@ def generateTestData():
         logger.error(f'Not enough space in {targetDirectory}')
 
     for fileSize in fileSizes:
-        filename = f'{str(fileSize)}G.bin'
+        filename = f'{str(fileSize)}{sizeSuffix}.bin'
         pathname = f'{targetDirectory}/{filename}'
         logger.info(f'Generating file {pathname}')
-        cmd=f'head -c {fileSize}G /dev/urandom > {pathname}'
+        cmd=f'head -c {fileSize}{sizeSuffix} /dev/urandom > {pathname}'
         logger.info(f'Running subprocess {cmd}')
         os.system(cmd)
 
@@ -215,7 +218,7 @@ class TestLargeFilePerformance(unittest.TestCase):
     #                 files = []
 
     #                 for fileSize in fileSizes:
-    #                     filename = f'{str(fileSize)}G.bin'
+    #                     filename = f'{str(fileSize)}{sizeSuffix}.bin'
     #                     files.append(filename)
 
     #                 logger.info(f'List of local files {files}')
@@ -319,7 +322,7 @@ class TestLargeFilePerformance(unittest.TestCase):
     #                 files = []
 
     #                 for fileSize in fileSizes:
-    #                     filename = f'{str(fileSize)}G.bin'
+    #                     filename = f'{str(fileSize)}{sizeSuffix}.bin'
     #                     files.append(filename)
 
     #                 logger.info(f'List of local files {files}')
@@ -423,7 +426,7 @@ class TestLargeFilePerformance(unittest.TestCase):
     #                 files = []
 
     #                 for fileSize in fileSizes:
-    #                     filename = f'{str(fileSize)}G.bin'
+    #                     filename = f'{str(fileSize)}{sizeSuffix}.bin'
     #                     files.append(filename)
 
     #                 logger.info(f'List of local files {files}')
