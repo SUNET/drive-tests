@@ -211,7 +211,7 @@ class TestLargeFilePerformance(unittest.TestCase):
     #                 }
 
     #                 client = Client(options)
-    #                 client.session.cookies.set('SERVERID', serverid)
+    #                 # client.session.cookies.set('SERVERID', serverid)
 
     #                 logger.info(client.list())
     #                 client.mkdir(serverTargetFolder)
@@ -315,7 +315,7 @@ class TestLargeFilePerformance(unittest.TestCase):
     #                 }
 
     #                 client = Client(options)
-    #                 client.session.cookies.set('SERVERID', serverid)
+    #                 # client.session.cookies.set('SERVERID', serverid)
 
     #                 logger.info(client.list())
     #                 client.mkdir(serverTargetFolder)
@@ -419,7 +419,7 @@ class TestLargeFilePerformance(unittest.TestCase):
     #                 }
 
     #                 client = Client(options)
-    #                 client.session.cookies.set('SERVERID', serverid)
+    #                 # client.session.cookies.set('SERVERID', serverid)
 
     #                 logger.info(client.list())
     #                 client.mkdir(serverTargetFolder)
@@ -542,7 +542,7 @@ class TestLargeFilePerformance(unittest.TestCase):
                     }
 
                     client = Client(options)
-                    client.session.cookies.set('SERVERID', serverid)
+                    # client.session.cookies.set('SERVERID', serverid)
 
                     client.mkdir(serverTargetFolder)
                     davElements = client.list(serverTargetFolder)
@@ -676,7 +676,7 @@ class TestLargeFilePerformance(unittest.TestCase):
                     }
 
                     client = Client(options)
-                    client.session.cookies.set('SERVERID', serverid)
+                    # client.session.cookies.set('SERVERID', serverid)
 
                     client.mkdir(serverTargetFolder)
                     davElements = client.list(serverTargetFolder)
@@ -809,7 +809,7 @@ class TestLargeFilePerformance(unittest.TestCase):
                     }
 
                     client = Client(options)
-                    client.session.cookies.set('SERVERID', serverid)
+                    # client.session.cookies.set('SERVERID', serverid)
 
                     client.mkdir(serverTargetFolder)
                     davElements = client.list(serverTargetFolder)
