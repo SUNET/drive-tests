@@ -86,6 +86,19 @@ class TestTarget(object):
         testcustomers = os.environ.get('NextcloudTestCustomers')
         testbrowsers = os.environ.get('NextcloudTestBrowsers')
         testrunner = os.environ.get('NextcloudTestRunner')
+        testfilesize = os.environ.get('NextcloudTestFileSize')
+
+        if testfilesize is None:
+            logger.info(f'Using default file size M')
+            self.testfilesize = 'M'
+        elif (testfilesize == 'M') or (testfilesize == 'G'):
+            logger.info(f'Using {testfilesize}B file size')
+            self.testfilesize = testfilesize
+        else:
+            logger.warning(f'Unknown file size {testfilesize}B, using MB as default')
+            self.testrunner = 'M'
+
+        time.sleep(900)
 
         if testrunner is None:
             logger.info(f'Using default xml test runner')
