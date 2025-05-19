@@ -98,8 +98,6 @@ class TestTarget(object):
             logger.warning(f'Unknown file size {testfilesize}B, using MB as default')
             self.testrunner = 'M'
 
-        time.sleep(900)
-
         if testrunner is None:
             logger.info(f'Using default xml test runner')
             self.testrunner = 'xml'
