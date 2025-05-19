@@ -810,7 +810,7 @@ class TestLargeFilePerformance(unittest.TestCase):
                     }
 
                     client = Client(options)
-                    client.session.cookies.set('SERVERID',  )
+                    client.session.cookies.set('SERVERID', serverid)
 
                     client.mkdir(serverTargetFolder)
                     davElements = client.list(serverTargetFolder)
