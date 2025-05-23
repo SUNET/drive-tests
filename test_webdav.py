@@ -200,6 +200,9 @@ class WebDAVMultiCheckAndRemove(threading.Thread):
                 logger.warning(f'Multiple tries to remove folder: {count}')
         except Exception as error:
             logger.warning(f'Error during iteration {count} of removing {g_testFolder}: {error}')
+            g_testPassed[fullnode] = False
+            g_testThreadsRunning -= 1
+            return
         
         try:
             self.TestWebDAV.assertFalse(client.check(g_testFolder))
