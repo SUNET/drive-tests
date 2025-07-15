@@ -84,13 +84,8 @@ preparecert:
 
 .PHONY: docker
 docker: selfsignedcert preparecert docker_kill jupyterhub
-	# prepare and build rds
-	-git clone https://github.com/Sciebo-RDS/rds-ng.git
-	mkdir -p rds-ng/deployment/containers/env
-	cp rds-ng/deployment/env/examples/* rds-ng/deployment/env
-	docker compose -p rds -f docker-compose.yml build
-
-	docker compose -p rds up -d
+	docker compose -p nextcloudlocal -f docker-compose.yml build
+	docker compose -p nextcloudlocal up -d
 	sleep 15
 	-./occ_docker maintenance:install --admin-user='admin' --admin-pass='adminpassword' --database='mysql' --database-name='nextcloud' --database-host='nextcloud-local-db' --database-user='nextcloud' --database-pass='userpass'
 
@@ -127,15 +122,6 @@ docker: selfsignedcert preparecert docker_kill jupyterhub
 	./occ_docker  app:enable deck
 	./occ_docker  app:disable firstrunwizard
 
-	wget https://github.com/SUNET/nextcloud-mfazones/releases/download/v0.2.4/mfazones-0.2.4.tar.gz
-	docker cp mfazones-0.2.4.tar.gz nextcloud-local:/var/www/html/custom_apps
-	docker exec -u www-data nextcloud-local /bin/bash -c "cd /var/www/html/custom_apps && tar -xzf mfazones-0.2.4.tar.gz && rm mfazones-0.2.4.tar.gz"
-	docker exec -u www-data nextcloud-local /bin/bash -c "sed -i -e 's/max-version=\"30\"/max-version=\"31\"/g' /var/www/html/custom_apps/mfazones/appinfo/info.xml"
-	docker exec nextcloud-local /bin/bash -c "chown -R www-data:www-data /var/www/html/custom_apps/mfazones"
-	rm mfazones-0.2.4.tar.gz
-	./occ_docker app:enable mfazones
-	# ./occ_docker app:update --all
-
 	wget https://github.com/SUNET/nextcloud-jupyter/releases/download/v0.1.2/integration_jupyterhub-0.1.2.tar.gz
 	docker cp integration_jupyterhub-0.1.2.tar.gz nextcloud-local:/var/www/html/custom_apps
 	docker exec -u www-data nextcloud-local /bin/bash -c "cd /var/www/html/custom_apps && tar -xzf integration_jupyterhub-0.1.2.tar.gz && rm integration_jupyterhub-0.1.2.tar.gz"
@@ -146,17 +132,9 @@ docker: selfsignedcert preparecert docker_kill jupyterhub
 	./occ_docker app:enable integration_jupyterhub
 	./occ_docker config:app:set integration_jupyterhub jupyter_url --value="http://localhost:8100"
 
-	# RDS NG app
-	-git clone https://github.com/Sciebo-RDS/rds-ng-nextcloud.git
-	-docker cp rds-ng-nextcloud nextcloud-local:/var/www/html/custom_apps/rdsng
-	docker exec -w /var/www/html/custom_apps/rdsng nextcloud-local make build
-	-docker exec nextcloud-local /bin/bash -c "chown -R www-data:www-data /var/www/html/custom_apps/rdsng"
-	-docker exec -u www-data nextcloud-local /bin/bash -c "sed -i -e 's/max-version=\"28\"/max-version=\"31\"/g' /var/www/html/custom_apps/rdsng/appinfo/info.xml"
-	./occ_docker app:enable rdsng
-
-	-./occ_docker  group:add mfa
-	# ./occ_docker  twofactorauth:enforce --on --group mfa
-	./occ_docker  group:adduser mfa admin
+	-./occ_docker  group:add forcemfa
+	-./occ_docker  twofactorauth:enforce --on --group forcemfa
+	./occ_docker  group:adduser forcemfa admin
 	-docker exec -u www-data nextcloud-local /bin/bash -c "env OC_PASS=mfauserpassword /var/www/html/occ user:add --password-from-env --display-name='MFA User' --group='mfa' mfauser"
 	-docker exec -u www-data nextcloud-local /bin/bash -c "env OC_PASS=nomfauserpassword /var/www/html/occ user:add --password-from-env --display-name='Ordinary User' nomfauser"
 	-docker exec -u www-data nextcloud-local /bin/bash -c "env OC_PASS=_ocs_localhost_password /var/www/html/occ user:add --password-from-env --display-name='MFA User' --group='admin' _ocs_localhost"
@@ -173,7 +151,8 @@ docker: selfsignedcert preparecert docker_kill jupyterhub
 	# -docker exec -u www-data nextcloud-local /bin/bash -c "env NC_PASS=notimportant /var/www/html/occ user:auth-tokens:add --password-from-env _selenium_localhost"
 	# -docker exec -u www-data nextcloud-local /bin/bash -c "env NC_PASS=notimportant /var/www/html/occ user:auth-tokens:add --password-from-env _selenium_localhost_mfa"
 
-	docker exec nextcloud-local-minio1 mc config host add myminio http://nextcloud-local-minio:9000 minioadmin minioadmin
+	# docker exec nextcloud-local-minio1 mc config host add myminio http://nextcloud-local-minio:9000 minioadmin minioadmin
+	docker exec nextcloud-local-minio1 mc alias set myminio http://nextcloud-local-minio:9000 minioadmin minioadmin
 	-docker exec nextcloud-local-minio1 mc mb myminio/project-bucket
 	-docker exec nextcloud-local-minio1 mc mb myminio/selenium-system
 	-docker exec nextcloud-local-minio1 mc mb myminio/selenium-personal
@@ -201,8 +180,6 @@ jupyterhub:
 cleanall: docker_kill
 	-./cleanall.sh
 	-rm .env
-	-rm -rf rds-ng-nextcloud
-	-rm -rf rds-ng
 	-rm -rf /tmp/localhost*
 	-rm -rf /tmp/nextcloud*
 	-cd .. && rm expected_localhost.yaml
@@ -265,13 +242,6 @@ apppasswords:
 	echo export NEXTCLOUD_OCS_APP_PASSWORD_LOCALHOST_LOCALHOST=$$OCS_APP_PASSWORD >> .env; \
 	echo export NEXTCLOUD_SELENIUM_APP_PASSWORD_LOCALHOST_LOCALHOST=$$SELENIUM_APP_PASSWORD >> .env; \
 	echo export NEXTCLOUD_SELENIUM_MFA_APP_PASSWORD_LOCALHOST_LOCALHOST=$$SELENIUM_MFA_APP_PASSWORD >> .env
-
-.PHONY: rds-ng-dev
-rds-ng-dev:
-	cd rds-ng/deployment/containers && docker compose -p rds -f dev.docker-compose.yaml build
-	cd rds-ng/deployment/containers && docker compose -p rds -f dev-min.docker-compose.yaml up -d
-	sleep 5
-	-firefox -new-tab http://localhost:8000
 
 .PHONY: nextcloud-http-ip
 nextcloud-http-ip:
