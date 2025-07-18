@@ -76,40 +76,40 @@ services:
     networks:
       - sciencemesh-federation
 
-  nextcloud-app2:
-    container_name: nextcloud-local2
-    image: nextcloud:30
-    restart: always
-    # expose:
-    #   - 8080:80
-    #   - "8080"
-    #   - "8443"
-    ports:
-      - 7443:8443
-      - 7080:80
-      # - 80:80
-    links:
-      - db2
-      - collabora-server
-    volumes:
-      - nextcloud2:/var/www/html
+  # nextcloud-app2:
+  #   container_name: nextcloud-local2
+  #   image: nextcloud:30
+  #   restart: always
+  #   # expose:
+  #   #   - 8080:80
+  #   #   - "8080"
+  #   #   - "8443"
+  #   ports:
+  #     - 7443:8443
+  #     - 7080:80
+  #     # - 80:80
+  #   links:
+  #     - db2
+  #     - collabora-server
+  #   volumes:
+  #     - nextcloud2:/var/www/html
 
-      - type: bind
-        source: /tmp/nextcloud-ssl.conf
-        target: /etc/apache2/mods-enabled/nextcloud.conf
-      - type: bind
-        source: /tmp/nextcloud-8443.conf
-        target: /etc/apache2/sites-enabled/nextcloud.conf
-      - type: bind
-        source: /tmp/localhost.pem
-        target: /etc/ssl/private/localhost.pem
-    environment:
-      - MYSQL_PASSWORD=userpass
-      - MYSQL_DATABASE=nextcloud
-      - MYSQL_USER=nextcloud
-      - MYSQL_HOST=db
-    networks:
-      - sciencemesh-federation
+  #     - type: bind
+  #       source: /tmp/nextcloud-ssl.conf
+  #       target: /etc/apache2/mods-enabled/nextcloud.conf
+  #     - type: bind
+  #       source: /tmp/nextcloud-8443.conf
+  #       target: /etc/apache2/sites-enabled/nextcloud.conf
+  #     - type: bind
+  #       source: /tmp/localhost.pem
+  #       target: /etc/ssl/private/localhost.pem
+  #   environment:
+  #     - MYSQL_PASSWORD=userpass
+  #     - MYSQL_DATABASE=nextcloud
+  #     - MYSQL_USER=nextcloud
+  #     - MYSQL_HOST=db
+  #   networks:
+  #     - sciencemesh-federation
 
   db1:
     container_name: nextcloud-local-db
@@ -126,20 +126,20 @@ services:
     networks:
       - sciencemesh-federation
 
-  db2:
-    container_name: nextcloud-local-db2
-    image: mariadb:latest
-    restart: always
-    command: --transaction-isolation=READ-COMMITTED --log-bin=binlog --binlog-format=ROW
-    volumes:
-      - db2:/var/lib/mysql
-    environment:
-      - MYSQL_ROOT_PASSWORD=rootpass
-      - MYSQL_PASSWORD=userpass
-      - MYSQL_DATABASE=nextcloud
-      - MYSQL_USER=nextcloud
-    networks:
-      - sciencemesh-federation
+  # db2:
+  #   container_name: nextcloud-local-db2
+  #   image: mariadb:latest
+  #   restart: always
+  #   command: --transaction-isolation=READ-COMMITTED --log-bin=binlog --binlog-format=ROW
+  #   volumes:
+  #     - db2:/var/lib/mysql
+  #   environment:
+  #     - MYSQL_ROOT_PASSWORD=rootpass
+  #     - MYSQL_PASSWORD=userpass
+  #     - MYSQL_DATABASE=nextcloud
+  #     - MYSQL_USER=nextcloud
+  #   networks:
+  #     - sciencemesh-federation
 
   collabora-server:
     image: collabora/code:latest
