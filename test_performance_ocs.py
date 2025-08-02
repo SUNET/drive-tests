@@ -159,6 +159,7 @@ class NodeOcsUserPerformance(threading.Thread):
                     startTime = datetime.now()
                     r = s.get(url, headers=ocsheaders)
                     totalTime += (datetime.now() - startTime).total_seconds()
+                    logger.info(f'List all cookies {s.cookies.get_dict()}')
                     if call == 0:
                         lastServerId = s.cookies.get_dict()['SERVERID']
                     newServerId = s.cookies.get_dict()['SERVERID']
