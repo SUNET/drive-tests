@@ -12,7 +12,6 @@ import logging
 import time
 import pyotp
 
-from selenium import webdriver
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
@@ -57,8 +56,11 @@ class TestTarget(object):
     with open(g_expectedFile, 'r') as stream:
         expectedResults=yaml.safe_load(stream)
 
-    with open(opsCommonFile, 'r') as stream:
-        opsCommonConfig=yaml.safe_load(stream)
+    if os.path.exists(opsCommonFile) and singlenodetesting == False:
+        with open(opsCommonFile, 'r') as stream:
+            opsCommonConfig=yaml.safe_load(stream)
+    else:
+        logger.warning(f'File {opsCommonFile} not found, you should check out the ops repo to test against expected values!')
 
     baseurl = expectedResults['global']['baseUrl']
     testprefix = expectedResults['global']['testPrefix']
@@ -89,7 +91,7 @@ class TestTarget(object):
         testfilesize = os.environ.get('NextcloudTestFileSize')
 
         if testfilesize is None:
-            logger.info(f'Using default file size M')
+            logger.info('Using default file size M')
             self.testfilesize = 'M'
         elif (testfilesize == 'M') or (testfilesize == 'G'):
             logger.info(f'Using {testfilesize}B file size')
@@ -99,7 +101,7 @@ class TestTarget(object):
             self.testrunner = 'M'
 
         if testrunner is None:
-            logger.info(f'Using default xml test runner')
+            logger.info('Using default xml test runner')
             self.testrunner = 'xml'
         elif (testrunner == 'xml') or (testrunner == 'html'):
             logger.info(f'Using {testrunner} test runner')
@@ -115,7 +117,7 @@ class TestTarget(object):
             logger.info(f'Test target initialized by environment variable: {envtarget}')
             testtarget = envtarget
         else:
-            logger.warning(f'Test target initialized by default value: test')
+            logger.warning('Test target initialized by default value: test')
             testtarget = 'test'
 
         if testtarget not in ['prod','test','localhost']:
@@ -610,9 +612,9 @@ class SeleniumHelper():
 
     def delete_cookies(self):
         cookies = self.driver.get_cookies()
-        logger.info(f'Deleting all cookies')
+        logger.info('Deleting all cookies')
         self.driver.delete_all_cookies()
-        logger.info(f'All cookies deleted')
+        logger.info('All cookies deleted')
         return
     def nodelogin(self, usertype : UserType, username='', password='', apppwd='', totpsecret='', mfaUser=False):
         loginurl = self.drv.get_node_login_url(self.nextcloudnode)
@@ -652,7 +654,7 @@ class SeleniumHelper():
             self.driver.get(loginurl)
 
         try:
-            logger.info(f'Enter username and password')
+            logger.info('Enter username and password')
             self.wait.until(EC.element_to_be_clickable((By.ID, 'user'))).send_keys(nodeuser)
             self.wait.until(EC.element_to_be_clickable((By.ID, 'password'))).send_keys(nodepwd + Keys.ENTER)
             currentUrl = self.driver.current_url
@@ -662,11 +664,11 @@ class SeleniumHelper():
         if isMfaUser:
             logger.info(f'MFA login {currentUrl}')
             if 'selectchallenge' in currentUrl:
-                logger.info(f'Select TOTP provider')
+                logger.info('Select TOTP provider')
                 totpselect = self.driver.find_element(By.XPATH, '//a[@href="'+ self.drv.indexsuffix + '/login/challenge/totp' +'"]')
                 totpselect.click()
             elif 'challenge/totp' in currentUrl:
-                logger.info(f'No need to select TOTP provider')
+                logger.info('No need to select TOTP provider')
 
             currentOtp = 0
             totpRetry = 0
@@ -677,22 +679,22 @@ class SeleniumHelper():
                 self.wait.until(EC.element_to_be_clickable((By.XPATH, '//*//input[@placeholder="Authentication code"]'))).send_keys(currentOtp + Keys.ENTER)
 
                 if 'challenge/totp' in self.driver.current_url:
-                    logger.info(f'Try again')
+                    logger.info('Try again')
                     while currentOtp == totp.now():
-                        logger.info(f'Wait for new OTP to be issued')
+                        logger.info('Wait for new OTP to be issued')
                         time.sleep(3)
                 else:
                     logger.info(f'Logging in to {self.nextcloudnode}')
                     break
         else:
-            logger.info(f'No MFA login')
+            logger.info('No MFA login')
 
         # if 'apps/dashboard/' not in self.driver.current_url:
         #     logger.warning(f'Unknown post login URL: {self.driver.current_url}')
 
         try:
             self.wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'app-menu')))
-            logger.info(f'App menu is ready!')
+            logger.info('App menu is ready!')
         except TimeoutException:
-            logger.info(f'Loading of app menu took too much time!')
+            logger.info('Loading of app menu took too much time!')
         return True
