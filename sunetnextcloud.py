@@ -53,6 +53,8 @@ def get_value(env, raiseException = True):
     return value
 
 class TestTarget(object):
+    singlenodetesting = False
+
     with open(g_expectedFile, 'r') as stream:
         expectedResults=yaml.safe_load(stream)
 
@@ -75,7 +77,6 @@ class TestTarget(object):
     fullnodes = expectedResults['global']['fullnodes']
     multinodes = expectedResults['global']['multinodes']
     browsers = expectedResults['global']['testBrowsers']
-    singlenodetesting = False
 
     target = 'test'
     platform = sys.platform
