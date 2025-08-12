@@ -216,11 +216,11 @@ class TestRDSSelenium(unittest.TestCase):
             wait.until(EC.presence_of_element_located((By.XPATH, "//*[contains(text(), 'Pick')]"))).click()
             # wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "button.v-btn"))).click()
         except Exception as error:
-            self.logger.error(f'Pick folder not found')
+            self.logger.error(f'Pick folder not found: {error}')
             proceed = False
 
         # We need to switch to the parent frame to use RDS here
-        self.logger.info('Switch to parent frame: {error}')
+        self.logger.info('Switch to parent frame')
         driver.switch_to.parent_frame() 
 
         try:
