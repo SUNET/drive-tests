@@ -31,8 +31,8 @@ class TestScienceMesh(unittest.TestCase):
                 print("\tLIVE: " + hosturl + " - " + hr.text)
                 isLive = True
                 # print(r.text)
-            except:
-                print("\t\t\t\tOffline: " + fullhosturl)
+            except Exception as error:
+                print("\t\t\t\tOffline: " + fullhosturl + " - " + {error})
                 offlineCount += 1
                 isLive = False
 
@@ -43,8 +43,8 @@ class TestScienceMesh(unittest.TestCase):
                     if ('installed' in sr.text):
                         statusCount += 1
                         print("\tStatus: ", statusUrl)
-                except:
-                    print("Status url not available: " + statusUrl)
+                except Exception as error:
+                    print("Status url not available: " + statusUrl + " - " + {error})
 
             for service in instance["services"]:
                 servicename = service["endpoint"]["type"]["name"]

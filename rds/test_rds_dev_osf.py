@@ -95,8 +95,8 @@ class TestRdsDevOsf(unittest.TestCase):
             self.logger.info('Waiting for rds frame')
             wait.until(EC.frame_to_be_available_and_switch_to_it((By.ID, "rds-editor")))
             self.logger.info('RDS iframe loaded')
-        except:
-            self.logger.error('RDS iframe not loaded')
+        except Exception as error:
+            self.logger.error(f'RDS iframe not loaded: {error}')
             proceed = False
         self.assertTrue(proceed)
 
@@ -149,8 +149,8 @@ class TestRdsDevOsf(unittest.TestCase):
             self.logger.info('Waiting for rds frame')
             wait.until(EC.frame_to_be_available_and_switch_to_it((By.ID, "rds-editor")))
             self.logger.info('RDS iframe loaded')
-        except:
-            self.logger.error('RDS iframe not loaded')
+        except Exception as error:
+            self.logger.error(f'RDS iframe not loaded: {error}')
             proceed = False
 
         self.assertTrue(proceed)
@@ -184,8 +184,8 @@ class TestRdsDevOsf(unittest.TestCase):
             self.logger.info('Waiting for describo frame')
             wait.until(EC.frame_to_be_available_and_switch_to_it((By.ID, "describoWindow")))
             self.logger.info('Describo iframe loaded')
-        except:
-            self.logger.error('Describo iframe not loaded')
+        except Exception as error:
+            self.logger.error(f'Describo iframe not loaded: {error}')
             proceed = False
 
         self.assertTrue(proceed)
@@ -204,8 +204,8 @@ class TestRdsDevOsf(unittest.TestCase):
                 deleteButton.click()
                 self.logger.info('Deleting existing entries')
                 time.sleep(1)
-            except:
-                self.logger.info('No more entries to delete, continue')
+            except Exception as error:
+                self.logger.info(f'No more entries to delete, continue: {error}')
                 checkForOsfEntries = False
 
         # OSF Text
@@ -260,8 +260,8 @@ class TestRdsDevOsf(unittest.TestCase):
             self.logger.info('Waiting for publication notification')
             WebDriverWait(driver, 120).until(EC.text_to_be_present_in_element((By.CLASS_NAME, "v-snack__content"), "successfully published"))
             self.logger.info('Looks like the data has been published! Well done!')
-        except:
-            self.logger.error('Timeout while waiting for publication')
+        except Exception as error:
+            self.logger.error(f'Timeout while waiting for publication: {error}')
 
         self.assertTrue(proceed)
 

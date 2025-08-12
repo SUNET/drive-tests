@@ -80,16 +80,16 @@ class TestSciebo(unittest.TestCase):
             print("Waiting for rds frame")
             wait.until(EC.frame_to_be_available_and_switch_to_it((By.ID, "rds-editor")))
             print("RDS iframe loaded")
-        except:
-            print("RDS iframe not loaded")
+        except Exception as error:
+            print(f"RDS iframe not loaded: {error}")
 
         time.sleep(3)
 
         try:
             driver.find_element(by=By.XPATH, value='//*[@id="v-navigation-drawer"]/div[1]/div[4]/div/div/div[2]/div')
             isConnected = True
-        except:
-            print("Settings button not found")
+        except Exception as error:
+            print(f"Settings button not found: {error}")
             isConnected = False
 
         if isConnected:
@@ -101,17 +101,17 @@ class TestSciebo(unittest.TestCase):
             osfConnected = True
             try:
                 print(driver.find_element(by=By.XPATH, value=f'//*[@id="inspire"]/div/main/div/div/main/div/div/div[2]/div[{osfButtonIndex}]/div[2]/div/div[2]/div/button/span/span[contains(text(),\'Disconnect\')]'))
-            except:
+            except Exception as error:
                 osfConnected = False
-                print("Not connected to OSF")
+                print(f"Not connected to OSF: {error}")
 
             # Check if we need a Zenodo connection
             zenodoConnected = True
             try:
                 print(driver.find_element(by=By.XPATH, value=f'//*[@id="inspire"]/div/main/div/div/main/div/div/div[2]/div[{zenodoButtonIndex}]/div[2]/div/div[2]/div/button/span/span[contains(text(),\'Disconnect\')]'))
-            except:
+            except Exception as error:
                 zenodoConnected = False
-                print("Not connected to Zenodo")
+                print(f"Not connected to Zenodo: {error}")
 
             if osfConnected:
                 print("Disconnect from OSF")

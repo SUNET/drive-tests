@@ -48,8 +48,8 @@ class TestSciebo(unittest.TestCase):
         try:
             options = Options()
             driver = webdriver.Chrome(options=options)
-        except:
-            self.logger.error('Error initializing Chrome driver')
+        except Exception as error:
+            self.logger.error(f'Error initializing Chrome driver: {error}')
             self.assertTrue(False)
         driver.maximize_window()
         # driver2 = webdriver.Firefox()
@@ -82,16 +82,16 @@ class TestSciebo(unittest.TestCase):
             print("Waiting for rds frame")
             wait.until(EC.frame_to_be_available_and_switch_to_it((By.ID, "rds-editor")))
             print("RDS iframe loaded")
-        except:
-            print("RDS iframe not loaded")
+        except Exception as error:
+            print(f"RDS iframe not loaded: {error}")
 
         time.sleep(3)
         # Getting started button
         try:
             driver.find_element(by=By.XPATH, value='/html/body/div/div/div/main/div/div/div/div[1]/div/button/span/span')
             needsToConnect = True
-        except:
-            print("Sciebo is already connected")
+        except Exception as error:
+            print(f"Sciebo is already connected: {error}")
             needsToConnect = False
 
         if needsToConnect:
@@ -123,8 +123,8 @@ class TestSciebo(unittest.TestCase):
                 print("Waiting for rds frame")
                 wait.until(EC.frame_to_be_available_and_switch_to_it((By.ID, "rds-editor")))
                 print("RDS iframe loaded")
-            except:
-                print("RDS iframe not loaded")
+            except Exception as error:
+                print(f"RDS iframe not loaded: {error}")
 
         # Now go for the repository connections
         # Click repositories
@@ -149,7 +149,7 @@ class TestSciebo(unittest.TestCase):
                     try:
                         driver.find_element(By.ID, value='username')
                         isOsf = True
-                    except:
+                    except Exception:
                         isZenodo = True
 
                     if isZenodo:
@@ -185,8 +185,8 @@ class TestSciebo(unittest.TestCase):
                         print("RDS iframe active")
                         time.sleep(3)
                     
-        except:
-            print("Error trying to connect to one of the repositories")
+        except Exception as error:
+            print(f"Error trying to connect to one of the repositories: {error}")
 
         print("All connections established")
         time.sleep(3)

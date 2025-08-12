@@ -61,8 +61,8 @@ class TestJupyterSelenium(unittest.TestCase):
                 try:
                     options = Options()
                     driver = webdriver.Chrome(options=options)
-                except:
-                    self.logger.error('Error initializing Chrome driver')
+                except Exception as error:
+                    self.logger.error(f'Error initializing Chrome driver: {error}')
                     self.assertTrue(False)
                 driver.maximize_window()
                 # driver2 = webdriver.Firefox()
@@ -90,8 +90,8 @@ class TestJupyterSelenium(unittest.TestCase):
                     self.logger.info('Waiting for jupyter iframe')
                     wait.until(EC.frame_to_be_available_and_switch_to_it((By.XPATH, '//*[@id="content"]/iframe')))
                     self.logger.info('Jupyter iframe loaded')
-                except:
-                    self.logger.error('Jupyter iframe not loaded')
+                except Exception as error:
+                    self.logger.error(f'Jupyter iframe not loaded: {error}')
 
                 try:
                     self.logger.info('Authorizing Jupyter app')
@@ -99,8 +99,8 @@ class TestJupyterSelenium(unittest.TestCase):
                     self.logger.info('Logged in to jupyter app')
                     wait.until(EC.presence_of_element_located((By.XPATH, '//*[@id="submit-wrapper"]/input'))).click()
                     self.logger.info('Authorization granted')
-                except:
-                    self.logger.error('Error authorizing JupyterHub app')
+                except Exception as error:
+                    self.logger.error(f'Error authorizing JupyterHub app: {error}')
 
                 self.logger.info('Done...')
                 time.sleep(2)

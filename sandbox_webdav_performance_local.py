@@ -80,8 +80,8 @@ try:
         while testThreadsRunning > 0:
             time.sleep(0.01)
     endTime = datetime.now()
-except:
-    logger.error('Error during async upload')
+except Exception as error:
+    logger.error(f'Error during async upload: {error}')
 
 # Calculate time to upload
 uploadTime = (endTime - startTime).total_seconds()

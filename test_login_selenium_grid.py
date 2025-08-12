@@ -133,8 +133,8 @@ class TestLoginSelenium(unittest.TestCase):
                             sharefolder = driver.find_element(by=By.CLASS_NAME, value=sharedClass)
                             sharefolder.click()
                             self.logger.info('Clicked on share folder')
-                        except:
-                            self.logger.info(f'{sharedClass} not found')
+                        except Exception as error:
+                            self.logger.info(f'{sharedClass} not found: {error}')
 
                         try:
                             wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'sharing-entry__title')))
@@ -299,8 +299,8 @@ class TestLoginSelenium(unittest.TestCase):
                 wait.until(EC.element_to_be_clickable((By.XPATH, '//a[@href="' + drv.indexsuffix + '/login/challenge/totp?redirect_url=' + drv.indexsuffix + '/apps/dashboard/' +'"]'))).click()
                 self.logger.info('Found and clicked on TOTP selection dialogue')
                 requireTotp = True
-            except:
-                self.logger.info('No need to select TOTP provider')
+            except Exception as error:
+                self.logger.info(f'No need to select TOTP provider: {error}')
                 requireTotp = False
 
             if requireTotp:
@@ -327,9 +327,9 @@ class TestLoginSelenium(unittest.TestCase):
             currentUrl = driver.current_url
             try:
                 self.assertEqual(dashboardUrl, currentUrl)
-            except:
+            except Exception as error:
                 self.assertEqual(dashboardUrl + '#/', currentUrl)
-                self.logger.warning('Dashboard URL contains trailing #, likely due to the tasks app')
+                self.logger.warning(f'Dashboard URL contains trailing #, likely due to the tasks app: {error}')
                 self.logger.info(f'{currentUrl}')
 
             wait.until(EC.element_to_be_clickable((By.ID, 'user-menu'))).click()

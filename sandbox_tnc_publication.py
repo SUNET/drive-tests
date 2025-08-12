@@ -89,8 +89,8 @@ try:
     if not result:
         logger.error(f'Folder {target} does not exist on server')
         sys.exit()
-except:
-    logger.error(f'Error during client.check for {target}')
+except Exception as error:
+    logger.error(f'Error during client.check for {target}: {error}')
     sys.exit()
 
 # Clean temporary python folders
@@ -104,8 +104,8 @@ if (client.check(tmpFolder)):
         logger.info(f'Clean temp folder: {tmpFolder}')
         client.clean(tmpFolder)
         logger.info('Remove temp folders')
-    except:
-        logger.error(f'Error removing temporary folder: {tmpFolder}')
+    except Exception as error:
+        logger.error(f'Error removing temporary folder: {tmpFolder}: {error}')
         sys.exit()
 
 # Remove old ro-create file if it exists
@@ -119,15 +119,15 @@ if (client.check(tmpFile)):
         logger.info(f'Clean temp file: {tmpFile}')
         client.clean(tmpFile)
         logger.info('Removed temp file')
-    except:
+    except Exception as error:
         logger.error(f'Error removing temporary file: {tmpFile}')
         sys.exit()
 
 try:
     options = Options()
     driver = webdriver.Chrome(options=options)
-except:
-    logger.error('Error initializing Chrome driver')
+except Exception as error:
+    logger.error(f'Error initializing Chrome driver: {error}')
 # driver2 = webdriver.Firefox()
 deleteCookies(driver)
 driver.maximize_window()        
@@ -146,8 +146,8 @@ try:
     logger.warning('Found TOTP selection dialogue')
     requireTotp = True
     totpselect.click()
-except:
-    logger.info('No need to select TOTP provider')
+except Exception as error:
+    logger.info(f'No need to select TOTP provider: {error}')
 
 if requireTotp:
     nodetotpsecret = drv.get_samlusertotpsecret(nodeName)
@@ -177,8 +177,8 @@ try:
     wait.until(EC.frame_to_be_available_and_switch_to_it((By.ID, "rds-editor")))
     logger.info("RDS iframe loaded")
     time.sleep(1)
-except:
-    logger.error("RDS iframe not loaded")
+except Exception as error:
+    logger.error(f"RDS iframe not loaded: {error}")
     sys.exit()
 
 try:
@@ -210,16 +210,16 @@ try:
         time.sleep(2)
         logger.info('Switch back to original window')
         driver.switch_to.window(original_window)
-except:
-    logger.error('Error checking repositories')
+except Exception as error:
+    logger.error(f'Error checking repositories: {error}')
     sys.exit()
 
 try:
     logger.info('Looking for active projects')
     wait.until(EC.presence_of_element_located((By.XPATH, "//*[contains(text(), 'Active Projects')]"))).click()
     time.sleep(1)
-except:
-    logger.error('Active Projects element not found')
+except Exception as error:
+    logger.error(f'Active Projects element not found: {error}')
     sys.exit()
 
 try:
@@ -227,8 +227,8 @@ try:
     wait.until(EC.presence_of_element_located((By.XPATH, "//*[contains(text(), 'new project')]"))).click()
     time.sleep(1)
     # wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "button.v-btn"))).click()
-except:
-    logger.error('New Project element not found')
+except Exception as error:
+    logger.error(f'New Project element not found: {error}')
     sys.exit()
 
 if connector == 'zenodo':
@@ -236,16 +236,16 @@ if connector == 'zenodo':
         logger.info('Select Zenodo Connector')
         wait.until(EC.presence_of_element_located((By.XPATH, "//*[contains(text(), 'Zenodo')]"))).click()
         # wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "button.v-btn"))).click()
-    except:
-        logger.error('Zenodo Connector not found')
+    except Exception as error:
+        logger.error(f'Zenodo Connector not found: {error}')
         sys.exit()
 elif connector == 'osf':
     try:
         logger.info('Select OSF Connector')
         wait.until(EC.presence_of_element_located((By.XPATH, "//*[contains(text(), 'Open Science Framework')]"))).click()
         # wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "button.v-btn"))).click()
-    except:
-        logger.error('OSF Connector not found')
+    except Exception as error:
+        logger.error(f'OSF Connector not found: {error}')
         sys.exit()
 else:
     logger.error(f'Unknown connector: {connector}')
@@ -259,7 +259,7 @@ try:
     wait.until(EC.presence_of_element_located((By.XPATH, "//*[contains(@id, 'input-')]" ))).send_keys(tsTitle)
     time.sleep(1)
     # wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "button.v-btn"))).click()
-except:
+except Exception as error:
     logger.error('Could not set project name')
     sys.exit()
 
@@ -268,8 +268,8 @@ try:
     wait.until(EC.presence_of_element_located((By.XPATH, "//*[contains(text(), 'Pick')]"))).click()
     time.sleep(1)
     # wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "button.v-btn"))).click()
-except:
-    logger.error('Pick folder not found')
+except Exception as error:
+    logger.error(f'Pick folder not found: {error}')
     sys.exit()
 
 # We need to switch to the parent frame to use RDS here
@@ -282,7 +282,7 @@ try:
     logger.error('Choose source folder!')
     time.sleep(1)
     # wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "button.v-btn"))).click()
-except:
+except Exception as error:
     logger.error('Choose source folder error!')
     sys.exit()
 
@@ -292,8 +292,8 @@ try:
     time.sleep(1)
     # wait.until(EC.presence_of_element_located((By.XPATH, "//*[contains(text(), 'Modified')]"))).click()
     # wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "button.v-btn"))).click()
-except:
-    logger.error('Could not change sort order')
+except Exception as error:
+    logger.error(f'Could not change sort order: {error}')
     sys.exit()
     sys.exit()
 
@@ -303,7 +303,7 @@ try:
     time.sleep(1)
     # wait.until(EC.presence_of_element_located((By.XPATH, "//*[contains(text(), '{target}')]"))).click()
     # wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "button.v-btn"))).click()
-except:
+except Exception as error:
     logger.error(f'{target} folder not found')
     sys.exit()
 
@@ -312,22 +312,22 @@ try:
     wait.until(EC.presence_of_element_located((By.XPATH, "//*[contains(text(), ' Choose')]"))).click()
     time.sleep(1)
    # wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "button.v-btn"))).click()
-except:
-    logger.error(f'{target} folder not found')
+except Exception as error:
+    logger.error(f'{target} folder not found: {error}')
     sys.exit()
 
 try:
     logger.info("Switch back to rds iframe")
     wait.until(EC.frame_to_be_available_and_switch_to_it((By.ID, "rds-editor")))
-except:
-    logger.error("RDS iframe not loaded")
+except Exception as error:
+    logger.error(f"RDS iframe not loaded: {error}")
     sys.exit()
 
 try:
     logger.info('Continue (to describo)')
     wait.until(EC.presence_of_element_located((By.XPATH, "//*[contains(text(), 'Continue')]"))).click()
     # wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "button.v-btn"))).click()
-except:
+except Exception as error:
     logger.error('Continue button not found')
     sys.exit()
 
@@ -338,8 +338,8 @@ try:
     logger.info("Waiting for describo frame")
     wait.until(EC.frame_to_be_available_and_switch_to_it((By.ID, "describoWindow")))
     logger.info("Describo iframe loaded")
-except:
-    logger.info("Describo iframe not loaded")
+except Exception as error:
+    logger.info(f"Describo iframe not loaded: {error}")
     sys.exit()
 time.sleep(3)
 
@@ -354,8 +354,8 @@ if connector == 'zenodo':
         time.sleep(1)
         # wait.until(EC.presence_of_element_located((By.XPATH, "//*[contains(text(), 'Research Object Crate')]"))).click()
         # wait.until(EC.presence_of_element_located((By.XPATH, "//input[@placeholder='my Research Object Crate']"))).send_keys('SOMETHING' + Keys.ENTER)
-    except:
-        logger.errot('Unable to set project name')
+    except Exception as error:
+        logger.errot(f'Unable to set project name: {error}')
         sys.exit()
 else:
     # OSF Settings
@@ -371,8 +371,8 @@ else:
             deleteButton.click()
             logger.info("Deleting existing entries")
             time.sleep(1)
-        except:
-            logger.info("No more entries to delete, continue")
+        except Exception as error:
+            logger.info(f"No more entries to delete, continue: {error}")
             checkForOsfEntries = False
 
     try:
@@ -402,8 +402,8 @@ else:
         logger.info("Click on +TextArea for OSF Description")
         WebDriverWait(driver, 20).until(EC.element_to_be_clickable((By.XPATH, "//*[@id=\"pane-OSF settings\"]/div/div[3]/div/div[2]/div[1]/div[1]/div/div[1]/div/button"))).click()
         wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'el-textarea__inner'))).send_keys("I made a Berry Solar Cell!")
-    except:
-        logger.error('Error entering OSF metadata')
+    except Exception as error:
+        logger.error(f'Error entering OSF metadata: {error}')
 
 logger.info("Switch to parent frame")
 driver.switch_to.parent_frame() 
@@ -429,15 +429,15 @@ try:
 
     WebDriverWait(driver, 90).until(EC.presence_of_element_located((By.XPATH, "//*[contains(text(), 'successfully published')]")))
     logger.info('Dataset successfully published!')
-except:
-    logger.info('Error publishing dataset')
+except Exception as error:
+    logger.info(f'Error publishing dataset: {error}')
 
 # try:
 #     logger.info(f'Try to get DOI string')
 #     doiElement = wait.until(EC.presence_of_element_located((By.XPATH, "//*[contains(text(), 'Published project with DOI')]")))
 #     logger.info(f'Project DOI: {doiElement.text.replace('Published project with DOI','').replace(' ','')}')
-# except:
-#     logger.warning(f'Could not get DOI information')
+# except Exception as error:
+#     logger.warning(f'Could not get DOI information: {error}')
 
 text_file = open(doifile, "w")
 text_file.write(publicationUrl)

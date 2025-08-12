@@ -35,8 +35,8 @@ class TestSciebo(unittest.TestCase):
         try:
             options = Options()
             driver = webdriver.Chrome(options=options)
-        except:
-            self.logger.error('Error initializing Chrome driver')
+        except Exception as error:
+            self.logger.error(f'Error initializing Chrome driver: {error}')
             self.assertTrue(False)
         driver.maximize_window()
         # driver2 = webdriver.Firefox()
@@ -65,8 +65,8 @@ class TestSciebo(unittest.TestCase):
             print("Waiting for rds frame")
             wait.until(EC.frame_to_be_available_and_switch_to_it((By.ID, "rds-editor")))
             print("RDS iframe loaded")
-        except:
-            print("RDS iframe not loaded")
+        except Exception as error:
+            print(f"RDS iframe not loaded: {error}")
 
         # Projects
         print("Select projects from menu")
@@ -84,8 +84,8 @@ class TestSciebo(unittest.TestCase):
                 deleteButton.click()
                 print("Deleting existing entries")
                 time.sleep(1)
-            except:
-                print("No more entries to delete, continue")
+            except Exception as error:
+                print(f"No more entries to delete, continue: {error}")
                 deleteProjects = False
 
         print("Done...")

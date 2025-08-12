@@ -59,8 +59,8 @@ class TestRDSSelenium(unittest.TestCase):
                 try:
                     options = Options()
                     driver = webdriver.Chrome(options=options)
-                except:
-                    self.logger.error('Error initializing Chrome driver')
+                except Exception as error:
+                    self.logger.error(f'Error initializing Chrome driver: {error}')
                     self.assertTrue(False)
                 driver.maximize_window()
                 # driver2 = webdriver.Firefox()
@@ -112,8 +112,8 @@ class TestRDSSelenium(unittest.TestCase):
         try:
             options = Options()
             driver = webdriver.Chrome(options=options)
-        except:
-            self.logger.error('Error initializing Chrome driver')
+        except Exception as error:
+            self.logger.error(f'Error initializing Chrome driver: {error}')
             self.assertTrue(False)
         # driver2 = webdriver.Firefox()
         self.deleteCookies(driver)
@@ -148,8 +148,8 @@ class TestRDSSelenium(unittest.TestCase):
             self.logger.warning('Found TOTP selection dialogue')
             requireTotp = True
             totpselect.click()
-        except:
-            self.logger.info('No need to select TOTP provider')
+        except Exception as error:
+            self.logger.info(f'No need to select TOTP provider: {error}')
 
         if requireTotp:
             nodetotpsecret = drv.get_samlusertotpsecret(nodeName)
@@ -167,9 +167,9 @@ class TestRDSSelenium(unittest.TestCase):
         currentUrl = driver.current_url
         try:
             self.assertEqual(dashboardUrl, currentUrl)
-        except:
+        except Exception as error:       
             self.assertEqual(dashboardUrl + '#/', currentUrl)
-            self.logger.warning('Dashboard URL contains trailing #, likely due to the tasks app')
+            self.logger.warning(f'Dashboard URL contains trailing #, likely due to the tasks app: {error}')
         self.logger.info(f'{driver.current_url}')
 
         try:
@@ -184,23 +184,23 @@ class TestRDSSelenium(unittest.TestCase):
             self.logger.info("Waiting for rds frame")
             wait.until(EC.frame_to_be_available_and_switch_to_it((By.ID, "rds-editor")))
             self.logger.info("RDS iframe loaded")
-        except:
-            self.logger.error("RDS iframe not loaded")
+        except Exception as error:
+            self.logger.error(f"RDS iframe not loaded: {error}")
             proceed = False
 
         try:
             self.logger.info('Looking for active projects')
             wait.until(EC.presence_of_element_located((By.XPATH, "//*[contains(text(), 'Active Projects')]"))).click()
-        except:
-            self.logger.error('Active Projects element not found')
+        except Exception as error:
+            self.logger.error(f'Active Projects element not found: {error}')
             proceed = False
 
         try:
             self.logger.info('Create new project')
             wait.until(EC.presence_of_element_located((By.XPATH, "//*[contains(text(), 'new project')]"))).click()
             # wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "button.v-btn"))).click()
-        except:
-            self.logger.error('New Project element not found')
+        except Exception as error:
+            self.logger.error(f'New Project element not found: {error}')
             proceed = False
 
         try:
@@ -208,20 +208,20 @@ class TestRDSSelenium(unittest.TestCase):
             # wait.until(EC.presence_of_element_located((By.XPATH, "//*[contains(text(), 'Choose')]"))).click()
             wait.until(EC.presence_of_element_located((By.XPATH, "//*[contains(@id, 'input-')]" ))).send_keys('TestProject')
             # wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "button.v-btn"))).click()
-        except:
-            self.logger.error('Could not set project name')
+        except Exception as error:
+            self.logger.error(f'Could not set project name: {error}')
             proceed = False
 
         try:
             self.logger.info('Pick folder')
             wait.until(EC.presence_of_element_located((By.XPATH, "//*[contains(text(), 'Pick')]"))).click()
             # wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "button.v-btn"))).click()
-        except:
-            self.logger.error('Pick folder not found')
+        except Exception as error:
+            self.logger.error(f'Pick folder not found')
             proceed = False
 
         # We need to switch to the parent frame to use RDS here
-        self.logger.info('Switch to parent frame')
+        self.logger.info('Switch to parent frame: {error}')
         driver.switch_to.parent_frame() 
 
         try:
@@ -229,8 +229,8 @@ class TestRDSSelenium(unittest.TestCase):
             wait.until(EC.presence_of_element_located((By.XPATH, "//*[contains(text(), 'Choose source folder')]")))
             self.logger.error('Choose source folder!')
             # wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "button.v-btn"))).click()
-        except:
-            self.logger.error('Choose source folder error!')
+        except Exception as error:        
+            self.logger.error(f'Choose source folder error: {error}')
             proceed = False
 
         try:
@@ -239,39 +239,39 @@ class TestRDSSelenium(unittest.TestCase):
             self.logger.info('Set sort order to newest first!')
             # wait.until(EC.presence_of_element_located((By.XPATH, "//*[contains(text(), 'Modified')]"))).click()
             # wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "button.v-btn"))).click()
-        except:
-            self.logger.error('Could not change sort order')
+        except Exception as error:        
+            self.logger.error(f'Could not change sort order: {error}')
             proceed = False
 
         try:
             self.logger.info('Select folder RDSDemo')
             wait.until(EC.presence_of_element_located((By.XPATH, "//*[contains(text(), 'RDSDemo')]"))).click()
             # wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "button.v-btn"))).click()
-        except:
-            self.logger.error('RDSDemo folder not found')
+        except Exception as error:        
+            self.logger.error(f'RDSDemo folder not found: {error}')
             proceed = False
 
         try:
             self.logger.info('Click on Choose')
             wait.until(EC.presence_of_element_located((By.XPATH, "//*[contains(text(), ' Choose')]"))).click()
             # wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "button.v-btn"))).click()
-        except:
-            self.logger.error('RDSDemo folder not found')
+        except Exception as error:
+            self.logger.error(f'RDSDemo folder not found: {error}')
             proceed = False
 
         try:
             self.logger.info("Switch back to rds iframe")
             wait.until(EC.frame_to_be_available_and_switch_to_it((By.ID, "rds-editor")))
-        except:
-            self.logger.error("RDS iframe not loaded")
+        except Exception as error:
+            self.logger.error(f"RDS iframe not loaded: {error}")
             proceed = False
 
         try:
             self.logger.info('Select OSF Connector')
             wait.until(EC.presence_of_element_located((By.XPATH, "//*[contains(text(), 'Open Science Framework')]"))).click()
             # wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "button.v-btn"))).click()
-        except:
-            self.logger.error('OSF Connector not found')
+        except Exception as error:        
+            self.logger.error(f'OSF Connector not found: {error}')
             proceed = False
 
         time.sleep(3)
@@ -280,8 +280,8 @@ class TestRDSSelenium(unittest.TestCase):
             self.logger.info('Continue (to describo)')
             wait.until(EC.presence_of_element_located((By.XPATH, "//*[contains(text(), 'Continue')]"))).click()
             # wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "button.v-btn"))).click()
-        except:
-            self.logger.error('Continue button not found')
+        except Exception as error:
+            self.logger.error(f'Continue button not found: {error}')
             proceed = False
 
         time.sleep(3)
@@ -291,8 +291,8 @@ class TestRDSSelenium(unittest.TestCase):
             self.logger.info("Waiting for describo frame")
             wait.until(EC.frame_to_be_available_and_switch_to_it((By.ID, "describoWindow")))
             self.logger.info("Describo iframe loaded")
-        except:
-            self.logger.info("Describo iframe not loaded")
+        except Exception as error:
+            self.logger.info(f"Describo iframe not loaded: {error}")
             proceed = False
         time.sleep(3)
 
@@ -309,8 +309,8 @@ class TestRDSSelenium(unittest.TestCase):
                 deleteButton.click()
                 self.logger.info("Deleting existing entries")
                 time.sleep(1)
-            except:
-                self.logger.info("No more entries to delete, continue")
+            except Exception as error:
+                self.logger.info(f"No more entries to delete, continue: {error}")
                 checkForOsfEntries = False
 
         try:
@@ -341,8 +341,8 @@ class TestRDSSelenium(unittest.TestCase):
             self.logger.info("Click on +TextArea for OSF Description")
             WebDriverWait(driver, 20).until(EC.element_to_be_clickable((By.XPATH, "//*[@id=\"pane-OSF settings\"]/div/div[3]/div/div[2]/div[1]/div[1]/div/div[1]/div/button"))).click()
             wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'el-textarea__inner'))).send_keys("OSF Project Description")
-        except:
-            self.logger.error('Error entering OSF metadata')
+        except Exception as error:
+            self.logger.error(f'Error entering OSF metadata {error}')
 
         self.logger.info("Switch to parent frame")
         driver.switch_to.parent_frame() 
@@ -364,15 +364,15 @@ class TestRDSSelenium(unittest.TestCase):
 
             WebDriverWait(driver, 60).until(EC.presence_of_element_located((By.XPATH, "//*[contains(text(), 'successfully published')]")))
             self.logger.info('Dataset successfully published!')
-        except:
-            self.logger.info('Error publishing dataset')
+        except Exception as error:
+            self.logger.info(f'Error publishing dataset {error}')
 
         try:
             self.logger.info('Try to get DOI string')
             doiElement = wait.until(EC.presence_of_element_located((By.XPATH, "//*[contains(text(), 'Published project with DOI')]")))
             self.logger.info(f'Project DOI: {doiElement.text.replace('Published project with DOI','').replace(' ','')}')
-        except:
-            self.logger.warning('Could not get DOI information')
+        except Exception as error:
+            self.logger.warning(f'Could not get DOI information: {error}')
 
         self.assertTrue(proceed)
 

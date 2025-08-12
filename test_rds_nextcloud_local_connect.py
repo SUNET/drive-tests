@@ -88,16 +88,16 @@ class TestRdsNextcloudLocal(unittest.TestCase):
             print("Waiting for rds frame")
             wait.until(EC.frame_to_be_available_and_switch_to_it((By.ID, "rds-editor")))
             print("RDS iframe loaded")
-        except:
-            print("RDS iframe not loaded")
+        except Exception as error:
+            print(f"RDS iframe not loaded: {error}")
 
         time.sleep(3)
         # Getting started button
         try:
             driver.find_element(by=By.XPATH, value='/html/body/div/div/div/main/div/div/div/div[1]/div/button/span/span')
             needsToConnect = True
-        except:
-            print("Sciebo is already connected")
+        except Exception as error:
+            print(f"Sciebo is already connected: {error}")
             needsToConnect = False
 
         if needsToConnect:
@@ -126,8 +126,8 @@ class TestRdsNextcloudLocal(unittest.TestCase):
                 print("Waiting for rds frame")
                 wait.until(EC.frame_to_be_available_and_switch_to_it((By.ID, "rds-editor")))
                 print("RDS iframe loaded")
-            except:
-                print("RDS iframe not loaded")
+            except Exception as error:
+                print(f"RDS iframe not loaded: {error}")
 
         # Now go for the repository connections
         # Click repositories
@@ -137,25 +137,25 @@ class TestRdsNextcloudLocal(unittest.TestCase):
         osfConnected = True
         try:
             print(driver.find_element(by=By.XPATH, value=f'//*[@id="inspire"]/div/main/div/div/main/div/div/div[2]/div[{osfButtonIndex}]/div[2]/div/div[2]/div/button/span/span[contains(text(),\'Connect\')]'))
-        except:
-            print("Already connected to OSF")
+        except Exception as error:
+            print(f"Already connected to OSF: {error}")
 
         try:
             print(driver.find_element(by=By.XPATH, value=f'//*[@id="inspire"]/div/main/div/div/main/div/div/div[2]/div[{osfButtonIndex}]/div[2]/div/div[2]/div/button/span/span[contains(text(),\'Disconnect\')]'))
-        except:
-            print("Connection to OSF needed")
+        except Exception as error:
+            print(f"Connection to OSF needed: {error}")
             osfConnected=False
 
         # Check if we need a Zenodo connection
         # zenodoConnected = True
         # try:
         #     print(driver.find_element(by=By.XPATH, value=f'//*[@id="inspire"]/div/main/div/div/main/div/div/div[2]/div[{zenodoButtonIndex}]/div[2]/div/div[2]/div/button/span/span[contains(text(),\'Connect\')]'))
-        # except:
+        # except Exception as error:
         #     print("Already connected to Zenodo")
 
         # try:
         #     print(driver.find_element(by=By.XPATH, value=f'//*[@id="inspire"]/div/main/div/div/main/div/div/div[2]/div[{zenodoButtonIndex}]/div[2]/div/div[2]/div/button/span/span[contains(text(),\'Disconnect\')]'))
-        # except:
+        # except Exception as error:
         #     print("Connection to Zenodo needed")
         #     zenodoConnected=False
 

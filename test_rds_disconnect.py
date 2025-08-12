@@ -61,8 +61,8 @@ class TestRdsSelenium(unittest.TestCase):
                 try:
                     options = Options()
                     driver = webdriver.Chrome(options=options)
-                except:
-                    self.logger.error('Error initializing Chrome driver')
+                except Exception as error:
+                    self.logger.error(f'Error initializing Chrome driver: {error}')
                     self.assertTrue(False)
                 driver.maximize_window()
                 # driver2 = webdriver.Firefox()
@@ -91,8 +91,8 @@ class TestRdsSelenium(unittest.TestCase):
                     wait.until(EC.frame_to_be_available_and_switch_to_it((By.ID, 'rds-editor')))
                     self.logger.info('RDS iframe loaded')
                     proceed = True
-                except:
-                    self.logger.error('RDS iframe not loaded')
+                except Exception as error:
+                    self.logger.error(f'RDS iframe not loaded: {error}')
                     proceed = False
                 self.assertTrue(proceed)
 
@@ -102,8 +102,8 @@ class TestRdsSelenium(unittest.TestCase):
                     driver.find_element(by=By.XPATH, value='//*[@id="v-navigation-drawer"]/div[1]/div[5]/div/div/div[1]/i')
                     self.logger.info('Settings button found')
                     isConnected = True
-                except:
-                    self.logger.info('Settings button not found')
+                except Exception as error:
+                    self.logger.info(f'Settings button not found: {error}')
                     isConnected = False                
 
                 if isConnected:

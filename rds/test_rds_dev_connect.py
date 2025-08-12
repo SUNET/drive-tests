@@ -92,8 +92,8 @@ class TestRdsDevConnect(unittest.TestCase):
             self.logger.info('Waiting for rds frame')
             wait.until(EC.frame_to_be_available_and_switch_to_it((By.ID, "rds-editor")))
             self.logger.info('RDS iframe loaded')
-        except:
-            self.logger.error('RDS iframe not loaded')
+        except Exception as error:
+            self.logger.error(f'RDS iframe not loaded: {error}')
             proceed = False
         self.assertTrue(proceed)
 
@@ -102,8 +102,8 @@ class TestRdsDevConnect(unittest.TestCase):
         try:
             driver.find_element(by=By.XPATH, value='/html/body/div/div/div/main/div/div/div/div[1]/div/button/span/span')
             needsToConnect = True
-        except:
-            self.logger.info('Sciebo is already connected')
+        except Exception as error:
+            self.logger.info(f'Sciebo is already connected: {error}')
             needsToConnect = False
             pass
 
@@ -133,8 +133,8 @@ class TestRdsDevConnect(unittest.TestCase):
                 self.logger.info('Waiting for rds frame')
                 wait.until(EC.frame_to_be_available_and_switch_to_it((By.ID, "rds-editor")))
                 self.logger.info('RDS iframe loaded')
-            except:
-                self.logger.error('RDS iframe not loaded')
+            except Exception as error:
+                self.logger.error(f'RDS iframe not loaded: {error}')
                 proceed = False
             self.assertTrue(proceed)
 
@@ -146,26 +146,26 @@ class TestRdsDevConnect(unittest.TestCase):
         osfConnected = True
         try:
             print(driver.find_element(by=By.XPATH, value=f'//*[@id="inspire"]/div/main/div/div/main/div/div/div[2]/div[{osfButtonIndex}]/div[2]/div/div[2]/div/button/span/span[contains(text(),\'Connect\')]'))
-        except:
-            self.logger.info('Already connected to OSF')
+        except Exception as error:
+            self.logger.info(f'Already connected to OSF: {error}')
 
         try:
             print(driver.find_element(by=By.XPATH, value=f'//*[@id="inspire"]/div/main/div/div/main/div/div/div[2]/div[{osfButtonIndex}]/div[2]/div/div[2]/div/button/span/span[contains(text(),\'Disconnect\')]'))
-        except:
-            self.logger.info('Connection to OSF needed')
+        except Exception as error:
+            self.logger.info(f'Connection to OSF needed: {error}')
             osfConnected=False
 
         # Check if we need a Zenodo connection
         # zenodoConnected = True
         # try:
         #     print(driver.find_element(by=By.XPATH, value=f'//*[@id="inspire"]/div/main/div/div/main/div/div/div[2]/div[{zenodoButtonIndex}]/div[2]/div/div[2]/div/button/span/span[contains(text(),\'Connect\')]'))
-        # except:
-        #     self.logger.info(f'Already connected to Zenodo")
+        # except Exception as error:
+        #     self.logger.info(f'Already connected to Zenodo: {error}")
 
         # try:
         #     print(driver.find_element(by=By.XPATH, value=f'//*[@id="inspire"]/div/main/div/div/main/div/div/div[2]/div[{zenodoButtonIndex}]/div[2]/div/div[2]/div/button/span/span[contains(text(),\'Disconnect\')]'))
-        # except:
-        #     self.logger.info(f'Connection to Zenodo needed")
+        # except Exception as error:
+        #     self.logger.info(f'Connection to Zenodo needed: {error}")
         #     zenodoConnected=False
 
         print(f'Window handle before connecting: {driver.current_window_handle}')

@@ -35,8 +35,8 @@ class TestSciLifeLabCli(unittest.TestCase):
                 if name == 'entityID':
                     expectedEntityId = item[1]
                     self.logger.info("entityID checked")
-        except:
-            self.logger.error('Metadata is not valid XML')
+        except Exception as error:
+            self.logger.error(f'Metadata is not valid XML: {error}')
 
         self.assertEqual(expectedEntityId, drv.get_node_entity_id(node))
         self.logger.info('GSS metadata test done')

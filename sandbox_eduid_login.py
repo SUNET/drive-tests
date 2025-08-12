@@ -40,8 +40,8 @@ for i in range(0,101):
         wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'btn-secondary')))
         currentUrl = driver.current_url
         logger.info(f'Logut successful: {currentUrl}')
-    except:
-        logger.error('Something wrong')
+    except Exception as error:
+        logger.error(f'Something wrong: {error}')
         time.sleep(600)
 
 logger.info('DONE!')

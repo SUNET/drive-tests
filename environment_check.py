@@ -33,7 +33,7 @@ try:
     from pip._internal.req.req_file import parse_requirements
     from pip._internal.req.constructors import install_req_from_parsed_requirement
     from pip._internal.network.session import PipSession
-except:
+except Exception:
     sys.exit("pip not found, please instal pip")
 
 if sys.prefix == sys.base_prefix:

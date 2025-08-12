@@ -109,8 +109,8 @@ class TestRdsNextcloudLocal(unittest.TestCase):
             print("Waiting for rds frame")
             wait.until(EC.frame_to_be_available_and_switch_to_it((By.ID, "rds-editor")))
             print("RDS iframe loaded")
-        except:
-            print("RDS iframe not loaded")
+        except Exception as error:
+            print(f"RDS iframe not loaded: {error}")
 
         # WebDriverWait(driver, 20).until(EC.element_to_be_clickable((By.XPATH, ''))).click()
 
@@ -161,8 +161,8 @@ class TestRdsNextcloudLocal(unittest.TestCase):
             print("Waiting for rds frame")
             wait.until(EC.frame_to_be_available_and_switch_to_it((By.ID, "rds-editor")))
             print("RDS iframe loaded")
-        except:
-            print("RDS iframe not loaded")
+        except Exception as error:
+            print(f"RDS iframe not loaded: {error}")
 
         # Input field always has a random ID
         # //*[@id="input-101"]
@@ -192,8 +192,8 @@ class TestRdsNextcloudLocal(unittest.TestCase):
             print("Waiting for describo frame")
             wait.until(EC.frame_to_be_available_and_switch_to_it((By.ID, "describoWindow")))
             print("Describo iframe loaded")
-        except:
-            print("Describo iframe not loaded")
+        except Exception as error:
+            print(f"Describo iframe not loaded: {error}")
         time.sleep(3)
 
         # OSF Settings
@@ -209,8 +209,8 @@ class TestRdsNextcloudLocal(unittest.TestCase):
                 deleteButton.click()
                 print("Deleting existing entries")
                 time.sleep(1)
-            except:
-                print("No more entries to delete, continue")
+            except Exception as error:
+                print(f"No more entries to delete, continue: {error}")
                 checkForOsfEntries = False
 
         # OSF Text
@@ -265,8 +265,8 @@ class TestRdsNextcloudLocal(unittest.TestCase):
             print("Waiting for publication notification")
             WebDriverWait(driver, 60).until(EC.text_to_be_present_in_element((By.CLASS_NAME, "v-snack__content"), "successfully published"))
             print("Looks like the data has been published! Well done!")
-        except:
-            print("Timeout while waiting for publication")
+        except Exception as error:
+            print(f"Timeout while waiting for publication: {error}")
 
         print("Done...")
         time.sleep(3)

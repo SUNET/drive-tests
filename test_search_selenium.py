@@ -62,8 +62,8 @@ class TestSearchSelenium(unittest.TestCase):
         options = Options()
         # options.add_argument("--headless")
         g_driver = webdriver.Chrome(options=options)
-    except:
-        g_logger.error('Error initializing Chrome driver')
+    except Exception as error:
+        g_logger.error(f'Error initializing Chrome driver: {error}')
     g_wait = WebDriverWait(g_driver, delay)
 
     for fullnode in g_drv.fullnodes:
