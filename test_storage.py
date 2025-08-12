@@ -18,7 +18,7 @@ class TestStorage(unittest.TestCase):
         expectedResults=yaml.safe_load(stream)
 
     def test_existingbuckets(self):
-        drv = sunetnextcloud.TestTarget(g_testtarget)
+        # drv = sunetnextcloud.TestTarget(g_testtarget)
         premotes=os.popen('rclone listremotes')
         for remote in premotes.read().splitlines():
             print('Read: ',remote)
@@ -72,7 +72,7 @@ class TestStorage(unittest.TestCase):
                         if entry['Name'] == primary_bucket:
                             primary_bucket_found=True
 
-                    if primary_bucket_found == False:
+                    if not primary_bucket_found:
                         print('Primary project: ', primary_project, '\t Primary bucket found: ', primary_bucket, ' - ', primary_bucket_found)
 
                     pmirror_buckets=os.popen(mirrorcmd)
@@ -83,7 +83,7 @@ class TestStorage(unittest.TestCase):
                         if entry['Name'] == mirror_bucket:
                             mirror_bucket_found=True
 
-                    if mirror_bucket_found == False:
+                    if not mirror_bucket_found:
                         print('Mirror project: ', mirror_project, '\t Mirror bucket found: ', mirror_bucket, ' - ', mirror_bucket_found)
 
                     print('Mirror bucket found: ', mirror_bucket, ' - ', mirror_bucket_found)
@@ -117,7 +117,7 @@ class TestStorage(unittest.TestCase):
                         if entry['Name'] == primary_bucket:
                             primary_bucket_found=True
 
-                    if primary_bucket_found == False:
+                    if not primary_bucket_found:
                         print('Primary project: ', primary_project, '\t Primary bucket found: ', primary_bucket, ' - ', primary_bucket_found)
 
                     pmirror_buckets=os.popen(mirrorcmd)
@@ -128,7 +128,7 @@ class TestStorage(unittest.TestCase):
                         if entry['Name'] == mirror_bucket:
                             mirror_bucket_found=True
 
-                    if mirror_bucket_found == False:
+                    if not mirror_bucket_found:
                         print('Mirror project: ', mirror_project, '\t Mirror bucket found: ', mirror_bucket, ' - ', mirror_bucket_found)
 
                     print('Mirror bucket found: ', mirror_bucket, ' - ', mirror_bucket_found)
@@ -146,9 +146,9 @@ class TestStorage(unittest.TestCase):
                     prj=data["project_mapping"][fullnode][drv.target]
 
                     primary_project=prj['primary_project']
-                    primary_bucket=prj['primary_bucket']
+                    # primary_bucket=prj['primary_bucket'] # TODO: Check primary bucket
                     mirror_project=prj['mirror_project']
-                    mirror_bucket=primary_bucket+'-mirror'
+                    # mirror_bucket=primary_bucket+'-mirror' # TODO: Check primary mirror bucket
 
                     primarycmd='rclone lsjson ' + primary_project + ':'
                     mirrorcmd='rclone lsjson ' + mirror_project + ':'
