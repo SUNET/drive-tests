@@ -102,11 +102,6 @@ class TestAppsSelenium(unittest.TestCase):
     for nextcloudnode in drv.fullnodes:
         g_loggedInNodes[nextcloudnode] = False
 
-
-    def test_logger(self):
-        self.logger.info(f'TestID: {self._testMethodName}')
-        pass
-
     def test_app_shortcuts(self):
         delay = 30 # seconds
 

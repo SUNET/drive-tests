@@ -120,7 +120,7 @@ if (client.check(tmpFile)):
         client.clean(tmpFile)
         logger.info('Removed temp file')
     except Exception as error:
-        logger.error(f'Error removing temporary file: {tmpFile}')
+        logger.error(f'Error removing temporary file: {tmpFile} - {error}')
         sys.exit()
 
 try:
@@ -260,7 +260,7 @@ try:
     time.sleep(1)
     # wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "button.v-btn"))).click()
 except Exception as error:
-    logger.error('Could not set project name')
+    logger.error(f'Could not set project name: {error}')
     sys.exit()
 
 try:
@@ -283,7 +283,7 @@ try:
     time.sleep(1)
     # wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "button.v-btn"))).click()
 except Exception as error:
-    logger.error('Choose source folder error!')
+    logger.error(f'Choose source folder error: {error}')
     sys.exit()
 
 try:
@@ -304,7 +304,7 @@ try:
     # wait.until(EC.presence_of_element_located((By.XPATH, "//*[contains(text(), '{target}')]"))).click()
     # wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "button.v-btn"))).click()
 except Exception as error:
-    logger.error(f'{target} folder not found')
+    logger.error(f'{target} folder not found: {error}')
     sys.exit()
 
 try:
@@ -328,7 +328,7 @@ try:
     wait.until(EC.presence_of_element_located((By.XPATH, "//*[contains(text(), 'Continue')]"))).click()
     # wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "button.v-btn"))).click()
 except Exception as error:
-    logger.error('Continue button not found')
+    logger.error(f'Continue button not found: {error}')
     sys.exit()
 
 time.sleep(3)
