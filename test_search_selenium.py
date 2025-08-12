@@ -39,7 +39,6 @@ def nodelogin(fullnode):
     g_loggedInNodes[fullnode] = True
 
     g_driver.maximize_window()
-    actions = ActionChains(g_driver)
     # driver2 = webdriver.Firefox()
     g_driver.get(loginurl)
 
@@ -112,9 +111,9 @@ class TestSearchSelenium(unittest.TestCase):
                 except TimeoutException:
                     g_logger.info('Loading of app menu took too much time!')
 
-                # Check URLs after login
-                dashboardUrl = g_drv.get_dashboard_url(fullnode)
-                currentUrl = g_driver.current_url
+                # TODO: Check URLs after login
+                # dashboardUrl = g_drv.get_dashboard_url(fullnode)
+                # currentUrl = g_driver.current_url
                 # self.assertEqual(dashboardUrl, currentUrl)                
 
                 files = g_driver.find_element(By.XPATH, '//a[@href="'+ '/index.php/apps/files/' +'"]')
@@ -147,8 +146,8 @@ class TestSearchSelenium(unittest.TestCase):
                         filter = g_driver.find_element(By.CLASS_NAME, 'filter')
                         self.assertEqual(filter.text, 'matches "{testfolder}"')
 
-                    except:
-                        g_logger.warning('Search resulted in an error')
+                    except Exception as error:
+                        g_logger.warning(f'Search resulted in an error {error}')
 
 if __name__ == '__main__':
     unittest.main(testRunner=xmlrunner.XMLTestRunner(output='test-reports'))

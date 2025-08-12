@@ -24,7 +24,7 @@ g_rdslocal_nextcloud_url = 'https://test-nextcloud.localdomain.test/'
 class TestRdsNextcloudLocal(unittest.TestCase):
     def test_rds_nextcloud_local_authorization(self):
         delay = 30 # seconds
-        drv = sunetnextcloud.TestTarget(g_testtarget)
+        sunetnextcloud.TestTarget(g_testtarget)
         loginurl = g_rdslocal_nextcloud_url
         print("Login url: ", loginurl)
         sciebouserenv = "RDSLOCAL_NEXTCLOUD_USER"
@@ -37,13 +37,13 @@ class TestRdsNextcloudLocal(unittest.TestCase):
         osfpwdenv = "OSF_TEST_USER_PASSWORD"
         osfpwd = os.environ.get(osfpwdenv)
 
-        zenodouserenv = "ZENODO_TEST_USER"
-        zenodouser = os.environ.get(zenodouserenv)
-        zenodopwdenv = "ZENODO_TEST_USER_PASSWORD"
-        zenodopwd = os.environ.get(zenodopwdenv)
+        # zenodouserenv = "ZENODO_TEST_USER"
+        # zenodouser = os.environ.get(zenodouserenv)
+        # zenodopwdenv = "ZENODO_TEST_USER_PASSWORD"
+        # zenodopwd = os.environ.get(zenodopwdenv)
 
         osfButtonIndex = '2'
-        zenodoButtonIndex = '1'
+        # zenodoButtonIndex = '1'
 
         chromeOptions = Options()
         chromeOptions.add_argument("--disable-web-security")

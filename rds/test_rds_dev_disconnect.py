@@ -55,7 +55,7 @@ class TestRdsDevDisconnect(unittest.TestCase):
         driver.get(g_rds_dev_url)
 
         # Store the ID of the original window
-        original_window = driver.current_window_handle
+        # original_window = driver.current_window_handle
 
         wait = WebDriverWait(driver, delay)
         wait.until(EC.presence_of_element_located((By.ID, 'user'))).send_keys(g_rds_dev_user)

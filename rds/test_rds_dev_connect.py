@@ -46,10 +46,10 @@ class TestRdsDevConnect(unittest.TestCase):
         osfpwdenv = "OSF_TEST_USER_PASSWORD"
         osfpwd = os.environ.get(osfpwdenv)
 
-        zenodouserenv = "ZENODO_TEST_USER"
-        zenodouser = os.environ.get(zenodouserenv)
-        zenodopwdenv = "ZENODO_TEST_USER_PASSWORD"
-        zenodopwd = os.environ.get(zenodopwdenv)
+        # zenodouserenv = "ZENODO_TEST_USER"
+        # zenodouser = os.environ.get(zenodouserenv)
+        # zenodopwdenv = "ZENODO_TEST_USER_PASSWORD"
+        # zenodopwd = os.environ.get(zenodopwdenv)
 
         osfButtonIndex = '1'
         # zenodoButtonIndex = '1'

@@ -37,11 +37,11 @@ if os.environ.get('SELENIUM_DRIVER_SERVICE') == 'True':
 
 
 def deleteCookies():
-    cookies = g_driver.get_cookies()
+    g_driver.get_cookies()
     # g_logger.info(f'Deleting all cookies: {cookies}')
     g_logger.info('Deleting all cookies.')
     g_driver.delete_all_cookies()
-    cookies = g_driver.get_cookies()
+    g_driver.get_cookies()
     # g_logger.info(f'Cookies deleted: {cookies}')
     g_logger.info('Cookies deleted.')
 
@@ -53,11 +53,9 @@ def nodelogin(nextcloudnode):
     g_logger.info(f'Login url: {loginurl}')
     nodeuser = g_drv.get_seleniumuser(nextcloudnode)
     nodepwd = g_drv.get_seleniumuserpassword(nextcloudnode)
-    g_isLoggedIn = True
     g_loggedInNodes[nextcloudnode] = True
 
     g_driver.set_window_size(1920, 1152)
-    actions = ActionChains(g_driver)
     # driver2 = webdriver.Firefox()
     g_driver.get(loginurl)
 
@@ -120,15 +118,6 @@ class TestAppsSelenium(unittest.TestCase):
         # The class name of the share icon changed in Nextcloud 28
         version = self.expectedResults[g_drv.target]['status']['version']
         self.logger.info(f'Expected Nextcloud version: {version}')
-        if version.startswith('27'):
-            sharedClass = 'icon-shared'
-            simpleLogoutUrl = False
-            self.logger.info('We are on Nextcloud 27 and are not using the simple logout url')
-        else:
-            # This will select the first available sharing button
-            sharedClass = 'files-list__row-action-sharing-status'
-            simpleLogoutUrl = True
-            self.logger.info('We are on Nextcloud 28 and are therefore using the simple logout url')
 
         for fullnode in g_drv.fullnodes:
             with self.subTest(mynode=fullnode):
@@ -142,7 +131,6 @@ class TestAppsSelenium(unittest.TestCase):
                     self.logger.info('App menu is ready!')
                 except TimeoutException:
                     self.logger.warning('Loading of app menu took too much time!')
-                    success = False
 
                 defaultApps = self.expectedResults[g_drv.target]['defaultapps']
                 optionalApps = self.expectedResults[g_drv.target]['optionalapps']

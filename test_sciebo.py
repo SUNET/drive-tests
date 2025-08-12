@@ -24,7 +24,7 @@ g_driverTimeout = 30
 
 class TestSciebo(unittest.TestCase):
     def test_sciebo_login(self):
-        drv = sunetnextcloud.TestTarget(g_testtarget)
+        sunetnextcloud.TestTarget(g_testtarget)
         loginurl = g_sciebourl
         print("Login url: ", loginurl)
         sciebouserenv = "SCIEBO_USER"
@@ -47,7 +47,7 @@ class TestSciebo(unittest.TestCase):
         wait.until(EC.presence_of_element_located((By.ID, 'password'))).send_keys(nodepwd + Keys.ENTER)
 
         try:
-            myElem = wait.until(EC.presence_of_element_located((By.LINK_TEXT, 'All files')))
+            wait.until(EC.presence_of_element_located((By.LINK_TEXT, 'All files')))
             print("All files visible!")
         except TimeoutException:
             print("Loading of all files took too much time!")
@@ -55,7 +55,7 @@ class TestSciebo(unittest.TestCase):
         time.sleep(1)
 
     def test_sciebo_rds_project(self):
-        drv = sunetnextcloud.TestTarget(g_testtarget)
+        sunetnextcloud.TestTarget(g_testtarget)
         loginurl = g_sciebourl
         print("Login url: ", loginurl)
         sciebouserenv = "SCIEBO_USER"
@@ -78,7 +78,7 @@ class TestSciebo(unittest.TestCase):
         wait.until(EC.presence_of_element_located((By.ID, 'password'))).send_keys(nodepwd + Keys.ENTER)
 
         try:
-            myElem = wait.until(EC.presence_of_element_located((By.LINK_TEXT, 'All files')))
+            wait.until(EC.presence_of_element_located((By.LINK_TEXT, 'All files')))
             print("All files visible!")
         except TimeoutException:
             print("Loading of all files took too much time!")

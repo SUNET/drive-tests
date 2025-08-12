@@ -56,7 +56,7 @@ class NextcloudOAuthenticator(GenericOAuthenticator):
             if debug:
                 print(f'auth_state missing for {user}')
             return False
-        access_token = auth_state['access_token']
+        # access_token = auth_state['access_token']
         refresh_token = auth_state['refresh_token']
         token_response = auth_state['token_response']
         now = time.time()

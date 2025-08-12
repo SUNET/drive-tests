@@ -24,7 +24,7 @@ g_delay = 30
 
 class TestRdsNextcloudLocal(unittest.TestCase):
     def test_rds_nextcloud_local_login(self):
-        drv = sunetnextcloud.TestTarget(g_testtarget)
+        sunetnextcloud.TestTarget(g_testtarget)
         loginurl = g_rdslocal_nextcloud_url
         print("Login url: ", loginurl)
         sciebouserenv = "RDSLOCAL_NEXTCLOUD_USER"
@@ -60,7 +60,7 @@ class TestRdsNextcloudLocal(unittest.TestCase):
         self.assertTrue(proceed)
 
     def test_rds_nextcloud_local_project(self):
-        drv = sunetnextcloud.TestTarget(g_testtarget)
+        sunetnextcloud.TestTarget(g_testtarget)
         loginurl = g_rdslocal_nextcloud_url
         print("Login url: ", loginurl)
         sciebouserenv = "RDSLOCAL_NEXTCLOUD_USER"

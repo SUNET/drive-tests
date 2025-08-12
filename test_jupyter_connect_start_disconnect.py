@@ -83,8 +83,8 @@ class TestJupyterSelenium(unittest.TestCase):
                     self.logger.info('Loading of app menu took too much time!')
 
                 # Check URLs after login
-                dashboardUrl = drv.get_dashboard_url(fullnode)
-                currentUrl = driver.current_url
+                # dashboardUrl = drv.get_dashboard_url(fullnode)
+                # currentUrl = driver.current_url
                 # self.assertEqual(dashboardUrl, currentUrl)                
 
                 jupyter = driver.find_element(By.XPATH, '//a[@href="'+ '/index.php/apps/integration_jupyterhub/' +'"]')

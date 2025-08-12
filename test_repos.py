@@ -28,7 +28,7 @@ class TestRepos(unittest.TestCase):
     # Ensure that the mapping files are the same as the reference files
     def test_mappingfiles(self):
         self.logger.info(f'{self._testMethodName}')
-        drv = sunetnextcloud.TestTarget()
+        sunetnextcloud.TestTarget()
         self.assertTrue(filecmp.cmp(puppetfile, referencefile))
 
     def test_allnodes_tested(self):
@@ -37,7 +37,7 @@ class TestRepos(unittest.TestCase):
         # print(len(drv.fullnodes))
 
         testMissing = False
-        testWrongNode = False
+        # testWrongNode = False
         globalconfigfile = opsbase + "/global/overlay/etc/hiera/data/common.yaml"
         with open(globalconfigfile, "r") as stream:
             data=yaml.safe_load(stream)

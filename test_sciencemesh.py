@@ -28,7 +28,7 @@ class TestScienceMesh(unittest.TestCase):
 
             try:
                 hr = requests.get(fullhosturl)
-                # print("\tLIVE: " + hosturl)
+                print("\tLIVE: " + hosturl + " - " + hr.text)
                 isLive = True
                 # print(r.text)
             except:
@@ -42,16 +42,15 @@ class TestScienceMesh(unittest.TestCase):
                     sr = requests.get(statusUrl)
                     if ('installed' in sr.text):
                         statusCount += 1
-                        hasStatus = True
                         print("\tStatus: ", statusUrl)
                 except:
                     print("Status url not available: " + statusUrl)
 
             for service in instance["services"]:
                 servicename = service["endpoint"]["type"]["name"]
-                # print("\t", servicename)
-                # if (servicename == "OCM"):
-                #     print("\t\t\t\t OCM ENDPOINT FOUND")
+                print("\t", servicename)
+                if (servicename == "OCM"):
+                    print("\t\t\t\t OCM ENDPOINT FOUND")
 
 
                 if service.get('additional_endpoints') is not None:
@@ -60,12 +59,12 @@ class TestScienceMesh(unittest.TestCase):
                         if (additionalEndpoint["type"]["name"] == "METRICS"):
                             # print("\t\t\t", additionalEndpoint["path"])
                             metricsPath = additionalEndpoint["path"]
-                            # try:
-                            #     r=requests.get(metricsPath)
-                            #     # print(r.text)
-                            # except:
-                            #     print("\t\t\t\t", "Metrics access failed")
-                            # print(r.text)
+                            try:
+                                r=requests.get(metricsPath)
+                                # print(r.text)
+                            except Exception as error:
+                                print("\t\t\t\t", f"Metrics access failed: {error}")
+                            print(r.text)
                     # print("value is present for given JSON key")
                     # # print(service["additional_endpoints"]["type"]["name"])
                     # print(service["additional_endpoints"]["type"])

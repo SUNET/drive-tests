@@ -29,7 +29,7 @@ def get_nextcloud_access_token(refresh_token):
     print(response.text)
   return response.json()
 def post_auth_hook(authenticator, handler, authentication):
-  user = authentication['auth_state']['oauth_user']['ocs']['data']['id']
+  # user = authentication['auth_state']['oauth_user']['ocs']['data']['id']
   auth_state = authentication['auth_state']
   auth_state['token_expires'] =  time.time() + auth_state['token_response']['expires_in']
   authentication['auth_state'] = auth_state
@@ -51,7 +51,7 @@ class NextcloudOAuthenticator(GenericOAuthenticator):
       if debug:
         print(f'auth_state missing for {user}')
       return False
-    access_token = auth_state['access_token']
+    # access_token = auth_state['access_token']
     refresh_token = auth_state['refresh_token']
     token_response = auth_state['token_response']
     now = time.time()

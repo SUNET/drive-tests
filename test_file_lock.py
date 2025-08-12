@@ -57,7 +57,11 @@ class TestFileLock(unittest.TestCase):
                 }
 
                 client = Client(options)
-                result = client.upload_sync(remote_path=g_filename, local_path=g_localFile)
+                try:
+                    result = client.upload_sync(remote_path=g_filename, local_path=g_localFile)
+                    self.logger.info(f'Upload successful: {result}')
+                except Exception as error:
+                    self.logger.error(f'Error uploading {g_filename}: {error}')
 
                 curlLock = drv.get_file_lock_curl(fullnode, nodeuser, g_filename)
                 self.logger.info(f'File lock url: {curlLock}')
@@ -86,9 +90,13 @@ class TestFileLock(unittest.TestCase):
                 'webdav_login' : nodeuser,
                 'webdav_password' : nodepwd 
                 }
-                data = { 'userid': nodeuser, 'password': nodepwd}
+                # data = { 'userid': nodeuser, 'password': nodepwd}
                 client = Client(options)
-                result = client.upload_sync(remote_path=g_filename, local_path=g_localFile)
+                try:
+                    result = client.upload_sync(remote_path=g_filename, local_path=g_localFile)
+                    self.logger.info(f'Upload successful: {result}')
+                except Exception as error:
+                    self.logger.error(f'Error uploading {g_filename}: {error}')
 
                 nodeuser = drv.get_seleniumuser(fullnode)
                 nodepwd = drv.get_seleniumuserpassword(fullnode)
@@ -106,6 +114,7 @@ class TestFileLock(unittest.TestCase):
                     fileid = prop.getElementsByTagName('oc:fileid')[0].firstChild.data
                     lockUrl = drv.get_file_lock_url(fullnode, fileid)
                     r = session.post(lockUrl, headers=ocsheaders, auth = HTTPBasicAuth(nodeuser, nodepwd))
+                    self.logger.info(f'href={href}')
                     self.logger.info(f'Lock status code: {r.status_code}')
                     self.logger.info(f'Lock request response: {r.text}')
 

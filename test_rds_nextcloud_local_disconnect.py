@@ -26,7 +26,7 @@ debugSleep = 3
 class TestSciebo(unittest.TestCase):
     def test_sciebo_rds_disconnect(self):
         delay = 30 # seconds
-        drv = sunetnextcloud.TestTarget(g_testtarget)
+        sunetnextcloud.TestTarget(g_testtarget)
         loginurl = g_rdslocal_nextcloud_url
         print("Login url: ", loginurl)
         sciebouserenv = "RDSLOCAL_NEXTCLOUD_USER"
@@ -51,7 +51,7 @@ class TestSciebo(unittest.TestCase):
         driver.get(loginurl)
 
         # Store the ID of the original window
-        original_window = driver.current_window_handle
+        # original_window = driver.current_window_handle
 
         wait = WebDriverWait(driver, delay)
         wait.until(EC.presence_of_element_located((By.ID, 'user'))).send_keys(sciebouser)

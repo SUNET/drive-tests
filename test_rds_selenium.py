@@ -63,7 +63,6 @@ class TestRDSSelenium(unittest.TestCase):
                     self.logger.error('Error initializing Chrome driver')
                     self.assertTrue(False)
                 driver.maximize_window()
-                actions = ActionChains(driver)
                 # driver2 = webdriver.Firefox()
                 driver.get(loginurl)
 
