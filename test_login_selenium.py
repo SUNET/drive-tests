@@ -56,15 +56,7 @@ class TestLoginSelenium(unittest.TestCase):
         # The class name of the share icon changed in Nextcloud 28
         version = drv.expectedResults[drv.target]['status']['version']
         self.logger.info(f'Expected Nextcloud version: {version}')
-        if version.startswith('27'):
-            sharedClass = 'icon-shared'
-            simpleLogoutUrl = False
-            self.logger.info('We are on Nextcloud 27 and are not using the simple logout url')
-        else:
-            # This will select the first available sharing button
-            sharedClass = 'files-list__row-action-sharing-status'
-            simpleLogoutUrl = True
-            self.logger.info('We are on Nextcloud 28 and are therefore using the simple logout url')
+        sharedClass = 'files-list__row-action-sharing-status'
 
         for browser in drv.browsers:
             with self.subTest(mybrowser=browser):
@@ -99,14 +91,14 @@ class TestLoginSelenium(unittest.TestCase):
                                 options.add_argument("--disable-dev-shm-usage")
                                 options.add_argument("--disable-gpu")
                                 options.add_argument("--disable-extensions")
-                                if drv.verify == False:
+                                if not drv.verify:
                                     options.add_argument("--ignore-certificate-errors")
                                 driver = webdriver.Chrome(options=options)
                             elif browser == 'firefox':
-                                if use_driver_service == False:
+                                if not use_driver_service:
                                     self.logger.info('Initialize Firefox driver without driver service')
                                     options = FirefoxOptions()
-                                    if drv.verify == False:
+                                    if not drv.verify:
                                         options.add_argument("--ignore-certificate-errors")
                                     # options.add_argument("--headless")
                                     driver = webdriver.Firefox(options=options)
@@ -121,7 +113,7 @@ class TestLoginSelenium(unittest.TestCase):
                                     # options.add_argument("--disable-dev-shm-usage")
                                     # options.add_argument("--disable-gpu")
                                     # options.add_argument("--disable-extensions")
-                                    if drv.verify == False:
+                                    if not drv.verify:
                                         options.add_argument("--ignore-certificate-errors")
                                     driver = webdriver.Remote(command_executor='http://127.0.0.1:4444/wd/hub', options=options)
                             else:
@@ -155,8 +147,8 @@ class TestLoginSelenium(unittest.TestCase):
                             sharefolder = driver.find_element(by=By.CLASS_NAME, value=sharedClass)
                             sharefolder.click()
                             self.logger.info('Clicked on share folder')
-                        except:
-                            self.logger.info(f'{sharedClass} not found')
+                        except Exception as error:
+                            self.logger.info(f'{sharedClass} not found: {error}')
 
                         try:
                             wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'sharing-entry__title')))
@@ -214,14 +206,14 @@ class TestLoginSelenium(unittest.TestCase):
                 options.add_argument("--disable-dev-shm-usage")
                 options.add_argument("--disable-gpu")
                 options.add_argument("--disable-extensions")
-                if drv.verify == False:
+                if not drv.verify:
                     options.add_argument("--ignore-certificate-errors")
                 driver = webdriver.Chrome(options=options)
             elif browser == 'firefox':
-                if use_driver_service == False:
+                if not use_driver_service:
                     self.logger.info('Initialize Firefox driver without driver service')
                     options = FirefoxOptions()
-                    if drv.verify == False:
+                    if not drv.verify:
                         options.add_argument("--ignore-certificate-errors")
                     # options.add_argument("--headless")
                     driver = webdriver.Firefox(options=options)
@@ -236,7 +228,7 @@ class TestLoginSelenium(unittest.TestCase):
                     # options.add_argument("--disable-dev-shm-usage")
                     # options.add_argument("--disable-gpu")
                     # options.add_argument("--disable-extensions")
-                    if drv.verify == False:
+                    if not drv.verify:
                         options.add_argument("--ignore-certificate-errors")
                     driver = webdriver.Remote(command_executor='http://127.0.0.1:4444/wd/hub', options=options)
             else:
@@ -334,7 +326,7 @@ class TestLoginSelenium(unittest.TestCase):
                     options.add_argument("--disable-extensions")
                     driver = webdriver.Chrome(options=options)
                 elif browser == 'firefox':
-                    if use_driver_service == False:
+                    if not use_driver_service:
                         self.logger.info('Initialize Firefox driver without driver service')
                         options = FirefoxOptions()
                         # options.add_argument("--headless")
@@ -380,7 +372,7 @@ class TestLoginSelenium(unittest.TestCase):
                 wait.until(EC.element_to_be_clickable((By.XPATH, '//a[@href="' + drv.indexsuffix + '/login/challenge/totp?redirect_url=' + drv.indexsuffix + '/apps/dashboard/' +'"]'))).click()
                 self.logger.info('Found and clicked on TOTP selection dialogue')
                 requireTotp = True
-            except:
+            except Exception:
                 self.logger.info('No need to select TOTP provider')
                 requireTotp = False
 
@@ -408,7 +400,7 @@ class TestLoginSelenium(unittest.TestCase):
             currentUrl = driver.current_url
             try:
                 self.assertEqual(dashboardUrl, currentUrl)
-            except:
+            except Exception:
                 self.assertEqual(dashboardUrl + '#/', currentUrl)
                 self.logger.warning('Dashboard URL contains trailing #, likely due to the tasks app')
                 self.logger.info(f'{currentUrl}')
