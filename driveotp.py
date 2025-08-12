@@ -17,4 +17,5 @@ drv = sunetnextcloud.TestTarget(args.environment)
 nodetotpsecret = drv.get_seleniummfausertotpsecret(args.customer)
 
 totp = pyotp.TOTP(nodetotpsecret)
+print(f'OTP for user {drv.get_seleniummfauser(args.customer)} in {args.environment}')
 print(totp.now())
