@@ -58,15 +58,7 @@ class TestUserlifecycleSelenium(unittest.TestCase):
         # The class name of the share icon changed in Nextcloud 28
         version = self.expectedResults[drv.target]['status']['version']
         self.logger.info(f'Expected Nextcloud version: {version}')
-        if version.startswith('27'):
-            sharedClass = 'icon-shared'
-            simpleLogoutUrl = False
-            self.logger.info('We are on Nextcloud 27 and are not using the simple logout url')
-        else:
-            # This will select the first available sharing button
-            sharedClass = 'files-list__row-action-sharing-status'
-            simpleLogoutUrl = True
-            self.logger.info('We are on Nextcloud 28 and are therefore using the simple logout url')
+        sharedClass = 'files-list__row-action-sharing-status'
 
         drv.browsers=['firefox']
         for browser in drv.browsers:
@@ -89,8 +81,8 @@ class TestUserlifecycleSelenium(unittest.TestCase):
                         self.logger.info(f'Create cli user {lifecycleuser}')
                         try:
                             r = session.post(addUserUrl, headers=ocsheaders, data=data)
-                        except:
-                            self.logger.error('Error posting to create cli user')
+                        except Exception as error:
+                            self.logger.error(f'Error posting to create cli user {error}')
                             return
                         try:
                             j = json.loads(r.text)
@@ -121,16 +113,16 @@ class TestUserlifecycleSelenium(unittest.TestCase):
 
                             elif (j["ocs"]["meta"]["statuscode"] != 100):
                                 self.logger.info(f'Retry to create cli user {lifecycleuser} after error {j["ocs"]["meta"]["statuscode"]}')
-                                r = session.post(url, headers=ocsheaders, data=data)
+                                r = session.post(addUserUrl, headers=ocsheaders, data=data)
                                 j = json.loads(r.text)
                                 self.logger.info(json.dumps(j, indent=4, sort_keys=True))
-                        except:
-                            self.logger.info(f"No JSON reply received from {fullnode}")
+                        except Exception as error:
+                            self.logger.info(f'No JSON reply received from {fullnode}: {error}')
                             self.logger.info(r.text)
                             return
 
                         self.logger.info(f'TestID: Testing node {fullnode} with browser {browser}')
-                        loginurl = drv.get_node_login_url(fullnode)
+                        # loginurl = drv.get_node_login_url(fullnode)
 
                         try:
                             if browser == 'chrome':
@@ -141,7 +133,7 @@ class TestUserlifecycleSelenium(unittest.TestCase):
                                 options.add_argument("--disable-extensions")
                                 driver = webdriver.Chrome(options=options)
                             elif browser == 'firefox':
-                                if use_driver_service == False:
+                                if use_driver_service:
                                     self.logger.info('Initialize Firefox driver without driver service')
                                     options = FirefoxOptions()
                                     # options.add_argument("--headless")
@@ -178,8 +170,8 @@ class TestUserlifecycleSelenium(unittest.TestCase):
                             self.logger.info(f'Make and check directory: {dir}')
                             client.mkdir(dir)
                             self.assertEqual(client.list().count('SharedFolder/'), 1)
-                        except:
-                            self.logger.error('Webdav error making shared folder')                        
+                        except Exception as error:
+                            self.logger.error(f'Webdav error making shared folder {error}')                        
 
                         files = driver.find_element(By.XPATH, '//a[@href="' + drv.indexsuffix + '/apps/files/' +'"]')
                         files.click()
@@ -195,8 +187,8 @@ class TestUserlifecycleSelenium(unittest.TestCase):
                             sharefolder = driver.find_element(by=By.CLASS_NAME, value=sharedClass)
                             sharefolder.click()
                             self.logger.info('Clicked on share folder')
-                        except:
-                            self.logger.info(f'{sharedClass} not found')
+                        except Exception as error:
+                            self.logger.info(f'{sharedClass} not found: {error}')
 
                         try:
                             wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'sharing-entry__title')))
@@ -391,7 +383,7 @@ class TestUserlifecycleSelenium(unittest.TestCase):
     #                         sharefolder = driver.find_element(by=By.CLASS_NAME, value=sharedClass)
     #                         sharefolder.click()
     #                         self.logger.info(f'Clicked on share folder')
-    #                     except:
+    #                     except Exception as error:
     #                         self.logger.info(f'{sharedClass} not found')
 
     #                     try:
@@ -644,7 +636,7 @@ class TestUserlifecycleSelenium(unittest.TestCase):
     #             wait.until(EC.element_to_be_clickable((By.XPATH, '//a[@href="' + drv.indexsuffix + '/login/challenge/totp?redirect_url=' + drv.indexsuffix + '/apps/dashboard/' +'"]'))).click()
     #             self.logger.info(f'Found and clicked on TOTP selection dialogue')
     #             requireTotp = True
-    #         except:
+    #         except Exception as error:
     #             self.logger.info(f'No need to select TOTP provider')
     #             requireTotp = False
 
@@ -672,7 +664,7 @@ class TestUserlifecycleSelenium(unittest.TestCase):
     #         currentUrl = driver.current_url
     #         try:
     #             self.assertEqual(dashboardUrl, currentUrl)
-    #         except:
+    #         except Exception as error:
     #             self.assertEqual(dashboardUrl + '#/', currentUrl)
     #             self.logger.warning(f'Dashboard URL contains trailing #, likely due to the tasks app')
     #             self.logger.info(f'{currentUrl}')
@@ -770,7 +762,7 @@ class TestUserlifecycleSelenium(unittest.TestCase):
     #             wait.until(EC.element_to_be_clickable((By.XPATH, '//a[@href="' + drv.indexsuffix + '/login/challenge/totp?redirect_url=' + drv.indexsuffix + '/apps/dashboard/' +'"]'))).click()
     #             self.logger.info(f'Found and clicked on TOTP selection dialogue')
     #             requireTotp = True
-    #         except:
+    #         except Exception as error:
     #             self.logger.info(f'No need to select TOTP provider')
     #             requireTotp = False
 
