@@ -50,7 +50,7 @@ class ConfiguredAppsInstalled(threading.Thread):
 
         try:
             r=session.get(url, headers=ocsheaders)
-        except:
+        except Exception:
             logger.error(f'Error getting {url}')
             g_testThreadsRunning -=1
             return
@@ -59,7 +59,7 @@ class ConfiguredAppsInstalled(threading.Thread):
             j = json.loads(r.text)
             nodeApps = j["ocs"]["data"]["apps"]
             # print(json.dumps(j, indent=4, sort_keys=True))
-        except:
+        except Exception:
             logger.warning(f'No JSON reply received on node {fullnode}')
             # self.logger.warning(r.text)
             g_testThreadsRunning -= 1
@@ -74,7 +74,7 @@ class ConfiguredAppsInstalled(threading.Thread):
                 pos = nodeApps.index(expectedApp)
                 logger.info(f'Found app at {pos}')
                 g_testPassed[fullnode] = True
-            except:
+            except Exception:
                 logger.warning(f'App {expectedApp} NOT found on {fullnode}')
 
         logger.info(f'ConfiguredAppsInstalled thread done for node {self.name}')
@@ -106,7 +106,7 @@ class InstalledAppsConfigured(threading.Thread):
 
         try:
             r=session.get(url, headers=ocsheaders)
-        except:
+        except Exception:
             logger.error(f'Error getting {url}')
             g_testThreadsRunning -=1
             return
@@ -116,7 +116,7 @@ class InstalledAppsConfigured(threading.Thread):
             # print(json.dumps(j, indent=4, sort_keys=True))
             nodeApps = j["ocs"]["data"]["apps"]
             logger.info(f'Apps found on node {fullnode}: {json.dumps(j, indent=4, sort_keys=True)}')
-        except:
+        except Exception:
             logger.warning(f'No JSON reply received on {fullnode}')
             # self.logger.warning(r.text)
             g_testThreadsRunning -= 1
@@ -124,11 +124,12 @@ class InstalledAppsConfigured(threading.Thread):
 
         if self.app == 'all':
             logger.info(f'Check if all installed apps on {fullnode} are found in {expectedResultsFile}')
+            # TODO: Compare application information with expected result
             for nodeApp in nodeApps:
                 try:
-                    appInfo = expectedResults['apps'][nodeApp]
+                    # appInfo = expectedResults['apps'][nodeApp]
                     g_testPassed[fullnode] = True
-                except:
+                except Exception:
                     logger.warning(f'{nodeApp} NOT found on {fullnode}')
                 
         else: # Check if specific app is installed/active
@@ -136,7 +137,7 @@ class InstalledAppsConfigured(threading.Thread):
                 installed = self.app in nodeApps
                 logger.info(f'App {self.app} is installed: {installed} on {fullnode}')
                 g_testPassed[fullnode] = self.app in nodeApps
-            except:
+            except Exception:
                 logger.error(f'{self.app} NOT found on {fullnode}')
                 logger.info(f'Apps found are: {nodeApps}')
                 g_testThreadsRunning -= 1
@@ -177,7 +178,7 @@ class NumberOfAppsOnNodes(threading.Thread):
 
             try:
                 r=session.get(url, headers=ocsheaders)
-            except:
+            except Exception:
                 logger.error(f'Error getting {url}')
                 g_testThreadsRunning -=1
                 return
@@ -187,7 +188,7 @@ class NumberOfAppsOnNodes(threading.Thread):
                 # print(json.dumps(j, indent=4, sort_keys=True))
                 nodeApps = j["ocs"]["data"]["apps"]
                 logger.info(f'Number of apps on {fullnode}: {len(nodeApps)}')
-            except:
+            except Exception:
                 logger.warning(f'No JSON reply received on {fullnode}')
                 logger.warning(r.text)
                 g_testThreadsRunning -= 1
@@ -196,7 +197,7 @@ class NumberOfAppsOnNodes(threading.Thread):
             try:
                 numExpectedApps = expectedResults[drv.target]['ocsapps'][fullnode]
                 logger.info(f'Expected number of apps differs from default for {fullnode}: {numExpectedApps}')
-            except:
+            except Exception:
                 numExpectedApps = expectedResults[drv.target]['ocsapps']['default']
                 logger.info(f'Expected number of apps: {numExpectedApps}')
 

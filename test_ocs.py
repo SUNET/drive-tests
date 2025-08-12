@@ -66,7 +66,7 @@ class AppVersions(threading.Thread):
             logger.error(f'Error getting {url}:{error}')
             g_testThreadsRunning -= 1
             return
-        nodeApps = []
+        # nodeApps = []   # TODO: Check for apps installed on node
         apps = []
         try:
             j = json.loads(r.text)

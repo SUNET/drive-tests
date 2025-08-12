@@ -29,11 +29,11 @@ class TestTests(unittest.TestCase):
         # print(len(drv.fullnodes))
         testMissing = False
 
-        if drv.singlenodetesting == True:
+        if drv.singlenodetesting:
             self.logger.info(f'We are only testing single nodes: {drv.allnodes}')
             testMissing = False
 
-        if os.path.exists(globalconfigfile) and drv.singlenodetesting == False:
+        if os.path.exists(globalconfigfile) and not drv.singlenodetesting:
             self.logger.info('Check if we are testing all nodes')
             with open(globalconfigfile, "r") as stream:
                 data=yaml.safe_load(stream)
