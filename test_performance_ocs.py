@@ -63,7 +63,7 @@ class NodeOcsUserLifecycle(threading.Thread):
                     cliuser = "__performance_user_" + usersuffix + "_" + fullnode
 
 
-                    if (createusers==True):
+                    if (createusers):
                         url = url.replace("$USERNAME$", nodeuser)
                         url = url.replace("$PASSWORD$", nodepwd)
                         clipwd = sunetnextcloud.Helper().get_random_string(12)
@@ -75,7 +75,7 @@ class NodeOcsUserLifecycle(threading.Thread):
                         # logger.info(json.dumps(j, indent=4, sort_keys=True))
                         logger.info(j["ocs"]["meta"]["status"])
 
-                    if (disableusers==True):
+                    if (disableusers):
                         logger.info("Disable cli user " + cliuser)
                         disableuserurl = drv.get_disable_user_url(fullnode, cliuser)
                         disableuserurl = disableuserurl.replace("$USERNAME$", nodeuser)
@@ -85,7 +85,7 @@ class NodeOcsUserLifecycle(threading.Thread):
                         logger.info(j["ocs"]["meta"]["status"])
                         # logger.info(json.dumps(j, indent=4, sort_keys=True))
 
-                    if (deleteusers==True):
+                    if (deleteusers):
                         logger.info("Delete cli user " + cliuser)
                         userurl = drv.get_user_url(fullnode, cliuser)
                         userurl = userurl.replace("$USERNAME$", nodeuser)
@@ -141,7 +141,7 @@ class NodeOcsUserPerformance(threading.Thread):
                     s = requests.Session()
                     s.headers.update(ocsheaders)
                     startTime = datetime.now()
-                    r = s.get(url, headers=ocsheaders)
+                    s.get(url, headers=ocsheaders)
                     totalTime += (datetime.now() - startTime).total_seconds()
                     # logger.info(f'SERVERID cookie: {s.cookies.get_dict()["SERVERID"]}')
 
@@ -155,7 +155,7 @@ class NodeOcsUserPerformance(threading.Thread):
                 lastServerId = ''
                 for call in range(0,calls):
                     startTime = datetime.now()
-                    r = s.get(url, headers=ocsheaders)
+                    s.get(url, headers=ocsheaders)
                     totalTime += (datetime.now() - startTime).total_seconds()
                     logger.info(f'List all cookies {s.cookies.get_dict()}')
                     if call == 0:
@@ -178,7 +178,7 @@ class NodeOcsUserPerformance(threading.Thread):
                         s.headers.update(ocsheaders)
                         s.cookies.set('SERVERID', serverid)
                         startTime = datetime.now()
-                        r = s.get(url, headers=ocsheaders)
+                        s.get(url, headers=ocsheaders)
                         totalTime += (datetime.now() - startTime).total_seconds()
                     message += f' - {totalTime:<3.1f}s'
                     logger.info(f'{calls} request to {serverid} took {totalTime:<3.1f}s - {info}')
@@ -191,7 +191,7 @@ class NodeOcsUserPerformance(threading.Thread):
                             serverid = f'node{fe}.{nodebaseurl}'
                             s.cookies.set('SERVERID', serverid)
                             startTime = datetime.now()
-                            r = s.get(url, headers=ocsheaders)
+                            s.get(url, headers=ocsheaders)
                             totalTime += (datetime.now() - startTime).total_seconds()
                         message += f' - {totalTime:<3.1f}s'
                         logger.info(f'{calls} request to {serverid} took {totalTime:<3.1f}s - {info}')
@@ -206,7 +206,7 @@ class NodeOcsUserPerformance(threading.Thread):
                     s.cookies.set('SERVERID', serverid)
                     for call in range(0,calls):
                         startTime = datetime.now()
-                        r = s.get(url, headers=ocsheaders)
+                        s.get(url, headers=ocsheaders)
                         totalTime += (datetime.now() - startTime).total_seconds()
                     message += f' - {totalTime:<3.1f}s'
                     logger.info(f'{calls} request to {serverid} took {totalTime:<3.1f}s - {info}')
@@ -219,7 +219,7 @@ class NodeOcsUserPerformance(threading.Thread):
                             serverid = f'node{fe}.{nodebaseurl}'
                             s.cookies.set('SERVERID', serverid)
                             startTime = datetime.now()
-                            r = s.get(url, headers=ocsheaders)
+                            s.get(url, headers=ocsheaders)
                             totalTime += (datetime.now() - startTime).total_seconds()
                         message += f' - {totalTime:<3.1f}s'
                         logger.info(f'{calls} request to {serverid} took {totalTime:<3.1f}s - {info}')
@@ -240,7 +240,7 @@ class NodeOcsUserPerformance(threading.Thread):
                         s = requests.Session()
                         s.headers.update(ocsheaders)
                         startTime = datetime.now()
-                        r = s.get(url, headers=ocsheaders, verify=False)
+                        s.get(url, headers=ocsheaders, verify=False)
                         totalTime += (datetime.now() - startTime).total_seconds()
                     message += f' - {totalTime:<3.1f}s'
                     logger.info(f'{calls} request to {serverid} took {totalTime:<3.1f}s - {info}')
@@ -259,7 +259,7 @@ class NodeOcsUserPerformance(threading.Thread):
                             s = requests.Session()
                             s.headers.update(ocsheaders)
                             startTime = datetime.now()
-                            r = s.get(url, headers=ocsheaders, verify=False)
+                            s.get(url, headers=ocsheaders, verify=False)
                             totalTime += (datetime.now() - startTime).total_seconds()
                         message += f' - {totalTime:<3.1f}s'
                         logger.info(f'{calls} request to {serverid} took {totalTime:<3.1f}s - {info}')
@@ -279,7 +279,7 @@ class NodeOcsUserPerformance(threading.Thread):
 
                     for call in range(0,calls):
                         startTime = datetime.now()
-                        r = s.get(url, headers=ocsheaders, verify=False)
+                        s.get(url, headers=ocsheaders, verify=False)
                         totalTime += (datetime.now() - startTime).total_seconds()
                     message += f' - {totalTime:<3.1f}s'
                     logger.info(f'{calls} request to {serverid} took {totalTime:<3.1f}s - {info}')
@@ -297,7 +297,7 @@ class NodeOcsUserPerformance(threading.Thread):
 
                         for call in range(0,calls):
                             startTime = datetime.now()
-                            r = s.get(url, headers=ocsheaders, verify=False)
+                            s.get(url, headers=ocsheaders, verify=False)
                             totalTime += (datetime.now() - startTime).total_seconds()
                         message += f' - {totalTime:<3.1f}s'
                         logger.info(f'{calls} request to {serverid} took {totalTime:<3.1f}s - {info}')

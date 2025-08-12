@@ -46,15 +46,15 @@ def decreaseUploadCount():
 def webdavUpload(client, local_path, remote_path):
     global logger, g_testThreadsRunning
     logger.info(f'Upload {local_path}')
-    if client == None:
+    if client is None:
         logger.error('No client provided')
         decreaseUploadCount()
         return
-    if local_path == None:
+    if local_path is None:
         logger.error('No filename provided')
         decreaseUploadCount()
         return
-    if remote_path == None:
+    if remote_path is None:
         logger.error('No target filename provided')
         decreaseUploadCount()
         return
@@ -69,10 +69,10 @@ def webdavUpload(client, local_path, remote_path):
 
 def webdavClean(client, filename):
     global logger, g_testThreadsRunning
-    if client == None:
+    if client is None:
         logger.error('No client provided')
         return
-    if filename == None:
+    if filename is None:
         logger.error('No filename provided')
         return
     logger.info(f'Cleaning {filename}')
@@ -143,8 +143,8 @@ class TestWebDavPerformance(unittest.TestCase):
                             while g_testThreadsRunning > 0:
                                 time.sleep(0.01)
                         endTime = datetime.now()
-                    except:
-                        logger.error('Error during async upload')
+                    except Exception as error:
+                        logger.error(f'Error during async upload: {error}')
 
                     # Calculate time to upload
                     uploadTime = (endTime - startTime).total_seconds()
@@ -315,7 +315,7 @@ class TestWebDavPerformance(unittest.TestCase):
                         #     except:
                         #         logger.info(f'Error deleting {element}')
                         
-                        deleteTime = (datetime.now() - startTime).total_seconds()
+                        # deleteTime = (datetime.now() - startTime).total_seconds()
 
                         result += f'{uploadTime:<10.1f}'
 

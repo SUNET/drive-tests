@@ -59,7 +59,6 @@ class TestLoginMultiSelenium(unittest.TestCase):
         delay = 30 # seconds
         for fullnode in g_drv.fullnodes:
             with self.subTest(mynode=fullnode):
-                success = True
                 loginurl = g_drv.get_node_login_url(fullnode)
                 self.logger.info(f'URL: {loginurl}')
                 nodeuser = g_drv.get_seleniummfauser(fullnode)
@@ -85,8 +84,8 @@ class TestLoginMultiSelenium(unittest.TestCase):
                 try:
                     options = Options()
                     driver = webdriver.Chrome(options=options)
-                except:
-                    self.logger.error('Error initializing Chrome driver')
+                except Exception as error:
+                    self.logger.error(f'Error initializing Chrome driver {error}')
                     self.assertTrue(False)
                 wait = WebDriverWait(driver, delay)
                 driver.set_window_size(1920, 1152)
@@ -140,9 +139,8 @@ class TestLoginMultiSelenium(unittest.TestCase):
                     wait.until(EC.presence_of_element_located((By.XPATH, '//a[@href="'+ g_drv.indexsuffix + '/apps/files/' +'"]')))
                     files = driver.find_element(By.XPATH, '//a[@href="'+ g_drv.indexsuffix + '/apps/files/' +'"]')
                     files.click()
-                except:
+                except Exception:
                     self.logger.warning('Files app button not found, do we have to totp again?')
-
                     totpselect = driver.find_element(By.XPATH, '//a[@href="'+ g_drv.indexsuffix + '/login/challenge/totp' +'"]')
                     self.logger.warning('Found TOTP selection dialogue')
                     totpselect.click()
@@ -224,7 +222,6 @@ class TestLoginMultiSelenium(unittest.TestCase):
                 logoutLink.click()
                 self.logger.info('Logout complete')
 
-                currentUrl = driver.current_url
                 self.logger.info(driver.current_url)
                 driver.implicitly_wait(10) # seconds before quitting                
 
