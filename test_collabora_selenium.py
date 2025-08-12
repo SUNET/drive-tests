@@ -53,11 +53,9 @@ def nodelogin(collaboranode):
     g_logger.info(f'Login url: {loginurl}')
     nodeuser = g_drv.get_seleniumuser(collaboranode)
     nodepwd = g_drv.get_seleniumuserpassword(collaboranode)
-    g_isLoggedIn = True
     g_loggedInNodes[collaboranode] = True
 
     g_driver.set_window_size(1920, 1152)
-    actions = ActionChains(g_driver)
     # driver2 = webdriver.Firefox()
     g_driver.get(loginurl)
 
@@ -81,7 +79,7 @@ def removeFolder(node, foldername):
     client.verify = g_drv.verify
     # We check a few times if the file has been created
     exists = client.check(fullPath)
-    if exists == True:
+    if exists:
         g_logger.info(f'Folder {fullPath} was found, removing')
         client.clean(fullPath)
     else:
@@ -108,7 +106,7 @@ def checkFile(node, foldername, filename):
         tryCount += 1
         g_logger.info(f'Folder contains {len(client.list(foldername))} elements')
         exists = client.check(fullPath)
-        if exists == True:
+        if exists:
             g_logger.info(f'File {fullPath} was found on try {tryCount}')
             return exists
         g_logger.info(f'File {fullPath} not found on try {tryCount} in {client.list()}')
@@ -129,10 +127,10 @@ def checkFolder(node, foldername, create=False):
     }
     client = Client(options)
     client.verify = g_drv.verify
-    if create == False:
+    if not create:
         return client.check(foldername)
     else:
-        if client.check(foldername) == False:
+        if not client.check(foldername):
             g_logger.info(f'Creating folder {foldername}')
             client.mkdir(foldername)
         return client.check(foldername)
@@ -179,7 +177,7 @@ class TestCollaboraSelenium(unittest.TestCase):
             options.add_argument("--disable-dev-shm-usage")
             options.add_argument("--disable-gpu")
             options.add_argument("--disable-extensions")
-            if g_drv.verify == False:
+            if not g_drv.verify:
                 options.add_argument("--ignore-certificate-errors")
             driver = webdriver.Chrome(options=options)
             g_driver=driver
@@ -188,7 +186,7 @@ class TestCollaboraSelenium(unittest.TestCase):
     elif g_drv.browsers[0] == 'firefox':
         try:
             options = FirefoxOptions()
-            if g_drv.verify == False:
+            if not g_drv.verify:
                 options.add_argument("--ignore-certificate-errors")
             driver = webdriver.Firefox(options=options)
             g_driver=driver
@@ -216,7 +214,7 @@ class TestCollaboraSelenium(unittest.TestCase):
                 self.logger.info(f'TestID: {collaboranode}')
                 # if g_isLoggedIn == False:
                 removeFolder(collaboranode, 'Templates')
-                if g_loggedInNodes.get(collaboranode) == False:
+                if not g_loggedInNodes.get(collaboranode):
                     nodelogin(collaboranode)
                 self.assertTrue(g_loggedInNodes.get(collaboranode))
                 success = True
@@ -229,16 +227,16 @@ class TestCollaboraSelenium(unittest.TestCase):
                     self.logger.warning('Loading of app menu took too much time!')
                     success = False
 
-                if success == False:
+                if not success:
                     self.logger.warning('Manually open home folder in case loading of all files takes too much time')
                     self.driver.get(g_drv.get_folder_url(collaboranode,''))
                     success = True
 
                 self.assertTrue(success)
 
-                # Check URLs after login
-                dashboardUrl = g_drv.get_dashboard_url(collaboranode)
-                currentUrl = self.driver.current_url
+                # TODO: Check URLs after login
+                # dashboardUrl = g_drv.get_dashboard_url(collaboranode)
+                # currentUrl = self.driver.current_url
                 # self.assertEqual(dashboardUrl, currentUrl)
 
                 try:
@@ -256,7 +254,7 @@ class TestCollaboraSelenium(unittest.TestCase):
                     self.logger.warning('Loading of all files took too much time!')
                     success = False
 
-                if success == False:
+                if not success:
                     self.logger.warning('Manually open home folder in case loading of all files takes too much time')
                     self.driver.get(g_drv.get_folder_url(collaboranode,''))
                     success = True
@@ -280,7 +278,7 @@ class TestCollaboraSelenium(unittest.TestCase):
                 fileCreated = False
 
                 retryCount = 0
-                while fileCreated == False:
+                while not fileCreated:
                     retryCount += 1
                     if retryCount >= g_collaboraRetryCount:
                         self.logger.error(f'File {g_filename}.md has not been created after {retryCount} tries, saving screenshot')
@@ -330,7 +328,7 @@ class TestCollaboraSelenium(unittest.TestCase):
 
                     # Verify the file has been created
                     fileCreated = checkFile(collaboranode, "SeleniumCollaboraTest", g_filename + '.md')
-                    if fileCreated == False:
+                    if not fileCreated:
                         self.logger.warning(f'File {g_filename}.md has not been created in try {retryCount}, refresh page and retry')
                         self.driver.refresh()
                         time.sleep(3)
@@ -372,7 +370,7 @@ class TestCollaboraSelenium(unittest.TestCase):
                 self.logger.info(f'TestID: {collaboranode}')
                 # if g_isLoggedIn == False:
                 removeFolder(collaboranode, 'Templates')
-                if g_loggedInNodes.get(collaboranode) == False:
+                if not g_loggedInNodes.get(collaboranode):
                     nodelogin(collaboranode)
                 self.assertTrue(g_loggedInNodes.get(collaboranode))
                 success = True
@@ -385,15 +383,15 @@ class TestCollaboraSelenium(unittest.TestCase):
                     self.logger.warning('Loading of app menu took too much time!')
                     success = False
 
-                if success == False:
+                if not success:
                     self.logger.warning('Manually open home folder in case loading of all files takes too much time')
                     self.driver.get(g_drv.get_folder_url(collaboranode,''))
                     success = True
                 self.assertTrue(success)
 
-                # Check URLs after login
-                dashboardUrl = g_drv.get_dashboard_url(collaboranode)
-                currentUrl = self.driver.current_url
+                # TODO: Check URLs after login
+                # dashboardUrl = g_drv.get_dashboard_url(collaboranode)
+                # currentUrl = self.driver.current_url
                 # self.assertEqual(dashboardUrl, currentUrl)                
 
                 for testfolder in self.testfolders:
@@ -421,7 +419,7 @@ class TestCollaboraSelenium(unittest.TestCase):
                             self.logger.warning('Loading of all files took too much time!')
                             success = False
 
-                        if success == False:
+                        if not success:
                             self.logger.warning('Manually open home folder in case loading of all files takes too much time')
                             self.driver.get(g_drv.get_folder_url(collaboranode,''))
                             success = True
@@ -445,7 +443,7 @@ class TestCollaboraSelenium(unittest.TestCase):
                         fileCreated = False
 
                         retryCount = 0
-                        while fileCreated == False:
+                        while not fileCreated:
                             retryCount += 1
                             if retryCount >= g_collaboraRetryCount:
                                 self.logger.error(f'File {g_filename} has not been created after {retryCount} tries, saving screenshot')
@@ -485,7 +483,7 @@ class TestCollaboraSelenium(unittest.TestCase):
 
                             # Verify the file has been created
                             fileCreated = checkFile(collaboranode, testfolder, g_filename + '.odt')
-                            if fileCreated == False:
+                            if not fileCreated:
                                 self.logger.warning(f'File {g_filename}.odt has not been created in try {retryCount}, refresh page and retry')
                                 self.driver.refresh()
                                 time.sleep(3)
@@ -533,7 +531,7 @@ class TestCollaboraSelenium(unittest.TestCase):
                 self.logger.info(f'TestID: {collaboranode}')
                 # if g_isLoggedIn == False:
                 removeFolder(collaboranode, 'Templates')
-                if g_loggedInNodes.get(collaboranode) == False:
+                if not g_loggedInNodes.get(collaboranode):
                     nodelogin(collaboranode)
                 self.assertTrue(g_loggedInNodes.get(collaboranode))
                 success = True
@@ -546,16 +544,16 @@ class TestCollaboraSelenium(unittest.TestCase):
                     self.logger.warning('Loading of app menu took too much time!')
                     success = False
 
-                if success == False:
+                if not success:
                     self.logger.warning('Manually open home folder in case loading of all files takes too much time')
                     self.driver.get(g_drv.get_folder_url(collaboranode,''))
                     success = True
 
                 self.assertTrue(success)
 
-                # Check URLs after login
-                dashboardUrl = g_drv.get_dashboard_url(collaboranode)
-                currentUrl = self.driver.current_url
+                # TODO: Check URLs after login
+                # dashboardUrl = g_drv.get_dashboard_url(collaboranode)
+                # currentUrl = self.driver.current_url
                 # self.assertEqual(dashboardUrl, currentUrl)                
 
                 try:
@@ -575,7 +573,7 @@ class TestCollaboraSelenium(unittest.TestCase):
                     self.logger.warning('Loading of all files took too much time!')
                     success = False
 
-                if success == False:
+                if not success:
                     self.logger.warning('Manually open home folder in case loading of all files takes too much time')
                     self.driver.get(g_drv.get_folder_url(collaboranode,''))
                     success = True
@@ -599,7 +597,7 @@ class TestCollaboraSelenium(unittest.TestCase):
 
                 fileCreated = False
                 retryCount = 0
-                while fileCreated == False:
+                while not fileCreated:
                     retryCount += 1
                     if retryCount >= g_collaboraRetryCount:
                         self.logger.error(f'File {g_filename} has not been created after {retryCount} tries, saving screenshot')
@@ -656,7 +654,7 @@ class TestCollaboraSelenium(unittest.TestCase):
 
                     # Verify the file has been created
                     fileCreated = checkFile(collaboranode, "SeleniumCollaboraTest", g_filename + '.ods')
-                    if fileCreated == False:
+                    if not fileCreated:
                         self.logger.warning(f'File {g_filename}.ods has not been created in try {retryCount}, refresh page and retry')
                         self.driver.refresh()
                         time.sleep(3)
@@ -706,7 +704,7 @@ class TestCollaboraSelenium(unittest.TestCase):
                 self.logger.info(f'TestID: {collaboranode}')
                 # if g_isLoggedIn == False:
                 removeFolder(collaboranode, 'Templates')
-                if g_loggedInNodes.get(collaboranode) == False:
+                if not g_loggedInNodes.get(collaboranode):
                     nodelogin(collaboranode)
                 self.assertTrue(g_loggedInNodes.get(collaboranode))
                 success = True
@@ -719,15 +717,15 @@ class TestCollaboraSelenium(unittest.TestCase):
                     self.logger.warning('Loading of app menu took too much time!')
                     success = False
 
-                if success == False:
+                if not success:
                     self.logger.warning('Manually open home folder in case loading of all files takes too much time')
                     self.driver.get(g_drv.get_folder_url(collaboranode,''))
                     success = True
                 self.assertTrue(success)
 
-                # Check URLs after login
-                dashboardUrl = g_drv.get_dashboard_url(collaboranode)
-                currentUrl = self.driver.current_url
+                # TODO: Check URLs after login
+                # dashboardUrl = g_drv.get_dashboard_url(collaboranode)
+                # currentUrl = self.driver.current_url
                 # self.assertEqual(dashboardUrl, currentUrl)                
 
                 try:
@@ -747,7 +745,7 @@ class TestCollaboraSelenium(unittest.TestCase):
                     self.logger.warning(f'Loading of all files took too much time: {error}')
                     success = False
 
-                if success == False:
+                if not success:
                     self.logger.warning('Manually open home folder in case loading of all files takes too much time')
                     self.driver.get(g_drv.get_folder_url(collaboranode,''))
                     success = True
@@ -771,7 +769,7 @@ class TestCollaboraSelenium(unittest.TestCase):
                 fileCreated = False
 
                 retryCount = 0
-                while fileCreated == False:
+                while not fileCreated:
                     retryCount += 1
                     if retryCount >= g_collaboraRetryCount:
                         self.logger.error(f'File {g_filename} has not been created after {retryCount} tries, saving screenshot')
@@ -827,7 +825,7 @@ class TestCollaboraSelenium(unittest.TestCase):
 
                     # Verify the file has been created
                     fileCreated = checkFile(collaboranode, "SeleniumCollaboraTest", g_filename + '.odp')
-                    if fileCreated == False:
+                    if not fileCreated:
                         self.logger.warning(f'File {g_filename}.odp has not been created in try {retryCount}, refresh page and retry')
                         self.driver.refresh()
                         time.sleep(3)
