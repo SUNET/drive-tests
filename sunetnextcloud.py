@@ -43,9 +43,9 @@ opsCommonFile = opsbase + "/global/overlay/etc/hiera/data/common.yaml"
 
 def get_value(env, raiseException = True):
     value = os.environ.get(env)
-    if value == None:
+    if value is None:
         msg = f'Environment variable {env} is not set!'
-        if raiseException == True:
+        if raiseException:
             raise Exception(msg)
         else:
             logger.error(msg)
@@ -58,7 +58,7 @@ class TestTarget(object):
     with open(g_expectedFile, 'r') as stream:
         expectedResults=yaml.safe_load(stream)
 
-    if os.path.exists(opsCommonFile) and singlenodetesting == False:
+    if os.path.exists(opsCommonFile) and not singlenodetesting:
         with open(opsCommonFile, 'r') as stream:
             opsCommonConfig=yaml.safe_load(stream)
     else:
@@ -167,7 +167,7 @@ class TestTarget(object):
         try:
             self.opsCommonConfig['multinode_mapping'][node]['server']
             return True
-        except:
+        except Exception:
             return False
         
     def get_multinode(self, node):
@@ -186,7 +186,7 @@ class TestTarget(object):
         return self.nodeprefix + self.targetprefix + self.delimiter + self.baseurl 
 
     def get_node_login_url(self, node, direct = True):
-        if direct == True:
+        if direct:
             return 'https://' + self.getnodeprefix(node) + self.targetprefix + self.delimiter + self.baseurl + self.indexsuffix + '/login?direct=1'
         else:
             return 'https://' + self.getnodeprefix(node) + self.targetprefix + self.delimiter + self.baseurl + self.indexsuffix
@@ -613,7 +613,7 @@ class SeleniumHelper():
 
     def delete_cookies(self):
         cookies = self.driver.get_cookies()
-        logger.info('Deleting all cookies')
+        logger.debug(f'Deleting all cookies: {cookies}')
         self.driver.delete_all_cookies()
         logger.info('All cookies deleted')
         return
@@ -622,32 +622,27 @@ class SeleniumHelper():
         if usertype == usertype.SELENIUM:
             nodeuser = self.drv.get_seleniumuser(self.nextcloudnode)
             nodepwd = self.drv.get_seleniumuserpassword(self.nextcloudnode)
-            nodeapppwd = self.drv.get_seleniumuserapppassword(self.nextcloudnode)
             nodetotpsecret = ''
             isMfaUser = False
         elif usertype == usertype.SELENIUM_MFA:
             nodeuser = self.drv.get_seleniummfauser(self.nextcloudnode)
             nodepwd = self.drv.get_seleniummfauserpassword(self.nextcloudnode)
-            nodeapppwd = self.drv.get_seleniummfauserapppassword(self.nextcloudnode)
             nodetotpsecret = self.drv.get_seleniummfausertotpsecret(self.nextcloudnode)
             isMfaUser = True
         elif usertype == usertype.OCS:
             nodeuser = self.drv.get_ocsuser(self.nextcloudnode)
             nodepwd = self.drv.get_ocsuserpassword(self.nextcloudnode)
-            nodeapppwd = self.drv.get_ocsuserapppassword(self.nextcloudnode)
             nodetotpsecret = ''
             isMfaUser = True
         elif usertype == usertype.BASIC:
             nodeuser = username
             nodepwd = password
-            nodeapppwd = apppwd
             nodetotpsecret = totpsecret
             isMfaUser = mfaUser
         else:
             logger.error(f'Unknown usertype {usertype}')
             return False
 
-        loggedIn = False
         loginurl = self.drv.get_node_login_url(self.nextcloudnode)
         self.driver.get(loginurl)
         if self.driver.current_url != loginurl:
@@ -659,8 +654,8 @@ class SeleniumHelper():
             self.wait.until(EC.element_to_be_clickable((By.ID, 'user'))).send_keys(nodeuser)
             self.wait.until(EC.element_to_be_clickable((By.ID, 'password'))).send_keys(nodepwd + Keys.ENTER)
             currentUrl = self.driver.current_url
-        except:
-            logger.error(f'Error logging in to {loginurl}')
+        except Exception as error:
+            logger.error(f'Error logging in to {loginurl}: {error}')
 
         if isMfaUser:
             logger.info(f'MFA login {currentUrl}')
