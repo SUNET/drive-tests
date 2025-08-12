@@ -81,7 +81,7 @@ class TestSearchSelenium(unittest.TestCase):
         for fullnode in g_drv.fullnodes:
             g_logger.info(f'Testing node {fullnode}')
             with self.subTest(mynode=fullnode):
-                if g_loggedInNodes.get(fullnode) == False:
+                if not g_loggedInNodes.get(fullnode):
                     nodelogin(fullnode)
                 self.assertTrue(g_loggedInNodes.get(fullnode))
 

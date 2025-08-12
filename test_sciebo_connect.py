@@ -154,7 +154,7 @@ class TestSciebo(unittest.TestCase):
 
                     if isZenodo:
                         print("Connect to Zenodo")
-                        if skipZenodoConnection == True:
+                        if skipZenodoConnection:
                             driver.close()
                         else:
                             wait.until(EC.presence_of_element_located((By.ID, 'email'))).send_keys(zenodouser)

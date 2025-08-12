@@ -75,7 +75,7 @@ class TestSciebo(unittest.TestCase):
         time.sleep(3)
 
         deleteProjects = True
-        while deleteProjects == True:
+        while deleteProjects:
             try:
                 projectElement = driver.find_element(by=By.CLASS_NAME, value='my-1')
                 projectElement.click()

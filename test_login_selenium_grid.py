@@ -98,14 +98,14 @@ class TestLoginSelenium(unittest.TestCase):
                                 options.add_argument("--disable-dev-shm-usage")
                                 options.add_argument("--disable-gpu")
                                 options.add_argument("--disable-extensions")
-                                if drv.verify == False:
+                                if not drv.verify:
                                     options.add_argument("--ignore-certificate-errors")
                                 driver = webdriver.Chrome(options=options)
                             elif browser == 'firefox':
-                                if use_driver_service == False:
+                                if not use_driver_service:
                                     self.logger.info('Initialize Firefox driver without driver service')
                                     options = FirefoxOptions()
-                                    if drv.verify == False:
+                                    if not drv.verify:
                                         options.add_argument("--ignore-certificate-errors")
                                     # options.add_argument("--headless")
                                     driver = webdriver.Firefox(options=options)
@@ -264,7 +264,7 @@ class TestLoginSelenium(unittest.TestCase):
                     options.add_argument("--disable-extensions")
                     driver = webdriver.Chrome(options=options)
                 elif browser == 'firefox':
-                    if use_driver_service == False:
+                    if not use_driver_service:
                         self.logger.info('Initialize Firefox driver without driver service')
                         options = FirefoxOptions()
                         # options.add_argument("--headless")

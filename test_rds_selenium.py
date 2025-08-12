@@ -304,7 +304,7 @@ class TestRDSSelenium(unittest.TestCase):
 
         # Check if we have to delete entries:
         checkForOsfEntries = True
-        while checkForOsfEntries == True:
+        while checkForOsfEntries:
             try:
                 deleteButton = driver.find_element(by=By.CLASS_NAME, value='el-button--danger')
                 deleteButton.click()

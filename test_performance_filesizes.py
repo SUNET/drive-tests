@@ -167,7 +167,7 @@ class TestLargeFilePerformance(unittest.TestCase):
         pass
 
     def test_testdata(self):        
-        if checkTestData() == False:
+        if not checkTestData():
             logger.warning('File size check failed, regenerating test data')
             deleteTestData()
             generateTestData()
@@ -512,7 +512,7 @@ class TestLargeFilePerformance(unittest.TestCase):
         global logger, g_testThreadsRunning, g_davPerformanceResults
         g_davPerformanceResults.clear()
 
-        if checkTestData() == False:
+        if not checkTestData():
             logger.warning('File size check failed, regenerating test data')
             deleteTestData()
             generateTestData()
@@ -646,7 +646,7 @@ class TestLargeFilePerformance(unittest.TestCase):
         global logger, g_testThreadsRunning, g_davPerformanceResults
         g_davPerformanceResults.clear()
 
-        if checkTestData() == False:
+        if not checkTestData():
             logger.warning('File size check failed, regenerating test data')
             deleteTestData()
             generateTestData()
@@ -779,7 +779,7 @@ class TestLargeFilePerformance(unittest.TestCase):
         global logger, g_testThreadsRunning, g_davPerformanceResults
         g_davPerformanceResults.clear()
 
-        if checkTestData() == False:
+        if not checkTestData():
             logger.warning('File size check failed, regenerating test data')
             deleteTestData()
             generateTestData()

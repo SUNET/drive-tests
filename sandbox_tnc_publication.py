@@ -86,7 +86,7 @@ tsTitle = 'TNC24 - A Berry Solar Cell ' + datetime.now().strftime("%Y-%m-%d %H:%
 try:
     logger.info(f'Check target folder: {target}')
     result = client.check(target)
-    if result == False:
+    if not result:
         logger.error(f'Folder {target} does not exist on server')
         sys.exit()
 except:
@@ -365,7 +365,7 @@ else:
 
     # Check if we have to delete entries:
     checkForOsfEntries = True
-    while checkForOsfEntries == True:
+    while checkForOsfEntries:
         try:
             deleteButton = driver.find_element(by=By.CLASS_NAME, value='el-button--danger')
             deleteButton.click()
