@@ -1,7 +1,11 @@
+#!/usr/bin/env python3
+
 import argparse
 import sunetnextcloud
 import pyotp
+import os
 
+os.chdir(os.path.dirname(os.path.abspath(__file__)))
 parser = argparse.ArgumentParser(description="Print TOTP code for selenium mfa user",
                                  formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 parser.add_argument('customer', help="Customer node")
