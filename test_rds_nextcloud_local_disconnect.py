@@ -38,7 +38,7 @@ class TestSciebo(unittest.TestCase):
         zenodoButtonIndex = '1'
 
         # We test locally, so we need to disable some of the certificate checks
-        Options()
+        chromeOptions = Options()
         chromeOptions.add_argument("--disable-web-security")
         chromeOptions.add_argument("--allow-running-insecure-content")
         chromeOptions.add_argument("--ignore-ssl-errors=yes")

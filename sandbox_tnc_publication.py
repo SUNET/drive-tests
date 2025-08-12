@@ -67,7 +67,7 @@ add_repositories_url = 'https://sunet.drive.test.sunet.se/index.php/apps/rds/'
 zenodouser = os.environ.get("ZENODO_TEST_USER")
 zenodopwd = os.environ.get("ZENODO_TEST_USER_PASSWORD")
 
-if nodeuser == None or nodepwd == None or nodeapppwd == None:
+if nodeuser is None or nodepwd is None or nodeapppwd is None:
     logger.error('Please set all environment variables Nxuser, Nxpassword, Nxapppassword')
     sys.exit()
 

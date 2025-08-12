@@ -128,15 +128,15 @@ def decreaseUploadCount():
 def webdavUpload(client, local_path, remote_path):
     global logger, g_testThreadsRunning
     logger.info(f'Upload {local_path}')
-    if client == None:
+    if client is None:
         logger.error('No client provided')
         decreaseUploadCount()
         return
-    if local_path == None:
+    if local_path is None:
         logger.error('No filename provided')
         decreaseUploadCount()
         return
-    if remote_path == None:
+    if remote_path is None:
         logger.error('No target filename provided')
         decreaseUploadCount()
         return
@@ -151,10 +151,10 @@ def webdavUpload(client, local_path, remote_path):
 
 def webdavClean(client, filename):
     global logger, g_testThreadsRunning
-    if client == None:
+    if client is None:
         logger.error('No client provided')
         return
-    if filename == None:
+    if filename is None:
         logger.error('No filename provided')
         return
     logger.info(f'Cleaning {filename}')
