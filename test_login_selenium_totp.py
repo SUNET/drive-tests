@@ -60,10 +60,8 @@ class TestLoginSeleniumTotp(unittest.TestCase):
                 self.logger.info(f'URL: {loginurl}')
                 nodeuser = drv.get_seleniummfauser(fullnode)
                 self.logger.info(f'Username: {nodeuser}')
-                nodepwd = drv.get_seleniummfauserpassword(fullnode)
                 nodeapppwd = drv.get_seleniummfauserapppassword(fullnode)
-                nodetotpsecret = drv.get_seleniummfausertotpsecret(fullnode)
-
+                
                 # Create folder for testing using webdav
                 url = drv.get_webdav_url(fullnode, nodeuser)
                 options = {
@@ -81,8 +79,8 @@ class TestLoginSeleniumTotp(unittest.TestCase):
                 try:
                     options = Options()
                     driver = webdriver.Chrome(options=options)
-                except:
-                    self.logger.error('Error initializing Chrome driver')
+                except Exception as error:
+                    self.logger.error(f'Error initializing Chrome driver: {error}')
                     self.assertTrue(False)
                 driver.set_window_size(1920, 1152)
 
@@ -106,7 +104,7 @@ class TestLoginSeleniumTotp(unittest.TestCase):
                     sharefolder = driver.find_element(by=By.CLASS_NAME, value=sharedClass)
                     sharefolder.click()
                     self.logger.info('Clicked on share folder')
-                except:
+                except Exception:
                     self.logger.info('icon-shared not found')
 
                 try:
@@ -117,7 +115,7 @@ class TestLoginSeleniumTotp(unittest.TestCase):
 
                 logoutComplete = False
                 logoutCount = 0
-                while logoutComplete == False:
+                while not logoutComplete:
                     try:
                         wait.until(EC.element_to_be_clickable((By.ID, 'user-menu'))).click()
                         logoutLink = driver.find_element(By.PARTIAL_LINK_TEXT, 'Log out')
@@ -134,7 +132,6 @@ class TestLoginSeleniumTotp(unittest.TestCase):
                             screenshot.save("screenshots/" + fullnode + "test_node_login" + g_filename + ".png")
                             break
 
-                currentUrl = driver.current_url
                 self.logger.info(driver.current_url)
 
                 # if fullnode == 'scilifelab':
