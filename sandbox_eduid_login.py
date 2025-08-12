@@ -1,5 +1,4 @@
 
-from datetime import datetime
 import sunetnextcloud
 import logging
 from selenium import webdriver
@@ -7,8 +6,6 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
-from selenium.common.exceptions import TimeoutException
-from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.chrome.options import Options
 import time
 
@@ -16,7 +13,7 @@ drv = sunetnextcloud.TestTarget()
 logger = logging.getLogger(__name__)
 logging.basicConfig(format = '%(asctime)s - %(module)s.%(funcName)s - %(levelname)s: %(message)s',
                 datefmt = '%Y-%m-%d %H:%M:%S', level = logging.INFO)
-logger.info(f'Start eduid.se login test')
+logger.info('Start eduid.se login test')
 delay = 30
 
 loginurl = "https://dashboard.eduid.se"
@@ -44,7 +41,7 @@ for i in range(0,101):
         currentUrl = driver.current_url
         logger.info(f'Logut successful: {currentUrl}')
     except:
-        logger.error(f'Something wrong')
+        logger.error('Something wrong')
         time.sleep(600)
 
-logger.info(f'DONE!')
+logger.info('DONE!')

@@ -1,6 +1,4 @@
-import os
 import requests
-from requests.auth import HTTPBasicAuth
 import json
 import unittest
 import HtmlTestRunner

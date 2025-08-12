@@ -4,27 +4,10 @@ Selenium tests to log on to a Sunet Drive node, and performing various operation
 """
 import xmlrunner
 import unittest
-import sunetnextcloud
-from webdav3.client import Client
-import pyotp
-import pyautogui
-import time
 
-from selenium import webdriver
-from selenium.webdriver.common.keys import Keys
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.common.by import By
-from selenium.common.exceptions import TimeoutException
-from selenium.webdriver.common.action_chains import ActionChains
-from selenium.webdriver.chrome.options import Options
-from selenium.webdriver import FirefoxOptions
 import os
 import yaml
-import time
 import logging
-import json
-import requests
 from datetime import datetime
 
 expectedResultsFile = 'expected.yaml'

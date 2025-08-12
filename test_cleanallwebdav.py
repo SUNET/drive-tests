@@ -3,9 +3,6 @@ Author: Richard Freitag <freitag@sunet.se>
 """
 
 import unittest
-import requests
-from requests.auth import HTTPBasicAuth
-import json
 import os
 from webdav3.client import Client
 import logging
@@ -101,7 +98,7 @@ class TestCleanAllWebDAV(unittest.TestCase):
                     datefmt = '%Y-%m-%d %H:%M:%S', level = logging.INFO)
 
     def test_logger(self):
-        self.logger.info(f'self.logger.info test_logger')
+        self.logger.info('self.logger.info test_logger')
         pass
 
     def test_cleanallwebdav(self):
@@ -119,7 +116,7 @@ class TestCleanAllWebDAV(unittest.TestCase):
         for message in g_davPerformanceResults:
             self.logger.info(f'{message}')
         
-        self.logger.info(f'Done...')
+        self.logger.info('Done...')
 
 if __name__ == '__main__':
     import xmlrunner

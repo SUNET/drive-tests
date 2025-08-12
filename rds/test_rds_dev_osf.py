@@ -6,7 +6,6 @@ import xmlrunner
 import unittest
 # import sunetnextcloud
 import logging
-from webdav3.client import Client
 
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
@@ -15,7 +14,6 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
 from selenium.common.exceptions import TimeoutException
-from selenium.webdriver.common.action_chains import ActionChains
 import os
 import time
 from datetime import datetime
@@ -37,7 +35,7 @@ class TestRdsDevOsf(unittest.TestCase):
                     datefmt = '%Y-%m-%d %H:%M:%S', level = logging.INFO)
 
     def test_logger(self):
-        self.logger.info(f'self.logger.info test_logger')
+        self.logger.info('self.logger.info test_logger')
         pass
 
     def test_rds_dev_login(self):
@@ -54,10 +52,10 @@ class TestRdsDevOsf(unittest.TestCase):
 
         try:
             wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'app-menu')))
-            self.logger.info(f'Page is ready!')
+            self.logger.info('Page is ready!')
             proceed = True
         except TimeoutException:
-            self.logger.error(f'Loading took too much time!')
+            self.logger.error('Loading took too much time!')
             proceed = False
 
         self.assertTrue(proceed)
@@ -76,10 +74,10 @@ class TestRdsDevOsf(unittest.TestCase):
 
         try:
             wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'app-menu')))
-            self.logger.info(f'Page is ready!')
+            self.logger.info('Page is ready!')
             proceed = True
         except TimeoutException:
-            self.logger.error(f'Loading took too much time!')
+            self.logger.error('Loading took too much time!')
             proceed = False
 
         self.assertTrue(proceed)
@@ -89,16 +87,16 @@ class TestRdsDevOsf(unittest.TestCase):
             rdsAppButton = driver.find_element(by=By.XPATH, value='//a[@href="'+ '/apps/rds/' +'"]')
             rdsAppButton.click()
         except TimeoutException:
-            self.logger.error(f'Loading RDS took too much time!')
+            self.logger.error('Loading RDS took too much time!')
             proceed = False
         self.assertTrue(proceed)
        
         try:
-            self.logger.info(f'Waiting for rds frame')
+            self.logger.info('Waiting for rds frame')
             wait.until(EC.frame_to_be_available_and_switch_to_it((By.ID, "rds-editor")))
-            self.logger.info(f'RDS iframe loaded')
+            self.logger.info('RDS iframe loaded')
         except:
-            self.logger.error(f'RDS iframe not loaded')
+            self.logger.error('RDS iframe not loaded')
             proceed = False
         self.assertTrue(proceed)
 
@@ -107,17 +105,17 @@ class TestRdsDevOsf(unittest.TestCase):
         # Projects
         # print(driver.find_element(by=By.XPATH, value='//*[@id="inspire"]/div/main/div/div/main/div/div/div[2]/div[2]/div[2]/div/div[2]/div/button/span/span[contains(text(),\'Connect\')]'))
         # /html/body/div/div/div/nav/div[1]/div[2]/div/a[2]/div[2]/div[contains(text(),\'Projects\')]
-        self.logger.info(f'Select projects from menu')
+        self.logger.info('Select projects from menu')
         WebDriverWait(driver, 20).until(EC.element_to_be_clickable((By.XPATH, '/html/body/div/div/div/nav/div[1]/div[2]/div/a[2]/div[2]/div[contains(text(),\'Projects\')]'))).click()
 
         # New project
         # /html/body/div/div/div/main/div/div/main/div/div/div/div[1]/div[3]/button/span
-        self.logger.info(f'New project')
+        self.logger.info('New project')
         WebDriverWait(driver, 20).until(EC.element_to_be_clickable((By.XPATH, '/html/body/div/div/div/main/div/div/main/div/div/div/div[1]/div[3]/button/span'))).click()
 
         # Pick folder
         # /html/body/div/div/div/main/div/div/main/div/div/div/div[2]/div/div/div/div[2]/div[1]/div/div/div/div/div/div/div[2]/div/div/div[2]/div[2]/button/span
-        self.logger.info(f'Click on pick folder')
+        self.logger.info('Click on pick folder')
         WebDriverWait(driver, 20).until(EC.element_to_be_clickable((By.XPATH, '/html/body/div/div/div/main/div/div/main/div/div/div/div[2]/div/div/div/div[2]/div[1]/div/div/div/div/div/div/div[2]/div/div/div[2]/div[2]/button/span'))).click()
 
         # Folder RDSTest
@@ -131,28 +129,28 @@ class TestRdsDevOsf(unittest.TestCase):
         # driver.switch_to.frame(folderPickerFrame)
 
         # We need to switch to the parent frame to use RDS here
-        self.logger.info(f'Switch to parent frame')
+        self.logger.info('Switch to parent frame')
         driver.switch_to.parent_frame() 
-        self.logger.info(f'Wait for folder RDSTest to be visible')
+        self.logger.info('Wait for folder RDSTest to be visible')
         WebDriverWait(driver, 20).until(EC.text_to_be_present_in_element((By.CLASS_NAME, "oc-dialog-title"), "Choose source folder"))
-        self.logger.info(f'Visible!')
+        self.logger.info('Visible!')
 
         
         wait.until(EC.presence_of_element_located((By.XPATH, '/html/body/div[1]/div[1]/div/table/tbody/tr[3]/td[1]')))
         # wait.until(EC.presence_of_element_located((By.XPATH, '/html/body/div[5]/div[1]/ul/li[2]/div/span[1]')))
-        self.logger.info(f'Select folder RDSTest')
+        self.logger.info('Select folder RDSTest')
         WebDriverWait(driver, 20).until(EC.element_to_be_clickable((By.XPATH, '/html/body/div[1]/div[1]/div/table/tbody/tr[3]/td[1]'))).click()
-        self.logger.info(f'Choose folder')
+        self.logger.info('Choose folder')
 
         WebDriverWait(driver, 20).until(EC.element_to_be_clickable((By.XPATH, '//*[@id="body-user"]/div[1]/div[2]/button'))).click()
 
-        self.logger.info(f'Switch back to RDS frame')
+        self.logger.info('Switch back to RDS frame')
         try:
-            self.logger.info(f'Waiting for rds frame')
+            self.logger.info('Waiting for rds frame')
             wait.until(EC.frame_to_be_available_and_switch_to_it((By.ID, "rds-editor")))
-            self.logger.info(f'RDS iframe loaded')
+            self.logger.info('RDS iframe loaded')
         except:
-            self.logger.error(f'RDS iframe not loaded')
+            self.logger.error('RDS iframe not loaded')
             proceed = False
 
         self.assertTrue(proceed)
@@ -161,7 +159,7 @@ class TestRdsDevOsf(unittest.TestCase):
         # Input field always has a random ID
         # //*[@id="input-101"]
         # WebDriverWait(driver, 20).until(EC.element_to_be_clickable((By.XPATH, ''))).click()
-        self.logger.info(f'Input project name')
+        self.logger.info('Input project name')
 
         # projectInput = driver.find_element(By.XPATH, "//*[contains(@id, 'input-')]")
         # print(projectInput)
@@ -173,28 +171,28 @@ class TestRdsDevOsf(unittest.TestCase):
         wait.until(EC.presence_of_element_located((By.XPATH, "//*[contains(@id, 'input-')]"))).send_keys(tsProject)
 
         # OSF repository
-        self.logger.info(f'Select OSF to publish')
+        self.logger.info('Select OSF to publish')
         WebDriverWait(driver, 20).until(EC.element_to_be_clickable((By.XPATH, '/html/body/div/div/div/main/div/div/main/div/div/div/div[2]/div/div/div/div[2]/div[1]/div/div/div/div/div/div/div[4]/div/div/div[2]/div[3]/div/div/div/div[3]'))).click()
 
         # Continue button
-        self.logger.info(f'Continue')
+        self.logger.info('Continue')
         # /html/body/div/div/div/main/div/div/main/div/div/div/div[2]/div/div/div/div[3]/div/div/button/span
         WebDriverWait(driver, 20).until(EC.element_to_be_clickable((By.XPATH, '/html/body/div/div/div/main/div/div/main/div/div/div/div[2]/div/div/div/div[3]/div/div/button/span'))).click()
 
-        self.logger.info(f'Switch back to Describo frame')
+        self.logger.info('Switch back to Describo frame')
         try:
-            self.logger.info(f'Waiting for describo frame')
+            self.logger.info('Waiting for describo frame')
             wait.until(EC.frame_to_be_available_and_switch_to_it((By.ID, "describoWindow")))
-            self.logger.info(f'Describo iframe loaded')
+            self.logger.info('Describo iframe loaded')
         except:
-            self.logger.error(f'Describo iframe not loaded')
+            self.logger.error('Describo iframe not loaded')
             proceed = False
 
         self.assertTrue(proceed)
         time.sleep(3)
 
         # OSF Settings
-        self.logger.info(f'Wait for OSF Settings and click')
+        self.logger.info('Wait for OSF Settings and click')
         WebDriverWait(driver, 20).until(EC.element_to_be_clickable((By.XPATH, "//*[@id=\"tab-OSF settings\"]/span"))).click()
         time.sleep(1)
 
@@ -204,19 +202,19 @@ class TestRdsDevOsf(unittest.TestCase):
             try:
                 deleteButton = driver.find_element(by=By.CLASS_NAME, value='el-button--danger')
                 deleteButton.click()
-                self.logger.info(f'Deleting existing entries')
+                self.logger.info('Deleting existing entries')
                 time.sleep(1)
             except:
-                self.logger.info(f'No more entries to delete, continue')
+                self.logger.info('No more entries to delete, continue')
                 checkForOsfEntries = False
 
         # OSF Text
         # /html/body/div[1]/div/div/div[2]/div[2]/div[2]/div[1]/div/div/div/div[2]/div[2]/div[2]/div/div[1]/div/div[2]/div[1]/div[1]/div/div[1]/div/button/span
-        self.logger.info(f'Click on +Text')
+        self.logger.info('Click on +Text')
         WebDriverWait(driver, 20).until(EC.element_to_be_clickable((By.XPATH, '//*[@id="pane-OSF settings"]/div/div[1]/div/div[2]/div[1]/div[1]/div/div[1]/div/button/span'))).click()
 
         # OSF Add Text, again random number ID
-        self.logger.info(f'Add OSF Title')
+        self.logger.info('Add OSF Title')
         # wait.until(EC.presence_of_element_located((By.XPATH, "//*[contains(@id, 'el-id-')]"))).send_keys("OSF Title")
 
         tsTitle = "RDS Sunet Drive Title - " + datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
@@ -227,14 +225,14 @@ class TestRdsDevOsf(unittest.TestCase):
 
         time.sleep(3)
 
-        self.logger.info(f'Click on +Select for Osfcategory')
+        self.logger.info('Click on +Select for Osfcategory')
         WebDriverWait(driver, 20).until(EC.element_to_be_clickable((By.XPATH, "//*[@id=\"pane-OSF settings\"]/div/div[2]/div/div[2]/div[1]/div[1]/div/div[1]/div/button/span"))).click()
                                                                                
-        self.logger.info(f'Click on category dropdown menu')
+        self.logger.info('Click on category dropdown menu')
         wait.until(EC.presence_of_element_located((By.XPATH, "//input[@placeholder='Select']"))).click()
         time.sleep(1)
         
-        self.logger.info(f'Click on third entry in category list')
+        self.logger.info('Click on third entry in category list')
         WebDriverWait(driver, 20).until(EC.element_to_be_clickable((By.XPATH, "//*[contains(@id, 'el-popper-container-')]/div/div/div/div[1]/ul/li[3]"))).click()
         time.sleep(1)
  
@@ -242,32 +240,32 @@ class TestRdsDevOsf(unittest.TestCase):
         # wait.until(EC.presence_of_element_located((By.XPATH, "//*[@id=\"el-popper-container-254\"]/div/div/div/div[1]/ul/li[3]"))).click()
         # time.sleep(1)
 
-        self.logger.info(f'Click on +TextArea for OSF Description')
+        self.logger.info('Click on +TextArea for OSF Description')
         WebDriverWait(driver, 20).until(EC.element_to_be_clickable((By.XPATH, "//*[@id=\"pane-OSF settings\"]/div/div[3]/div/div[2]/div[1]/div[1]/div/div[1]/div/button"))).click()
         wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'el-textarea__inner'))).send_keys("OSF Project Description")
 
-        self.logger.info(f'Switch to parent frame')
+        self.logger.info('Switch to parent frame')
         driver.switch_to.parent_frame() 
 
-        self.logger.info(f'Click on continue button')
+        self.logger.info('Click on continue button')
         # /html/body/div/div/div/main/div/div/main/div/div/div/div[2]/div/div/div/div[3]/div/button[2]/span
         WebDriverWait(driver, 20).until(EC.element_to_be_clickable((By.XPATH, '/html/body/div/div/div/main/div/div/main/div/div/div/div[2]/div/div/div/div[3]/div/button[2]/span'))).click()
 
-        self.logger.info(f'Click on publish button')
+        self.logger.info('Click on publish button')
         # /html/body/div/div/div/main/div/div/main/div/div/div/div[2]/div/div/div/div[3]/div/button[2]/span
         WebDriverWait(driver, 20).until(EC.element_to_be_clickable((By.XPATH, '/html/body/div/div/div/main/div/div/main/div/div/div/div[2]/div/div/div/div[3]/div/button[2]/span'))).click()
 
 
         try:
-            self.logger.info(f'Waiting for publication notification')
+            self.logger.info('Waiting for publication notification')
             WebDriverWait(driver, 120).until(EC.text_to_be_present_in_element((By.CLASS_NAME, "v-snack__content"), "successfully published"))
-            self.logger.info(f'Looks like the data has been published! Well done!')
+            self.logger.info('Looks like the data has been published! Well done!')
         except:
-            self.logger.error(f'Timeout while waiting for publication')
+            self.logger.error('Timeout while waiting for publication')
 
         self.assertTrue(proceed)
 
-        self.logger.info(f'Done...')
+        self.logger.info('Done...')
         time.sleep(3)
 
 if __name__ == '__main__':

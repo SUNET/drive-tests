@@ -1,6 +1,4 @@
 import argparse
-import sunetnextcloud
-import os
 import yaml
 
 configFile = 'tests.yaml'

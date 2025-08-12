@@ -7,8 +7,6 @@ import unittest
 import requests
 import sunetnextcloud
 from webdav3.client import Client
-import pyotp
-import pyautogui
 import time
 import json
 
@@ -18,12 +16,10 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
 from selenium.common.exceptions import TimeoutException
-from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver import FirefoxOptions
 import os
 import yaml
-import time
 import logging
 from datetime import datetime
 
@@ -65,12 +61,12 @@ class TestUserlifecycleSelenium(unittest.TestCase):
         if version.startswith('27'):
             sharedClass = 'icon-shared'
             simpleLogoutUrl = False
-            self.logger.info(f'We are on Nextcloud 27 and are not using the simple logout url')
+            self.logger.info('We are on Nextcloud 27 and are not using the simple logout url')
         else:
             # This will select the first available sharing button
             sharedClass = 'files-list__row-action-sharing-status'
             simpleLogoutUrl = True
-            self.logger.info(f'We are on Nextcloud 28 and are therefore using the simple logout url')
+            self.logger.info('We are on Nextcloud 28 and are therefore using the simple logout url')
 
         drv.browsers=['firefox']
         for browser in drv.browsers:
@@ -94,14 +90,14 @@ class TestUserlifecycleSelenium(unittest.TestCase):
                         try:
                             r = session.post(addUserUrl, headers=ocsheaders, data=data)
                         except:
-                            self.logger.error(f'Error posting to create cli user')
+                            self.logger.error('Error posting to create cli user')
                             return
                         try:
                             j = json.loads(r.text)
                             self.logger.info(json.dumps(j, indent=4, sort_keys=True))
 
                             if (j["ocs"]["meta"]["statuscode"] == 102):
-                                self.logger.warning(f'User already exists, delete and recreate')
+                                self.logger.warning('User already exists, delete and recreate')
 
                                 userurl = drv.get_user_url(fullnode, lifecycleuser)
                                 userurl = userurl.replace("$USERNAME$", nodeuser)
@@ -146,12 +142,12 @@ class TestUserlifecycleSelenium(unittest.TestCase):
                                 driver = webdriver.Chrome(options=options)
                             elif browser == 'firefox':
                                 if use_driver_service == False:
-                                    self.logger.info(f'Initialize Firefox driver without driver service')
+                                    self.logger.info('Initialize Firefox driver without driver service')
                                     options = FirefoxOptions()
                                     # options.add_argument("--headless")
                                     driver = webdriver.Firefox(options=options)
                                 else:
-                                    self.logger.info(f'Initialize Firefox driver using snap geckodriver and driver service')
+                                    self.logger.info('Initialize Firefox driver using snap geckodriver and driver service')
                                     driver_service = webdriver.FirefoxService(executable_path=geckodriver_path)
                                     driver = webdriver.Firefox(service=driver_service, options=options)
                             else:
@@ -183,44 +179,44 @@ class TestUserlifecycleSelenium(unittest.TestCase):
                             client.mkdir(dir)
                             self.assertEqual(client.list().count('SharedFolder/'), 1)
                         except:
-                            self.logger.error(f'Webdav error making shared folder')                        
+                            self.logger.error('Webdav error making shared folder')                        
 
                         files = driver.find_element(By.XPATH, '//a[@href="' + drv.indexsuffix + '/apps/files/' +'"]')
                         files.click()
 
                         try:
                             wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'app-menu-entry')))
-                            self.logger.info(f'All files visible!')
+                            self.logger.info('All files visible!')
                         except TimeoutException:
-                            self.logger.info(f'Loading of all files took too much time!')
+                            self.logger.info('Loading of all files took too much time!')
 
                         try:
                             wait.until(EC.presence_of_element_located((By.CLASS_NAME, sharedClass)))
                             sharefolder = driver.find_element(by=By.CLASS_NAME, value=sharedClass)
                             sharefolder.click()
-                            self.logger.info(f'Clicked on share folder')
+                            self.logger.info('Clicked on share folder')
                         except:
                             self.logger.info(f'{sharedClass} not found')
 
                         try:
                             wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'sharing-entry__title')))
-                            self.logger.info(f'Share link enabled!')
+                            self.logger.info('Share link enabled!')
                         except TimeoutException:
-                            self.logger.info(f'No share link present!')
+                            self.logger.info('No share link present!')
 
                         # Change user password and log on again
                         try:
                             wait.until(EC.element_to_be_clickable((By.ID, 'user-menu'))).click()
-                            self.logger.info(f'user-menu clicked')
+                            self.logger.info('user-menu clicked')
                             wait.until(EC.element_to_be_clickable((By.PARTIAL_LINK_TEXT, 'Settings'))).click()
-                            self.logger.info(f'Settings clicked')
+                            self.logger.info('Settings clicked')
                             time.sleep(1)
                         except Exception as e:
                             self.logger.error(f'Problem accessing user settings: {e}')
 
                         try:
                             wait.until(EC.element_to_be_clickable((By.PARTIAL_LINK_TEXT, 'Security'))).click()
-                            self.logger.info(f'Security clicked')
+                            self.logger.info('Security clicked')
                             time.sleep(1)
                         except Exception as e:
                             self.logger.error(f'Problem accessing security settings: {e}')
@@ -237,22 +233,22 @@ class TestUserlifecycleSelenium(unittest.TestCase):
                        
                         try:
                             wait.until(EC.element_to_be_clickable((By.ID, 'user-menu'))).click()
-                            self.logger.info(f'user-menu clicked')
+                            self.logger.info('user-menu clicked')
                             wait.until(EC.element_to_be_clickable((By.PARTIAL_LINK_TEXT, 'Log out'))).click()
-                            self.logger.info(f'Logout after password change complete')
+                            self.logger.info('Logout after password change complete')
                             time.sleep(1)
                         except Exception as e:
                             self.logger.error(f'Unable to log out: {e}')
 
                         # Open direct login url again
-                        self.logger.info(f'Log in again after password change')
+                        self.logger.info('Log in again after password change')
                         sel.nodelogin(sel.UserType.BASIC, username=lifecycleuser,password=lifecyclenewpwd)
                         wait = WebDriverWait(driver, delay)
                         try:
                             wait.until(EC.element_to_be_clickable((By.ID, 'user-menu'))).click()
-                            self.logger.info(f'user-menu clicked')
+                            self.logger.info('user-menu clicked')
                             wait.until(EC.element_to_be_clickable((By.PARTIAL_LINK_TEXT, 'Log out'))).click()
-                            self.logger.info(f'Logout after relogin complete')
+                            self.logger.info('Logout after relogin complete')
                             time.sleep(1)
                         except Exception as e:
                             self.logger.error(f'Unable to log out: {e}')

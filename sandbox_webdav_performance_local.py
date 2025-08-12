@@ -55,7 +55,7 @@ client.verify = False
 logger.info(client.list())
 client.mkdir('performance')
 
-logger.info(f'Generate local files')
+logger.info('Generate local files')
 files = []
 for i in range(0,numFiles):
     filename = f'{fullnode}{str(i)}.bin'
@@ -81,13 +81,13 @@ try:
             time.sleep(0.01)
     endTime = datetime.now()
 except:
-    logger.error(f'Error during async upload')
+    logger.error('Error during async upload')
 
 # Calculate time to upload
 uploadTime = (endTime - startTime).total_seconds()
 
 # Remove the temporary files
-logger.info(f'Remove temporary files')
+logger.info('Remove temporary files')
 for i in range(0,numFiles):
     filename = f'{tempfile.gettempdir()}/{fullnode}{str(i)}.bin'
     os.remove(filename)
@@ -120,4 +120,4 @@ logger.info(f'Results for {numFiles} with max {maxUploads} concurrent uploads an
 for message in davPerformanceResults:
     logger.info(f'{message}')
 
-logger.info(f'Done')
+logger.info('Done')

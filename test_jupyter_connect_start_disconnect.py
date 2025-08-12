@@ -15,8 +15,6 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
 from selenium.common.exceptions import TimeoutException
-from selenium.webdriver.common.action_chains import ActionChains
-import os
 import time
 import logging
 import pyautogui
@@ -36,7 +34,7 @@ class TestJupyterSelenium(unittest.TestCase):
         self.logger.info(f'Cookies deleted: {cookies}')
 
     def test_logger(self):
-        self.logger.info(f'self.logger.info test_logger')
+        self.logger.info('self.logger.info test_logger')
         pass
     
     def test_jupyter_aio(self):
@@ -68,7 +66,7 @@ class TestJupyterSelenium(unittest.TestCase):
                     options = Options()
                     driver = webdriver.Chrome(options=options)
                 except:
-                    self.logger.error(f'Error initializing Chrome driver')
+                    self.logger.error('Error initializing Chrome driver')
                     self.assertTrue(False)
                 driver.maximize_window()
                 # driver2 = webdriver.Firefox()
@@ -80,9 +78,9 @@ class TestJupyterSelenium(unittest.TestCase):
 
                 try:
                     wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'app-menu')))
-                    self.logger.info(f'App menu is ready!')
+                    self.logger.info('App menu is ready!')
                 except TimeoutException:
-                    self.logger.info(f'Loading of app menu took too much time!')
+                    self.logger.info('Loading of app menu took too much time!')
 
                 # Check URLs after login
                 dashboardUrl = drv.get_dashboard_url(fullnode)
@@ -93,46 +91,46 @@ class TestJupyterSelenium(unittest.TestCase):
                 jupyter.click()
 
                 try:
-                    self.logger.info(f'Waiting for jupyter iframe')
+                    self.logger.info('Waiting for jupyter iframe')
                     wait.until(EC.frame_to_be_available_and_switch_to_it((By.XPATH, '//*[@id="content"]/iframe')))
                     self.logger.info('Jupyter iframe loaded')
                 except:
-                    self.logger.error(f'Jupyter iframe not loaded')
+                    self.logger.error('Jupyter iframe not loaded')
 
                 try:
-                    self.logger.info(f'Authorizing Jupyter app')
+                    self.logger.info('Authorizing Jupyter app')
                     wait.until(EC.presence_of_element_located((By.XPATH, '//*[@id="login-form"]/input'))).click()
-                    self.logger.info(f'Logged in to jupyter app')
+                    self.logger.info('Logged in to jupyter app')
                     wait.until(EC.presence_of_element_located((By.XPATH, '//*[@id="submit-wrapper"]/input'))).click()
-                    self.logger.info(f'Authorization granted')
+                    self.logger.info('Authorization granted')
                 except:
-                    self.logger.error(f'Error authorizing JupyterHub app')
+                    self.logger.error('Error authorizing JupyterHub app')
 
                 # Starting the server
                 try:
                     wait.until(EC.presence_of_element_located((By.ID, 'start')))
                     needsToConnect = True
-                    self.logger.info(f'Server needs to be started')
+                    self.logger.info('Server needs to be started')
                 except:
                     needsToConnect = False
-                    self.logger.info(f'Server already started')
+                    self.logger.info('Server already started')
 
                 if needsToConnect:
                     login = driver.find_element(By.ID, 'start')
                     login.click()
-                    self.logger.info(f'Starting server')
+                    self.logger.info('Starting server')
                 time.sleep(3)
                 try:
-                    self.logger.info(f'Logging out')
+                    self.logger.info('Logging out')
                     wait.until(EC.element_to_be_clickable((By.XPATH, "//*[contains(@class, 'lm-MenuBar-itemLabel') and text()='File']"))).click()
-                    self.logger.info(f'File menu opened')
+                    self.logger.info('File menu opened')
                     wait.until(EC.element_to_be_clickable((By.XPATH, "//li[@data-command='hub:logout']"))).click()
                     time.sleep(600)
                     # wait.until(EC.element_to_be_clickable((By.XPATH, "//li[@data-command='hub:logout']"))).click()
-                    self.logger.info(f'Logged out and disconnected from JupyterHub')
+                    self.logger.info('Logged out and disconnected from JupyterHub')
                     proceed = True
                 except:
-                    self.logger.error(f'Error logging out from JupyterHub, saving screenshot')
+                    self.logger.error('Error logging out from JupyterHub, saving screenshot')
                     screenshot = pyautogui.screenshot()
                     screenshot.save("screenshots/" + fullnode + "test_jupyter_aio" + g_filename + ".png")
                     proceed = False
@@ -140,7 +138,7 @@ class TestJupyterSelenium(unittest.TestCase):
                 time.sleep(2)
                 self.assertTrue(proceed)
 
-                self.logger.info(f'Done...')
+                self.logger.info('Done...')
                 time.sleep(2)
 
 if __name__ == '__main__':

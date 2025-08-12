@@ -75,7 +75,7 @@ class NextcloudOAuthenticator(GenericOAuthenticator):
           print(f'Successfully refreshed token for {user.name}')
           print(f'auth_state for {user.name}: {auth_state}')
         return {'name': user.name, 'auth_state': auth_state}
-      except Exception as e:
+      except Exception:
         if debug:
           print(f'Failed to refresh token for {user}')
         return False
@@ -99,7 +99,6 @@ c.NextcloudOAuthenticator.auth_refresh_age = 3600
 c.NextcloudOAuthenticator.post_auth_hook = post_auth_hook
 
 # Configuration file for jupyter-notebook.
-import sys
 
 c = get_config()
 c.NotebookApp.allow_origin = '*'

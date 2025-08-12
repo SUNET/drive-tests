@@ -4,9 +4,6 @@ Author: Richard Freitag <freitag@sunet.se>
 
 import unittest
 import tempfile
-import requests
-from requests.auth import HTTPBasicAuth
-import json
 import os
 from webdav3.client import Client
 from webdav3.exceptions import WebDavException
@@ -50,15 +47,15 @@ def webdavUpload(client, local_path, remote_path):
     global logger, g_testThreadsRunning
     logger.info(f'Upload {local_path}')
     if client == None:
-        logger.error(f'No client provided')
+        logger.error('No client provided')
         decreaseUploadCount()
         return
     if local_path == None:
-        logger.error(f'No filename provided')
+        logger.error('No filename provided')
         decreaseUploadCount()
         return
     if remote_path == None:
-        logger.error(f'No target filename provided')
+        logger.error('No target filename provided')
         decreaseUploadCount()
         return
     try:
@@ -73,10 +70,10 @@ def webdavUpload(client, local_path, remote_path):
 def webdavClean(client, filename):
     global logger, g_testThreadsRunning
     if client == None:
-        logger.error(f'No client provided')
+        logger.error('No client provided')
         return
     if filename == None:
-        logger.error(f'No filename provided')
+        logger.error('No filename provided')
         return
     logger.info(f'Cleaning {filename}')
     client.clean(filename)
@@ -120,7 +117,7 @@ class TestWebDavPerformance(unittest.TestCase):
                     logger.info(client.list())
                     client.mkdir('performance')
 
-                    logger.info(f'Generate local files')
+                    logger.info('Generate local files')
                     files = []
                     for i in range(0,numFiles):
                         filename = f'{fullnode}{str(i)}.bin'
@@ -147,13 +144,13 @@ class TestWebDavPerformance(unittest.TestCase):
                                 time.sleep(0.01)
                         endTime = datetime.now()
                     except:
-                        logger.error(f'Error during async upload')
+                        logger.error('Error during async upload')
 
                     # Calculate time to upload
                     uploadTime = (endTime - startTime).total_seconds()
 
                     # Remove the temporary files
-                    logger.info(f'Remove temporary files')
+                    logger.info('Remove temporary files')
                     for i in range(0,numFiles):
                         filename = f'{tempfile.gettempdir()}/{fullnode}{str(i)}.bin'
                         os.remove(filename)
@@ -195,7 +192,7 @@ class TestWebDavPerformance(unittest.TestCase):
         for message in g_davPerformanceResults:
             logger.info(f'{message}')
 
-        logger.info(f'Done')
+        logger.info('Done')
         pass
 
     def test_file_sizes(self):
@@ -219,7 +216,7 @@ class TestWebDavPerformance(unittest.TestCase):
         drv = sunetnextcloud.TestTarget()
         for fullnode in drv.fullnodes:
             with self.subTest(mynode=fullnode):
-                logger.info(f'Generate local files')
+                logger.info('Generate local files')
                 files = []
                 for i in range(0,numFiles):
                     for fileSize in fileSizes:
@@ -334,7 +331,7 @@ class TestWebDavPerformance(unittest.TestCase):
 
                 # Remove the temporary files
                 try:
-                    logger.info(f'Remove temporary files')
+                    logger.info('Remove temporary files')
                     for i in range(0,numFiles):
                         filename = f'{tempfile.gettempdir()}/{fullnode}{str(i)}_{str(fileSize)}.bin'
                         os.remove(filename)
@@ -345,7 +342,7 @@ class TestWebDavPerformance(unittest.TestCase):
         for message in g_davPerformanceResults:
             logger.info(f'{message}')
 
-        logger.info(f'Done')
+        logger.info('Done')
         pass
 
 

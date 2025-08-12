@@ -9,15 +9,13 @@ import requests
 import json
 import logging
 import hashlib
-from xml.etree.ElementTree import XML, fromstring
+from xml.etree.ElementTree import fromstring
 import xmltodict
-import yaml
 import threading
 import time
 import xmlrunner
 
 import sunetnextcloud
-import os
 
 drv = sunetnextcloud.TestTarget()
 expectedResults = drv.expectedResults
@@ -366,7 +364,7 @@ class TestStatus(unittest.TestCase):
         drv = sunetnextcloud.TestTarget()
 
         if drv.target == 'localhost':
-            logger.warning(f'We are not testing SeamlessAccess for localhost')
+            logger.warning('We are not testing SeamlessAccess for localhost')
             return
 
         for node in expectedResults['global']['allnodes']:
@@ -393,7 +391,7 @@ class TestStatus(unittest.TestCase):
         drv = sunetnextcloud.TestTarget()
 
         if drv.target == 'localhost':
-            logger.warning(f'We are not testing Saml metadata locally (yet)')
+            logger.warning('We are not testing Saml metadata locally (yet)')
             return
 
         for node in drv.allnodes:           
@@ -427,7 +425,7 @@ class TestStatus(unittest.TestCase):
 
                     self.assertEqual(expectedEntityId, drv.get_node_entity_id(node))
                     self.assertEqual(certMd5, expectedResults[drv.target]['cert_md5'])
-        logger.info(f'Saml metadata test done')
+        logger.info('Saml metadata test done')
 
     def test_collabora_nodes(self):
         global logger
@@ -436,7 +434,7 @@ class TestStatus(unittest.TestCase):
         drv = sunetnextcloud.TestTarget()
 
         if drv.target == 'localhost':
-            logger.warning(f'We are not testing Collabora locally (yet)')
+            logger.warning('We are not testing Collabora locally (yet)')
             return
 
         numCollaboraNodes = expectedResults[drv.target]['collabora']['nodes']

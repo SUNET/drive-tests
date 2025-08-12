@@ -7,10 +7,8 @@ import unittest
 import HtmlTestRunner
 import requests
 import threading
-from requests.auth import HTTPBasicAuth
 import json
 import logging
-import os
 import time
 from datetime import datetime
 
@@ -95,7 +93,7 @@ class NodeOcsUserLifecycle(threading.Thread):
                         r = requests.delete(userurl, headers=ocsheaders)
                         j = json.loads(r.text)
                         logger.info(j["ocs"]["meta"]["status"])
-                except Exception as e:
+                except Exception:
                     logger.error(f'Unable to test user lifecycle for {fullnode}')
                     g_testPassed[fullnode] = False
                     g_testThreadsRunning -= 1
@@ -228,7 +226,7 @@ class NodeOcsUserPerformance(threading.Thread):
 
 
             if self.newSession:
-                logger.info(f'Direct url(s), new session')
+                logger.info('Direct url(s), new session')
                 if isMultinode:
                     info = 'Multinode url, new session'
                     totalTime = 0.0
@@ -267,7 +265,7 @@ class NodeOcsUserPerformance(threading.Thread):
                         logger.info(f'{calls} request to {serverid} took {totalTime:<3.1f}s - {info}')
 
             else: # Same session
-                logger.info(f'Direct url(s), same session')
+                logger.info('Direct url(s), same session')
                 if isMultinode:
                     info = 'Multinode url, same session'
                     totalTime = 0.0
@@ -319,7 +317,7 @@ class NodeOcsUserPerformance(threading.Thread):
 class TestPerformanceOcs(unittest.TestCase):
     def test_performance_ocs_userlist_samesession(self):
         global g_ocsPerformanceResults
-        g_ocsPerformanceResults.append(f'Result of test_performance_ocs_userlist_samesession')
+        g_ocsPerformanceResults.append('Result of test_performance_ocs_userlist_samesession')
         drv = sunetnextcloud.TestTarget()
         for fullnode in drv.fullnodes:
             with self.subTest(mynode=fullnode):
@@ -334,13 +332,13 @@ class TestPerformanceOcs(unittest.TestCase):
             with self.subTest(mynode=fullnode):
                 self.assertTrue(g_testPassed[fullnode])
 
-        logger.info(f'Result of test_performance_ocs_userlist_samesession')
+        logger.info('Result of test_performance_ocs_userlist_samesession')
         for message in g_ocsPerformanceResults:
             logger.info(f'{message}')
 
     def test_performance_ocs_userlist_newsession(self):
         global g_ocsPerformanceResults
-        g_ocsPerformanceResults.append(f'Result of test_performance_ocs_userlist_newsession')
+        g_ocsPerformanceResults.append('Result of test_performance_ocs_userlist_newsession')
         drv = sunetnextcloud.TestTarget()
         for fullnode in drv.fullnodes:
             with self.subTest(mynode=fullnode):
@@ -355,13 +353,13 @@ class TestPerformanceOcs(unittest.TestCase):
             with self.subTest(mynode=fullnode):
                 self.assertTrue(g_testPassed[fullnode])
 
-        logger.info(f'Result of test_performance_ocs_userlist_newsession')
+        logger.info('Result of test_performance_ocs_userlist_newsession')
         for message in g_ocsPerformanceResults:
             logger.info(f'{message}')
 
     def test_performance_ocs_userlifecycle(self):
         global g_ocsPerformanceResults
-        g_ocsPerformanceResults.append(f'Result of test_performance_ocs_userlifecycle')
+        g_ocsPerformanceResults.append('Result of test_performance_ocs_userlifecycle')
         drv = sunetnextcloud.TestTarget()
         for fullnode in drv.fullnodes:
             with self.subTest(mynode=fullnode):
@@ -376,7 +374,7 @@ class TestPerformanceOcs(unittest.TestCase):
             with self.subTest(mynode=fullnode):
                 self.assertTrue(g_testPassed[fullnode])
 
-        logger.info(f'Result of test_performance_ocs_userlifecycle')
+        logger.info('Result of test_performance_ocs_userlifecycle')
         for message in g_ocsPerformanceResults:
             logger.info(f'{message}')
                 

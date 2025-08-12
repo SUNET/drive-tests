@@ -2,7 +2,6 @@
 Author: Richard Freitag <freitag@sunet.se>
 Selenium tests to test apps in Sunet Drive
 """
-from datetime import datetime
 import xmlrunner
 import unittest
 import sunetnextcloud
@@ -15,8 +14,6 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
 from selenium.common.exceptions import TimeoutException
-from selenium.webdriver.common.action_chains import ActionChains
-import os
 import time
 import logging
 
@@ -33,7 +30,7 @@ class TestJupyterSelenium(unittest.TestCase):
         self.logger.info(f'Cookies deleted: {cookies}')
 
     def test_logger(self):
-        self.logger.info(f'self.logger.info test_logger')
+        self.logger.info('self.logger.info test_logger')
         pass
     
     def test_authorize_jupyter(self):
@@ -65,7 +62,7 @@ class TestJupyterSelenium(unittest.TestCase):
                     options = Options()
                     driver = webdriver.Chrome(options=options)
                 except:
-                    self.logger.error(f'Error initializing Chrome driver')
+                    self.logger.error('Error initializing Chrome driver')
                     self.assertTrue(False)
                 driver.maximize_window()
                 # driver2 = webdriver.Firefox()
@@ -77,9 +74,9 @@ class TestJupyterSelenium(unittest.TestCase):
 
                 try:
                     wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'app-menu')))
-                    self.logger.info(f'App menu is ready!')
+                    self.logger.info('App menu is ready!')
                 except TimeoutException:
-                    self.logger.info(f'Loading of app menu took too much time!')
+                    self.logger.info('Loading of app menu took too much time!')
 
                 # Check URLs after login
                 dashboardUrl = drv.get_dashboard_url(fullnode)
@@ -90,22 +87,22 @@ class TestJupyterSelenium(unittest.TestCase):
                 jupyter.click()
 
                 try:
-                    self.logger.info(f'Waiting for jupyter iframe')
+                    self.logger.info('Waiting for jupyter iframe')
                     wait.until(EC.frame_to_be_available_and_switch_to_it((By.XPATH, '//*[@id="content"]/iframe')))
                     self.logger.info('Jupyter iframe loaded')
                 except:
-                    self.logger.error(f'Jupyter iframe not loaded')
+                    self.logger.error('Jupyter iframe not loaded')
 
                 try:
-                    self.logger.info(f'Authorizing Jupyter app')
+                    self.logger.info('Authorizing Jupyter app')
                     wait.until(EC.presence_of_element_located((By.XPATH, '//*[@id="login-form"]/input'))).click()
-                    self.logger.info(f'Logged in to jupyter app')
+                    self.logger.info('Logged in to jupyter app')
                     wait.until(EC.presence_of_element_located((By.XPATH, '//*[@id="submit-wrapper"]/input'))).click()
-                    self.logger.info(f'Authorization granted')
+                    self.logger.info('Authorization granted')
                 except:
-                    self.logger.error(f'Error authorizing JupyterHub app')
+                    self.logger.error('Error authorizing JupyterHub app')
 
-                self.logger.info(f'Done...')
+                self.logger.info('Done...')
                 time.sleep(2)
 
 if __name__ == '__main__':

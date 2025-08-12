@@ -2,10 +2,7 @@
 Author: Richard Freitag <freitag@sunet.se>
 """
 
-import tempfile
-import os
 from webdav3.client import Client
-from webdav3.exceptions import WebDavException
 import logging
 import threading
 import time
@@ -20,7 +17,7 @@ logging.basicConfig(format = '%(asctime)s - %(module)s.%(funcName)s - %(levelnam
 drv =sunetnextcloud.TestTarget()
 
 if len(drv.fullnodes) != 1:
-    logger.error(f'Please set a single node to test')
+    logger.error('Please set a single node to test')
     sys.exit()
 
 fullnode = drv.fullnodes[0]
@@ -85,4 +82,4 @@ logger.info(f'Results for {numFiles} with max {maxDeletes} concurrent deletes')
 for message in davPerformanceResults:
     logger.info(f'{message}')
 
-logger.info(f'Done')
+logger.info('Done')

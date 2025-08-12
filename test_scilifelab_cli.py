@@ -5,14 +5,10 @@ Simple test for retrieving all status.php pages from Sunet Drive nodes and compa
 
 import unittest
 import requests
-import json
 import logging
-import hashlib
-from xml.etree.ElementTree import XML, fromstring
-import xmltodict
+from xml.etree.ElementTree import fromstring
 
 import sunetnextcloud
-import os
 
 class TestSciLifeLabCli(unittest.TestCase):
     logger = logging.getLogger(__name__)
@@ -20,7 +16,7 @@ class TestSciLifeLabCli(unittest.TestCase):
                     datefmt = '%Y-%m-%d %H:%M:%S', level = logging.INFO)
 
     def test_logger(self):
-        self.logger.info(f'self.logger.info test_logger')
+        self.logger.info('self.logger.info test_logger')
         pass
 
     def test_metadata(self):
@@ -40,10 +36,10 @@ class TestSciLifeLabCli(unittest.TestCase):
                     expectedEntityId = item[1]
                     self.logger.info("entityID checked")
         except:
-            self.logger.error(f'Metadata is not valid XML')
+            self.logger.error('Metadata is not valid XML')
 
         self.assertEqual(expectedEntityId, drv.get_node_entity_id(node))
-        self.logger.info(f'GSS metadata test done')
+        self.logger.info('GSS metadata test done')
 
 if __name__ == '__main__':
     import xmlrunner

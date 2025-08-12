@@ -22,7 +22,7 @@ class TestRepos(unittest.TestCase):
                     datefmt = '%Y-%m-%d %H:%M:%S', level = logging.INFO)
 
     def test_logger(self):
-        self.logger.info(f'self.logger.info test_logger')
+        self.logger.info('self.logger.info test_logger')
         pass
 
     # Ensure that the mapping files are the same as the reference files

@@ -34,7 +34,7 @@ class TestTests(unittest.TestCase):
             testMissing = False
 
         if os.path.exists(globalconfigfile) and drv.singlenodetesting == False:
-            self.logger.info(f'Check if we are testing all nodes')
+            self.logger.info('Check if we are testing all nodes')
             with open(globalconfigfile, "r") as stream:
                 data=yaml.safe_load(stream)
                 allnodes=data['fullnodes'] + data['singlenodes']
@@ -49,7 +49,7 @@ class TestTests(unittest.TestCase):
                         self.logger.error(f'{node} in tests but not in common.yaml')
                         testMissing = True
         else:
-            self.logger.info(f'Global config file not found, skipping test if all nodes are tested')
+            self.logger.info('Global config file not found, skipping test if all nodes are tested')
 
         self.assertFalse(testMissing)
 

@@ -4,16 +4,11 @@ Author: Richard Freitag <freitag@sunet.se>
 
 import unittest
 import tempfile
-import requests
-from requests.auth import HTTPBasicAuth
-import json
 import os
 import glob
 from pathlib import Path
-import subprocess
 import shutil
 from webdav3.client import Client
-from webdav3.exceptions import WebDavException
 import logging
 import threading
 import time
@@ -134,15 +129,15 @@ def webdavUpload(client, local_path, remote_path):
     global logger, g_testThreadsRunning
     logger.info(f'Upload {local_path}')
     if client == None:
-        logger.error(f'No client provided')
+        logger.error('No client provided')
         decreaseUploadCount()
         return
     if local_path == None:
-        logger.error(f'No filename provided')
+        logger.error('No filename provided')
         decreaseUploadCount()
         return
     if remote_path == None:
-        logger.error(f'No target filename provided')
+        logger.error('No target filename provided')
         decreaseUploadCount()
         return
     try:
@@ -157,10 +152,10 @@ def webdavUpload(client, local_path, remote_path):
 def webdavClean(client, filename):
     global logger, g_testThreadsRunning
     if client == None:
-        logger.error(f'No client provided')
+        logger.error('No client provided')
         return
     if filename == None:
-        logger.error(f'No filename provided')
+        logger.error('No filename provided')
         return
     logger.info(f'Cleaning {filename}')
     client.clean(filename)
@@ -173,7 +168,7 @@ class TestLargeFilePerformance(unittest.TestCase):
 
     def test_testdata(self):        
         if checkTestData() == False:
-            logger.warning(f'File size check failed, regenerating test data')
+            logger.warning('File size check failed, regenerating test data')
             deleteTestData()
             generateTestData()
 
@@ -518,7 +513,7 @@ class TestLargeFilePerformance(unittest.TestCase):
         g_davPerformanceResults.clear()
 
         if checkTestData() == False:
-            logger.warning(f'File size check failed, regenerating test data')
+            logger.warning('File size check failed, regenerating test data')
             deleteTestData()
             generateTestData()
 
@@ -640,7 +635,7 @@ class TestLargeFilePerformance(unittest.TestCase):
                         while threading.active_count() > 1:
                             time.sleep(0.01)
 
-                    logger.info(f'Done')
+                    logger.info('Done')
 
     def test_nextcloudcmd_system(self):
         serverTargetFolder = 'selenium-system/nextcloudcmd'
@@ -652,7 +647,7 @@ class TestLargeFilePerformance(unittest.TestCase):
         g_davPerformanceResults.clear()
 
         if checkTestData() == False:
-            logger.warning(f'File size check failed, regenerating test data')
+            logger.warning('File size check failed, regenerating test data')
             deleteTestData()
             generateTestData()
 
@@ -773,7 +768,7 @@ class TestLargeFilePerformance(unittest.TestCase):
                         while threading.active_count() > 1:
                             time.sleep(0.01)
 
-                    logger.info(f'Done')
+                    logger.info('Done')
 
     def test_nextcloudcmd_personal(self):
         serverTargetFolder = 'selenium-home/nextcloudcmd'
@@ -785,7 +780,7 @@ class TestLargeFilePerformance(unittest.TestCase):
         g_davPerformanceResults.clear()
 
         if checkTestData() == False:
-            logger.warning(f'File size check failed, regenerating test data')
+            logger.warning('File size check failed, regenerating test data')
             deleteTestData()
             generateTestData()
 
@@ -906,7 +901,7 @@ class TestLargeFilePerformance(unittest.TestCase):
                         while threading.active_count() > 1:
                             time.sleep(0.01)
 
-                    logger.info(f'Done')
+                    logger.info('Done')
 
 if __name__ == '__main__':
     unittest.main(testRunner=xmlrunner.XMLTestRunner(output='test-reports'))

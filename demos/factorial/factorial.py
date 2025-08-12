@@ -1,7 +1,5 @@
 import math
-import sys
 from datetime import datetime
-import time
 
 starttime = datetime.now()
 for x in range(3,6):
@@ -13,4 +11,4 @@ for x in range(3,6):
         print(f'Lap time of factorial({y*n}): {runtime.total_seconds()}')
 runtime = datetime.now() - starttime
 print(f'Total runtime: {runtime.total_seconds()}')
-print(f'Done...')
+print('Done...')

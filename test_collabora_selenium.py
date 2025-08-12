@@ -22,9 +22,7 @@ from selenium.webdriver import FirefoxOptions
 from webdav3.client import Client
 
 import logging
-import os
 import time
-import yaml
 
 g_drv = sunetnextcloud.TestTarget()
 expectedResults = g_drv.expectedResults
@@ -217,7 +215,7 @@ class TestCollaboraSelenium(unittest.TestCase):
             with self.subTest(mynode=collaboranode):
                 self.logger.info(f'TestID: {collaboranode}')
                 # if g_isLoggedIn == False:
-                removeFolder(collaboranode, f'Templates')
+                removeFolder(collaboranode, 'Templates')
                 if g_loggedInNodes.get(collaboranode) == False:
                     nodelogin(collaboranode)
                 self.assertTrue(g_loggedInNodes.get(collaboranode))
@@ -226,13 +224,13 @@ class TestCollaboraSelenium(unittest.TestCase):
                 self.logger.info('Waiting for app menu')
                 try:
                     wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'app-menu')))
-                    self.logger.info(f'App menu is ready!')
+                    self.logger.info('App menu is ready!')
                 except TimeoutException:
-                    self.logger.warning(f'Loading of app menu took too much time!')
+                    self.logger.warning('Loading of app menu took too much time!')
                     success = False
 
                 if success == False:
-                    self.logger.warning(f'Manually open home folder in case loading of all files takes too much time')
+                    self.logger.warning('Manually open home folder in case loading of all files takes too much time')
                     self.driver.get(g_drv.get_folder_url(collaboranode,''))
                     success = True
 
@@ -253,13 +251,13 @@ class TestCollaboraSelenium(unittest.TestCase):
 
                 try:
                     wait.until(EC.presence_of_element_located((By.LINK_TEXT, 'All files')))
-                    self.logger.info(f'All files visible!')
+                    self.logger.info('All files visible!')
                 except TimeoutException:
-                    self.logger.warning(f'Loading of all files took too much time!')
+                    self.logger.warning('Loading of all files took too much time!')
                     success = False
 
                 if success == False:
-                    self.logger.warning(f'Manually open home folder in case loading of all files takes too much time')
+                    self.logger.warning('Manually open home folder in case loading of all files takes too much time')
                     self.driver.get(g_drv.get_folder_url(collaboranode,''))
                     success = True
 
@@ -270,9 +268,9 @@ class TestCollaboraSelenium(unittest.TestCase):
                 self.logger.info(f'Looking for all files text in {self.version}')
                 # //*[@id="app-content-vue"]/div[1]/div/nav/ul/li/a/span/span[2] "//h4/a[contains(text(),'SAP M')]"
                 self.driver.find_element(By.XPATH, "//*[contains(text(), 'All files')]")
-                self.logger.info(f'All files found!')
+                self.logger.info('All files found!')
 
-                self.logger.info(f'Looking for SeleniumCollaboraTest folder')
+                self.logger.info('Looking for SeleniumCollaboraTest folder')
                 folderExists = checkFolder(collaboranode, "SeleniumCollaboraTest", create=True)
                 self.assertTrue(folderExists)
 
@@ -308,14 +306,14 @@ class TestCollaboraSelenium(unittest.TestCase):
                     # time.sleep(3)
 
                     try:
-                        self.logger.info(f'Click on add icon')
+                        self.logger.info('Click on add icon')
                         wait.until(EC.element_to_be_clickable((By.CLASS_NAME, self.addIcon))).click()
-                        self.logger.info(f'Click on new text file')
+                        self.logger.info('Click on new text file')
                         time.sleep(g_clickWait)
                         # wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'icon-filetype-text'))).click()
                         wait.until(EC.element_to_be_clickable((By.XPATH, "//*[contains(@class, 'action-button__text') and text()='New text file']"))).click()
                         time.sleep(g_clickWait)
-                        self.logger.info(f'Wait for dialog actions window')
+                        self.logger.info('Wait for dialog actions window')
                         wait.until(EC.presence_of_element_located((By.XPATH, "//*[contains(@class, 'dialog__actions')]")))
                         self.logger.info(f'Renaming the file we just created to {g_filename}.md')
                         time.sleep(g_clickWait)
@@ -340,27 +338,27 @@ class TestCollaboraSelenium(unittest.TestCase):
                     # If it is the first entry in the list, we have to reload the page to get it to load
                     try:
                         if isEmpty:
-                            self.logger.info(f'Reload page to open new document')
+                            self.logger.info('Reload page to open new document')
                             self.driver.refresh()
                     except Exception as e:
                         self.logger.error(f'Error: {e}')
                         
-                self.logger.info(f'Sleep for 3 seconds...')
+                self.logger.info('Sleep for 3 seconds...')
                 time.sleep(3)
 
-                self.logger.info(f'Can we type in the markup area?')
+                self.logger.info('Can we type in the markup area?')
                 ActionChains(self.driver).send_keys(f'Lorem Ipsum! {Keys.ENTER} {g_filename}').perform()
                 time.sleep(3) # We give nextcloud a literal second to register the keystrokes before closing the document
-                self.logger.info(f'Closing document...')
+                self.logger.info('Closing document...')
                 try:
                     wait.until(EC.element_to_be_clickable((By.CLASS_NAME, 'header-close'))).click()
                 except Exception as error:
                     self.logger.warning(f"Closing markup document failed: {error}")
 
-                self.logger.info(f'Manually open home folder in case closing of document fails')
+                self.logger.info('Manually open home folder in case closing of document fails')
                 self.driver.get(g_drv.get_folder_url(collaboranode,''))
 
-                self.logger.info(f'And done...')
+                self.logger.info('And done...')
                 time.sleep(1)
 
     def test_collabora_document(self):
@@ -373,7 +371,7 @@ class TestCollaboraSelenium(unittest.TestCase):
             with self.subTest(mynode=collaboranode):
                 self.logger.info(f'TestID: {collaboranode}')
                 # if g_isLoggedIn == False:
-                removeFolder(collaboranode, f'Templates')
+                removeFolder(collaboranode, 'Templates')
                 if g_loggedInNodes.get(collaboranode) == False:
                     nodelogin(collaboranode)
                 self.assertTrue(g_loggedInNodes.get(collaboranode))
@@ -382,13 +380,13 @@ class TestCollaboraSelenium(unittest.TestCase):
                 self.logger.info('Waiting for app menu')
                 try:
                     wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'app-menu')))
-                    self.logger.info(f'App menu is ready!')
+                    self.logger.info('App menu is ready!')
                 except TimeoutException:
-                    self.logger.warning(f'Loading of app menu took too much time!')
+                    self.logger.warning('Loading of app menu took too much time!')
                     success = False
 
                 if success == False:
-                    self.logger.warning(f'Manually open home folder in case loading of all files takes too much time')
+                    self.logger.warning('Manually open home folder in case loading of all files takes too much time')
                     self.driver.get(g_drv.get_folder_url(collaboranode,''))
                     success = True
                 self.assertTrue(success)
@@ -418,13 +416,13 @@ class TestCollaboraSelenium(unittest.TestCase):
 
                         try:
                             wait.until(EC.presence_of_element_located((By.LINK_TEXT, 'All files')))
-                            self.logger.info(f'All files visible!')
+                            self.logger.info('All files visible!')
                         except TimeoutException:
-                            self.logger.warning(f'Loading of all files took too much time!')
+                            self.logger.warning('Loading of all files took too much time!')
                             success = False
 
                         if success == False:
-                            self.logger.warning(f'Manually open home folder in case loading of all files takes too much time')
+                            self.logger.warning('Manually open home folder in case loading of all files takes too much time')
                             self.driver.get(g_drv.get_folder_url(collaboranode,''))
                             success = True
 
@@ -435,7 +433,7 @@ class TestCollaboraSelenium(unittest.TestCase):
                         self.logger.info(f'Looking for all files text in {self.version}')
                         # //*[@id="app-content-vue"]/div[1]/div/nav/ul/li/a/span/span[2] "//h4/a[contains(text(),'SAP M')]"
                         self.driver.find_element(By.XPATH, "//*[contains(text(), 'All files')]")
-                        self.logger.info(f'All files found!')
+                        self.logger.info('All files found!')
 
                         self.logger.info(f'Looking for {testfolder} folder')
                         folderExists = checkFolder(collaboranode, testfolder, create=True)
@@ -464,13 +462,13 @@ class TestCollaboraSelenium(unittest.TestCase):
                             time.sleep(3)
                         
                             try:
-                                self.logger.info(f'Click on add icon')
+                                self.logger.info('Click on add icon')
                                 wait.until(EC.element_to_be_clickable((By.CLASS_NAME, self.addIcon))).click()
                                 time.sleep(g_clickWait)
-                                self.logger.info(f'Click on new document')
+                                self.logger.info('Click on new document')
                                 wait.until(EC.element_to_be_clickable((By.XPATH, "//*[contains(@class, 'action-button__text') and text()='New document']"))).click()
                                 time.sleep(g_clickWait)
-                                self.logger.info(f'Wait for dialog actions window')
+                                self.logger.info('Wait for dialog actions window')
                                 wait.until(EC.presence_of_element_located((By.XPATH, "//*[contains(@class, 'dialog__actions')]")))
                                 self.logger.info(f'Renaming the file we just created to {g_filename}.odt')
                                 time.sleep(g_clickWait)
@@ -495,18 +493,18 @@ class TestCollaboraSelenium(unittest.TestCase):
                             # If it is the first entry in the list, we have to reload the page to get it to load
                             try:
                                 if isEmpty:
-                                    self.logger.info(f'Reload page to open new document')
+                                    self.logger.info('Reload page to open new document')
                                     self.driver.refresh()
                             except Exception as e:
                                 self.logger.error(f'Error: {e}')
 
-                        self.logger.info(f'Sleep for 3 seconds...')
-                        self.logger.info(f'Proceeding...')
+                        self.logger.info('Sleep for 3 seconds...')
+                        self.logger.info('Proceeding...')
 
                         try:
-                            self.logger.info(f'Waiting for collabora frame')
+                            self.logger.info('Waiting for collabora frame')
                             wait.until(EC.frame_to_be_available_and_switch_to_it((By.CSS_SELECTOR, "iframe[id^='collaboraframe']")))
-                            self.logger.info(f'Collabora loaded... Let\'s type some text')
+                            self.logger.info('Collabora loaded... Let\'s type some text')
                             time.sleep(5)
                             ActionChains(self.driver).send_keys(f'Lorem Ipsum! {Keys.ENTER} {g_filename}').perform()
                             time.sleep(3)
@@ -516,7 +514,7 @@ class TestCollaboraSelenium(unittest.TestCase):
                             screenshot.save("screenshots/" + collaboranode + g_filename + ".png")
                             success = False
 
-                        self.logger.info(f'Open the folder URL instead of closing the document')
+                        self.logger.info('Open the folder URL instead of closing the document')
                         self.driver.get(g_drv.get_folder_url(collaboranode,''))
                         self.assertTrue(success)
 
@@ -534,7 +532,7 @@ class TestCollaboraSelenium(unittest.TestCase):
             with self.subTest(mynode=collaboranode):
                 self.logger.info(f'TestID: {collaboranode}')
                 # if g_isLoggedIn == False:
-                removeFolder(collaboranode, f'Templates')
+                removeFolder(collaboranode, 'Templates')
                 if g_loggedInNodes.get(collaboranode) == False:
                     nodelogin(collaboranode)
                 self.assertTrue(g_loggedInNodes.get(collaboranode))
@@ -543,13 +541,13 @@ class TestCollaboraSelenium(unittest.TestCase):
                 self.logger.info('Waiting for app menu')
                 try:
                     wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'app-menu')))
-                    self.logger.info(f'App menu is ready!')
+                    self.logger.info('App menu is ready!')
                 except TimeoutException:
-                    self.logger.warning(f'Loading of app menu took too much time!')
+                    self.logger.warning('Loading of app menu took too much time!')
                     success = False
 
                 if success == False:
-                    self.logger.warning(f'Manually open home folder in case loading of all files takes too much time')
+                    self.logger.warning('Manually open home folder in case loading of all files takes too much time')
                     self.driver.get(g_drv.get_folder_url(collaboranode,''))
                     success = True
 
@@ -572,13 +570,13 @@ class TestCollaboraSelenium(unittest.TestCase):
 
                 try:
                     wait.until(EC.presence_of_element_located((By.LINK_TEXT, 'All files')))
-                    self.logger.info(f'All files visible!')
+                    self.logger.info('All files visible!')
                 except TimeoutException:
-                    self.logger.warning(f'Loading of all files took too much time!')
+                    self.logger.warning('Loading of all files took too much time!')
                     success = False
 
                 if success == False:
-                    self.logger.warning(f'Manually open home folder in case loading of all files takes too much time')
+                    self.logger.warning('Manually open home folder in case loading of all files takes too much time')
                     self.driver.get(g_drv.get_folder_url(collaboranode,''))
                     success = True
 
@@ -590,9 +588,9 @@ class TestCollaboraSelenium(unittest.TestCase):
                 self.logger.info(f'Looking for all files text in {self.version}')
                 # //*[@id="app-content-vue"]/div[1]/div/nav/ul/li/a/span/span[2] "//h4/a[contains(text(),'SAP M')]"
                 self.driver.find_element(By.XPATH, "//*[contains(text(), 'All files')]")
-                self.logger.info(f'All files found!')                
+                self.logger.info('All files found!')                
 
-                self.logger.info(f'Looking for SeleniumCollaboraTest folder')
+                self.logger.info('Looking for SeleniumCollaboraTest folder')
                 folderExists = checkFolder(collaboranode, "SeleniumCollaboraTest", create=True)
                 self.assertTrue(folderExists)
 
@@ -634,14 +632,14 @@ class TestCollaboraSelenium(unittest.TestCase):
 
                     time.sleep(3)
                     try:
-                        self.logger.info(f'Click on add icon')
+                        self.logger.info('Click on add icon')
                         wait.until(EC.element_to_be_clickable((By.CLASS_NAME, self.addIcon))).click()
-                        self.logger.info(f'Click on new spreadsheet')
+                        self.logger.info('Click on new spreadsheet')
                         time.sleep(g_clickWait)
                         # wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'icon-filetype-spreadsheet'))).click()
                         wait.until(EC.element_to_be_clickable((By.XPATH, "//*[contains(@class, 'action-button__text') and text()='New spreadsheet']"))).click()
                         time.sleep(g_clickWait)
-                        self.logger.info(f'Wait for dialog actions window')
+                        self.logger.info('Wait for dialog actions window')
                         wait.until(EC.presence_of_element_located((By.XPATH, "//*[contains(@class, 'dialog__actions')]")))
                         self.logger.info(f'Renaming the file we just created to {g_filename}.ods')
                         time.sleep(g_clickWait)
@@ -666,19 +664,19 @@ class TestCollaboraSelenium(unittest.TestCase):
                     # If it is the first entry in the list, we have to reload the page to get it to load
                     try:
                         if isEmpty:
-                            self.logger.info(f'Reload page to open new document')
+                            self.logger.info('Reload page to open new document')
                             self.driver.refresh()
                     except Exception as e:
                         self.logger.error(f'Error: {e}')
 
-                self.logger.info(f'Sleep for 3 seconds...')
+                self.logger.info('Sleep for 3 seconds...')
                 time.sleep(3)
-                self.logger.info(f'Proceeding...')
+                self.logger.info('Proceeding...')
 
                 try:
-                    self.logger.info(f'Waiting for collabora frame')
+                    self.logger.info('Waiting for collabora frame')
                     wait.until(EC.frame_to_be_available_and_switch_to_it((By.CSS_SELECTOR, "iframe[id^='collaboraframe']")))
-                    self.logger.info(f'Collabora loaded... Let\'s type some text')
+                    self.logger.info('Collabora loaded... Let\'s type some text')
                     time.sleep(5)
                     ActionChains(self.driver).key_down(Keys.CONTROL).send_keys(Keys.UP).key_up(Keys.CONTROL).perform()
                     ActionChains(self.driver).key_down(Keys.CONTROL).send_keys(Keys.LEFT).key_up(Keys.CONTROL).perform()
@@ -690,7 +688,7 @@ class TestCollaboraSelenium(unittest.TestCase):
                     screenshot.save("screenshots/" + collaboranode + g_filename + ".png")
                     success = False
 
-                self.logger.info(f'Open the folder URL instead of closing the document')
+                self.logger.info('Open the folder URL instead of closing the document')
                 self.driver.get(g_drv.get_folder_url(collaboranode,''))
                 self.assertTrue(success)
 
@@ -707,7 +705,7 @@ class TestCollaboraSelenium(unittest.TestCase):
             with self.subTest(mynode=collaboranode):
                 self.logger.info(f'TestID: {collaboranode}')
                 # if g_isLoggedIn == False:
-                removeFolder(collaboranode, f'Templates')
+                removeFolder(collaboranode, 'Templates')
                 if g_loggedInNodes.get(collaboranode) == False:
                     nodelogin(collaboranode)
                 self.assertTrue(g_loggedInNodes.get(collaboranode))
@@ -716,13 +714,13 @@ class TestCollaboraSelenium(unittest.TestCase):
                 self.logger.info('Waiting for app menu')
                 try:
                     wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'app-menu')))
-                    self.logger.info(f'App menu is ready!')
+                    self.logger.info('App menu is ready!')
                 except TimeoutException:
-                    self.logger.warning(f'Loading of app menu took too much time!')
+                    self.logger.warning('Loading of app menu took too much time!')
                     success = False
 
                 if success == False:
-                    self.logger.warning(f'Manually open home folder in case loading of all files takes too much time')
+                    self.logger.warning('Manually open home folder in case loading of all files takes too much time')
                     self.driver.get(g_drv.get_folder_url(collaboranode,''))
                     success = True
                 self.assertTrue(success)
@@ -744,13 +742,13 @@ class TestCollaboraSelenium(unittest.TestCase):
 
                 try:
                     wait.until(EC.presence_of_element_located((By.LINK_TEXT, 'All files')))
-                    self.logger.info(f'All files visible!')
+                    self.logger.info('All files visible!')
                 except Exception as error:
                     self.logger.warning(f'Loading of all files took too much time: {error}')
                     success = False
 
                 if success == False:
-                    self.logger.warning(f'Manually open home folder in case loading of all files takes too much time')
+                    self.logger.warning('Manually open home folder in case loading of all files takes too much time')
                     self.driver.get(g_drv.get_folder_url(collaboranode,''))
                     success = True
 
@@ -761,9 +759,9 @@ class TestCollaboraSelenium(unittest.TestCase):
                 self.logger.info(f'Looking for all files text in {self.version}')
                 # //*[@id="app-content-vue"]/div[1]/div/nav/ul/li/a/span/span[2] "//h4/a[contains(text(),'SAP M')]"
                 self.driver.find_element(By.XPATH, "//*[contains(text(), 'All files')]")
-                self.logger.info(f'All files found!')                
+                self.logger.info('All files found!')                
 
-                self.logger.info(f'Looking for SeleniumCollaboraTest folder')
+                self.logger.info('Looking for SeleniumCollaboraTest folder')
                 folderExists = checkFolder(collaboranode, "SeleniumCollaboraTest", create=True)
                 self.assertTrue(folderExists)
                 
@@ -806,13 +804,13 @@ class TestCollaboraSelenium(unittest.TestCase):
 
                     time.sleep(3)
                     try:
-                        self.logger.info(f'Click on add icon')
+                        self.logger.info('Click on add icon')
                         wait.until(EC.element_to_be_clickable((By.CLASS_NAME, self.addIcon))).click()
-                        self.logger.info(f'Click on new presentation')
+                        self.logger.info('Click on new presentation')
                         time.sleep(g_clickWait)
                         wait.until(EC.element_to_be_clickable((By.XPATH, "//*[contains(@class, 'action-button__text') and text()='New presentation']"))).click()
                         time.sleep(g_clickWait)
-                        self.logger.info(f'Wait for dialog actions window')
+                        self.logger.info('Wait for dialog actions window')
                         wait.until(EC.presence_of_element_located((By.XPATH, "//*[contains(@class, 'dialog__actions')]")))
                         self.logger.info(f'Renaming the file we just created to {g_filename}.odp')
                         time.sleep(g_clickWait)
@@ -837,19 +835,19 @@ class TestCollaboraSelenium(unittest.TestCase):
                     # If it is the first entry in the list, we have to reload the page to get it to load
                     try:
                         if isEmpty:
-                            self.logger.info(f'Reload page to open new document')
+                            self.logger.info('Reload page to open new document')
                             self.driver.refresh()
                     except Exception as e:
                         self.logger.error(f'Error: {e}')
 
-                self.logger.info(f'Sleep for 3 seconds...')
+                self.logger.info('Sleep for 3 seconds...')
                 time.sleep(3)
-                self.logger.info(f'Proceeding...')
+                self.logger.info('Proceeding...')
 
                 try:
-                    self.logger.info(f'Waiting for collabora frame')
+                    self.logger.info('Waiting for collabora frame')
                     wait.until(EC.frame_to_be_available_and_switch_to_it((By.CSS_SELECTOR, "iframe[id^='collaboraframe']")))
-                    self.logger.info(f'Collabora loaded... Let\'s type some text')
+                    self.logger.info('Collabora loaded... Let\'s type some text')
                     time.sleep(5)
                     ActionChains(self.driver).send_keys(f'Lorem ipsum! {Keys.ENTER}{g_filename}').perform()
                     time.sleep(1)
@@ -859,7 +857,7 @@ class TestCollaboraSelenium(unittest.TestCase):
                     screenshot.save("screenshots/" + collaboranode + g_filename + ".png")
                     success = False
 
-                self.logger.info(f'Open the folder URL instead of closing the document')
+                self.logger.info('Open the folder URL instead of closing the document')
                 self.driver.get(g_drv.get_folder_url(collaboranode,''))
                 self.assertTrue(success)
 

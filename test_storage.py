@@ -3,8 +3,6 @@ Author: Richard Freitag <freitag@sunet.se>
 """
 
 import unittest
-import requests
-from requests.auth import HTTPBasicAuth
 import json
 import os
 import yaml

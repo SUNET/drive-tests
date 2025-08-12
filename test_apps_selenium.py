@@ -5,10 +5,6 @@ Selenium tests to log on to a Sunet Drive node, and performing various operation
 import xmlrunner
 import unittest
 import sunetnextcloud
-from webdav3.client import Client
-import pyotp
-import pyautogui
-import time
 
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
@@ -18,10 +14,8 @@ from selenium.webdriver.common.by import By
 from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.chrome.options import Options
-from selenium.webdriver import FirefoxOptions
 import os
 import yaml
-import time
 import logging
 from datetime import datetime
 
@@ -45,11 +39,11 @@ if os.environ.get('SELENIUM_DRIVER_SERVICE') == 'True':
 def deleteCookies():
     cookies = g_driver.get_cookies()
     # g_logger.info(f'Deleting all cookies: {cookies}')
-    g_logger.info(f'Deleting all cookies.')
+    g_logger.info('Deleting all cookies.')
     g_driver.delete_all_cookies()
     cookies = g_driver.get_cookies()
     # g_logger.info(f'Cookies deleted: {cookies}')
-    g_logger.info(f'Cookies deleted.')
+    g_logger.info('Cookies deleted.')
 
 def nodelogin(nextcloudnode):
     global g_wait
@@ -129,12 +123,12 @@ class TestAppsSelenium(unittest.TestCase):
         if version.startswith('27'):
             sharedClass = 'icon-shared'
             simpleLogoutUrl = False
-            self.logger.info(f'We are on Nextcloud 27 and are not using the simple logout url')
+            self.logger.info('We are on Nextcloud 27 and are not using the simple logout url')
         else:
             # This will select the first available sharing button
             sharedClass = 'files-list__row-action-sharing-status'
             simpleLogoutUrl = True
-            self.logger.info(f'We are on Nextcloud 28 and are therefore using the simple logout url')
+            self.logger.info('We are on Nextcloud 28 and are therefore using the simple logout url')
 
         for fullnode in g_drv.fullnodes:
             with self.subTest(mynode=fullnode):
@@ -145,9 +139,9 @@ class TestAppsSelenium(unittest.TestCase):
                 self.logger.info('Waiting for app menu')
                 try:
                     wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'app-menu')))
-                    self.logger.info(f'App menu is ready!')
+                    self.logger.info('App menu is ready!')
                 except TimeoutException:
-                    self.logger.warning(f'Loading of app menu took too much time!')
+                    self.logger.warning('Loading of app menu took too much time!')
                     success = False
 
                 defaultApps = self.expectedResults[g_drv.target]['defaultapps']
@@ -163,7 +157,7 @@ class TestAppsSelenium(unittest.TestCase):
                 except Exception as error:
                     self.logger.warning(f'No app menu entries found: {error}')
 
-                self.logger.info(f'And done...')
+                self.logger.info('And done...')
 
 if __name__ == '__main__':
     unittest.main(testRunner=xmlrunner.XMLTestRunner(output='test-reports'))

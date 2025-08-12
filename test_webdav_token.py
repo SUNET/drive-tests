@@ -3,14 +3,8 @@ Author: Richard Freitag <freitag@sunet.se>
 """
 
 import unittest
-import requests
-from requests.auth import HTTPBasicAuth
-import json
-import os
 from webdav3.client import Client
 import logging
-import threading
-import time
 from datetime import datetime
 
 import sunetdrive
@@ -30,15 +24,15 @@ logging.basicConfig(format = '%(asctime)s - %(module)s.%(funcName)s - %(levelnam
 class TestWebDAV(unittest.TestCase):
     def test_logger(self):
         global logger
-        logger.info(f'logger.info test_logger')
+        logger.info('logger.info test_logger')
         pass
 
     def test_webdav_list(self):
         global logger
-        logger.info(f'test_webdav_list')
+        logger.info('test_webdav_list')
         drv = sunetdrive.TestTarget()
 
-        logger.info(f'WebDAVList')
+        logger.info('WebDAVList')
         drv = sunetdrive.TestTarget()
 
         nodeuser = 'tene3253@su.se'

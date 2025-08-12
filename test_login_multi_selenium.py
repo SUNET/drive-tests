@@ -18,9 +18,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
 from selenium.common.exceptions import TimeoutException
-from selenium.webdriver.common.action_chains import ActionChains
 import os
-import time
 import logging
 import yaml
 
@@ -53,7 +51,7 @@ class TestLoginMultiSelenium(unittest.TestCase):
         self.logger.info(f'Cookies deleted: {cookies}')
 
     def test_logger(self):
-        self.logger.info(f'self.logger.info test_logger')
+        self.logger.info('self.logger.info test_logger')
         self.logger.info(f'Expecting Nextcloud version: {g_version}')
         pass
 
@@ -88,7 +86,7 @@ class TestLoginMultiSelenium(unittest.TestCase):
                     options = Options()
                     driver = webdriver.Chrome(options=options)
                 except:
-                    self.logger.error(f'Error initializing Chrome driver')
+                    self.logger.error('Error initializing Chrome driver')
                     self.assertTrue(False)
                 wait = WebDriverWait(driver, delay)
                 driver.set_window_size(1920, 1152)
@@ -138,24 +136,24 @@ class TestLoginMultiSelenium(unittest.TestCase):
                 # # self.assertEqual(dashboardUrl, currentUrl)                
 
                 try:
-                    self.logger.info(f'Waiting for files app button')
+                    self.logger.info('Waiting for files app button')
                     wait.until(EC.presence_of_element_located((By.XPATH, '//a[@href="'+ g_drv.indexsuffix + '/apps/files/' +'"]')))
                     files = driver.find_element(By.XPATH, '//a[@href="'+ g_drv.indexsuffix + '/apps/files/' +'"]')
                     files.click()
                 except:
-                    self.logger.warning(f'Files app button not found, do we have to totp again?')
+                    self.logger.warning('Files app button not found, do we have to totp again?')
 
                     totpselect = driver.find_element(By.XPATH, '//a[@href="'+ g_drv.indexsuffix + '/login/challenge/totp' +'"]')
-                    self.logger.warning(f'Found TOTP selection dialogue')
+                    self.logger.warning('Found TOTP selection dialogue')
                     totpselect.click()
                     totp = pyotp.TOTP(nodetotpsecret)
                     wait.until(EC.presence_of_element_located((By.XPATH, '//*[@id="body-login"]/div[1]/div/main/div/form/input'))).send_keys(totp.now() + Keys.ENTER)
 
                 try:
                     wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'app-menu-entry')))
-                    self.logger.info(f'All files visible!')
+                    self.logger.info('All files visible!')
                 except TimeoutException:
-                    self.logger.warning(f'Loading of all files took too much time!')
+                    self.logger.warning('Loading of all files took too much time!')
                     screenshot = pyautogui.screenshot()
                     screenshot.save("screenshots/" + fullnode + "test_node_multi_login" + g_filename + ".png")
                     self.assertTrue(False)
@@ -163,22 +161,22 @@ class TestLoginMultiSelenium(unittest.TestCase):
                 wait.until(EC.presence_of_element_located((By.XPATH, '//*[@title="Show sharing options"]')))
                 sharefolder = driver.find_element(by=By.XPATH, value='//*[@title="Show sharing options"]')
                 sharefolder.click()
-                self.logger.info(f'Clicked on share folder')
+                self.logger.info('Clicked on share folder')
 
                 try:
                     wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'sharing-entry__title')))
-                    self.logger.info(f'Share link enabled!')
+                    self.logger.info('Share link enabled!')
                 except TimeoutException:
-                    self.logger.info(f'No share link present!')
+                    self.logger.info('No share link present!')
 
                 wait.until(EC.presence_of_element_located((By.ID, 'user-menu'))).click()
                 logoutLink = driver.find_element(By.PARTIAL_LINK_TEXT, 'Log out')
                 logoutLink.click()
-                self.logger.info(f'Logout complete')
+                self.logger.info('Logout complete')
 
                 self.logger.info(f'{driver.current_url}')
 
-                self.logger.info(f'TOTP Login done, testing normal login now')
+                self.logger.info('TOTP Login done, testing normal login now')
                 self.deleteCookies(driver)
                 time.sleep(1)
 
@@ -217,14 +215,14 @@ class TestLoginMultiSelenium(unittest.TestCase):
 
                 try:
                     wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'sharing-entry__title')))
-                    self.logger.info(f'Share link enabled!')
+                    self.logger.info('Share link enabled!')
                 except TimeoutException:
-                    self.logger.info(f'No share link present!')
+                    self.logger.info('No share link present!')
 
                 wait.until(EC.presence_of_element_located((By.ID, 'user-menu'))).click()
                 logoutLink = driver.find_element(By.PARTIAL_LINK_TEXT, 'Log out')
                 logoutLink.click()
-                self.logger.info(f'Logout complete')
+                self.logger.info('Logout complete')
 
                 currentUrl = driver.current_url
                 self.logger.info(driver.current_url)

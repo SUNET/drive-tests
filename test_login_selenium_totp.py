@@ -7,21 +7,16 @@ import xmlrunner
 import unittest
 import sunetnextcloud
 from webdav3.client import Client
-import pyotp
 import pyautogui
 
-import time
 
 from selenium import webdriver
-from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
 from selenium.common.exceptions import TimeoutException
-from selenium.webdriver.common.action_chains import ActionChains
 import os
-import time
 import yaml
 import logging
 
@@ -87,7 +82,7 @@ class TestLoginSeleniumTotp(unittest.TestCase):
                     options = Options()
                     driver = webdriver.Chrome(options=options)
                 except:
-                    self.logger.error(f'Error initializing Chrome driver')
+                    self.logger.error('Error initializing Chrome driver')
                     self.assertTrue(False)
                 driver.set_window_size(1920, 1152)
 
@@ -102,23 +97,23 @@ class TestLoginSeleniumTotp(unittest.TestCase):
 
                 try:
                     wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'app-menu-entry')))
-                    self.logger.info(f'All files visible!')
+                    self.logger.info('All files visible!')
                 except TimeoutException:
-                    self.logger.info(f'Loading of all files took too much time!')
+                    self.logger.info('Loading of all files took too much time!')
 
                 try:
                     wait.until(EC.element_to_be_clickable((By.CLASS_NAME, sharedClass)))
                     sharefolder = driver.find_element(by=By.CLASS_NAME, value=sharedClass)
                     sharefolder.click()
-                    self.logger.info(f'Clicked on share folder')
+                    self.logger.info('Clicked on share folder')
                 except:
-                    self.logger.info(f'icon-shared not found')
+                    self.logger.info('icon-shared not found')
 
                 try:
                     wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'sharing-entry__title')))
-                    self.logger.info(f'Share link enabled!')
+                    self.logger.info('Share link enabled!')
                 except TimeoutException:
-                    self.logger.info(f'No share link present!')
+                    self.logger.info('No share link present!')
 
                 logoutComplete = False
                 logoutCount = 0
@@ -127,7 +122,7 @@ class TestLoginSeleniumTotp(unittest.TestCase):
                         wait.until(EC.element_to_be_clickable((By.ID, 'user-menu'))).click()
                         logoutLink = driver.find_element(By.PARTIAL_LINK_TEXT, 'Log out')
                         logoutLink.click()
-                        self.logger.info(f'Logout complete')
+                        self.logger.info('Logout complete')
                         logoutComplete = True
                         break
                     except Exception as error:
@@ -154,7 +149,7 @@ class TestLoginSeleniumTotp(unittest.TestCase):
                 driver.implicitly_wait(10) # seconds before quitting
                 self.logger.info(f'{driver.current_url}')
                 driver.close()
-                self.logger.info(f'And done...')
+                self.logger.info('And done...')
 
 if __name__ == '__main__':
     # unittest.main()

@@ -5,11 +5,8 @@ Author: Richard Freitag <freitag@sunet.se>
 import unittest
 import HtmlTestRunner
 import requests
-from requests.auth import HTTPBasicAuth
 import json
-import os
 import time
-import yaml
 import logging
 import threading
 import xmlrunner

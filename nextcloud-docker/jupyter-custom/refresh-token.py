@@ -81,7 +81,7 @@ class RefreshHandler(HubAuthenticated, RequestHandler):
 class PingHandler(RequestHandler):
  
     def get(self):
-        my_debug(f"DEBUG: In ping get")
+        my_debug("DEBUG: In ping get")
         self.set_header('content-type', 'application/json')
         self.write(json.dumps({'ping': 1}))
  

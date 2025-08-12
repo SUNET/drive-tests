@@ -18,7 +18,6 @@ from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.chrome.options import Options
 import os
-import time
 import logging
 
 g_testtarget = os.environ.get('NextcloudTestTarget')
@@ -57,7 +56,7 @@ class TestSearchSelenium(unittest.TestCase):
     logging.basicConfig(format = '%(asctime)s - %(module)s.%(funcName)s - %(levelname)s: %(message)s',
                     datefmt = '%Y-%m-%d %H:%M:%S', level = logging.INFO)
     
-    g_logger.info(f'Logger initialized')
+    g_logger.info('Logger initialized')
 
     g_drv = sunetnextcloud.TestTarget(g_testtarget)
     try:
@@ -65,14 +64,14 @@ class TestSearchSelenium(unittest.TestCase):
         # options.add_argument("--headless")
         g_driver = webdriver.Chrome(options=options)
     except:
-        g_logger.error(f'Error initializing Chrome driver')
+        g_logger.error('Error initializing Chrome driver')
     g_wait = WebDriverWait(g_driver, delay)
 
     for fullnode in g_drv.fullnodes:
         g_loggedInNodes[fullnode] = False
 
     def test_logger(self):
-        g_logger.info(f'g_logger.info test_logger')
+        g_logger.info('g_logger.info test_logger')
         pass
 
     def test_folder_search(self):
@@ -109,9 +108,9 @@ class TestSearchSelenium(unittest.TestCase):
 
                 try:
                     g_wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'app-menu')))
-                    g_logger.info(f'App menu is ready!')
+                    g_logger.info('App menu is ready!')
                 except TimeoutException:
-                    g_logger.info(f'Loading of app menu took too much time!')
+                    g_logger.info('Loading of app menu took too much time!')
 
                 # Check URLs after login
                 dashboardUrl = g_drv.get_dashboard_url(fullnode)
@@ -123,15 +122,15 @@ class TestSearchSelenium(unittest.TestCase):
 
                 try:
                     g_wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'app-menu-entry')))
-                    g_logger.info(f'All files visible!')
+                    g_logger.info('All files visible!')
                 except TimeoutException:
-                    g_logger.info(f'Loading of all files took too much time!')
+                    g_logger.info('Loading of all files took too much time!')
 
                 for testfolder in g_testfolders:
                     g_logger.info(f'Testing {testfolder}')
 
                     try:
-                        g_logger.info(f'Click on search button')
+                        g_logger.info('Click on search button')
                         g_wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'unified-search__trigger')))
                         searchbutton = g_driver.find_element(By.CLASS_NAME, 'unified-search__trigger')
                         searchbutton.click()
@@ -149,7 +148,7 @@ class TestSearchSelenium(unittest.TestCase):
                         self.assertEqual(filter.text, 'matches "{testfolder}"')
 
                     except:
-                        g_logger.warning(f'Search resulted in an error')
+                        g_logger.warning('Search resulted in an error')
 
 if __name__ == '__main__':
     unittest.main(testRunner=xmlrunner.XMLTestRunner(output='test-reports'))

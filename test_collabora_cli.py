@@ -8,14 +8,9 @@ import xmlrunner
 import requests
 import json
 import logging
-import hashlib
-import xmltodict
 import yaml
-import threading
-import time
 
 import sunetnextcloud
-import os
 
 g_requestTimeout=10
 expectedResultsFile = 'expected.yaml'
@@ -57,7 +52,7 @@ class TestCollabora(unittest.TestCase):
             self.assertEqual(j['productVersion'], expectedResults[drv.target]['collabora']['capabilities']['productVersion'])
             self.assertEqual(j['productVersionHash'], expectedResults[drv.target]['collabora']['capabilities']['productVersionHash'])
 
-        logger.info(f'Collabora capabilities tested')
+        logger.info('Collabora capabilities tested')
 
 if __name__ == '__main__':
     if drv.testrunner == 'xml':

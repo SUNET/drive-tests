@@ -1,6 +1,5 @@
 import argparse
 import sunetnextcloud
-import os
 import pyotp
 
 parser = argparse.ArgumentParser(description="Print TOTP code for selenium mfa user",

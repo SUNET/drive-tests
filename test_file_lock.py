@@ -6,7 +6,6 @@ import unittest
 import requests
 from datetime import datetime
 from requests.auth import HTTPBasicAuth
-import json
 import os
 from webdav3.client import Client
 import logging
@@ -37,7 +36,7 @@ class TestFileLock(unittest.TestCase):
                     datefmt = '%Y-%m-%d %H:%M:%S', level = logging.INFO)
 
     def test_logger(self):
-        self.logger.warning(f'self.logger.info test_logger')
+        self.logger.warning('self.logger.info test_logger')
         pass
 
     def test_lock_unlock_curl_webdav(self):

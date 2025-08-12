@@ -6,7 +6,6 @@ import xmlrunner
 import unittest
 # import sunetnextcloud
 import logging
-from webdav3.client import Client
 
 import time
 
@@ -17,9 +16,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
 from selenium.common.exceptions import TimeoutException
-from selenium.webdriver.common.action_chains import ActionChains
 import os
-import time
 
 # Set usernames and passwords in environment variables
 g_rds_dev_url               = os.environ.get('RDS_DEV_URL')
@@ -37,7 +34,7 @@ class TestRdsDevConnect(unittest.TestCase):
                     datefmt = '%Y-%m-%d %H:%M:%S', level = logging.INFO)
 
     def test_logger(self):
-        self.logger.info(f'self.logger.info test_logger')
+        self.logger.info('self.logger.info test_logger')
         pass
 
     def test_rds_dev_authorization(self):
@@ -74,10 +71,10 @@ class TestRdsDevConnect(unittest.TestCase):
 
         try:
             wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'app-menu')))
-            self.logger.info(f'Page is ready!')
+            self.logger.info('Page is ready!')
             proceed = True
         except TimeoutException:
-            self.logger.error(f'Loading app-menu took too much time!')
+            self.logger.error('Loading app-menu took too much time!')
             proceed = False
 
         self.assertTrue(proceed)
@@ -87,16 +84,16 @@ class TestRdsDevConnect(unittest.TestCase):
             rdsAppButton = driver.find_element(by=By.XPATH, value='//a[@href="'+ '/apps/rds/' +'"]')
             rdsAppButton.click()
         except TimeoutException:
-            self.logger.error(f'Loading RDS took too much time!')
+            self.logger.error('Loading RDS took too much time!')
             proceed = False
         self.assertTrue(proceed)
         
         try:
-            self.logger.info(f'Waiting for rds frame')
+            self.logger.info('Waiting for rds frame')
             wait.until(EC.frame_to_be_available_and_switch_to_it((By.ID, "rds-editor")))
             self.logger.info('RDS iframe loaded')
         except:
-            self.logger.error(f'RDS iframe not loaded')
+            self.logger.error('RDS iframe not loaded')
             proceed = False
         self.assertTrue(proceed)
 
@@ -106,17 +103,17 @@ class TestRdsDevConnect(unittest.TestCase):
             driver.find_element(by=By.XPATH, value='/html/body/div/div/div/main/div/div/div/div[1]/div/button/span/span')
             needsToConnect = True
         except:
-            self.logger.info(f'Sciebo is already connected')
+            self.logger.info('Sciebo is already connected')
             needsToConnect = False
             pass
 
         if needsToConnect:
             try:
-                self.logger.info(f'Try to find getting started button...')
+                self.logger.info('Try to find getting started button...')
                 WebDriverWait(driver, 20).until(EC.element_to_be_clickable((By.XPATH, '/html/body/div/div/div/main/div/div/div/div[1]/div/button/span/span'))).click()            
-                self.logger.info(f'Getting started button visible!')
+                self.logger.info('Getting started button visible!')
             except TimeoutException:
-                self.logger.info(f'Unable to find getting started button!')
+                self.logger.info('Unable to find getting started button!')
 
             # Loop through until we find a new window handle
             for window_handle in driver.window_handles:
@@ -124,20 +121,20 @@ class TestRdsDevConnect(unittest.TestCase):
                     driver.switch_to.window(window_handle)
                     break        
 
-            self.logger.info(f'Switched to authentication window')
+            self.logger.info('Switched to authentication window')
             wait.until(EC.presence_of_element_located((By.XPATH, '//*[@id="login-form"]/input'))).click()
             wait.until(EC.presence_of_element_located((By.XPATH, '//*[@id="submit-wrapper"]/input'))).click()
-            self.logger.info(f'Access granted')
+            self.logger.info('Access granted')
 
-            self.logger.info(f'Switch back to original window')
+            self.logger.info('Switch back to original window')
             driver.switch_to.window(original_window)
 
             try:
-                self.logger.info(f'Waiting for rds frame')
+                self.logger.info('Waiting for rds frame')
                 wait.until(EC.frame_to_be_available_and_switch_to_it((By.ID, "rds-editor")))
-                self.logger.info(f'RDS iframe loaded')
+                self.logger.info('RDS iframe loaded')
             except:
-                self.logger.error(f'RDS iframe not loaded')
+                self.logger.error('RDS iframe not loaded')
                 proceed = False
             self.assertTrue(proceed)
 
@@ -150,12 +147,12 @@ class TestRdsDevConnect(unittest.TestCase):
         try:
             print(driver.find_element(by=By.XPATH, value=f'//*[@id="inspire"]/div/main/div/div/main/div/div/div[2]/div[{osfButtonIndex}]/div[2]/div/div[2]/div/button/span/span[contains(text(),\'Connect\')]'))
         except:
-            self.logger.info(f'Already connected to OSF')
+            self.logger.info('Already connected to OSF')
 
         try:
             print(driver.find_element(by=By.XPATH, value=f'//*[@id="inspire"]/div/main/div/div/main/div/div/div[2]/div[{osfButtonIndex}]/div[2]/div/div[2]/div/button/span/span[contains(text(),\'Disconnect\')]'))
         except:
-            self.logger.info(f'Connection to OSF needed')
+            self.logger.info('Connection to OSF needed')
             osfConnected=False
 
         # Check if we need a Zenodo connection
@@ -190,12 +187,12 @@ class TestRdsDevConnect(unittest.TestCase):
 
             # Allow connection
             WebDriverWait(driver, 20).until(EC.element_to_be_clickable((By.XPATH, '//*[@id="allow"]/span'))).click()
-            print(f'Done connecting to OSF')
+            print('Done connecting to OSF')
 
-            self.logger.info(f'Switch back to main window and make sure that the RDS frame is active')
+            self.logger.info('Switch back to main window and make sure that the RDS frame is active')
             driver.switch_to.window(driver.window_handles[-1])
             wait.until(EC.frame_to_be_available_and_switch_to_it((By.ID, "rds-editor")))
-            self.logger.info(f'RDS iframe active')
+            self.logger.info('RDS iframe active')
             time.sleep(3)
 
         # if not zenodoConnected:
@@ -215,7 +212,7 @@ class TestRdsDevConnect(unittest.TestCase):
         #     # Allow connection
         #     WebDriverWait(driver, 20).until(EC.element_to_be_clickable((By.CLASS_NAME, 'btn-success'))).click()
 
-        self.logger.info(f'Done...')
+        self.logger.info('Done...')
         self.assertTrue(proceed)
         time.sleep(3)
 

@@ -5,7 +5,6 @@ Selenium tests to log on to the Sciebo test node, performing various operations 
 import xmlrunner
 import unittest
 import sunetnextcloud
-from webdav3.client import Client
 
 import time
 
@@ -16,9 +15,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
 from selenium.common.exceptions import TimeoutException
-from selenium.webdriver.common.action_chains import ActionChains
 import os
-import time
 
 # 'prod' for production environment, 'test' for test environment
 g_testtarget = os.environ.get('NextcloudTestTarget')
@@ -181,7 +178,7 @@ class TestRdsNextcloudLocal(unittest.TestCase):
 
             # Allow connection
             WebDriverWait(driver, 20).until(EC.element_to_be_clickable((By.XPATH, '//*[@id="allow"]/span'))).click()
-            print(f'Done connecting to OSF')
+            print('Done connecting to OSF')
 
             print("Switch back to main window and make sure that the RDS frame is active")
             driver.switch_to.window(driver.window_handles[-1])

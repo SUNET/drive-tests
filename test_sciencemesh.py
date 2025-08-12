@@ -6,7 +6,6 @@ Author: Richard Freitag <freitag@sunet.se>
 import unittest
 import requests
 import json
-import yaml
 
 g_cs3url        = 'https://iop.sciencemesh.uni-muenster.de/iop/mentix/cs3'
 g_sitesurl      = 'https://iop.sciencemesh.uni-muenster.de/iop/mentix/sites'
@@ -55,7 +54,7 @@ class TestScienceMesh(unittest.TestCase):
                 #     print("\t\t\t\t OCM ENDPOINT FOUND")
 
 
-                if not (service.get('additional_endpoints') is None):
+                if service.get('additional_endpoints') is not None:
                     for additionalEndpoint in service["additional_endpoints"]:
                         # print("\t\t", additionalEndpoint["type"]["name"])
                         if (additionalEndpoint["type"]["name"] == "METRICS"):

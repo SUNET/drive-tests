@@ -82,7 +82,7 @@ class NextcloudOAuthenticator(GenericOAuthenticator):
           print(f'Successfully refreshed token for {user.name}')
           print(f'auth_state for {user.name}: {auth_state}')
         return {'name': user.name, 'auth_state': auth_state}
-      except Exception as e:
+      except Exception:
         if debug:
           print(f'Failed to refresh token for {user}')
         return False

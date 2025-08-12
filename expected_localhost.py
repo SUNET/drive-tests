@@ -6,7 +6,6 @@ import yaml
 import sunetnextcloud
 import requests
 import logging
-import time
 import sys
 import json
 

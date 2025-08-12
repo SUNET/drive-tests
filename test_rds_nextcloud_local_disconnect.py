@@ -5,7 +5,6 @@ Selenium tests to log on to the Sciebo test node, performing various operations 
 import xmlrunner
 import unittest
 import sunetnextcloud
-from webdav3.client import Client
 
 import time
 
@@ -16,9 +15,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
 from selenium.common.exceptions import TimeoutException
-from selenium.webdriver.common.action_chains import ActionChains
 import os
-import time
 
 # 'prod' for production environment, 'test' for test environment
 g_testtarget = os.environ.get('NextcloudTestTarget')
