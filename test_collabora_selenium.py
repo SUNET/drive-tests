@@ -502,8 +502,9 @@ class TestCollaboraSelenium(unittest.TestCase):
                         try:
                             self.logger.info('Waiting for collabora frame')
                             wait.until(EC.frame_to_be_available_and_switch_to_it((By.CSS_SELECTOR, "iframe[id^='collaboraframe']")))
-                            self.logger.info('Collabora loaded... Let\'s type some text')
-                            time.sleep(5)
+                            self.logger.info('Collabora loaded. Wait for the save button...')
+                            wait.until(EC.presence_of_element_located((By.ID, 'save-button')))
+                            self.logger.info('Save button found. Let\'s type some text')
                             ActionChains(self.driver).send_keys(f'Lorem Ipsum! {Keys.ENTER} {g_filename}').perform()
                             time.sleep(3)
                         except Exception as error:
@@ -674,8 +675,9 @@ class TestCollaboraSelenium(unittest.TestCase):
                 try:
                     self.logger.info('Waiting for collabora frame')
                     wait.until(EC.frame_to_be_available_and_switch_to_it((By.CSS_SELECTOR, "iframe[id^='collaboraframe']")))
-                    self.logger.info('Collabora loaded... Let\'s type some text')
-                    time.sleep(5)
+                    self.logger.info('Collabora loaded. Wait for the save button...')
+                    wait.until(EC.presence_of_element_located((By.ID, 'save-button')))
+                    self.logger.info('Save button found. Let\'s type some text')
                     ActionChains(self.driver).key_down(Keys.CONTROL).send_keys(Keys.UP).key_up(Keys.CONTROL).perform()
                     ActionChains(self.driver).key_down(Keys.CONTROL).send_keys(Keys.LEFT).key_up(Keys.CONTROL).perform()
                     ActionChains(self.driver).send_keys(f'{g_filename}{Keys.ENTER}{Keys.SPACE}1{Keys.ENTER}{Keys.SPACE}2{Keys.ENTER}{Keys.SPACE}3{Keys.ENTER}{Keys.SPACE}4{Keys.ENTER}{Keys.SPACE}').perform()
@@ -845,8 +847,9 @@ class TestCollaboraSelenium(unittest.TestCase):
                 try:
                     self.logger.info('Waiting for collabora frame')
                     wait.until(EC.frame_to_be_available_and_switch_to_it((By.CSS_SELECTOR, "iframe[id^='collaboraframe']")))
-                    self.logger.info('Collabora loaded... Let\'s type some text')
-                    time.sleep(5)
+                    self.logger.info('Collabora loaded. Wait for the save button...')
+                    wait.until(EC.presence_of_element_located((By.ID, 'save-button')))
+                    self.logger.info('Save button found. Let\'s type some text')
                     ActionChains(self.driver).send_keys(f'Lorem ipsum! {Keys.ENTER}{g_filename}').perform()
                     time.sleep(1)
                 except Exception as error:
