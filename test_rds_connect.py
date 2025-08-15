@@ -85,58 +85,71 @@ class TestRdsSelenium(unittest.TestCase):
                 # currentUrl = driver.current_url
                 # self.assertEqual(dashboardUrl, currentUrl)                
 
-                rds = driver.find_element(By.XPATH, '//a[@href="'+ '/index.php/apps/rds/' +'"]')
-                rds.click()
+                bridgit = driver.find_element(By.XPATH, '//a[@href="'+ '/apps/rdsng/' +'"]')
+                bridgit.click()
 
                 try:
-                    self.logger.info('Waiting for RDS iframe')
-                    wait.until(EC.frame_to_be_available_and_switch_to_it((By.ID, 'rds-editor')))
-                    self.logger.info('RDS iframe loaded')
+                    self.logger.info('Waiting for BridgIT iframe')
+                    # wait.until(EC.frame_to_be_available_and_switch_to_it((By.ID, 'rds-editor')))
+                    wait.until(EC.frame_to_be_available_and_switch_to_it((By.ID, 'app-frame')))
+                    self.logger.info('BridgIT iframe loaded')
                     proceed = True
                 except Exception as error:
-                    self.logger.error(f'RDS iframe not loaded: {error}')
+                    self.logger.error(f'BridgIT iframe not loaded: {error}')
                     proceed = False
                 self.assertTrue(proceed)
 
                 time.sleep(3)
                 # Getting started button
                 try:
-                    driver.find_element(by=By.XPATH, value='/html/body/div/div/div/main/div/div/div/div[1]/div/button/span/span')
-                    needsToConnect = True
-                except Exception as error:
-                    self.logger.info(f'RDS is already connected: {error}')
+                    needsToConnect = False
+                    span_element = driver.find_element(By.XPATH, '//span[@class="p-button-label"]')
+                    if span_element.text == 'Authorize bridgit':
+                        needsToConnect = True
+                    self.logger.info(f'Bridgit needs to connect!')
+                except Exception:
+                    self.logger.info('BridgIT is already connected:')
                     needsToConnect = False
                     pass
 
                 if needsToConnect:
                     try:
-                        self.logger.info('Try to find getting started button...')
-                        WebDriverWait(driver, 20).until(EC.element_to_be_clickable((By.XPATH, '/html/body/div/div/div/main/div/div/div/div[1]/div/button/span/span'))).click()            
-                        self.logger.info('Getting started button visible!')
+                        self.logger.info('Try to find authorize button...')
+                        WebDriverWait(driver, 20).until(EC.element_to_be_clickable((By.XPATH, '//span[@class="p-button-label"]'))).click()
+                        self.logger.info('Authorize button clicked!')
                     except TimeoutException:
-                        self.logger.info('Unable to find getting started button!')
+                        self.logger.info('Unable to find authorize button!')
 
                     # Loop through until we find a new window handle
+                    self.logger.info(f'Window handles')
+                    self.logger.info(f'Original handle: {original_window}')
+                    self.logger.info(f'All handles: {driver.window_handles}')                    
+                    driver.switch_to.window(original_window)
+
                     for window_handle in driver.window_handles:
                         if window_handle != original_window:
                             driver.switch_to.window(window_handle)
                             break        
 
-                    self.logger.info('Switched to authentication window')
+                    self.logger.info('Switch back to default (iframe) content')
+                    driver.switch_to.default_content()
+
                     wait.until(EC.presence_of_element_located((By.XPATH, '//*[@id="login-form"]/input'))).click()
+                    self.logger.info('Input clicked')
                     wait.until(EC.presence_of_element_located((By.XPATH, '//*[@id="submit-wrapper"]/input'))).click()
+                    # /html/body/div[2]/div/main/div/form[1]/input
                     self.logger.info('Access granted')
 
                     self.logger.info('Switch back to original window')
                     driver.switch_to.window(original_window)
 
                     try:
-                        self.logger.info('Waiting for rds frame')
-                        wait.until(EC.frame_to_be_available_and_switch_to_it((By.ID, "rds-editor")))
-                        self.logger.info('RDS iframe loaded')
+                        self.logger.info('Waiting for BridgIT frame')
+                        wait.until(EC.frame_to_be_available_and_switch_to_it((By.ID, "app-frame")))
+                        self.logger.info('BridgIT iframe loaded')
                         proceed = True
                     except Exception as error:
-                        self.logger.error(f'RDS iframe not loaded: {error}')
+                        self.logger.error(f'BridgIT iframe not loaded: {error}')
                         proceed = False
                     self.assertTrue(proceed)
 
