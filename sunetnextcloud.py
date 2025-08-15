@@ -121,7 +121,7 @@ class TestTarget(object):
             logger.warning('Test target initialized by default value: test')
             testtarget = 'test'
 
-        if testtarget not in ['prod','test','localhost']:
+        if testtarget not in ['prod','test','localhost','custom']:
             logger.error(f'Unsupported test target: {target}, exiting...')
             sys.exit()
 
@@ -131,11 +131,13 @@ class TestTarget(object):
             self.targetprefix = ""
         elif testtarget == "localhost":
             self.target = "localhost"
+        elif testtarget == "custom":
+            self.target = "custom"
         else:
             self.target = "test"
             self.targetprefix = "." + self.testprefix
 
-        if testcustomers in self.allnodes:
+        if testcustomers in self.allnodes or self.target == "custom":
             self.singlenodetesting = True
             self.allnodes = [testcustomers]
             self.fullnodes = self.allnodes
