@@ -32,6 +32,8 @@ logging.basicConfig(format = '%(asctime)s - %(module)s.%(funcName)s - %(levelnam
 envtarget = os.environ.get('NextcloudTestTarget')
 if envtarget == 'localhost':
     g_expectedFile = 'expected_localhost.yaml'
+elif envtarget == 'custom':
+    g_expectedFile = 'expected_custom.yaml'
 else:
     g_expectedFile = 'expected.yaml'
 
