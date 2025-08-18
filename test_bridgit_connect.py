@@ -17,7 +17,7 @@ from selenium.common.exceptions import TimeoutException
 import time
 import logging
 
-class TestRdsSelenium(unittest.TestCase):
+class TestBridgitSelenium(unittest.TestCase):
     logger = logging.getLogger(__name__)
     logging.basicConfig(format = '%(asctime)s - %(module)s.%(funcName)s - %(levelname)s: %(message)s',
                     datefmt = '%Y-%m-%d %H:%M:%S', level = logging.INFO)
@@ -33,7 +33,7 @@ class TestRdsSelenium(unittest.TestCase):
         self.logger.info('self.logger.info test_logger')
         pass
     
-    def test_rds_connect(self):
+    def test_Bridgit_connect(self):
         delay = 30 # seconds
         drv = sunetnextcloud.TestTarget()
         for fullnode in drv.fullnodes:
@@ -90,7 +90,6 @@ class TestRdsSelenium(unittest.TestCase):
 
                 try:
                     self.logger.info('Waiting for BridgIT iframe')
-                    # wait.until(EC.frame_to_be_available_and_switch_to_it((By.ID, 'rds-editor')))
                     wait.until(EC.frame_to_be_available_and_switch_to_it((By.ID, 'app-frame')))
                     self.logger.info('BridgIT iframe loaded')
                     proceed = True
