@@ -9,7 +9,7 @@ os.chdir(os.path.dirname(os.path.abspath(__file__)))
 parser = argparse.ArgumentParser(description="Print TOTP code for selenium mfa user",
                                  formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 parser.add_argument('customer', help="Customer node")
-parser.add_argument('environment', choices = ['test', 'prod'], help="Environment")
+parser.add_argument('environment', choices = ['test', 'prod','custom'], help="Environment")
 args = parser.parse_args()
 config = vars(args)
 
