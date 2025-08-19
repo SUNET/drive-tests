@@ -51,6 +51,63 @@ def get_bridgit_settings_button(driver):
         return None
     return None
 
+def get_bridgit_new_project_button(driver):
+    try:
+        buttons = driver.find_elements(By.CLASS_NAME, 'p-button')
+        for button in buttons:
+            if button.get_attribute('aria-label') == 'New project':
+                return button
+    except Exception as error:
+        g_logger.error(f'New project button: {error}')
+        return None
+    return None
+
+def get_bridgit_new_project_next_button(driver):
+    try:
+        buttons = driver.find_elements(By.CLASS_NAME, 'p-button')
+        for button in buttons:
+            if button.get_attribute('aria-label') == 'Next':
+                return button
+    except Exception as error:
+        g_logger.error(f'New project next button: {error}')
+        return None
+    return None
+
+def get_bridgit_upload_project_button(driver):
+    try:
+        buttons = driver.find_elements(By.CLASS_NAME, 'p-button')
+        for button in buttons:
+            if button.get_attribute('aria-label') == 'Upload project':
+                return button
+    except Exception as error:
+        g_logger.error(f'Upload project button: {error}')
+        return None
+    return None
+
+def get_bridgit_osf_upload_button(driver):
+    try:
+        buttons = driver.find_elements(By.CLASS_NAME, 'p-button-label')
+        for button in buttons:
+            parent = button.find_element(By.XPATH, '../../../..')   # Identify button by parent name
+            if button.text == 'Upload' and 'OSF' in parent.text:
+                return button                
+    except Exception as error:
+        g_logger.error(f'Upload project button: {error}')
+        return None
+    return None
+
+def get_bridgit_zenodo_upload_button(driver):
+    try:
+        buttons = driver.find_elements(By.CLASS_NAME, 'p-button-label')
+        for button in buttons:
+            parent = button.find_element(By.XPATH, '../../../..')   # Identify button by parent name
+            if button.text == 'Upload' and 'Zenodo' in parent.text:
+                return button                
+    except Exception as error:
+        g_logger.error(f'Upload project button: {error}')
+        return None
+    return None
+
 def get_connection_status(driver, connections):
     buttons = driver.find_elements(By.CLASS_NAME, 'p-button')
     for button in buttons:
@@ -406,6 +463,157 @@ class TestBridgITSelenium(unittest.TestCase):
         g_logger.info(f'TestID: {self._testMethodName}')
         g_delay = 30 # seconds
         g_drv = sunetnextcloud.TestTarget()
+
+        projectName = 'OSF Project'
+        folderName = 'OSF_TestData'
+
+        for bridgitnode in g_bridgitnodes:
+            with self.subTest(mynode=bridgitnode):
+                # create_test_data(bridgitnode)
+
+                proceed = True
+                loginurl = g_drv.get_node_login_url(bridgitnode)
+                g_logger.info(f"Login url: {loginurl}")
+                nodeuser = g_drv.get_seleniumuser(bridgitnode)
+                nodepwd = g_drv.get_seleniumuserpassword(bridgitnode)
+
+                try:
+                    options = Options()
+                    driver = webdriver.Chrome(options=options)
+                except Exception as error:
+                    g_logger.error(f'Error initializing Chrome driver: {error}')
+                    self.assertTrue(False)
+                # driver2 = webdriver.Firefox()
+
+                self.deleteCookies(driver)
+                driver.maximize_window()        
+                driver.get(loginurl)
+
+                wait = WebDriverWait(driver, g_delay)
+                wait.until(EC.presence_of_element_located((By.ID, 'user'))).send_keys(nodeuser)
+                wait.until(EC.presence_of_element_located((By.ID, 'password'))).send_keys(nodepwd + Keys.ENTER)
+
+                try:
+                    wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'app-menu')))
+                    g_logger.info('App menu is ready!')
+                except TimeoutException:
+                    g_logger.info('Loading of app menu took too much time!')
+
+                try:
+                    bridgitAppButton = driver.find_element(by=By.XPATH, value='//a[@href="'+ '/apps/rdsng/' +'"]')
+                    bridgitAppButton.click()
+                    proceed = True
+                except TimeoutException:
+                    g_logger.error("Loading BridgIT took too much time!")
+                    proceed = False
+
+                try:
+                    g_logger.info("Waiting for bridgit frame")
+                    wait.until(EC.frame_to_be_available_and_switch_to_it((By.ID, "app-frame")))
+                    g_logger.info("BridgIT iframe loaded")
+                except Exception as error:
+                    g_logger.error(f"BridgIT iframe not loaded: {error}")
+                    proceed = False
+                
+                self.assertTrue(proceed)
+
+                time.sleep(3)
+                try:
+                    span_element = driver.find_element(By.XPATH, '//span[@class="p-button-label"]')
+                    if span_element.text == 'Authorize bridgit':
+                        proceed = False
+                    g_logger.warning(f'Bridgit needs to connect!')
+                except Exception:
+                    g_logger.info('BridgIT is already connected')
+                    proceed = True
+                    pass
+
+                self.assertTrue(proceed)
+
+                newProjectButton = get_bridgit_new_project_button(driver)
+                newProjectButton.click()
+                g_logger.info(f'New project button clicked')
+
+
+                wait = WebDriverWait(driver, g_delay)
+                wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'p-inputtext'))).send_keys(projectName + Keys.ENTER)
+                g_logger.info(f'{projectName} created')
+
+                newProjectNextButton = get_bridgit_new_project_next_button(driver)
+                newProjectNextButton.click()
+
+                wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'p-tree-node-label')))
+                                
+                for folderTreeElement in driver.find_elements(By.CLASS_NAME, 'p-tree-node-label'):
+                    if folderTreeElement.text == folderName:
+                        g_logger.info(f'Folder tree element found: {folderTreeElement.text}')
+                        folderTreeElement.click()
+
+                newProjectNextButton.click()
+                newProjectNextButton.click()
+                newProjectNextButton.click()
+                wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'p-fieldset-legend-label')))
+                time.sleep(3)
+
+                # Click on 'Metadata'
+                for legendLabelElement in driver.find_elements(By.CLASS_NAME, 'p-fieldset-legend-label'):
+                    g_logger.info(f'Label found: {legendLabelElement.text}')
+                    if legendLabelElement.text == 'Metadata':
+                        g_logger.info(f'Click on Metadata')
+                        legendLabelElement.click()
+
+                # Click on the chip label for OSF
+                try:
+                    for chipLabelElement in driver.find_elements(By.CLASS_NAME, 'p-chip-label'):
+                        if chipLabelElement.text == 'OSF':
+                            g_logger.info(f'Click on OSF chip label')
+                            chipLabelElement.click()
+                            break
+                except Exception as error:
+                    g_logger.error(f'{error}')
+
+                # Wait for project title input field
+                try:
+                    g_logger.info(f'Write project title')
+                    wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'p-inputtext')))
+                    inputElements = driver.find_elements(By.CLASS_NAME, 'p-inputtext')
+                    for inputElement in inputElements:
+                        if inputElement.find_element(By.XPATH, '../..').text == 'Title':
+                            inputElement.send_keys(projectName)
+                            break                        
+                except Exception as error:
+                    g_logger.error(f'{error}')
+
+                # Type the abstract name
+                wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'p-textarea')))
+                driver.find_element(By.CLASS_NAME, 'p-textarea').send_keys('project abstract')
+
+                # Click on OSF Category
+                driver.find_element(By.CLASS_NAME, 'p-select-label').click()
+                wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'p-select-option-label')))
+                # Go through select option labels and click on data
+                optionSelectElements = driver.find_elements(By.CLASS_NAME, 'p-select-option-label')
+                for optionSelectElement in optionSelectElements:
+                    g_logger.info(f'option: {optionSelectElement.text}')
+                    if optionSelectElement.text == 'data':
+                        optionSelectElement.click()
+                        break
+
+                # Click on upload
+                uploadButton = get_bridgit_upload_project_button(driver)
+                uploadButton.click()
+                time.sleep(2)
+
+                wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'p-dialog-title')))
+                # Click on OSF upload button
+                osfUploadButton = get_bridgit_osf_upload_button(driver)
+                if osfUploadButton is not None:
+                    osfUploadButton.click()
+                else:
+                    g_logger.error(f'OSF Upload button not found! Did you forget to connect to OSF?')
+
+        g_logger.info(f'Done... Long sleep...')
+        time.sleep(900)
 
         for bridgitnode in g_bridgitnodes:
             with self.subTest(mynode=bridgitnode):
