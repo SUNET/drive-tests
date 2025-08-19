@@ -25,10 +25,160 @@ import pyotp
 # 'prod' for production environment, 'test' for test environment
 g_testtarget = os.environ.get('NextcloudTestTarget')
 g_bridgitnodes = ["richir"]
+g_required_connections = ['OSF', 'Zenodo']
+# g_required_connections = ['Zenodo','OSF']
 expectedResultsFile = 'expected.yaml'
 g_drv = sunetnextcloud.TestTarget(g_testtarget)
 g_filename=datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 g_logger={}
+g_delay = 30 # seconds
+
+
+class BridgITConnection():
+  def __init__(self, name, configured, connected):
+    self.name = name
+    self.configured = configured
+    self.connected = connected
+
+def get_bridgit_settings_button(driver):
+    try:
+        buttons = driver.find_elements(By.CLASS_NAME, 'p-button')
+        for button in buttons:
+            if button.get_attribute('title') == 'Settings':
+                return button
+    except Exception as error:
+        g_logger.error(f'Settings button: {error}')
+        return None
+    return None
+
+def get_connection_status(driver, connections):
+    buttons = driver.find_elements(By.CLASS_NAME, 'p-button')
+    for button in buttons:
+        if button.text == 'Connect' or button.text == 'Disconnect':
+            parent = button.find_element(By.XPATH, '../..')
+            configuredConnection = parent.text.split('\n')
+
+            requiredConnection = next((x for x in connections if x.name == configuredConnection[0]), None)
+
+            if requiredConnection:
+                g_logger.info(f'Update connection status of {requiredConnection.name}')
+                requiredConnection.configured = True
+                if button.text == 'Connect':
+                    requiredConnection.connected = False
+                elif button.text == 'Disconnect':
+                    requiredConnection.connected = True
+
+def configure_connection(driver, connection):
+    g_logger.info(f'Configuring connection to {connection.name}')
+    if connection.configured:
+        g_logger.warning(f'{connection.name} is already configured')
+        return
+
+    for elem in driver.find_elements(By.XPATH, './/span'):
+        if elem.text == 'Add a new connection...':
+            g_logger.info(f'Click on new connection')
+            elem.click()
+            break
+
+    # look for p-tag-label buttons for the repositories and click on the first one
+    repositoryButtons = driver.find_elements(By.CLASS_NAME, 'truncate')
+    addOSFButton = None
+    for button in repositoryButtons:
+        buttonText = button.get_attribute('title') # Get title text to see if it is the OSF or Zenodo button
+
+        if connection.name in buttonText:
+            addOSFButton = button
+
+    addOSFButton.click()
+
+    # Wait until we can input some text
+    wait = WebDriverWait(driver, g_delay)
+    wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'p-inputtext'))).send_keys(connection.name + Keys.ENTER)
+    g_logger.info(f'{connection.name} connection configured')
+
+def connect_connection(driver, connection):
+    g_logger.info(f'Connect to {connection.name}')
+    original_window = driver.current_window_handle
+    wait = WebDriverWait(driver, g_delay)
+
+    if connection.connected:
+        g_logger.warning(f'{connection.name} is already configured')
+        return
+
+    if 'OSF' in connection.name:
+        g_logger.info(f'Start connecting to {connection.name}')
+        if get_connector_connect_button(driver, connection.name) is None:
+            g_logger.error(f'No connect button found for {connection.name} on {driver.current_url}')
+            return
+        get_connector_connect_button(driver, connection.name).click()
+
+        osfuserenv = "OSF_TEST_USER"
+        osfuser = os.environ.get(osfuserenv)
+        osfpwdenv = "OSF_TEST_USER_PASSWORD"
+        osfpwd = os.environ.get(osfpwdenv)
+
+        for window_handle in driver.window_handles:
+            if window_handle != original_window:
+                driver.switch_to.window(window_handle)
+                break
+
+        wait.until(EC.presence_of_element_located((By.ID, 'username'))).send_keys(osfuser)
+        wait.until(EC.presence_of_element_located((By.ID, 'password'))).send_keys(osfpwd + Keys.ENTER)
+
+        # Allow connection
+        WebDriverWait(driver, g_delay).until(EC.element_to_be_clickable((By.XPATH, '//*[@id="allow"]/span'))).click()
+        g_logger.info('Done connecting to OSF')
+
+        # Switch back to main window
+        driver.switch_to.window(original_window)
+        wait.until(EC.frame_to_be_available_and_switch_to_it((By.ID, "app-frame")))
+        connection.connected = True
+    elif 'Zenodo' in connection.name:
+        if get_connector_connect_button(driver, connection.name) is None:
+            g_logger.error(f'No connect button found for {connection.name} on {driver.current_url}')
+            return
+        g_logger.info(f'Start connecting to {connection.name}')
+        get_connector_connect_button(driver, connection.name).click()
+
+        zenodouserenv = "ZENODO_TEST_USER"
+        zenodouser = os.environ.get(zenodouserenv)
+        zenodopwdenv = "ZENODO_TEST_USER_PASSWORD"
+        zenodopwd = os.environ.get(zenodopwdenv)
+
+        # Loop through until we find a new window handle
+        for window_handle in driver.window_handles:
+            if window_handle != original_window:
+                driver.switch_to.window(window_handle)
+                break
+
+        wait.until(EC.presence_of_element_located((By.ID, 'email'))).send_keys(zenodouser)
+        wait.until(EC.presence_of_element_located((By.ID, 'password'))).send_keys(zenodopwd + Keys.ENTER)
+        # Allow connection
+        WebDriverWait(driver, g_delay).until(EC.element_to_be_clickable((By.CLASS_NAME, 'positive'))).click()
+        g_logger.info(f'Done connecting to Zenodo')
+
+        # Switch back to main window
+        driver.switch_to.window(original_window)
+        wait.until(EC.frame_to_be_available_and_switch_to_it((By.ID, "app-frame")))
+        connection.connected = True
+    else:
+        g_logger.error(f'Unknown connector {connection.name}')
+    
+def get_connector_connect_button(driver, connectionName):
+    g_logger.info(f'Get connector button for {connectionName}')
+    buttons = driver.find_elements(By.CLASS_NAME, 'p-button')
+    g_logger.info(f'Found {len(buttons)} buttons')
+
+    if len(buttons) == 0:
+        g_logger.error(f'Did not find any buttons for {driver.current_url}! Did you forget to switch to the app frame?.')
+        return None
+    for button in buttons:
+        if button.text == 'Connect':
+            parent = button.find_element(By.XPATH, '../..')
+            g_logger.info(f'Button parent: {parent.text}')
+            if connectionName in parent.text:
+                return button
+    return None
 
 def create_test_data(fullnode):
     nodeuser = g_drv.get_seleniumuser(fullnode)
@@ -98,8 +248,6 @@ class TestBridgITSelenium(unittest.TestCase):
         pass
 
     def test_bridgit_app(self):
-        delay = 30 # seconds
-
         for bridgitnode in g_bridgitnodes:
             with self.subTest(mynode=bridgitnode):
                 loginurl = g_drv.get_node_login_url(bridgitnode)
@@ -117,7 +265,7 @@ class TestBridgITSelenium(unittest.TestCase):
                 # driver2 = webdriver.Firefox()
                 driver.get(loginurl)
 
-                wait = WebDriverWait(driver, delay)
+                wait = WebDriverWait(driver, g_delay)
                 wait.until(EC.presence_of_element_located((By.ID, 'user'))).send_keys(nodeuser)
                 wait.until(EC.presence_of_element_located((By.ID, 'password'))).send_keys(nodepwd + Keys.ENTER)
 
@@ -147,25 +295,26 @@ class TestBridgITSelenium(unittest.TestCase):
     def test_bridgit_connections(self):
         global g_logger
         g_logger.info(f'TestID: {self._testMethodName}')
-        delay = 30 # seconds
+        g_delay = 30 # seconds
         g_drv = sunetnextcloud.TestTarget()
-
-        osfConfigured = False
-        osfConnected = True
-        osfConnectButton = None
-        zenodoConfigured = False
-        zenodoConnected = True
-        zenodoConnectButton = None
 
         for bridgitnode in g_bridgitnodes:
             with self.subTest(mynode=bridgitnode):
-                create_test_data(bridgitnode)
+                # create_test_data(bridgitnode)
 
                 proceed = True
                 loginurl = g_drv.get_node_login_url(bridgitnode)
                 g_logger.info(f"Login url: {loginurl}")
                 nodeuser = g_drv.get_seleniumuser(bridgitnode)
                 nodepwd = g_drv.get_seleniumuserpassword(bridgitnode)
+
+                connections = []
+                for required_connection in g_required_connections:
+                    connections.append(BridgITConnection(required_connection, False, False))
+
+                g_logger.info(f'The following connections are required:')
+                for connection in connections:
+                    g_logger.info(f'{connection.name} - {connection.configured} - {connection.connected}')
 
                 try:
                     options = Options()
@@ -175,14 +324,11 @@ class TestBridgITSelenium(unittest.TestCase):
                     self.assertTrue(False)
                 # driver2 = webdriver.Firefox()
 
-                # Store ID of the original window handle
-                original_window = driver.current_window_handle
-
                 self.deleteCookies(driver)
                 driver.maximize_window()        
                 driver.get(loginurl)
 
-                wait = WebDriverWait(driver, delay)
+                wait = WebDriverWait(driver, g_delay)
                 wait.until(EC.presence_of_element_located((By.ID, 'user'))).send_keys(nodeuser)
                 wait.until(EC.presence_of_element_located((By.ID, 'password'))).send_keys(nodepwd + Keys.ENTER)
 
@@ -223,206 +369,42 @@ class TestBridgITSelenium(unittest.TestCase):
 
                 self.assertTrue(proceed)
 
-                hasConnections = True
-                for elem in driver.find_elements(By.XPATH, './/span'):
-                    if elem.text == 'No connections yet!':
-                        g_logger.info(f'BridgIT has no connections yet...')
-                        hasConnections = False
-                        break
-
-                if hasConnections:
-                    g_logger.info(f'BridgIT already has connections!')
-
-                try:
-                    buttons = driver.find_elements(By.CLASS_NAME, 'p-button')
-                    settingsButton = None
-                    for button in buttons:
-                        if button.get_attribute('title') == 'Settings':
-                            settingsButton = button
-                except Exception as error:
-                    g_logger.error(f'Settings button: {error}')
-                    self.assertTrue(False)
-
-                # click on settings button
+                settingsButton = get_bridgit_settings_button(driver)
                 settingsButton.click()
                 g_logger.info(f'Settings button clicked')
 
                 time.sleep(1)
 
-                if hasConnections:
-                    g_logger.info('Try to find out which connections are available')
+                get_connection_status(driver, connections)
+                configuredConnections = connections
+                for connection in connections:
+                    g_logger.info(f'{connection.name} - {connection.configured} - {connection.connected}')
 
-                    # look for p-tag-label buttons for the repositories and click on the first one
-                    repositoryElements = driver.find_elements(By.CLASS_NAME, 'truncate')
-                    for elem in repositoryElements:
-                        g_logger.info(f'{elem.text}')
-                        elementText = elem.get_attribute('title') # Get title text to see if it is the OSF or Zenodo button
+                get_connection_status(driver, connections)                
+                requiredConfiguration = next((x for x in connections if x.configured == False), None)
+                while requiredConfiguration is not None:
+                    g_logger.info(f'Configure {requiredConfiguration.name}')
+                    configure_connection(driver, requiredConfiguration)
+                    time.sleep(7) # TODO: Wait for connecting in UI
+                    get_connection_status(driver, connections)
+                    requiredConfiguration = next((x for x in connections if x.configured == False), None)
 
-                        if 'Open Science Framework' in elementText:
-                            osfConfigured = True
-                        elif 'Zenodo' in elementText:
-                            zenodoConfigured = True
+                get_connection_status(driver, connections)
+                requiredConnection = next((x for x in connections if x.connected == False), None)
+                while requiredConnection is not None:
+                    g_logger.info(f'Connect to {requiredConnection.name}')
+                    connect_connection(driver, requiredConnection)
+                    time.sleep(7)  # TODO: Wait for connecting in UI
+                    get_connection_status(driver, connections)
+                    requiredConnection = next((x for x in connections if x.connected == False), None)
+                    time.sleep(1)
 
-                    g_logger.info(f'OSF Configured: {osfConfigured}')
-                    g_logger.info(f'Zenodo Configured: {zenodoConfigured}')
-
-                if not osfConfigured:
-                    g_logger.info(f'Configure OSF')
-                    for elem in driver.find_elements(By.XPATH, './/span'):
-                        if elem.text == 'Add a new connection...':
-                            g_logger.info(f'Click on new connection')
-                            elem.click()
-                            break
-
-                    # look for p-tag-label buttons for the repositories and click on the first one
-                    repositoryButtons = driver.find_elements(By.CLASS_NAME, 'truncate')
-                    addOSFButton = None
-                    for button in repositoryButtons:
-                        buttonText = button.get_attribute('title') # Get title text to see if it is the OSF or Zenodo button
-
-                        if 'OSF' in buttonText:
-                            addOSFButton = button
-
-                    # Only OSF first
-                    addOSFButton.click()
-
-                    # Wait until we can input some text
-                    wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'p-inputtext'))).send_keys('OSF Connection' + Keys.ENTER)
-                    g_logger.info(f'OSF Connection configured')
-
-                if not zenodoConfigured:
-                    g_logger.info(f'Configure Zenodo')
-                    for elem in driver.find_elements(By.XPATH, './/span'):
-                        if elem.text == 'Add a new connection...':
-                            g_logger.info(f'Click on new connection')
-                            elem.click()
-                            break
-
-                    # look for p-tag-label buttons for the repositories and click on the first one
-                    repositoryButtons = driver.find_elements(By.CLASS_NAME, 'truncate')
-                    addOSFButton = None
-                    for button in repositoryButtons:
-                        buttonText = button.get_attribute('title') # Get title text to see if it is the OSF or Zenodo button
-
-                        if 'Zenodo' in buttonText:
-                            addZenodoButton = button
-
-                    # Only OSF first
-                    addZenodoButton.click()
-
-                    # Wait until we can input some text
-                    wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'p-inputtext'))).send_keys('Zenodo Connection' + Keys.ENTER)
-                    g_logger.info(f'Zenodo Connection configured')
-
-                time.sleep(1)
-                g_logger.info('Check if OSF and Zenodo are also connected')
-                try:
-                    buttons = driver.find_elements(By.CLASS_NAME, 'p-button')
-                    settingsButton = None
-                    for button in buttons:
-                        if button.text == 'Connect':
-                            
-                            parent = button.find_element(By.XPATH, '../..')
-                            g_logger.info(f'Button parent text: {parent.text}')
-
-                            if 'OSF Connection' in parent.text:
-                                g_logger.info(f'Save OSF connect button')
-                                osfConnectButton = button
-                                osfConnected = False
-
-                            if 'Zenodo Connection' in parent.text:
-                                g_logger.info(f'Save Zenodo connect button')
-                                zenodoConnectButton = button
-                                zenodoConnected = False
-
-                except Exception as error:
-                    g_logger.error(f'Connect button: {error}')
-                    self.assertTrue(False)
-
-                if not osfConnected:
-
-                    osfuserenv = "OSF_TEST_USER"
-                    osfuser = os.environ.get(osfuserenv)
-                    osfpwdenv = "OSF_TEST_USER_PASSWORD"
-                    osfpwd = os.environ.get(osfpwdenv)
-
-
-                    g_logger.info('Click on OSF Connect button')
-                    osfConnectButton.click()
-
-                    # Loop through until we find a new window handle
-                    for window_handle in driver.window_handles:
-                        if window_handle != original_window:
-                            driver.switch_to.window(window_handle)
-                            break
-
-                    wait.until(EC.presence_of_element_located((By.ID, 'username'))).send_keys(osfuser)
-                    wait.until(EC.presence_of_element_located((By.ID, 'password'))).send_keys(osfpwd + Keys.ENTER)
-
-                    # Allow connection
-                    WebDriverWait(driver, delay).until(EC.element_to_be_clickable((By.XPATH, '//*[@id="allow"]/span'))).click()
-                    g_logger.info('Done connecting to OSF')
-
-                    # Switch back to main window
-                    driver.switch_to.window(original_window)
-
-                    time.sleep(5)
-
-                if not zenodoConnected:
-                    # Get connect buttons again
-                    try:
-                        buttons = driver.find_elements(By.CLASS_NAME, 'p-button')
-                        settingsButton = None
-                        for button in buttons:
-                            if button.text == 'Connect':
-                                
-                                parent = button.find_element(By.XPATH, '../..')
-                                g_logger.info(f'Button parent text: {parent.text}')
-
-                                if 'OSF Connection' in parent.text:
-                                    g_logger.info(f'Save OSF connect button')
-                                    osfConnectButton = button
-                                    osfConnected = False
-
-                                if 'Zenodo Connection' in parent.text:
-                                    g_logger.info(f'Save Zenodo connect button')
-                                    zenodoConnectButton = button
-                                    zenodoConnected = False
-
-                    except Exception as error:
-                        g_logger.error(f'Connect button: {error}')
-                        self.assertTrue(False)
-
-                    zenodouserenv = "ZENODO_TEST_USER"
-                    zenodouser = os.environ.get(zenodouserenv)
-                    zenodopwdenv = "ZENODO_TEST_USER_PASSWORD"
-                    zenodopwd = os.environ.get(zenodopwdenv)
-
-                    g_logger.info('Click on Zenodo Connect button')
-                    zenodoConnectButton.click()
-
-                    # Loop through until we find a new window handle
-                    for window_handle in driver.window_handles:
-                        if window_handle != original_window:
-                            driver.switch_to.window(window_handle)
-                            break
-
-                    wait.until(EC.presence_of_element_located((By.ID, 'email'))).send_keys(zenodouser)
-                    wait.until(EC.presence_of_element_located((By.ID, 'password'))).send_keys(zenodopwd + Keys.ENTER)
-                    # Allow connection
-                    WebDriverWait(driver, delay).until(EC.element_to_be_clickable((By.CLASS_NAME, 'positive'))).click()
-                    g_logger.info(f'Done connecting to Zenodo')
-
-                    # Switch back to main window
-                    driver.switch_to.window(original_window)
-
-                    time.sleep(15)
-
+                time.sleep(5)
                 g_logger.info('Done...')
 
     def test_bridgit_osf(self):
         g_logger.info(f'TestID: {self._testMethodName}')
-        delay = 30 # seconds
+        g_delay = 30 # seconds
         g_drv = sunetnextcloud.TestTarget()
 
         for bridgitnode in g_bridgitnodes:
@@ -455,7 +437,7 @@ class TestBridgITSelenium(unittest.TestCase):
                 driver.maximize_window()        
                 driver.get(loginurl)
 
-                # wait = WebDriverWait(driver, delay)
+                # wait = WebDriverWait(driver, g_delay)
 
                 # loginLinkText = 'ACCESS THROUGH YOUR INSTITUTION'
 
@@ -507,7 +489,7 @@ class TestBridgITSelenium(unittest.TestCase):
                 #     g_logger.warning(f'Dashboard URL contains trailing #, likely due to the tasks app: {error}')
                 # g_logger.info(f'{driver.current_url}')
 
-                wait = WebDriverWait(driver, delay)
+                wait = WebDriverWait(driver, g_delay)
                 wait.until(EC.presence_of_element_located((By.ID, 'user'))).send_keys(nodeuser)
                 wait.until(EC.presence_of_element_located((By.ID, 'password'))).send_keys(nodepwd + Keys.ENTER)
 
