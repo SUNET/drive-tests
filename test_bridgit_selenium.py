@@ -612,8 +612,8 @@ class TestBridgITSelenium(unittest.TestCase):
                 else:
                     g_logger.error(f'OSF Upload button not found! Did you forget to connect to OSF?')
 
-        g_logger.info(f'Done... Long sleep...')
-        time.sleep(900)
+        g_logger.info(f'Done...')
+        time.sleep(5)
 
         for bridgitnode in g_bridgitnodes:
             with self.subTest(mynode=bridgitnode):
