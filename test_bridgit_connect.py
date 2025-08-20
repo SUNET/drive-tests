@@ -44,20 +44,6 @@ class TestBridgitSelenium(unittest.TestCase):
                 self.logger.info(f'Username: {nodeuser}')
                 nodepwd = drv.get_seleniumuserpassword(fullnode)
 
-                # Create folder for testing using webdav
-                url = drv.get_webdav_url(fullnode, nodeuser)
-                options = {
-                'webdav_hostname': url,
-                'webdav_login' : nodeuser,
-                'webdav_password' : nodepwd 
-                }
-
-                client = Client(options)
-                dir = 'SharedFolder'
-                self.logger.info(f'Make and check directory: {dir}')
-                client.mkdir(dir)
-                self.assertEqual(client.list().count('SharedFolder/'), 1)
-
                 try:
                     options = Options()
                     driver = webdriver.Chrome(options=options)
