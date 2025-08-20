@@ -3,6 +3,7 @@ Author: Richard Freitag <freitag@sunet.se>
 Selenium tests to test apps in Sunet Drive
 """
 import xmlrunner
+import HtmlTestRunner
 import unittest
 import sunetnextcloud
 from webdav3.client import Client
@@ -142,5 +143,7 @@ class TestBridgitSelenium(unittest.TestCase):
                 time.sleep(2)
 
 if __name__ == '__main__':
-    # unittest.main()
-    unittest.main(testRunner=xmlrunner.XMLTestRunner(output='test-reports'))
+    if drv.testrunner == 'xml':
+        unittest.main(testRunner=xmlrunner.XMLTestRunner(output='test-reports'))
+    else:
+        unittest.main(testRunner=HtmlTestRunner.HTMLTestRunner(output='test-reports-html', combine_reports=True, report_name=f"bridgit-{drv.expectedResults[drv.target]['status']['version']}-acceptance", add_timestamp=False))
