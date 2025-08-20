@@ -18,6 +18,8 @@ from selenium.common.exceptions import TimeoutException
 import time
 import logging
 
+drv = sunetnextcloud.TestTarget()
+
 class TestBridgitSelenium(unittest.TestCase):
     logger = logging.getLogger(__name__)
     logging.basicConfig(format = '%(asctime)s - %(module)s.%(funcName)s - %(levelname)s: %(message)s',
@@ -36,7 +38,6 @@ class TestBridgitSelenium(unittest.TestCase):
     
     def test_Bridgit_connect(self):
         delay = 30 # seconds
-        drv = sunetnextcloud.TestTarget()
         for fullnode in drv.fullnodes:
             with self.subTest(mynode=fullnode):
                 loginurl = drv.get_node_login_url(fullnode)
