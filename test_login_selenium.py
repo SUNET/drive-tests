@@ -67,7 +67,7 @@ class TestLoginSelenium(unittest.TestCase):
                         self.logger.info(f'URL: {loginurl}')
                         nodeuser = drv.get_seleniumuser(fullnode)
                         self.logger.info(f'Username: {nodeuser}')
-                        nodepwd = drv.get_seleniumuserpassword(fullnode)
+                        nodepwd = drv.get_seleniumuserapppassword(fullnode)
 
                         # Create folder for testing using webdav
                         url = drv.get_webdav_url(fullnode, nodeuser)
