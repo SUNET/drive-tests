@@ -1,9 +1,10 @@
-""" Selenium tests for Sunet Drive
+""" Bridgit publish tests for Sunet Drive
 Author: Richard Freitag <freitag@sunet.se>
-Selenium tests to test Collabora on a local node
+Connect Bridgit to OSF and Zenodo and publish data
 """
 from datetime import datetime
 import xmlrunner
+import HtmlTestRunner
 import unittest
 import tempfile
 import sunetnextcloud
@@ -20,19 +21,16 @@ import os
 import time
 import logging
 import yaml
-import pyotp
 
-# 'prod' for production environment, 'test' for test environment
+# 'prod' for production environment, 'test' for test environment, 'custom' for custom environment
 g_testtarget = os.environ.get('NextcloudTestTarget')
 g_bridgitnodes = ["richir"]
 g_required_connections = ['OSF', 'Zenodo']
-# g_required_connections = ['Zenodo','OSF']
 expectedResultsFile = 'expected.yaml'
 g_drv = sunetnextcloud.TestTarget(g_testtarget)
 g_filename=datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 g_logger={}
 g_delay = 30 # seconds
-
 
 class BridgITConnection():
   def __init__(self, name, configured, connected):
@@ -48,6 +46,30 @@ def get_bridgit_settings_button(driver):
                 return button
     except Exception as error:
         g_logger.error(f'Settings button: {error}')
+        return None
+    return None
+
+# Metadata add creator button
+def get_bridgit_add_creator_button(driver):
+    try:
+        buttons = driver.find_elements(By.CLASS_NAME, 'capitalize')
+        for button in buttons:
+            if button.get_attribute('title') == 'Add new Creator':
+                return button
+    except Exception as error:
+        g_logger.error(f'Add creator button: {error}')
+        return None
+    return None
+
+# Metadata add subject button
+def get_bridgit_add_subject_button(driver):
+    try:
+        buttons = driver.find_elements(By.CLASS_NAME, 'capitalize')
+        for button in buttons:
+            if button.get_attribute('title') == 'Add new Subject':
+                return button
+    except Exception as error:
+        g_logger.error(f'Add subject button: {error}')
         return None
     return None
 
@@ -83,6 +105,18 @@ def get_bridgit_upload_project_button(driver):
         g_logger.error(f'Upload project button: {error}')
         return None
     return None
+
+def get_bridgit_upload_project_close_button(driver):
+    try:
+        buttons = driver.find_elements(By.CLASS_NAME, 'p-button')
+        for button in buttons:
+            if button.get_attribute('aria-label') == 'Close':
+                return button
+    except Exception as error:
+        g_logger.error(f'Upload project close button: {error}')
+        return None
+    return None
+
 
 def get_bridgit_osf_upload_button(driver):
     try:
@@ -183,7 +217,7 @@ def connect_connection(driver, connection):
         wait.until(EC.presence_of_element_located((By.ID, 'password'))).send_keys(osfpwd + Keys.ENTER)
 
         # Allow connection
-        WebDriverWait(driver, g_delay).until(EC.element_to_be_clickable((By.XPATH, '//*[@id="allow"]/span'))).click()
+        wait.until(EC.element_to_be_clickable((By.XPATH, '//*[@id="allow"]/span'))).click()
         g_logger.info('Done connecting to OSF')
 
         # Switch back to main window
@@ -469,7 +503,7 @@ class TestBridgITSelenium(unittest.TestCase):
 
         for bridgitnode in g_bridgitnodes:
             with self.subTest(mynode=bridgitnode):
-                # create_test_data(bridgitnode)
+                create_test_data(bridgitnode)
 
                 proceed = True
                 loginurl = g_drv.get_node_login_url(bridgitnode)
@@ -531,9 +565,16 @@ class TestBridgITSelenium(unittest.TestCase):
                 self.assertTrue(proceed)
 
                 newProjectButton = get_bridgit_new_project_button(driver)
+                if newProjectButton is None:
+                    g_logger.warning(f'New project button not found. Wait a few seconds and try again!')
+                    time.sleep(3)
+                    newProjectButton = get_bridgit_new_project_button(driver)
+                    if newProjectButton is None:
+                        g_logger.error(f'New project button not found!')
+                        self.assertTrue(False)
+                wait.until(EC.element_to_be_clickable(newProjectButton))
                 newProjectButton.click()
                 g_logger.info(f'New project button clicked')
-
 
                 wait = WebDriverWait(driver, g_delay)
                 wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'p-inputtext'))).send_keys(projectName + Keys.ENTER)
@@ -557,7 +598,6 @@ class TestBridgITSelenium(unittest.TestCase):
 
                 # Click on 'Metadata'
                 for legendLabelElement in driver.find_elements(By.CLASS_NAME, 'p-fieldset-legend-label'):
-                    g_logger.info(f'Label found: {legendLabelElement.text}')
                     if legendLabelElement.text == 'Metadata':
                         g_logger.info(f'Click on Metadata')
                         legendLabelElement.click()
@@ -571,6 +611,9 @@ class TestBridgITSelenium(unittest.TestCase):
                             break
                 except Exception as error:
                     g_logger.error(f'{error}')
+                    proceed = False
+                
+                self.assertTrue(proceed)
 
                 # Wait for project title input field
                 try:
@@ -583,6 +626,9 @@ class TestBridgITSelenium(unittest.TestCase):
                             break                        
                 except Exception as error:
                     g_logger.error(f'{error}')
+                    proceed = False
+                
+                self.assertTrue(proceed)
 
                 # Type the abstract name
                 wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'p-textarea')))
@@ -590,12 +636,13 @@ class TestBridgITSelenium(unittest.TestCase):
 
                 # Click on OSF Category
                 driver.find_element(By.CLASS_NAME, 'p-select-label').click()
+                time.sleep(1)
                 wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'p-select-option-label')))
                 # Go through select option labels and click on data
                 optionSelectElements = driver.find_elements(By.CLASS_NAME, 'p-select-option-label')
                 for optionSelectElement in optionSelectElements:
-                    g_logger.info(f'option: {optionSelectElement.text}')
                     if optionSelectElement.text == 'data':
+                        g_logger.info(f'Select {optionSelectElement.text}')
                         optionSelectElement.click()
                         break
 
@@ -611,29 +658,64 @@ class TestBridgITSelenium(unittest.TestCase):
                     osfUploadButton.click()
                 else:
                     g_logger.error(f'OSF Upload button not found! Did you forget to connect to OSF?')
+                    proceed = False
+                
+                self.assertTrue(proceed)
+
+                try:
+                    wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'p-toast-summary')))
+                except Exception as error:
+                    g_logger.info(f'Upload summary not found')
+                    proceed = False
+                
+                self.assertTrue(proceed)
+
+                summary = driver.find_element(By.CLASS_NAME, 'p-toast-summary')
+                if summary.text == 'Job completed':
+                    g_logger.info(f'Data successfully published to OSF')
+                else:
+                    g_logger.error(f'Error publishing data: {summary.text}')
+
+                # Close the upload dialog
+                closeButton = get_bridgit_upload_project_close_button(driver)
+                closeButton.click()
+
+                # Click on Overview to get the link to the data
+                for legendLabelElement in driver.find_elements(By.CLASS_NAME, 'p-fieldset-legend-label'):
+                    if legendLabelElement.text == 'Overview':
+                        g_logger.info(f'Click on Overview')
+                        legendLabelElement.click()
+
+                try:
+                    publicationLink = driver.find_element(By.PARTIAL_LINK_TEXT, 'test.osf.io')
+                    g_logger.info(f'Data published at {publicationLink.text}')
+                except Exception as error:
+                    g_logger.error(f'OSF publication link not found')
+                    proceed = False
+                
+                self.assertTrue(proceed)
 
         g_logger.info(f'Done...')
         time.sleep(5)
 
+    def test_bridgit_zenodo(self):
+        g_logger.info(f'TestID: {self._testMethodName}')
+        g_delay = 30 # seconds
+        g_drv = sunetnextcloud.TestTarget()
+
+        projectName = 'Zenodo Project'
+        folderName = 'Zenodo_TestData'
+
         for bridgitnode in g_bridgitnodes:
             with self.subTest(mynode=bridgitnode):
+                create_test_data(bridgitnode)
+
+                proceed = True
                 loginurl = g_drv.get_node_login_url(bridgitnode)
                 g_logger.info(f"Login url: {loginurl}")
                 nodeuser = g_drv.get_seleniumuser(bridgitnode)
                 nodepwd = g_drv.get_seleniumuserpassword(bridgitnode)
 
-                # nodeName = 'su'
-                # if len(g_drv.allnodes) == 1:
-                #     if g_drv.allnodes[0] != nodeName:
-                #         g_logger.info(f'Only testing {g_drv.allnodes[0]}, not testing su saml')
-                #         return
-
-                # loginurl = g_drv.get_gss_url()
-                # g_logger.info(f'URL: {loginurl}')
-                # samluser=g_drv.get_samlusername(nodeName)
-                # g_logger.info(f'Username: {samluser}')
-                # samlpassword=g_drv.get_samluserpassword(nodeName)
-                
                 try:
                     options = Options()
                     driver = webdriver.Chrome(options=options)
@@ -641,61 +723,10 @@ class TestBridgITSelenium(unittest.TestCase):
                     g_logger.error(f'Error initializing Chrome driver: {error}')
                     self.assertTrue(False)
                 # driver2 = webdriver.Firefox()
+
                 self.deleteCookies(driver)
                 driver.maximize_window()        
                 driver.get(loginurl)
-
-                # wait = WebDriverWait(driver, g_delay)
-
-                # loginLinkText = 'ACCESS THROUGH YOUR INSTITUTION'
-
-                # wait.until(EC.presence_of_element_located((By.LINK_TEXT, loginLinkText))).click()
-                # driver.implicitly_wait(10)
-
-                # wait.until(EC.presence_of_element_located((By.ID, 'dsclient')))
-                # driver.implicitly_wait(10)
-                
-                # wait.until(EC.presence_of_element_located((By.ID, 'searchinput'))).send_keys("su.se", Keys.RETURN)
-                # driver.implicitly_wait(10)
-
-                # wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'label-url'))).click()
-                # driver.implicitly_wait(10)
-
-                # wait.until(EC.presence_of_element_located((By.ID, 'username'))).send_keys(samluser)
-                # wait.until(EC.presence_of_element_located((By.ID, 'password'))).send_keys(samlpassword + Keys.ENTER)
-                # # wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'login-form-button'))).click()
-
-                # # Wait for TOTP screen
-                # requireTotp = False
-                # try:
-                #     g_logger.info('Check if TOTP selection dialogue is visible')
-                #     totpselect = driver.find_element(By.XPATH, '//a[@href="' + g_drv.indexsuffix + '/login/challenge/totp?redirect_url=' + g_drv.indexsuffix + '/apps/dashboard/' +'"]')
-                #     g_logger.warning('Found TOTP selection dialogue')
-                #     requireTotp = True
-                #     totpselect.click()
-                # except Exception as error:
-                #     g_logger.info(f'No need to select TOTP provider: {error}')
-
-                # if requireTotp:
-                #     nodetotpsecret = g_drv.get_samlusertotpsecret(nodeName)
-                #     totp = pyotp.TOTP(nodetotpsecret)
-                #     wait.until(EC.presence_of_element_located((By.XPATH, '//*[@id="body-login"]/div[1]/div/main/div/form/input'))).send_keys(totp.now() + Keys.ENTER)
-
-                # try:
-                #     wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'app-menu')))
-                #     g_logger.info('App menu is ready!')
-                # except TimeoutException:
-                #     g_logger.info('Loading of app menu took too much time!')
-
-                # driver.implicitly_wait(10) # seconds before quitting
-                # dashboardUrl = g_drv.get_dashboard_url('su')
-                # currentUrl = driver.current_url
-                # try:
-                #     self.assertEqual(dashboardUrl, currentUrl)
-                # except Exception as error:       
-                #     self.assertEqual(dashboardUrl + '#/', currentUrl)
-                #     g_logger.warning(f'Dashboard URL contains trailing #, likely due to the tasks app: {error}')
-                # g_logger.info(f'{driver.current_url}')
 
                 wait = WebDriverWait(driver, g_delay)
                 wait.until(EC.presence_of_element_located((By.ID, 'user'))).send_keys(nodeuser)
@@ -722,197 +753,214 @@ class TestBridgITSelenium(unittest.TestCase):
                 except Exception as error:
                     g_logger.error(f"BridgIT iframe not loaded: {error}")
                     proceed = False
-
-                try:
-                    g_logger.info('Looking for active projects')
-                    wait.until(EC.presence_of_element_located((By.XPATH, "//*[contains(text(), 'Active Projects')]"))).click()
-                except Exception as error:
-                    g_logger.error(f'Active Projects element not found: {error}')
-                    proceed = False
-
-                try:
-                    g_logger.info('Create new project')
-                    wait.until(EC.presence_of_element_located((By.XPATH, "//*[contains(text(), 'new project')]"))).click()
-                    # wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "button.v-btn"))).click()
-                except Exception as error:
-                    g_logger.error(f'New Project element not found: {error}')
-                    proceed = False
-
-                try:
-                    g_logger.info('Input project name')
-                    # wait.until(EC.presence_of_element_located((By.XPATH, "//*[contains(text(), 'Choose')]"))).click()
-                    wait.until(EC.presence_of_element_located((By.XPATH, "//*[contains(@id, 'input-')]" ))).send_keys('TestProject')
-                    # wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "button.v-btn"))).click()
-                except Exception as error:
-                    g_logger.error(f'Could not set project name: {error}')
-                    proceed = False
-
-                try:
-                    g_logger.info('Pick folder')
-                    wait.until(EC.presence_of_element_located((By.XPATH, "//*[contains(text(), 'Pick')]"))).click()
-                    # wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "button.v-btn"))).click()
-                except Exception as error:
-                    g_logger.error(f'Pick folder not found: {error}')
-                    proceed = False
-
-                # We need to switch to the parent frame to use BridgIT here
-                g_logger.info('Switch to parent frame')
-                driver.switch_to.parent_frame() 
-
-                try:
-                    g_logger.info('Choose source folder?')
-                    wait.until(EC.presence_of_element_located((By.XPATH, "//*[contains(text(), 'Choose source folder')]")))
-                    g_logger.error('Choose source folder!')
-                    # wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "button.v-btn"))).click()
-                except Exception as error:        
-                    g_logger.error(f'Choose source folder error: {error}')
-                    proceed = False
-
-                try:
-                    g_logger.info('Set sort order to newest first?')
-                    wait.until(EC.presence_of_element_located((By.XPATH, "//*[contains(text(), 'Modified')]"))).click()
-                    g_logger.info('Set sort order to newest first!')
-                    # wait.until(EC.presence_of_element_located((By.XPATH, "//*[contains(text(), 'Modified')]"))).click()
-                    # wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "button.v-btn"))).click()
-                except Exception as error:        
-                    g_logger.error(f'Could not change sort order: {error}')
-                    proceed = False
-
-                try:
-                    g_logger.info('Select folder BridgITDemo')
-                    wait.until(EC.presence_of_element_located((By.XPATH, "//*[contains(text(), 'BridgITDemo')]"))).click()
-                    # wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "button.v-btn"))).click()
-                except Exception as error:        
-                    g_logger.error(f'BridgITDemo folder not found: {error}')
-                    proceed = False
-
-                try:
-                    g_logger.info('Click on Choose')
-                    wait.until(EC.presence_of_element_located((By.XPATH, "//*[contains(text(), ' Choose')]"))).click()
-                    # wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "button.v-btn"))).click()
-                except Exception as error:
-                    g_logger.error(f'BridgITDemo folder not found: {error}')
-                    proceed = False
-
-                try:
-                    g_logger.info("Switch back to bridgit iframe")
-                    wait.until(EC.frame_to_be_available_and_switch_to_it((By.ID, "app-frame")))
-                except Exception as error:
-                    g_logger.error(f"BridgIT iframe not loaded: {error}")
-                    proceed = False
-
-                try:
-                    g_logger.info('Select OSF Connector')
-                    wait.until(EC.presence_of_element_located((By.XPATH, "//*[contains(text(), 'Open Science Framework')]"))).click()
-                    # wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "button.v-btn"))).click()
-                except Exception as error:        
-                    g_logger.error(f'OSF Connector not found: {error}')
-                    proceed = False
+                
+                self.assertTrue(proceed)
 
                 time.sleep(3)
-
                 try:
-                    g_logger.info('Continue (to describo)')
-                    wait.until(EC.presence_of_element_located((By.XPATH, "//*[contains(text(), 'Continue')]"))).click()
-                    # wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "button.v-btn"))).click()
-                except Exception as error:
-                    g_logger.error(f'Continue button not found: {error}')
-                    proceed = False
-
-                time.sleep(3)
-
-                g_logger.info("Switch to Describo frame")
-                try:
-                    g_logger.info("Waiting for describo frame")
-                    wait.until(EC.frame_to_be_available_and_switch_to_it((By.ID, "describoWindow")))
-                    g_logger.info("Describo iframe loaded")
-                except Exception as error:
-                    g_logger.info(f"Describo iframe not loaded: {error}")
-                    proceed = False
-                time.sleep(3)
-
-                # OSF Settings
-                g_logger.info("Wait for OSF Settings and click")
-                WebDriverWait(driver, 20).until(EC.element_to_be_clickable((By.XPATH, "//*[@id=\"tab-OSF settings\"]/span"))).click()
-                time.sleep(1)
-
-                # Check if we have to delete entries:
-                checkForOsfEntries = True
-                while checkForOsfEntries:
-                    try:
-                        deleteButton = driver.find_element(by=By.CLASS_NAME, value='el-button--danger')
-                        deleteButton.click()
-                        g_logger.info("Deleting existing entries")
-                        time.sleep(1)
-                    except Exception as error:
-                        g_logger.info(f"No more entries to delete, continue: {error}")
-                        checkForOsfEntries = False
-
-                try:
-                    # OSF Text
-                    g_logger.info("Click on +Text")
-                    WebDriverWait(driver, 20).until(EC.element_to_be_clickable((By.XPATH, '//*[@id="pane-OSF settings"]/div/div[1]/div/div[2]/div[1]/div[1]/div/div[1]/div/button/span'))).click()
-
-                    # OSF Add Text, again random number ID
-                    g_logger.info("Add OSF Title")
-                    tsTitle = "BridgIT Sunet Drive Title - " + datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-                    wait.until(EC.presence_of_element_located((By.XPATH, "//input[@placeholder='Add text']"))).send_keys(tsTitle + Keys.ENTER)
-                    time.sleep(3)
-
-                    g_logger.info("Click on +Select for Osfcategory")
-                    WebDriverWait(driver, 20).until(EC.element_to_be_clickable((By.XPATH, "//*[@id=\"pane-OSF settings\"]/div/div[2]/div/div[2]/div[1]/div[1]/div/div[1]/div/button/span"))).click()
-                    g_logger.info("Click on category dropdown menu")
-                    wait.until(EC.presence_of_element_located((By.XPATH, "//input[@placeholder='Select']"))).click()
-                    time.sleep(1)
-                    
-                    g_logger.info("Click on third entry in category list")
-                    WebDriverWait(driver, 20).until(EC.element_to_be_clickable((By.XPATH, "//*[contains(@id, 'el-popper-container-')]/div/div/div/div[1]/ul/li[3]"))).click()
-                    time.sleep(1)
-            
-                    # g_logger.info(f"Select data category")
-                    # wait.until(EC.presence_of_element_located((By.XPATH, "//*[@id=\"el-popper-container-254\"]/div/div/div/div[1]/ul/li[3]"))).click()
-                    # time.sleep(1)
-
-                    g_logger.info("Click on +TextArea for OSF Description")
-                    WebDriverWait(driver, 20).until(EC.element_to_be_clickable((By.XPATH, "//*[@id=\"pane-OSF settings\"]/div/div[3]/div/div[2]/div[1]/div[1]/div/div[1]/div/button"))).click()
-                    wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'el-textarea__inner'))).send_keys("OSF Project Description")
-                except Exception as error:
-                    g_logger.error(f'Error entering OSF metadata {error}')
-
-                g_logger.info("Switch to parent frame")
-                driver.switch_to.parent_frame() 
-
-                g_logger.info("Click on continue button")
-                wait.until(EC.presence_of_element_located((By.XPATH, "//*[contains(text(), 'Continue')]"))).click()
-
-                g_logger.info("Click on publish button")
-                # wait.until(EC.presence_of_element_located((By.XPATH, "//*[contains(text(), 'Publish')]"))).click()
-                WebDriverWait(driver, 20).until(EC.element_to_be_clickable((By.XPATH, '/html/body/div/div/div/main/div/div/main/div/div/div/div[2]/div/div/div/div[3]/div/button[2]/span'))).click()
-
-                try:
-                    g_logger.info('Wait maximum 60s for success info')
-                    idElement = wait.until(EC.presence_of_element_located((By.XPATH, "//*[contains(text(), 'Project created with ID')]")))
-                    g_logger.info(f'ID element found: {idElement.text}')
-
-                    osfUrl = 'https://test.osf.io/' + idElement.text.replace('Project created with ID','').replace(' ','') + '/'
-                    g_logger.info(f'OSF URL: {osfUrl}')
-
-                    WebDriverWait(driver, 60).until(EC.presence_of_element_located((By.XPATH, "//*[contains(text(), 'successfully published')]")))
-                    g_logger.info('Dataset successfully published!')
-                except Exception as error:
-                    g_logger.info(f'Error publishing dataset {error}')
-
-                try:
-                    g_logger.info('Try to get DOI string')
-                    doiElement = wait.until(EC.presence_of_element_located((By.XPATH, "//*[contains(text(), 'Published project with DOI')]")))
-                    g_logger.info(f'Project DOI: {doiElement.text.replace('Published project with DOI','').replace(' ','')}')
-                except Exception as error:
-                    g_logger.warning(f'Could not get DOI information: {error}')
+                    span_element = driver.find_element(By.XPATH, '//span[@class="p-button-label"]')
+                    if span_element.text == 'Authorize bridgit':
+                        proceed = False
+                    g_logger.warning(f'Bridgit needs to connect!')
+                except Exception:
+                    g_logger.info('BridgIT is already connected')
+                    proceed = True
+                    pass
 
                 self.assertTrue(proceed)
 
-        g_logger.info('End of test!')
+                newProjectButton = get_bridgit_new_project_button(driver)
+                if newProjectButton is None:
+                    g_logger.warning(f'New project button not found. Wait a few seconds and try again!')
+                    time.sleep(3)
+                    newProjectButton = get_bridgit_new_project_button(driver)
+                    if newProjectButton is None:
+                        g_logger.error(f'New project button not found!')
+                        self.assertTrue(False)
+                wait.until(EC.element_to_be_clickable(newProjectButton))
+                newProjectButton.click()
+                g_logger.info(f'New project button clicked')
+
+                wait = WebDriverWait(driver, g_delay)
+                wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'p-inputtext'))).send_keys(projectName + Keys.ENTER)
+                g_logger.info(f'{projectName} created')
+
+                newProjectNextButton = get_bridgit_new_project_next_button(driver)
+                newProjectNextButton.click()
+
+                wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'p-tree-node-label')))
+                                
+                for folderTreeElement in driver.find_elements(By.CLASS_NAME, 'p-tree-node-label'):
+                    if folderTreeElement.text == folderName:
+                        g_logger.info(f'Folder tree element found: {folderTreeElement.text}')
+                        folderTreeElement.click()
+
+                newProjectNextButton.click()
+                newProjectNextButton.click()
+                newProjectNextButton.click()
+                wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'p-fieldset-legend-label')))
+                time.sleep(3)
+
+                # Click on 'Metadata'
+                for legendLabelElement in driver.find_elements(By.CLASS_NAME, 'p-fieldset-legend-label'):
+                    if legendLabelElement.text == 'Metadata':
+                        g_logger.info(f'Click on Metadata')
+                        legendLabelElement.click()
+
+                # Click on the chip label for Zenodo
+                try:
+                    for chipLabelElement in driver.find_elements(By.CLASS_NAME, 'p-chip-label'):
+                        if chipLabelElement.text == 'Zenodo':
+                            g_logger.info(f'Click on Zenodo chip label')
+                            chipLabelElement.click()
+                            break
+                except Exception as error:
+                    g_logger.error(f'{error}')
+                    proceed = False
+                
+                self.assertTrue(proceed)
+
+                # Wait for project title input field
+                try:
+                    g_logger.info(f'Write project title')
+                    wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'p-inputtext')))
+                    inputElements = driver.find_elements(By.CLASS_NAME, 'p-inputtext')
+                    for inputElement in inputElements:
+                        if inputElement.find_element(By.XPATH, '../..').text == 'Title':
+                            inputElement.send_keys(projectName)
+                            break                        
+                except Exception as error:
+                    g_logger.error(f'{error}')
+                    proceed = False
+                
+                self.assertTrue(proceed)
+
+                # Type the abstract name
+                wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'p-textarea')))
+                driver.find_element(By.CLASS_NAME, 'p-textarea').send_keys('project abstract')
+
+                # Click on Creator
+                addCreatorButton = get_bridgit_add_creator_button(driver)
+                if addCreatorButton is not None:
+                    addCreatorButton.click()
+                else:
+                    g_logger.error('Unable to find add creator button')
+                    proceed = False
+                
+                self.assertTrue(proceed)
+
+                # Wait for Name input field
+                try:
+                    g_logger.info(f'Write creator name')
+                    wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'p-inputtext')))
+                    inputElements = driver.find_elements(By.CLASS_NAME, 'p-inputtext')
+                    g_logger.info(f'Found {len(inputElements)} input elements')
+                    for inputElement in inputElements:
+                        if 'Name' in inputElement.find_element(By.XPATH, '../..').text:
+                            g_logger.info(f'Write creator name')
+                            inputElement.send_keys('Sunet Drive Bridgit Testautomation User')
+                            time.sleep(1)
+                            inputElement.send_keys(Keys.ESCAPE)                            
+                            break                        
+                except Exception as error:
+                    g_logger.error(f'{error}')
+                    proceed = False
+                
+                self.assertTrue(proceed)
+
+                # Click on Subject
+                addCreatorButton = get_bridgit_add_subject_button(driver)
+                if addCreatorButton is not None:
+                    addCreatorButton.click()
+                else:
+                    g_logger.error('Unable to find add subject button')
+                    proceed = False
+                
+                self.assertTrue(proceed)
+
+                # Wait for Subject input field
+                try:
+                    g_logger.info(f'Write subject name')
+                    wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'p-inputtext')))
+                    inputElements = driver.find_elements(By.CLASS_NAME, 'p-inputtext')
+                    g_logger.info(f'Found {len(inputElements)} input elements')
+                    for inputElement in inputElements:
+                        if inputElement.find_element(By.XPATH, '../..').text == '': # TODO: Bridgit should introduce a label here that is not empty
+                            g_logger.info(f'Write subject name')
+                            inputElement.send_keys('testautomations')
+                            time.sleep(1)
+                            inputElement.send_keys(Keys.ESCAPE)                            
+                            break                        
+                except Exception as error:
+                    g_logger.error(f'{error}')
+                    proceed = False
+                
+                self.assertTrue(proceed)
+
+                # Click on Zenodo Upload Type
+                driver.find_element(By.CLASS_NAME, 'p-select-label').click()
+                wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'p-select-option-label')))
+                # Go through select option labels and click on data
+                optionSelectElements = driver.find_elements(By.CLASS_NAME, 'p-select-option-label')
+                for optionSelectElement in optionSelectElements:
+                    g_logger.info(f'option: {optionSelectElement.text}')
+                    if optionSelectElement.text == 'dataset':
+                        optionSelectElement.click()
+                        break
+
+                # Click on upload
+                uploadButton = get_bridgit_upload_project_button(driver)
+                uploadButton.click()
+                time.sleep(2)
+
+                wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'p-dialog-title')))
+                # Click on OSF upload button
+                osfUploadButton = get_bridgit_zenodo_upload_button(driver)
+                if osfUploadButton is not None:
+                    osfUploadButton.click()
+                else:
+                    g_logger.error(f'Zenodo Upload button not found! Did you forget to connect to Zenodo?')
+                    proceed = False
+                
+                self.assertTrue(proceed)
+
+                try:
+                    wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'p-toast-summary')))
+                except Exception as error:
+                    g_logger.info(f'Upload summary not found')
+                    proceed = False
+                
+                self.assertTrue(proceed)
+
+                summary = driver.find_element(By.CLASS_NAME, 'p-toast-summary')
+                if summary.text == 'Job completed':
+                    g_logger.info(f'Data successfully published to Zenodo')
+                else:
+                    g_logger.error(f'Error publishing data: {summary.text}')
+
+                # Close the upload dialog
+                closeButton = get_bridgit_upload_project_close_button(driver)
+                closeButton.click()
+
+                # Click on Overview to get the link to the data
+                for legendLabelElement in driver.find_elements(By.CLASS_NAME, 'p-fieldset-legend-label'):
+                    if legendLabelElement.text == 'Overview':
+                        g_logger.info(f'Click on Overview')
+                        legendLabelElement.click()
+
+                try:
+                    publicationLink = driver.find_element(By.PARTIAL_LINK_TEXT, 'sandbox.zenodo.org')
+                    g_logger.info(f'Data published at {publicationLink.text}')
+                except Exception as error:
+                    g_logger.error(f'Zenodo publication link not found')
+                    proceed = False
+                
+                self.assertTrue(proceed)
+        g_logger.info(f'Done...')
+        time.sleep(5)
 
 if __name__ == '__main__':
-    # unittest.main()
-    unittest.main(testRunner=xmlrunner.XMLTestRunner(output='test-reports'))
+    if g_drv.testrunner == 'xml':
+        unittest.main(testRunner=xmlrunner.XMLTestRunner(output='test-reports'))
+    else:
+        unittest.main(testRunner=HtmlTestRunner.HTMLTestRunner(output='test-reports-html', combine_reports=True, report_name=f"bridgit-{g_drv.expectedResults[g_drv.target]['status']['version']}-acceptance", add_timestamp=False))
