@@ -103,7 +103,16 @@ class TestBridgitClean(unittest.TestCase):
                     driver.find_element(By.XPATH, "//*[contains(text(), 'Delete project')]").click()
                     wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'p-button-danger')))
                     driver.find_element(By.CLASS_NAME, 'p-button-danger').click()
-                    time.sleep(.3)
+
+                    # Wait for deleted toast message
+                    wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'p-toast-message')))
+                    message = driver.find_element(By.CLASS_NAME, 'p-toast-message')
+                    logger.info(f'Message: {message.text}')
+                    if 'has been deleted' in message.text:
+                        logger.info(f'Project successfully deleted')
+                    else:
+                        logger.error(f'Delete project failed: {message.text}')
+
                     buttons = driver.find_elements(By.XPATH, "//*[contains(@aria-label, 'Options')]")
 
                 logger.info('Done...')
