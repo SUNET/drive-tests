@@ -196,7 +196,7 @@ class SeamlessAccessInfo(threading.Thread):
         fe = None
         try:
             nodebaseurl = drv.get_node_base_url(self.node)
-
+            failed = False
             for fe in range(1,4):
                 logger.info(f'Getting node login url from: {url} node {fe}')
                 s = requests.Session()
@@ -206,9 +206,11 @@ class SeamlessAccessInfo(threading.Thread):
 
                 if "seamlessaccess.org" not in r.text and self.node not in expectedResults[drv.target]['loginexceptions']:
                     logger.error(f'Error getting seamless access info from: {self.node}. Received text: {r.text}')
-                    g_failedNodes.append(url)
-                    testThreadsRunning-=1
-                    return
+                    g_failedNodes.append(f'{url} - Node {fe}')
+                    failed = True
+            if failed:
+                testThreadsRunning-=1
+                return
 
         except Exception as error:
             logger.error(f'Error getting seamless access info from {self.node} node {fe}: {error}')
