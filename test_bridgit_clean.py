@@ -88,6 +88,7 @@ class TestBridgitClean(unittest.TestCase):
                 logger.info(f'Find and delete all projects')
                 # wait for projects-listbox
                 wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'projects-listbox')))
+                time.sleep(3)
 
                 logger.info(f'Find options button for project')
                 action = ActionChains(driver)
