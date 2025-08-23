@@ -88,7 +88,11 @@ class TestTarget(object):
         abspath = os.path.abspath(__file__)
         dname = os.path.dirname(abspath)
         logger.info(f'Working directory is {dname}')
-        testcustomers = os.environ.get('NextcloudTestCustomers').split(',')
+        testcustomers = os.environ.get('NextcloudTestCustomers')
+        if testcustomers is not None:
+            testcustomers = testcustomers.split(',')
+        else:
+            testcustomers = ['all']
         testbrowsers = os.environ.get('NextcloudTestBrowsers')
         testrunner = os.environ.get('NextcloudTestRunner')
         testfilesize = os.environ.get('NextcloudTestFileSize')
