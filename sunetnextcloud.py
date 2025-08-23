@@ -88,11 +88,7 @@ class TestTarget(object):
         abspath = os.path.abspath(__file__)
         dname = os.path.dirname(abspath)
         logger.info(f'Working directory is {dname}')
-        testcustomers = os.environ.get('NextcloudTestCustomers')
-        if testcustomers is None:
-            testcustomers = ['all']
-        else:
-            testcustomers = testcustomers.split(',')
+        testcustomers = os.environ.get('NextcloudTestCustomers').split(',')
         testbrowsers = os.environ.get('NextcloudTestBrowsers')
         testrunner = os.environ.get('NextcloudTestRunner')
         testfilesize = os.environ.get('NextcloudTestFileSize')
@@ -152,7 +148,7 @@ class TestTarget(object):
                 self.multinodes = self.allnodes
 
         if testcustomers[0] == 'all':
-            self.fullnodes = self.allnodes
+            self.fullnodes = self.fullnodes
 
         # If we have a custom list of nodes set in the environment variable
         if len(testcustomers) != len(self.fullnodes) and testcustomers[0] != 'all':
