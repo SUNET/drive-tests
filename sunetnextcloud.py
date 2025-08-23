@@ -88,7 +88,11 @@ class TestTarget(object):
         abspath = os.path.abspath(__file__)
         dname = os.path.dirname(abspath)
         logger.info(f'Working directory is {dname}')
-        testcustomers = os.environ.get('NextcloudTestCustomers').split(',')
+        testcustomers = os.environ.get('NextcloudTestCustomers')
+        if testcustomers is None:
+            testcustomers = ['all']
+        else:
+            testcustomers = testcustomers.split(',')
         testbrowsers = os.environ.get('NextcloudTestBrowsers')
         testrunner = os.environ.get('NextcloudTestRunner')
         testfilesize = os.environ.get('NextcloudTestFileSize')
@@ -141,13 +145,17 @@ class TestTarget(object):
 
         # if testcustomers in self.allnodes or self.target == "custom":
         if len(testcustomers) == 1 or self.target == "custom":
-            self.singlenodetesting = True
-            self.allnodes = testcustomers
+            if testcustomers[0] != 'all':
+                self.singlenodetesting = True
+                self.allnodes = testcustomers
+                self.fullnodes = self.allnodes
+                self.multinodes = self.allnodes
+
+        if testcustomers[0] == 'all':
             self.fullnodes = self.allnodes
-            self.multinodes = self.allnodes
 
         # If we have a custom list of nodes set in the environment variable
-        if len(testcustomers) != len(self.fullnodes):
+        if len(testcustomers) != len(self.fullnodes) and testcustomers[0] != 'all':
             self.allnodes = testcustomers
             self.fullnodes = self.allnodes
 
