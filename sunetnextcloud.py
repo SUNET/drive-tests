@@ -88,7 +88,7 @@ class TestTarget(object):
         abspath = os.path.abspath(__file__)
         dname = os.path.dirname(abspath)
         logger.info(f'Working directory is {dname}')
-        testcustomers = os.environ.get('NextcloudTestCustomers')
+        testcustomers = os.environ.get('NextcloudTestCustomers').split(',')
         testbrowsers = os.environ.get('NextcloudTestBrowsers')
         testrunner = os.environ.get('NextcloudTestRunner')
         testfilesize = os.environ.get('NextcloudTestFileSize')
@@ -139,11 +139,17 @@ class TestTarget(object):
             self.target = "test"
             self.targetprefix = "." + self.testprefix
 
-        if testcustomers in self.allnodes or self.target == "custom":
+        # if testcustomers in self.allnodes or self.target == "custom":
+        if len(testcustomers) == 1 or self.target == "custom":
             self.singlenodetesting = True
-            self.allnodes = [testcustomers]
+            self.allnodes = testcustomers
             self.fullnodes = self.allnodes
             self.multinodes = self.allnodes
+
+        # If we have a custom list of nodes set in the environment variable
+        if len(testcustomers) != len(self.fullnodes):
+            self.allnodes = testcustomers
+            self.fullnodes = self.allnodes
 
         # Override browsers to test from expected.yaml with value(s) in environment variable
         if testbrowsers is not None:
