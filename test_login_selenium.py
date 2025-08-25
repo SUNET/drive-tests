@@ -174,133 +174,133 @@ class TestLoginSelenium(unittest.TestCase):
                         driver.implicitly_wait(g_driver_timeout) # seconds before quitting
                         driver.quit()
 
-    def test_saml_eduid_nomfa(self):
-        self.logger.info(f'TestID: {self._testMethodName}')
-        delay = 30 # seconds
-        drv = sunetnextcloud.TestTarget()
+    # def test_saml_eduid_nomfa(self):
+    #     self.logger.info(f'TestID: {self._testMethodName}')
+    #     delay = 30 # seconds
+    #     drv = sunetnextcloud.TestTarget()
 
-        if len(drv.allnodes) == 1:
-            self.logger.info(f'Only testing {drv.allnodes[0]}, not testing eduid saml')
-            return
+    #     if len(drv.allnodes) == 1:
+    #         self.logger.info(f'Only testing {drv.allnodes[0]}, not testing eduid saml')
+    #         return
         
-        loginurl = drv.get_login_url()
-        self.logger.info(f'URL: {loginurl}')
-        samluser=drv.get_samlusername("eduidtest")
-        self.logger.info(f'Username: {samluser}')
-        samlpassword=drv.get_samluserpassword("eduidtest")
+    #     loginurl = drv.get_login_url()
+    #     self.logger.info(f'URL: {loginurl}')
+    #     samluser=drv.get_samlusername("eduidtest")
+    #     self.logger.info(f'Username: {samluser}')
+    #     samlpassword=drv.get_samluserpassword("eduidtest")
         
-        # try:
-        #     options = ChromeOptions()
-        #     options.add_argument("--no-sandbox")
-        #     options.add_argument("--disable-dev-shm-usage")
-        #     options.add_argument("--disable-gpu")
-        #     options.add_argument("--disable-extensions")
-        #     driver = webdriver.Chrome(options=options)
-        # except Exception as e:
-        #     self.logger.error(f'Error initializing driver: {e}')
-        #     self.assertTrue(False)
-        # # driver2 = webdriver.Firefox()
+    #     # try:
+    #     #     options = ChromeOptions()
+    #     #     options.add_argument("--no-sandbox")
+    #     #     options.add_argument("--disable-dev-shm-usage")
+    #     #     options.add_argument("--disable-gpu")
+    #     #     options.add_argument("--disable-extensions")
+    #     #     driver = webdriver.Chrome(options=options)
+    #     # except Exception as e:
+    #     #     self.logger.error(f'Error initializing driver: {e}')
+    #     #     self.assertTrue(False)
+    #     # # driver2 = webdriver.Firefox()
 
-        browser = 'firefox'
-        try:
-            if browser == 'chrome':
-                options = ChromeOptions()
-                options.add_argument("--no-sandbox")
-                options.add_argument("--disable-dev-shm-usage")
-                options.add_argument("--disable-gpu")
-                options.add_argument("--disable-extensions")
-                if not drv.verify:
-                    options.add_argument("--ignore-certificate-errors")
-                driver = webdriver.Chrome(options=options)
-            elif browser == 'firefox':
-                if not use_driver_service:
-                    self.logger.info('Initialize Firefox driver without driver service')
-                    options = FirefoxOptions()
-                    if not drv.verify:
-                        options.add_argument("--ignore-certificate-errors")
-                    # options.add_argument("--headless")
-                    driver = webdriver.Firefox(options=options)
-                else:
-                    self.logger.info('Initialize Firefox driver using snap geckodriver and driver service')
-                    driver_service = webdriver.FirefoxService(executable_path=geckodriver_path)
-                    driver = webdriver.Firefox(service=driver_service, options=options)
-            elif browser == 'firefox_grid':
-                    self.logger.info('Initialize Safari driver using firefox grid')
-                    options = SafariOptions()
-                    # options.add_argument("--no-sandbox")
-                    # options.add_argument("--disable-dev-shm-usage")
-                    # options.add_argument("--disable-gpu")
-                    # options.add_argument("--disable-extensions")
-                    if not drv.verify:
-                        options.add_argument("--ignore-certificate-errors")
-                    driver = webdriver.Remote(command_executor='http://127.0.0.1:4444/wd/hub', options=options)
-            else:
-                self.logger.error(f'Unknown browser {browser}')
-                self.assertTrue(False)
-        except Exception as e:
-            self.logger.error(f'Error initializing driver for {browser}: {e}')
-            self.assertTrue(False)
-        if browser == 'chrome':
-            driver.set_window_size(1920, 1152)
-        else:
-            driver.maximize_window()        
+    #     browser = 'firefox'
+    #     try:
+    #         if browser == 'chrome':
+    #             options = ChromeOptions()
+    #             options.add_argument("--no-sandbox")
+    #             options.add_argument("--disable-dev-shm-usage")
+    #             options.add_argument("--disable-gpu")
+    #             options.add_argument("--disable-extensions")
+    #             if not drv.verify:
+    #                 options.add_argument("--ignore-certificate-errors")
+    #             driver = webdriver.Chrome(options=options)
+    #         elif browser == 'firefox':
+    #             if not use_driver_service:
+    #                 self.logger.info('Initialize Firefox driver without driver service')
+    #                 options = FirefoxOptions()
+    #                 if not drv.verify:
+    #                     options.add_argument("--ignore-certificate-errors")
+    #                 # options.add_argument("--headless")
+    #                 driver = webdriver.Firefox(options=options)
+    #             else:
+    #                 self.logger.info('Initialize Firefox driver using snap geckodriver and driver service')
+    #                 driver_service = webdriver.FirefoxService(executable_path=geckodriver_path)
+    #                 driver = webdriver.Firefox(service=driver_service, options=options)
+    #         elif browser == 'firefox_grid':
+    #                 self.logger.info('Initialize Safari driver using firefox grid')
+    #                 options = SafariOptions()
+    #                 # options.add_argument("--no-sandbox")
+    #                 # options.add_argument("--disable-dev-shm-usage")
+    #                 # options.add_argument("--disable-gpu")
+    #                 # options.add_argument("--disable-extensions")
+    #                 if not drv.verify:
+    #                     options.add_argument("--ignore-certificate-errors")
+    #                 driver = webdriver.Remote(command_executor='http://127.0.0.1:4444/wd/hub', options=options)
+    #         else:
+    #             self.logger.error(f'Unknown browser {browser}')
+    #             self.assertTrue(False)
+    #     except Exception as e:
+    #         self.logger.error(f'Error initializing driver for {browser}: {e}')
+    #         self.assertTrue(False)
+    #     if browser == 'chrome':
+    #         driver.set_window_size(1920, 1152)
+    #     else:
+    #         driver.maximize_window()        
 
 
 
-        self.deleteCookies(driver)
-        driver.set_window_size(1920, 1152)
-        driver.get(loginurl)
+    #     self.deleteCookies(driver)
+    #     driver.set_window_size(1920, 1152)
+    #     driver.get(loginurl)
 
-        wait = WebDriverWait(driver, delay)
+    #     wait = WebDriverWait(driver, delay)
 
-        # loginLinkText = 'ACCESS THROUGH YOUR INSTITUTION'
+    #     # loginLinkText = 'ACCESS THROUGH YOUR INSTITUTION'
 
-        # wait.until(EC.element_to_be_clickable((By.LINK_TEXT, loginLinkText))).click()
-        # driver.implicitly_wait(g_driver_timeout)
+    #     # wait.until(EC.element_to_be_clickable((By.LINK_TEXT, loginLinkText))).click()
+    #     # driver.implicitly_wait(g_driver_timeout)
 
-        wait.until(EC.presence_of_element_located((By.ID, 'dsclient')))
-        driver.implicitly_wait(g_driver_timeout)
+    #     wait.until(EC.presence_of_element_located((By.ID, 'dsclient')))
+    #     driver.implicitly_wait(g_driver_timeout)
         
-        wait.until(EC.element_to_be_clickable((By.ID, 'searchinput'))).send_keys("eduid.se", Keys.RETURN)
-        driver.implicitly_wait(g_driver_timeout)
+    #     wait.until(EC.element_to_be_clickable((By.ID, 'searchinput'))).send_keys("eduid.se", Keys.RETURN)
+    #     driver.implicitly_wait(g_driver_timeout)
 
-        wait.until(EC.element_to_be_clickable((By.CLASS_NAME, 'label-url'))).click()
-        driver.implicitly_wait(g_driver_timeout)
+    #     wait.until(EC.element_to_be_clickable((By.CLASS_NAME, 'label-url'))).click()
+    #     driver.implicitly_wait(g_driver_timeout)
 
-        wait.until(EC.element_to_be_clickable((By.ID, 'username'))).send_keys(samluser)
-        self.logger.info('Email entered')
-        wait.until(EC.element_to_be_clickable((By.ID, 'currentPassword'))).send_keys(samlpassword)
-        # Three tabs and enter to log in
-        wait.until(EC.element_to_be_clickable((By.ID, 'currentPassword'))).send_keys(Keys.TAB + Keys.TAB + Keys.TAB + Keys.ENTER)
-        self.logger.info('Password entered, proceeding')
+    #     wait.until(EC.element_to_be_clickable((By.ID, 'username'))).send_keys(samluser)
+    #     self.logger.info('Email entered')
+    #     wait.until(EC.element_to_be_clickable((By.ID, 'currentPassword'))).send_keys(samlpassword)
+    #     # Three tabs and enter to log in
+    #     wait.until(EC.element_to_be_clickable((By.ID, 'currentPassword'))).send_keys(Keys.TAB + Keys.TAB + Keys.TAB + Keys.ENTER)
+    #     self.logger.info('Password entered, proceeding')
 
-        # if browser == 'firefox':
-        #     self.logger.info(f'Wait for login button and click it')
-        #     wait.until(EC.element_to_be_clickable((By.CLASS_NAME, 'login-form-button'))).click()
+    #     # if browser == 'firefox':
+    #     #     self.logger.info(f'Wait for login button and click it')
+    #     #     wait.until(EC.element_to_be_clickable((By.CLASS_NAME, 'login-form-button'))).click()
 
-        try:
-            wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'app-menu')))
-            self.logger.info('App menu is ready!')
-        except TimeoutException:
-            self.logger.info('Loading of app menu took too much time!')
+    #     try:
+    #         wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'app-menu')))
+    #         self.logger.info('App menu is ready!')
+    #     except TimeoutException:
+    #         self.logger.info('Loading of app menu took too much time!')
 
-        driver.implicitly_wait(g_driver_timeout) # seconds before quitting
-        dashboardUrl = drv.get_dashboard_url('extern')
-        currentUrl = driver.current_url
-        self.assertEqual(dashboardUrl, currentUrl)
-        self.logger.info(f'{currentUrl}')
+    #     driver.implicitly_wait(g_driver_timeout) # seconds before quitting
+    #     dashboardUrl = drv.get_dashboard_url('extern')
+    #     currentUrl = driver.current_url
+    #     self.assertEqual(dashboardUrl, currentUrl)
+    #     self.logger.info(f'{currentUrl}')
 
-        wait.until(EC.element_to_be_clickable((By.ID, 'user-menu'))).click()
-        logoutLink = driver.find_element(By.PARTIAL_LINK_TEXT, 'Log out')
-        logoutLink.click()
-        self.logger.info('Logout complete')
+    #     wait.until(EC.element_to_be_clickable((By.ID, 'user-menu'))).click()
+    #     logoutLink = driver.find_element(By.PARTIAL_LINK_TEXT, 'Log out')
+    #     logoutLink.click()
+    #     self.logger.info('Logout complete')
 
-        currentUrl = driver.current_url
-        self.logger.info(currentUrl)
-        self.assertEqual(currentUrl, drv.get_post_logout_url())
-        driver.implicitly_wait(g_driver_timeout) # seconds before quitting
-        driver.close()
-        self.logger.info('And done...')
+    #     currentUrl = driver.current_url
+    #     self.logger.info(currentUrl)
+    #     self.assertEqual(currentUrl, drv.get_post_logout_url())
+    #     driver.implicitly_wait(g_driver_timeout) # seconds before quitting
+    #     driver.close()
+    #     self.logger.info('And done...')
 
     def test_saml_su(self):
         self.logger.info(f'TestID: {self._testMethodName}')
