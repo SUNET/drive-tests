@@ -460,6 +460,19 @@ class TestTarget(object):
         else:
             raise NotImplementedError
 
+    def get_seleniumusertotpsecret(self, node, raiseException = True):
+        if self.platform == 'win32':
+            pwdcmd = 'powershell -command "& { . ./NodeCredentials.ps1; Get-SeleniumMfaUserTotpSecret ' + node + ' ' + self.target + ' }"'
+            process = os.popen(pwdcmd)
+            pwd = process.read()
+            process.close()
+            return pwd
+        elif self.platform == 'linux':
+            env = "NEXTCLOUD_SELENIUM_SECRET_" + node.upper() + "_" + self.target.upper()
+            return get_value(env, raiseException)
+        else:
+            raise NotImplementedError
+
     def get_seleniummfausertotpsecret(self, node, raiseException = True):
         if self.platform == 'win32':
             pwdcmd = 'powershell -command "& { . ./NodeCredentials.ps1; Get-SeleniumMfaUserTotpSecret ' + node + ' ' + self.target + ' }"'
@@ -626,8 +639,8 @@ class SeleniumHelper():
         if usertype == usertype.SELENIUM:
             nodeuser = self.drv.get_seleniumuser(self.nextcloudnode)
             nodepwd = self.drv.get_seleniumuserpassword(self.nextcloudnode)
-            nodetotpsecret = ''
-            isMfaUser = False
+            nodetotpsecret = self.drv.get_seleniumusertotpsecret(self.nextcloudnode)
+            isMfaUser = mfaUser
         elif usertype == usertype.SELENIUM_MFA:
             nodeuser = self.drv.get_seleniummfauser(self.nextcloudnode)
             nodepwd = self.drv.get_seleniummfauserpassword(self.nextcloudnode)
@@ -677,6 +690,7 @@ class SeleniumHelper():
                 totp = pyotp.TOTP(nodetotpsecret)
                 currentOtp = totp.now()
                 self.wait.until(EC.element_to_be_clickable((By.XPATH, '//*//input[@placeholder="Authentication code"]'))).send_keys(currentOtp + Keys.ENTER)
+                time.sleep(1) # TODO: Replace with wait until depending on expected outcome
 
                 if 'challenge/totp' in self.driver.current_url:
                     logger.info('Try again')

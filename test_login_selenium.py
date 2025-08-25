@@ -130,7 +130,7 @@ class TestLoginSelenium(unittest.TestCase):
 
                         sel = sunetnextcloud.SeleniumHelper(driver, fullnode)
                         sel.delete_cookies()
-                        sel.nodelogin(sel.UserType.SELENIUM)
+                        sel.nodelogin(sel.UserType.SELENIUM, mfaUser=True)
 
                         wait = WebDriverWait(driver, delay)
                         files = driver.find_element(By.XPATH, '//a[@href="' + drv.indexsuffix + '/apps/files/' +'"]')
