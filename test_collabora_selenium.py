@@ -46,28 +46,38 @@ def deleteCookies():
     g_logger.info(f'Cookies deleted: {cookies}')
 
 def nodelogin(collaboranode):
-    global g_wait
-    deleteCookies()
-    g_logger.info(f'Logging in to {collaboranode}')
-    loginurl = g_drv.get_node_login_url(collaboranode)
-    g_logger.info(f'Login url: {loginurl}')
-    nodeuser = g_drv.get_seleniumuser(collaboranode)
-    nodepwd = g_drv.get_seleniumuserpassword(collaboranode)
+    # global g_wait
+    global g_drv, g_driver, g_loggedInNodes
+
+    sel = sunetnextcloud.SeleniumHelper(g_driver, collaboranode)
+    sel.delete_cookies()
+    if g_drv.target == 'test':
+        sel.nodelogin(sel.UserType.SELENIUM, mfaUser=True)
+    else:
+        sel.nodelogin(sel.UserType.SELENIUM, mfaUser=False)
     g_loggedInNodes[collaboranode] = True
 
-    g_driver.set_window_size(1920, 1152)
-    # driver2 = webdriver.Firefox()
-    g_driver.get(loginurl)
 
-    g_wait.until(EC.presence_of_element_located((By.ID, 'user'))).send_keys(nodeuser)
-    g_wait.until(EC.presence_of_element_located((By.ID, 'password'))).send_keys(nodepwd + Keys.ENTER)
+    # deleteCookies()
+    # g_logger.info(f'Logging in to {collaboranode}')
+    # loginurl = g_drv.get_node_login_url(collaboranode)
+    # g_logger.info(f'Login url: {loginurl}')
+    # nodeuser = g_drv.get_seleniumuser(collaboranode)
+    # nodepwd = g_drv.get_seleniumuserapppassword(collaboranode)
+
+    # g_driver.set_window_size(1920, 1152)
+    # # driver2 = webdriver.Firefox()
+    # g_driver.get(loginurl)
+
+    # g_wait.until(EC.presence_of_element_located((By.ID, 'user'))).send_keys(nodeuser)
+    # g_wait.until(EC.presence_of_element_located((By.ID, 'password'))).send_keys(nodepwd + Keys.ENTER)
     return
 
 def removeFolder(node, foldername):
     fullPath = foldername + '/'
     g_logger.info(f'Check if file {fullPath} exists on {node}')
     nodeuser = g_drv.get_seleniumuser(node)
-    nodepwd = g_drv.get_seleniumuserpassword(node)
+    nodepwd = g_drv.get_seleniumuserapppassword(node)
     url = g_drv.get_webdav_url(node, nodeuser)
     options = {
         'webdav_hostname': url,
@@ -90,7 +100,7 @@ def checkFile(node, foldername, filename):
     fullPath = foldername + '/' + filename
     g_logger.info(f'Check if file {fullPath} exists on {node}')
     nodeuser = g_drv.get_seleniumuser(node)
-    nodepwd = g_drv.get_seleniumuserpassword(node)
+    nodepwd = g_drv.get_seleniumuserapppassword(node)
     url = g_drv.get_webdav_url(node, nodeuser)
     options = {
         'webdav_hostname': url,
@@ -117,7 +127,7 @@ def checkFile(node, foldername, filename):
 def checkFolder(node, foldername, create=False):
     g_logger.info(f'Check if file {foldername} exists on {node}')
     nodeuser = g_drv.get_seleniumuser(node)
-    nodepwd = g_drv.get_seleniumuserpassword(node)
+    nodepwd = g_drv.get_seleniumuserapppassword(node)
     url = g_drv.get_webdav_url(node, nodeuser)
     options = {
         'webdav_hostname': url,
@@ -138,7 +148,7 @@ def checkFolder(node, foldername, create=False):
 def hasFiles(node, foldername):
     g_logger.info(f'Check if file {foldername} exists on {node}')
     nodeuser = g_drv.get_seleniumuser(node)
-    nodepwd = g_drv.get_seleniumuserpassword(node)
+    nodepwd = g_drv.get_seleniumuserapppassword(node)
     url = g_drv.get_webdav_url(node, nodeuser)
     options = {
         'webdav_hostname': url,
@@ -308,8 +318,10 @@ class TestCollaboraSelenium(unittest.TestCase):
                         wait.until(EC.element_to_be_clickable((By.CLASS_NAME, self.addIcon))).click()
                         self.logger.info('Click on new text file')
                         time.sleep(g_clickWait)
-                        # wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'icon-filetype-text'))).click()
-                        wait.until(EC.element_to_be_clickable((By.XPATH, "//*[contains(@class, 'action-button__text') and text()='New text file']"))).click()
+
+                        button = g_driver.find_element(By.XPATH, "//*[contains(text(), 'New text file')]")
+                        button.click()
+
                         time.sleep(g_clickWait)
                         self.logger.info('Wait for dialog actions window')
                         wait.until(EC.presence_of_element_located((By.XPATH, "//*[contains(@class, 'dialog__actions')]")))
@@ -464,7 +476,10 @@ class TestCollaboraSelenium(unittest.TestCase):
                                 wait.until(EC.element_to_be_clickable((By.CLASS_NAME, self.addIcon))).click()
                                 time.sleep(g_clickWait)
                                 self.logger.info('Click on new document')
-                                wait.until(EC.element_to_be_clickable((By.XPATH, "//*[contains(@class, 'action-button__text') and text()='New document']"))).click()
+
+                                button = g_driver.find_element(By.XPATH, "//*[contains(text(), 'New document')]")
+                                button.click()
+
                                 time.sleep(g_clickWait)
                                 self.logger.info('Wait for dialog actions window')
                                 wait.until(EC.presence_of_element_located((By.XPATH, "//*[contains(@class, 'dialog__actions')]")))
@@ -635,8 +650,10 @@ class TestCollaboraSelenium(unittest.TestCase):
                         wait.until(EC.element_to_be_clickable((By.CLASS_NAME, self.addIcon))).click()
                         self.logger.info('Click on new spreadsheet')
                         time.sleep(g_clickWait)
-                        # wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'icon-filetype-spreadsheet'))).click()
-                        wait.until(EC.element_to_be_clickable((By.XPATH, "//*[contains(@class, 'action-button__text') and text()='New spreadsheet']"))).click()
+
+                        button = g_driver.find_element(By.XPATH, "//*[contains(text(), 'New spreadsheet')]")
+                        button.click()
+
                         time.sleep(g_clickWait)
                         self.logger.info('Wait for dialog actions window')
                         wait.until(EC.presence_of_element_located((By.XPATH, "//*[contains(@class, 'dialog__actions')]")))
@@ -808,7 +825,10 @@ class TestCollaboraSelenium(unittest.TestCase):
                         wait.until(EC.element_to_be_clickable((By.CLASS_NAME, self.addIcon))).click()
                         self.logger.info('Click on new presentation')
                         time.sleep(g_clickWait)
-                        wait.until(EC.element_to_be_clickable((By.XPATH, "//*[contains(@class, 'action-button__text') and text()='New presentation']"))).click()
+
+                        button = g_driver.find_element(By.XPATH, "//*[contains(text(), 'New presentation')]")
+                        button.click()
+
                         time.sleep(g_clickWait)
                         self.logger.info('Wait for dialog actions window')
                         wait.until(EC.presence_of_element_located((By.XPATH, "//*[contains(@class, 'dialog__actions')]")))
