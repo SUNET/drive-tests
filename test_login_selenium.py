@@ -136,8 +136,14 @@ class TestLoginSelenium(unittest.TestCase):
                             sel.nodelogin(sel.UserType.SELENIUM, mfaUser=False)
 
                         wait = WebDriverWait(driver, delay)
-                        files = driver.find_element(By.XPATH, '//a[@href="' + drv.indexsuffix + '/apps/files/' +'"]')
-                        files.click()
+
+                        try:
+                            wait.until(EC.presence_of_element_located((By.XPATH, '//a[@href="' + drv.indexsuffix + '/apps/files/' +'"]')))
+                            files = driver.find_element(By.XPATH, '//a[@href="' + drv.indexsuffix + '/apps/files/' +'"]')
+                            self.logger.info('Click on files app button')
+                            files.click()
+                        except:
+                            self.logger.error(f'Files app not loaded in current url? {driver.current_url}')
 
                         try:
                             wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'app-menu-entry')))
