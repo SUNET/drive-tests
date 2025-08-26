@@ -92,47 +92,11 @@ class TestLoginMultiSelenium(unittest.TestCase):
 
                 sel = sunetnextcloud.SeleniumHelper(driver, fullnode)
                 sel.delete_cookies()
-                sel.nodelogin(sel.UserType.SELENIUM_MFA)
 
-                # self.deleteCookies(driver)
-                # # driver2 = webdriver.Firefox()
-                # driver.get(loginurl)
-
-                # wait.until(EC.presence_of_element_located((By.ID, 'user'))).send_keys(nodeuser)
-                # wait.until(EC.presence_of_element_located((By.ID, 'password'))).send_keys(nodepwd + Keys.ENTER)
-
-                # # Wait for TOTP screen
-                # loggedIn = False
-                # logonTries = 0
-                # while loggedIn == False:
-                #     logonTries += 1
-                #     try:
-                #         self.logger.info(f'Check if TOTP selection dialogue is visible')
-                #         totpselect = driver.find_element(By.XPATH, '//a[@href="'+ g_drv.indexsuffix + '/login/challenge/totp' +'"]')
-                #         self.logger.warning(f'Found TOTP selection dialogue')
-                #         totpselect.click()
-                #     except:
-                #         self.logger.info(f'No need to select TOTP provider')
-
-                #     totp = pyotp.TOTP(nodetotpsecret)
-                #     wait.until(EC.presence_of_element_located((By.XPATH, '//*[@id="body-login"]/div[1]/div/main/div/form/input'))).send_keys(totp.now() + Keys.ENTER)
-
-                #     try:
-                #         wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'app-menu')))
-                #         self.logger.info(f'App menu is ready!')
-                #         loggedIn = True
-                #     except TimeoutException:
-                #         self.logger.warning(f'Loading of app menu took too much time!')
-                    
-                #     if logonTries >= 3:
-                #         self.logger.error(f'Unable to log on after {logonTries} tries')
-                #         self.assertTrue(False)
-                #         return
-
-                # # Check URLs after login
-                # dashboardUrl = g_drv.get_dashboard_url(fullnode)
-                # currentUrl = driver.current_url
-                # # self.assertEqual(dashboardUrl, currentUrl)                
+                if g_drv.target == 'test':
+                    sel.nodelogin(sel.UserType.SELENIUM, mfaUser=True)
+                else:
+                    sel.nodelogin(sel.UserType.SELENIUM, mfaUser=False)
 
                 try:
                     self.logger.info('Waiting for files app button')
@@ -182,7 +146,7 @@ class TestLoginMultiSelenium(unittest.TestCase):
                 self.logger.info(f'URL: {loginurl}')
                 nodeuser = g_drv.get_seleniumuser(fullnode)
                 self.logger.info(f'Username: {nodeuser}')
-                nodepwd = g_drv.get_seleniumuserpassword(fullnode)
+                nodepwd = g_drv.get_seleniumuserapppassword(fullnode)
 
                 # Create folder for testing using webdav
                 url = g_drv.get_webdav_url(fullnode, nodeuser)
@@ -202,7 +166,10 @@ class TestLoginMultiSelenium(unittest.TestCase):
                 driver.get(loginurl)
                 time.sleep(2)
 
-                sel.nodelogin(sel.UserType.SELENIUM)
+                if g_drv.target == 'test':
+                    sel.nodelogin(sel.UserType.SELENIUM, mfaUser=True)
+                else:
+                    sel.nodelogin(sel.UserType.SELENIUM, mfaUser=False)
 
                 files = driver.find_element(By.XPATH, '//a[@href="'+ g_drv.indexsuffix + '/apps/files/' +'"]')
                 files.click()
