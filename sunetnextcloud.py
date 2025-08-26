@@ -45,6 +45,8 @@ opsCommonFile = opsbase + "/global/overlay/etc/hiera/data/common.yaml"
 
 def get_value(env, raiseException = True):
     value = os.environ.get(env)
+    if value == '':
+        logger.warning(f'{env} is empty!')
     if value is None:
         msg = f'Environment variable {env} is not set!'
         if raiseException:
@@ -648,7 +650,7 @@ class SeleniumHelper():
         self.driver.delete_all_cookies()
         logger.info('All cookies deleted')
         return
-    def nodelogin(self, usertype : UserType, username='', password='', apppwd='', totpsecret='', mfaUser=False):
+    def nodelogin(self, usertype : UserType, username='', password='', apppwd='', totpsecret='', mfaUser=False, skipAppMenuCheck=False):
         loginurl = self.drv.get_node_login_url(self.nextcloudnode)
         if usertype == usertype.SELENIUM:
             nodeuser = self.drv.get_seleniumuser(self.nextcloudnode)
@@ -721,6 +723,9 @@ class SeleniumHelper():
         #     logger.warning(f'Unknown post login URL: {self.driver.current_url}')
 
         try:
+            if skipAppMenuCheck:
+                logger.info('Skip app menu check!')
+                return True
             self.wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'app-menu')))
             logger.info('App menu is ready!')
         except TimeoutException:
