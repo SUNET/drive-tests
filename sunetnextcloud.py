@@ -156,6 +156,9 @@ class TestTarget(object):
         if testcustomers[0] == 'all':
             self.fullnodes = self.fullnodes
 
+        if testcustomers[0] == 'allnodes':
+            self.fullnodes = self.allnodes
+
         # If we have a custom list of nodes set in the environment variable
         if len(testcustomers) != len(self.fullnodes) and testcustomers[0] != 'all':
             self.allnodes = testcustomers
