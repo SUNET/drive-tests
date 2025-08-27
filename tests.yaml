@@ -6,6 +6,7 @@ acceptance:
   - test_apps_ocs.py
   - test_webdav.py
   - test_collabora_cli.py
+  - test_mfa4all.py
 selenium:
   - test_login_selenium.py
 seleniumtotp:
