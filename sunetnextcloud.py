@@ -147,7 +147,7 @@ class TestTarget(object):
 
         # if testcustomers in self.allnodes or self.target == "custom":
         if len(testcustomers) == 1 or self.target == "custom":
-            if testcustomers[0] != 'all':
+            if 'all' not in testcustomers[0]:
                 self.singlenodetesting = True
                 self.allnodes = testcustomers
                 self.fullnodes = self.allnodes
@@ -160,7 +160,7 @@ class TestTarget(object):
             self.fullnodes = self.allnodes
 
         # If we have a custom list of nodes set in the environment variable
-        if len(testcustomers) != len(self.fullnodes) and testcustomers[0] != 'all':
+        if len(testcustomers) != len(self.fullnodes) and 'all' not in testcustomers[0]:
             self.allnodes = testcustomers
             self.fullnodes = self.allnodes
 
