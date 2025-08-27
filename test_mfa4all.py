@@ -87,7 +87,7 @@ class WebDAVList(threading.Thread):
             g_testThreadsRunning -= 1
             return
         except WebDavException as error:
-            logger.info(f'{fullnode} - Expected {type(error)}: {error.code}')
+            logger.info(f'{fullnode} - Expected fail: {error.code}')
             g_testThreadsRunning -= 1
             return
         except Exception as error:
