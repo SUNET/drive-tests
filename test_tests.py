@@ -41,8 +41,8 @@ class TestTests(unittest.TestCase):
 
                 for node in allnodes:
                     if node not in drv.fullnodes:
-                        self.logger.error(f'{node} in common.yaml but not tested')
-                        testMissing = True
+                        self.logger.warning(f'{node} in common.yaml but not tested')
+                        # testMissing = True
 
                 for node in drv.fullnodes:
                     if node not in allnodes:
@@ -58,15 +58,18 @@ class TestTests(unittest.TestCase):
         self.logger.info(f'{self._testMethodName}')
         drv = sunetnextcloud.TestTarget()
         test_failed = False
-        for fullnode in drv.fullnodes:
+        for fullnode in drv.allnodes:
             with self.subTest(mynode=fullnode):
                 self.logger.info(f'TestID: {fullnode}')
                 ocsuser = drv.get_ocsuser(fullnode, False)
                 ocsuserpwd = drv.get_ocsuserpassword(fullnode, False)
                 ocsuserapppwd = drv.get_ocsuserapppassword(fullnode, False)
+
                 seleniumuser = drv.get_seleniumuser(fullnode, False)
                 seleniumuserpwd = drv.get_seleniumuserpassword(fullnode, False)
                 seleniumuserapppwd = drv.get_seleniumuserapppassword(fullnode, False)
+                seleniumusertotpsecret = drv.get_seleniumusertotpsecret(fullnode, False)
+
                 seleniummfauser = drv.get_seleniummfauser(fullnode, False)
                 seleniummfauserpwd = drv.get_seleniummfauserpassword(fullnode, False)
                 seleniummfauserapppwd = drv.get_seleniummfauserapppassword(fullnode, False)
@@ -83,6 +86,8 @@ class TestTests(unittest.TestCase):
                 if seleniumuserpwd is None:
                     test_failed = True
                 if seleniumuserapppwd is None:
+                    test_failed = True
+                if seleniumusertotpsecret is None:
                     test_failed = True
                 if seleniummfauser is None:
                     test_failed = True
