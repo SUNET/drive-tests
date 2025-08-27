@@ -82,6 +82,10 @@ class TestTarget(object):
     multinodes = expectedResults['global']['multinodes']
     browsers = expectedResults['global']['testBrowsers']
 
+    allnodes.sort()
+    fullnodes.sort()
+    multinodes.sort()
+
     target = 'test'
     platform = sys.platform
 
