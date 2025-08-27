@@ -196,8 +196,6 @@ class WebDAVMultiCheckAndRemove(threading.Thread):
 
         client = Client(options)
         client.verify = drv.verify
-
-        # logger.info(f'HERE HERE HERE Client precheck: {client.list()}')
         
         count = 0
         try:
@@ -221,7 +219,7 @@ class WebDAVMultiCheckAndRemove(threading.Thread):
         try:
             self.TestWebDAV.assertFalse(client.check(g_testFolder))
         except Exception as error:
-            logger.error(f'Error in WebDAVMultiCheckAndRemove for node {self.name} on check {count}: {error}. Folder {g_testFolder} reported existing despite not in list: {client.list()}')
+            logger.error(f'Error in WebDAVMultiCheckAndRemove for node {self.name} on check {count}: {error}.')
             g_testPassed[fullnode] = False
             g_testThreadsRunning -= 1
             return
