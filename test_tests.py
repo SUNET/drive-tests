@@ -41,13 +41,12 @@ class TestTests(unittest.TestCase):
 
                 for node in allnodes:
                     if node not in drv.fullnodes:
-                        self.logger.warning(f'{node} in common.yaml but not tested')
-                        # testMissing = True
+                        self.logger.error(f'{node} in common.yaml but not tested')
+                        testMissing = True
 
                 for node in drv.fullnodes:
                     if node not in allnodes:
-                        self.logger.error(f'{node} in tests but not in common.yaml')
-                        testMissing = True
+                        self.logger.warning(f'{node} in tests but not in common.yaml')
         else:
             self.logger.info('Global config file not found, skipping test if all nodes are tested')
 
