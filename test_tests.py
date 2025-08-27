@@ -60,9 +60,6 @@ class TestTests(unittest.TestCase):
         for fullnode in drv.allnodes:
             with self.subTest(mynode=fullnode):
                 self.logger.info(f'TestID: {fullnode}')
-                ocsuser = drv.get_ocsuser(fullnode, False)
-                ocsuserpwd = drv.get_ocsuserpassword(fullnode, False)
-                ocsuserapppwd = drv.get_ocsuserapppassword(fullnode, False)
 
                 seleniumuser = drv.get_seleniumuser(fullnode, False)
                 seleniumuserpwd = drv.get_seleniumuserpassword(fullnode, False)
@@ -74,12 +71,10 @@ class TestTests(unittest.TestCase):
                 seleniummfauserapppwd = drv.get_seleniummfauserapppassword(fullnode, False)
                 seleniummfausertotpsecret = drv.get_seleniummfausertotpsecret(fullnode, False)
 
-                if ocsuser is None:
-                    test_failed = True
-                if ocsuserpwd is None:
-                    test_failed = True
-                if ocsuserapppwd is None:
-                    test_failed = True
+                ocsuser = drv.get_ocsuser(fullnode, False)
+                ocsuserpwd = drv.get_ocsuserpassword(fullnode, False)
+                ocsuserapppwd = drv.get_ocsuserapppassword(fullnode, False)
+
                 if seleniumuser is None:
                     test_failed = True
                 if seleniumuserpwd is None:
@@ -95,6 +90,12 @@ class TestTests(unittest.TestCase):
                 if seleniummfauserapppwd is None:
                     test_failed = True
                 if seleniummfausertotpsecret is None:
+                    test_failed = True
+                if ocsuser is None:
+                    test_failed = True
+                if ocsuserpwd is None:
+                    test_failed = True
+                if ocsuserapppwd is None:
                     test_failed = True
 
         self.assertFalse(test_failed)
