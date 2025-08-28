@@ -158,9 +158,8 @@ class TestLoginMultiSelenium(unittest.TestCase):
                 client.mkdir(dir)
                 self.assertEqual(client.list().count('SharedFolder/'), 1)
 
-                # Right now we have to call the login page twice - Check after upgrade
                 driver.get(loginurl)
-                time.sleep(2)
+                time.sleep(30)
 
                 sel.nodelogin(sel.UserType.SELENIUM, mfaUser=True)
 
