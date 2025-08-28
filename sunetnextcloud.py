@@ -159,9 +159,11 @@ class TestTarget(object):
 
         if testcustomers[0] == 'all':
             self.fullnodes = self.fullnodes
+            logger.info(f'Testing {len(self.fullnodes)} full nodes')
 
         if testcustomers[0] == 'allnodes':
             self.fullnodes = self.allnodes
+            logger.info(f'Testing all {len(self.fullnodes)} nodes')
 
         # If we have a custom list of nodes set in the environment variable
         if len(testcustomers) != len(self.fullnodes) and 'all' not in testcustomers[0]:
