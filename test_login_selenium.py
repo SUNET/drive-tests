@@ -53,9 +53,9 @@ class TestLoginSelenium(unittest.TestCase):
     def test_node_login(self):
         delay = 30 # seconds
         drv = sunetnextcloud.TestTarget()
-        # The class name of the share icon changed in Nextcloud 28
         version = drv.expectedResults[drv.target]['status']['version']
         self.logger.info(f'Expected Nextcloud version: {version}')
+        # The class name of the share icon changed in Nextcloud 28
         sharedClass = 'files-list__row-action-sharing-status'
 
         for browser in drv.browsers:
@@ -130,10 +130,7 @@ class TestLoginSelenium(unittest.TestCase):
 
                         sel = sunetnextcloud.SeleniumHelper(driver, fullnode)
                         sel.delete_cookies()
-                        if drv.target == 'test':
-                            sel.nodelogin(sel.UserType.SELENIUM, mfaUser=True)
-                        else:
-                            sel.nodelogin(sel.UserType.SELENIUM, mfaUser=False)
+                        sel.nodelogin(sel.UserType.SELENIUM, mfaUser=True)
 
                         wait = WebDriverWait(driver, delay)
 
