@@ -51,26 +51,8 @@ def nodelogin(collaboranode):
 
     sel = sunetnextcloud.SeleniumHelper(g_driver, collaboranode)
     sel.delete_cookies()
-    if g_drv.target == 'test':
-        sel.nodelogin(sel.UserType.SELENIUM, mfaUser=True)
-    else:
-        sel.nodelogin(sel.UserType.SELENIUM, mfaUser=False)
+    sel.nodelogin(sel.UserType.SELENIUM, mfaUser=True)
     g_loggedInNodes[collaboranode] = True
-
-
-    # deleteCookies()
-    # g_logger.info(f'Logging in to {collaboranode}')
-    # loginurl = g_drv.get_node_login_url(collaboranode)
-    # g_logger.info(f'Login url: {loginurl}')
-    # nodeuser = g_drv.get_seleniumuser(collaboranode)
-    # nodepwd = g_drv.get_seleniumuserapppassword(collaboranode)
-
-    # g_driver.set_window_size(1920, 1152)
-    # # driver2 = webdriver.Firefox()
-    # g_driver.get(loginurl)
-
-    # g_wait.until(EC.presence_of_element_located((By.ID, 'user'))).send_keys(nodeuser)
-    # g_wait.until(EC.presence_of_element_located((By.ID, 'password'))).send_keys(nodepwd + Keys.ENTER)
     return
 
 def removeFolder(node, foldername):
