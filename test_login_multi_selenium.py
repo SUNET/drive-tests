@@ -92,11 +92,7 @@ class TestLoginMultiSelenium(unittest.TestCase):
 
                 sel = sunetnextcloud.SeleniumHelper(driver, fullnode)
                 sel.delete_cookies()
-
-                if g_drv.target == 'test':
-                    sel.nodelogin(sel.UserType.SELENIUM, mfaUser=True)
-                else:
-                    sel.nodelogin(sel.UserType.SELENIUM, mfaUser=False)
+                sel.nodelogin(sel.UserType.SELENIUM, mfaUser=True)
 
                 try:
                     self.logger.info('Waiting for files app button')
@@ -166,10 +162,7 @@ class TestLoginMultiSelenium(unittest.TestCase):
                 driver.get(loginurl)
                 time.sleep(2)
 
-                if g_drv.target == 'test':
-                    sel.nodelogin(sel.UserType.SELENIUM, mfaUser=True)
-                else:
-                    sel.nodelogin(sel.UserType.SELENIUM, mfaUser=False)
+                sel.nodelogin(sel.UserType.SELENIUM, mfaUser=True)
 
                 files = driver.find_element(By.XPATH, '//a[@href="'+ g_drv.indexsuffix + '/apps/files/' +'"]')
                 files.click()
