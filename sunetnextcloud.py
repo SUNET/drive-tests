@@ -659,7 +659,7 @@ class SeleniumHelper():
         self.driver.delete_all_cookies()
         logger.info('All cookies deleted')
         return
-    def nodelogin(self, usertype : UserType, username='', password='', apppwd='', totpsecret='', mfaUser=False, skipAppMenuCheck=False):
+    def nodelogin(self, usertype : UserType, username='', password='', apppwd='', totpsecret='', mfaUser=True, skipAppMenuCheck=False, addOtp=False):
         loginurl = self.drv.get_node_login_url(self.nextcloudnode)
         if usertype == usertype.SELENIUM:
             nodeuser = self.drv.get_seleniumuser(self.nextcloudnode)
@@ -670,7 +670,7 @@ class SeleniumHelper():
             nodeuser = self.drv.get_seleniummfauser(self.nextcloudnode)
             nodepwd = self.drv.get_seleniummfauserpassword(self.nextcloudnode)
             nodetotpsecret = self.drv.get_seleniummfausertotpsecret(self.nextcloudnode)
-            isMfaUser = True
+            isMfaUser = mfaUser
         elif usertype == usertype.OCS:
             nodeuser = self.drv.get_ocsuser(self.nextcloudnode)
             nodepwd = self.drv.get_ocsuserpassword(self.nextcloudnode)
@@ -699,13 +699,35 @@ class SeleniumHelper():
         except Exception as error:
             logger.error(f'Error logging in to {loginurl}: {error}')
 
+        if addOtp:
+            logger.info(f'Adding OTP for {username}')
+            totpXpath = '//a[@href="/login/setupchallenge/totp"]'
+            logger.info(f'Locating {totpXpath}')
+            self.wait.until(EC.element_to_be_clickable((By.XPATH, totpXpath)))
+
+            totpselect = self.driver.find_element(By.XPATH, totpXpath)
+            totpselect.click()
+
+            self.wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'setup-confirmation__secret')))
+
+            nodetotpsecret = self.driver.find_element(By.CLASS_NAME, 'setup-confirmation__secret').text.split(' ')[-1]
+            totp = pyotp.TOTP(nodetotpsecret)
+            currentOtp = totp.now()
+
+            self.wait.until(EC.element_to_be_clickable((By.XPATH, '//*//input[@placeholder="Authentication code"]'))).send_keys(currentOtp + Keys.ENTER)
+            logger.info(f'OTP added for {username}')
+            isMfaUser = True
+            self.wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'two-factor-provider'))) # Wait for mfa login button and proceed
+
         if isMfaUser:
-            logger.info(f'MFA login {currentUrl}')
-            if 'selectchallenge' in currentUrl:
+            logger.info(f'MFA login {self.driver.current_url}')
+            totpXpath = '//a[contains(@href,"/challenge/totp")]'
+
+            if 'selectchallenge' in self.driver.current_url:
                 logger.info('Select TOTP provider')
-                totpselect = self.driver.find_element(By.XPATH, '//a[@href="'+ self.drv.indexsuffix + '/login/challenge/totp' +'"]')
+                totpselect = self.driver.find_element(By.XPATH, totpXpath)
                 totpselect.click()
-            elif 'challenge/totp' in currentUrl:
+            elif 'challenge/totp' in self.driver.current_url:
                 logger.info('No need to select TOTP provider')
 
             currentOtp = 0
@@ -715,8 +737,8 @@ class SeleniumHelper():
                 totp = pyotp.TOTP(nodetotpsecret)
                 currentOtp = totp.now()
                 self.wait.until(EC.element_to_be_clickable((By.XPATH, '//*//input[@placeholder="Authentication code"]'))).send_keys(currentOtp + Keys.ENTER)
-                time.sleep(1) # TODO: Replace with wait until depending on expected outcome
-
+                logger.info(f'Wait for files app after logging in')
+                self.wait.until(EC.element_to_be_clickable((By.XPATH, '//a[@href="' + self.drv.indexsuffix + '/apps/files/' +'"]')))
                 if 'challenge/totp' in self.driver.current_url:
                     logger.info('Try again')
                     while currentOtp == totp.now():
