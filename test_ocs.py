@@ -157,6 +157,7 @@ class NodeUsers(threading.Thread):
             logger.info(f'{self.TestOcsCalls._testMethodName} {url}')
             nodeuser = drv.get_ocsuser(fullnode)
             nodepwd = drv.get_ocsuserapppassword(fullnode)
+            logger.info(f'Get users from {url}')
             url = url.replace("$USERNAME$", nodeuser)
             url = url.replace("$PASSWORD$", nodepwd)
         except Exception as error:
@@ -513,8 +514,8 @@ class TestOcsCalls(unittest.TestCase):
         for fullnode in drv.fullnodes:
             with self.subTest(mynode=fullnode):
                 logger.info(f'TestID: {fullnode}')
-                nodeUsersThread = NodeGroups(fullnode, self, verify=drv.verify)
-                nodeUsersThread.start()
+                nodeGroupsThread = NodeGroups(fullnode, self, verify=drv.verify)
+                nodeGroupsThread.start()
 
         while(g_testThreadsRunning > 0):
             time.sleep(1)
@@ -556,5 +557,7 @@ class TestOcsCalls(unittest.TestCase):
 if __name__ == '__main__':
     if drv.testrunner == 'xml':
         unittest.main(testRunner=xmlrunner.XMLTestRunner(output='test-reports'))
+    elif drv.testrunner == 'txt':
+        unittest.main(testRunner=unittest.TextTestRunner(resultclass=sunetnextcloud.NumbersTestResult))
     else:
         unittest.main(testRunner=HtmlTestRunner.HTMLTestRunner(output='test-reports-html', combine_reports=True, report_name=f"nextcloud-{drv.expectedResults[drv.target]['status']['version']}-acceptance", add_timestamp=False))

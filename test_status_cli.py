@@ -442,14 +442,17 @@ class TestStatus(unittest.TestCase):
         numCollaboraNodes = expectedResults[drv.target]['collabora']['nodes']
         logger.info(f'Collabora nodes: {numCollaboraNodes}')
         for i in range(1,numCollaboraNodes+1):
-            url = drv.get_collabora_node_url(i)
-            logger.info(f'Testing Collabora Node: {url}')
-            r = requests.get(url, timeout=g_requestTimeout)
-            logger.info(f'Status: {r.text}')
-            self.assertEqual(expectedResults[drv.target]['collabora']['status'], r.text)
+            with self.subTest(mynode=i):
+                url = drv.get_collabora_node_url(i)
+                logger.info(f'Testing Collabora Node: {url}')
+                r = requests.get(url, timeout=g_requestTimeout)
+                logger.info(f'Status: {r.text}')
+                self.assertEqual(expectedResults[drv.target]['collabora']['status'], r.text)
 
 if __name__ == '__main__':
     if drv.testrunner == 'xml':
         unittest.main(testRunner=xmlrunner.XMLTestRunner(output='test-reports'))
+    elif drv.testrunner == 'txt':
+        unittest.main(testRunner=unittest.TextTestRunner(resultclass=sunetnextcloud.NumbersTestResult))
     else:
         unittest.main(testRunner=HtmlTestRunner.HTMLTestRunner(output='test-reports-html', combine_reports=True, report_name=f"nextcloud-{drv.expectedResults[drv.target]['status']['version']}-acceptance", add_timestamp=False))

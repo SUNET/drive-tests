@@ -112,10 +112,10 @@ class TestMfa4All(unittest.TestCase):
         global g_failedNodes
         delay = 30 # seconds
         drv = sunetnextcloud.TestTarget()
-        if drv.target == 'prod':
-            logger.warning('We are not testing mfa4all in production yet')
-            return
-        # The class name of the share icon changed in Nextcloud 28
+        # if drv.target == 'prod':
+        #     logger.warning('We are not testing mfa4all in production yet')
+        #     return
+
         version = drv.expectedResults[drv.target]['status']['version']
         logger.info(f'Expected Nextcloud version: {version}')
 
@@ -138,5 +138,7 @@ class TestMfa4All(unittest.TestCase):
 if __name__ == '__main__':
     if drv.testrunner == 'xml':
         unittest.main(testRunner=xmlrunner.XMLTestRunner(output='test-reports'))
+    elif drv.testrunner == 'txt':
+        unittest.main(testRunner=unittest.TextTestRunner(resultclass=sunetnextcloud.NumbersTestResult))
     else:
         unittest.main(testRunner=HtmlTestRunner.HTMLTestRunner(output='test-reports-html', combine_reports=True, report_name=f"nextcloud-{drv.expectedResults[drv.target]['status']['version']}-mfa4all", add_timestamp=False))
