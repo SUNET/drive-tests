@@ -678,7 +678,7 @@ class SeleniumHelper():
         elif usertype == usertype.OCS:
             nodeuser = self.drv.get_ocsuser(self.nextcloudnode)
             nodepwd = self.drv.get_ocsuserpassword(self.nextcloudnode)
-            nodetotpsecret = ''
+            nodetotpsecret = totpsecret
             isMfaUser = True
         elif usertype == usertype.BASIC:
             nodeuser = username
@@ -766,7 +766,7 @@ class SeleniumHelper():
         if len(nodetotpsecret) > 0:
             return nodetotpsecret
         else:
-            return True
+            return ''
 
     def create_app_password(self):
         settingsUrl = self.drv.get_settings_user_security_url(self.nextcloudnode)
