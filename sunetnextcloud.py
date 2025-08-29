@@ -232,6 +232,9 @@ class TestTarget(object):
     def get_node_post_logout_saml_url(self, node):
         return 'https://' + self.getnodeprefix(node) + self.targetprefix + self.delimiter + self.baseurl + self.indexsuffix + '/apps/user_saml/saml/selectUserBackEnd?redirectUrl='
 
+    def get_settings_user_security_url(self, node):
+        return 'https://' + self.getnodeprefix(node) + self.targetprefix + self.delimiter + self.baseurl + self.indexsuffix + '/settings/user/security'
+
     def get_post_logout_url(self):
         if self.target == 'test':
             return 'https://service.seamlessaccess.org/ds/?entityID=https%3A%2F%2Fidp-proxy.drive.test.sunet.se%2Fsp&return=https%3A%2F%2Fdrive.test.sunet.se'
@@ -660,6 +663,7 @@ class SeleniumHelper():
         logger.info('All cookies deleted')
         return
     def nodelogin(self, usertype : UserType, username='', password='', apppwd='', totpsecret='', mfaUser=True, skipAppMenuCheck=False, addOtp=False):
+        nodetotpsecret = ''
         loginurl = self.drv.get_node_login_url(self.nextcloudnode)
         if usertype == usertype.SELENIUM:
             nodeuser = self.drv.get_seleniumuser(self.nextcloudnode)
@@ -758,4 +762,35 @@ class SeleniumHelper():
             logger.info('App menu is ready!')
         except TimeoutException:
             logger.info('Loading of app menu took too much time!')
-        return True
+
+        if len(nodetotpsecret) > 0:
+            return nodetotpsecret
+        else:
+            return True
+
+    def create_app_password(self):
+        settingsUrl = self.drv.get_settings_user_security_url(self.nextcloudnode)
+        logger.info(f'Open user security settings: {settingsUrl}')
+        self.driver.get(settingsUrl)
+        self.wait.until(EC.element_to_be_clickable((By.XPATH, '//*//input[@placeholder="App name"]'))).send_keys('__testautomation__')
+        
+        # Find create new app button
+        createButton = None
+        try:
+            buttons = self.driver.find_elements(By.CLASS_NAME, 'button-vue__text')
+            for button in buttons:
+                if 'Create new app password' in button.text:
+                    createButton = button
+        except Exception as error:
+            logger.error(f'Unable to find create new app button: {error}')
+            return None
+        
+        createButton.click()
+
+        self.wait.until(EC.presence_of_element_located((By.XPATH, '//*//input[@placeholder="Password"]')))
+        time.sleep(2)
+        pwdField = self.driver.find_element(By.XPATH, '//*//input[@placeholder="Password"]')
+        appPwd = pwdField.get_attribute("value")
+        # Click on close icon and return the password
+        self.wait.until(EC.element_to_be_clickable((By.CLASS_NAME, 'close-icon'))).click()
+        return appPwd
