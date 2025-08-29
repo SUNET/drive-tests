@@ -804,4 +804,3 @@ class NumbersTestResult(unittest.TextTestResult):
         super(NumbersTestResult, self).addSubTest(test, subtest, outcome)
         # add to total number of tests run
         self.testsRun += 1
-        logger.info(f'Testrun {self.testsRun}')
