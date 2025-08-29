@@ -156,7 +156,12 @@ class TestUserlifecycleSelenium(unittest.TestCase):
                         newOtpSecret = ''
                         sel = sunetnextcloud.SeleniumHelper(driver, fullnode)
                         sel.delete_cookies()
-                        newOtpSecret = sel.nodelogin(sel.UserType.BASIC, username=lifecycleuser,password=lifecyclepwd, mfaUser=True, addOtp=True, totpsecret=newOtpSecret)
+                        if drv.target == 'test':
+                            mfaUser = True
+                        else:
+                            mfaUser = False
+
+                        newOtpSecret = sel.nodelogin(sel.UserType.BASIC, username=lifecycleuser,password=lifecyclepwd, mfaUser=mfaUser, addOtp=mfaUser, totpsecret=newOtpSecret)
                         wait = WebDriverWait(driver, delay)
 
                         lifecycleapppwd = sel.create_app_password()
@@ -240,7 +245,7 @@ class TestUserlifecycleSelenium(unittest.TestCase):
 
                         # Open direct login url again
                         self.logger.info('Log in again after password change')
-                        sel.nodelogin(sel.UserType.BASIC, username=lifecycleuser,password=lifecyclenewpwd, mfaUser=True, totpsecret=newOtpSecret)
+                        sel.nodelogin(sel.UserType.BASIC, username=lifecycleuser,password=lifecyclenewpwd, mfaUser=mfaUser, totpsecret=newOtpSecret)
 
                         wait = WebDriverWait(driver, delay)
                         try:
