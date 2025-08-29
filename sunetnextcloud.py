@@ -725,6 +725,7 @@ class SeleniumHelper():
 
             if 'selectchallenge' in self.driver.current_url:
                 logger.info('Select TOTP provider')
+                self.wait.until(EC.element_to_be_clickable((By.XPATH, totpXpath)))
                 totpselect = self.driver.find_element(By.XPATH, totpXpath)
                 totpselect.click()
             elif 'challenge/totp' in self.driver.current_url:
@@ -737,8 +738,7 @@ class SeleniumHelper():
                 totp = pyotp.TOTP(nodetotpsecret)
                 currentOtp = totp.now()
                 self.wait.until(EC.element_to_be_clickable((By.XPATH, '//*//input[@placeholder="Authentication code"]'))).send_keys(currentOtp + Keys.ENTER)
-                logger.info(f'Wait for files app after logging in')
-                self.wait.until(EC.element_to_be_clickable((By.XPATH, '//a[@href="' + self.drv.indexsuffix + '/apps/files/' +'"]')))
+                time.sleep(3) # Replace with proper check at some point
                 if 'challenge/totp' in self.driver.current_url:
                     logger.info('Try again')
                     while currentOtp == totp.now():
@@ -749,9 +749,6 @@ class SeleniumHelper():
                     break
         else:
             logger.info('No MFA login')
-
-        # if 'apps/dashboard/' not in self.driver.current_url:
-        #     logger.warning(f'Unknown post login URL: {self.driver.current_url}')
 
         try:
             if skipAppMenuCheck:
