@@ -11,6 +11,7 @@ import yaml
 import logging
 import time
 import pyotp
+import unittest
 
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
@@ -116,7 +117,7 @@ class TestTarget(object):
         if testrunner is None:
             logger.info('Using default xml test runner')
             self.testrunner = 'xml'
-        elif (testrunner == 'xml') or (testrunner == 'html'):
+        elif (testrunner == 'xml') or (testrunner == 'html') or ('txt'):
             logger.info(f'Using {testrunner} test runner')
             self.testrunner = testrunner
         else:
@@ -794,3 +795,13 @@ class SeleniumHelper():
         # Click on close icon and return the password
         self.wait.until(EC.element_to_be_clickable((By.CLASS_NAME, 'close-icon'))).click()
         return appPwd
+
+# Override TextTestResult to count subtests as test executions
+# Credits: https://stackoverflow.com/questions/45007346/count-subtests-in-python-unittests-separately
+class NumbersTestResult(unittest.TextTestResult):
+    def addSubTest(self, test, subtest, outcome):
+        # handle failures calling base class
+        super(NumbersTestResult, self).addSubTest(test, subtest, outcome)
+        # add to total number of tests run
+        self.testsRun += 1
+        logger.info(f'Testrun {self.testsRun}')
