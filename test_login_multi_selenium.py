@@ -4,6 +4,7 @@ Selenium tests to log on to a Sunet Drive node, and performing various operation
 """
 from datetime import datetime
 import xmlrunner
+import HtmlTestRunner
 import unittest
 import sunetnextcloud
 from webdav3.client import Client
@@ -185,5 +186,9 @@ class TestLoginMultiSelenium(unittest.TestCase):
                 driver.implicitly_wait(10) # seconds before quitting                
 
 if __name__ == '__main__':
-    # unittest.main()
-    unittest.main(testRunner=xmlrunner.XMLTestRunner(output='test-reports'))
+    if g_drv.testrunner == 'xml':
+        unittest.main(testRunner=xmlrunner.XMLTestRunner(output='test-reports'))
+    elif g_drv.testrunner == 'txt':
+        unittest.main(testRunner=unittest.TextTestRunner(resultclass=sunetnextcloud.NumbersTestResult))
+    else:
+        unittest.main(testRunner=HtmlTestRunner.HTMLTestRunner(output='test-reports-html', combine_reports=True, report_name=f"nextcloud-{g_drv.expectedResults[g_drv.target]['status']['version']}-selenium-login-multi", add_timestamp=False))

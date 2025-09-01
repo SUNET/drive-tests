@@ -13,6 +13,7 @@ import time
 import sys
 from datetime import datetime
 import xmlrunner
+import HtmlTestRunner
 
 import sunetnextcloud
 
@@ -27,7 +28,9 @@ g_filename=datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 g_davPerformanceResults = []
 g_testPassed = {}
 g_testThreadsRunning = 0
-ocsheaders = { "OCS-APIRequest" : "true" } 
+ocsheaders = { "OCS-APIRequest" : "true" }
+drv = sunetnextcloud.TestTarget()
+
 logger = logging.getLogger(__name__)
 logging.basicConfig(format = '%(asctime)s - %(module)s.%(funcName)s - %(levelname)s: %(message)s',
                 datefmt = '%Y-%m-%d %H:%M:%S', level = logging.INFO)
@@ -91,7 +94,6 @@ class TestWebDavPerformance(unittest.TestCase):
         numFiles = 100
         maxUploads = 2
         maxDeletes = 4
-        drv = sunetnextcloud.TestTarget()
         for fullnode in drv.fullnodes:
             with self.subTest(mynode=fullnode):
                 for fe in range(1,4):
@@ -347,4 +349,9 @@ class TestWebDavPerformance(unittest.TestCase):
 
 
 if __name__ == '__main__':
-    unittest.main(testRunner=xmlrunner.XMLTestRunner(output='test-reports'))
+    if drv.testrunner == 'xml':
+        unittest.main(testRunner=xmlrunner.XMLTestRunner(output='test-reports'))
+    elif drv.testrunner == 'txt':
+        unittest.main(testRunner=unittest.TextTestRunner(resultclass=sunetnextcloud.NumbersTestResult))
+    else:
+        unittest.main(testRunner=HtmlTestRunner.HTMLTestRunner(output='test-reports-html', combine_reports=True, report_name=f"nextcloud-{drv.expectedResults[drv.target]['status']['version']}-performance-webdav", add_timestamp=False), resultclass=NumbersTestResult)
