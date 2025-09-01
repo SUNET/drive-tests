@@ -4,6 +4,7 @@ Selenium tests to log on to a Sunet Drive node, and performing various operation
 """
 from datetime import datetime
 import xmlrunner
+import HtmlTestRunner
 import unittest
 import sunetnextcloud
 from webdav3.client import Client
@@ -24,6 +25,7 @@ import logging
 expectedResultsFile = 'expected.yaml'
 g_testtarget = os.environ.get('NextcloudTestTarget')
 g_filename=datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+drv = sunetnextcloud.TestTarget()
 
 class TestLoginSeleniumTotp(unittest.TestCase):
     logger = logging.getLogger(__name__)
@@ -46,7 +48,6 @@ class TestLoginSeleniumTotp(unittest.TestCase):
 
     def test_node_login(self):
         delay = 30 # seconds
-        drv = sunetnextcloud.TestTarget()
 
         # The class name of the share icon changed in Nextcloud 28
         version = self.expectedResults[drv.target]['status']['version']
@@ -149,5 +150,9 @@ class TestLoginSeleniumTotp(unittest.TestCase):
                 self.logger.info('And done...')
 
 if __name__ == '__main__':
-    # unittest.main()
-    unittest.main(testRunner=xmlrunner.XMLTestRunner(output='test-reports'))
+    if drv.testrunner == 'xml':
+        unittest.main(testRunner=xmlrunner.XMLTestRunner(output='test-reports'))
+    elif drv.testrunner == 'txt':
+        unittest.main(testRunner=unittest.TextTestRunner(resultclass=sunetnextcloud.NumbersTestResult))
+    else:
+        unittest.main(testRunner=HtmlTestRunner.HTMLTestRunner(output='test-reports-html', combine_reports=True, report_name=f"nextcloud-{drv.expectedResults[drv.target]['status']['version']}-selenium", add_timestamp=False))
