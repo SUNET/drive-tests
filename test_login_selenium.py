@@ -383,15 +383,23 @@ class TestLoginSelenium(unittest.TestCase):
                 requireTotp = False
 
             if requireTotp:
-                nodetotpsecret = drv.get_samlusertotpsecret(nodeName)
-                totp = pyotp.TOTP(nodetotpsecret)
-                while totp == pyotp.TOTP(nodetotpsecret):
-                    self.logger.warning('We already used this TOTP, so we wait until it changes')
-                    time.sleep(10)
-
-                wait.until(EC.element_to_be_clickable((By.XPATH, '//*//input[@placeholder="Authentication code"]'))).send_keys(totp.now() + Keys.ENTER)
-                self.logger.info('TOTP entered')
-
+                currentOtp = 0
+                totpRetry = 0
+                while totpRetry <= 3:
+                    nodetotpsecret = drv.get_samlusertotpsecret(nodeName)
+                    totpRetry += 1
+                    totp = pyotp.TOTP(nodetotpsecret)
+                    currentOtp = totp.now()
+                    wait.until(EC.element_to_be_clickable((By.XPATH, '//*//input[@placeholder="Authentication code"]'))).send_keys(currentOtp + Keys.ENTER)
+                    time.sleep(3) # Replace with proper check at some point
+                    if 'challenge/totp' in driver.current_url:
+                        self.logger.info('Try again')
+                        while currentOtp == totp.now():
+                            self.logger.info('Wait for new OTP to be issued')
+                            time.sleep(3)
+                    else:
+                        self.logger.info(f'Logging in to {nodeName}')
+                        break
             try:
                 wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'app-menu')))
                 self.logger.info('App menu is ready!')
