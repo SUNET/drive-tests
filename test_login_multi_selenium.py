@@ -117,12 +117,11 @@ class TestLoginMultiSelenium(unittest.TestCase):
                     screenshot.save("screenshots/" + fullnode + "test_node_multi_login" + g_filename + ".png")
                     self.assertTrue(False)
 
-                wait.until(EC.presence_of_element_located((By.XPATH, '//*[@title="Show sharing options"]')))
-                sharefolder = driver.find_element(by=By.XPATH, value='//*[@title="Show sharing options"]')
-                sharefolder.click()
-                self.logger.info('Clicked on share folder')
-
                 try:
+                    wait.until(EC.presence_of_element_located((By.XPATH, '//*[@title="Show sharing options"]')))
+                    sharefolder = driver.find_element(by=By.XPATH, value='//*[@title="Show sharing options"]')
+                    sharefolder.click()
+                    self.logger.info('Clicked on share folder')
                     wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'sharing-entry__title')))
                     self.logger.info('Share link enabled!')
                 except TimeoutException:
@@ -160,18 +159,18 @@ class TestLoginMultiSelenium(unittest.TestCase):
                 self.assertEqual(client.list().count('SharedFolder/'), 1)
 
                 driver.get(loginurl)
-                time.sleep(30)
+                self.logger.info(f'Wait {delay}s before next login cycle')
+                time.sleep(delay)
 
                 sel.nodelogin(sel.UserType.SELENIUM, mfaUser=True)
 
                 files = driver.find_element(By.XPATH, '//a[@href="'+ g_drv.indexsuffix + '/apps/files/' +'"]')
                 files.click()
 
-                wait.until(EC.presence_of_element_located((By.XPATH, '//*[@title="Show sharing options"]')))
-                sharefolder = driver.find_element(by=By.XPATH, value='//*[@title="Show sharing options"]')
-                sharefolder.click()
-
                 try:
+                    wait.until(EC.presence_of_element_located((By.XPATH, '//*[@title="Show sharing options"]')))
+                    sharefolder = driver.find_element(by=By.XPATH, value='//*[@title="Show sharing options"]')
+                    sharefolder.click()
                     wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'sharing-entry__title')))
                     self.logger.info('Share link enabled!')
                 except TimeoutException:
