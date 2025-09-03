@@ -352,7 +352,7 @@ class TestBridgITSelenium(unittest.TestCase):
                 except Exception as error:
                     g_logger.error(f'Error initializing Chrome driver: {error}')
                     self.assertTrue(False)
-                driver.maximize_window()
+                driver.set_window_size(1920, 1152)
                 # driver2 = webdriver.Firefox()
                 driver.get(loginurl)
 
