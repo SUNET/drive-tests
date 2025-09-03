@@ -52,7 +52,7 @@ class TestBridgitSelenium(unittest.TestCase):
                 except Exception as error:
                     self.logger.error(f'Error initializing Chrome driver: {error}')
                     self.assertTrue(False)
-                driver.maximize_window()
+                driver.set_window_size(1920, 1152)
                 # driver2 = webdriver.Firefox()
                 driver.get(loginurl)
                 # Store the ID of the original window for authorization window
