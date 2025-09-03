@@ -391,6 +391,7 @@ class TestCollaboraSelenium(unittest.TestCase):
                 for testfolder in self.testfolders:
                     with self.subTest(myFolder=testfolder):
                         self.logger.info(f'TestID: {collaboranode} for folder {testfolder}')
+                        success = True
 
                         try:
                             self.logger.info(f'Wait for {g_drv.indexsuffix}/apps/files/ and click')
