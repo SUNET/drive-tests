@@ -416,7 +416,7 @@ class TestBridgITSelenium(unittest.TestCase):
                 # driver2 = webdriver.Firefox()
 
                 self.deleteCookies(driver)
-                driver.maximize_window()        
+                driver.set_window_size(1920, 1152)        
                 driver.get(loginurl)
 
                 wait = WebDriverWait(driver, g_delay)
@@ -520,7 +520,7 @@ class TestBridgITSelenium(unittest.TestCase):
                 # driver2 = webdriver.Firefox()
 
                 self.deleteCookies(driver)
-                driver.maximize_window()        
+                driver.set_window_size(1920, 1152)        
                 driver.get(loginurl)
 
                 wait = WebDriverWait(driver, g_delay)
@@ -725,7 +725,7 @@ class TestBridgITSelenium(unittest.TestCase):
                 # driver2 = webdriver.Firefox()
 
                 self.deleteCookies(driver)
-                driver.maximize_window()        
+                driver.set_window_size(1920, 1152)        
                 driver.get(loginurl)
 
                 wait = WebDriverWait(driver, g_delay)
