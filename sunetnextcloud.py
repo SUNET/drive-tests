@@ -38,8 +38,6 @@ elif envtarget == 'custom':
 else:
     g_expectedFile = 'expected.yaml'
 
-logger.info(f'Using test results file: {g_expectedFile}')
-
 opsbase='sunet-drive-ops/'
 opsCommonFile = opsbase + "/global/overlay/etc/hiera/data/common.yaml"
 # opsCosmosDbFile = opsbase + "/global/overlay/etc/puppet/cosmos-db.yaml"
@@ -90,8 +88,10 @@ class TestTarget(object):
     target = 'test'
     platform = sys.platform
 
-    def __init__(self, target=None):
+    def __init__(self, target=None, loglevel=logging.INFO):
         global envtarget
+        logging.getLogger().setLevel(loglevel)
+        logger.info(f'Using test results file: {g_expectedFile}')
         abspath = os.path.abspath(__file__)
         dname = os.path.dirname(abspath)
         logger.info(f'Working directory is {dname}')
