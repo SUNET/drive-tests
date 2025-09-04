@@ -1,0 +1,100 @@
+#!/usr/bin/env python3
+from pprint import pprint
+import inquirer
+import sunetnextcloud
+import os
+import yaml
+import sys
+import logging
+import subprocess
+
+os.chdir(os.path.dirname(os.path.abspath(__file__)))
+configFile = 'tests.yaml'
+
+with open(configFile, "r") as stream:
+    tests=yaml.safe_load(stream)
+
+testcategory=['all']
+for category, files in tests.items():
+    testcategory.append(category)
+
+drv = sunetnextcloud.TestTarget(loglevel=logging.ERROR)
+questions = [
+    inquirer.List(
+        "testtarget",
+        message="Which environment do you want to test?",
+        choices=["test", "prod", "custom"],
+    ),
+    inquirer.List(
+        "nodestotest",
+        message="Which nodes do you want to test?",
+        choices=["All nodes", "Single", "Multiple"],
+    ),
+]
+
+base_answers = inquirer.prompt(questions)
+
+if base_answers['nodestotest'] == 'Single':
+    questions = [
+        inquirer.List(
+            "testnodes",
+            message="Which node do you want to test?",
+            choices=drv.allnodes,
+        ),
+    ]
+    node_answers = inquirer.prompt(questions)
+    node_answers['testnodes'] = [node_answers['testnodes']] # We want a list as a result, not a string
+elif base_answers['nodestotest'] == 'Multiple':
+    questions = [
+        inquirer.Checkbox("testnodes",
+            message="Which nodes should be tested? (Press <space> to select, Enter when finished).",
+            choices=drv.allnodes,
+        ),
+    ]
+    node_answers = inquirer.prompt(questions)
+else: # Test all
+    node_answers = {'testnodes': drv.allnodes}
+
+questions = [
+        inquirer.List(
+        "testcategory",
+        message="Types of test do you want to run?",
+        choices=testcategory,
+    ),
+]
+
+type_answers = inquirer.prompt(questions)
+
+testfiles=[]
+if type_answers['testcategory'] == 'all':
+    for category, files in tests.items():
+        if isinstance(files, list):
+            for file in files:
+                testfiles.append(file)
+else:
+    testfiles = tests[type_answers['testcategory']]
+
+config_msg = f'Running {type_answers['testcategory']} tests for {len(node_answers['testnodes'])} node(s) in environment {base_answers['testtarget']} from {len(testfiles)} file(s)'
+pprint(config_msg)
+
+os.environ["NextcloudTestTarget"] = base_answers['testtarget']
+
+if len(node_answers['testnodes']) == 0:
+    pprint(f'Not testing any nodes, exiting...')
+    sys.exit()
+elif len(node_answers['testnodes']) == 1:
+    ntc = node_answers['testnodes'][0]
+else:
+    ntc = ''
+    for node in node_answers['testnodes']:
+        ntc=f'{ntc},{node}'
+    ntc=str(ntc[1:])
+
+print(f'export NextcloudTestCustomers={ntc}')
+os.environ["NextcloudTestCustomers"] = ntc
+
+local_env=os.environ.copy()
+
+for testfile in testfiles:
+    pprint(f'python {testfile}')
+    subprocess.Popen(['python', testfile], env=local_env)
