@@ -1,3 +1,5 @@
+smoketest:
+  - test_status_cli.py
 acceptance:
   - test_tests.py
   - test_status_cli.py
