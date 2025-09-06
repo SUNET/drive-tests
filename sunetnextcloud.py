@@ -76,6 +76,7 @@ class TestTarget(object):
     # default target is test, unless overwritten by initializing with 'prod'
     targetprefix = '.' + testprefix
 
+    nodelist = expectedResults['global']['allnodes']
     allnodes = expectedResults['global']['allnodes']
     fullnodes = expectedResults['global']['fullnodes']
     multinodes = expectedResults['global']['multinodes']
@@ -261,6 +262,12 @@ class TestTarget(object):
 
     def get_add_user_fe_url(self, node, id):
         return 'https://$USERNAME$:$PASSWORD$@node' + str(id) + '.' + self.getnodeprefix(node) + self.targetprefix + self.delimiter + self.baseurl + '/ocs/v1.php/cloud/users?format=json'
+
+    def get_share_url(self, node):
+        return 'https://$USERNAME$:$PASSWORD$@' + self.getnodeprefix(node) + self.targetprefix + self.delimiter + self.baseurl + '/ocs/v1.php/apps/files_sharing/api/v1/shares?format=json'
+
+    def get_share_id_url(self, node, id):
+        return 'https://$USERNAME$:$PASSWORD$@' + self.getnodeprefix(node) + self.targetprefix + self.delimiter + self.baseurl + '/ocs/v1.php/apps/files_sharing/api/v1/shares/' + id + '?format=json'
 
     def get_add_user_multinode_url(self, node):
         server = self.opsCommonConfig['multinode_mapping'][node]['server']
