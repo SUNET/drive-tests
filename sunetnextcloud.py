@@ -304,6 +304,15 @@ class TestTarget(object):
     def get_shares_url(self, node):
         return 'https://$USERNAME$:$PASSWORD$@' + self.getnodeprefix(node) + self.targetprefix + self.delimiter + self.baseurl + '/ocs/v2.php/apps/files_sharing/api/v1/shares?format=json'
 
+    def get_remote_shares_url(self, node):
+        return 'https://$USERNAME$:$PASSWORD$@' + self.getnodeprefix(node) + self.targetprefix + self.delimiter + self.baseurl + '/ocs/v2.php/apps/files_sharing/api/v1/remote_shares?format=json'
+
+    def get_pending_shares_url(self, node):
+        return 'https://$USERNAME$:$PASSWORD$@' + self.getnodeprefix(node) + self.targetprefix + self.delimiter + self.baseurl + '/ocs/v2.php/apps/files_sharing/api/v1/remote_shares/pending?format=json'
+
+    def get_pending_shares_id_url(self, node, id):
+        return 'https://$USERNAME$:$PASSWORD$@' + self.getnodeprefix(node) + self.targetprefix + self.delimiter + self.baseurl + '/ocs/v2.php/apps/files_sharing/api/v1/remote_shares/pending/' + str(id)
+
     def get_delete_share_url(self, node, id):
         return 'https://$USERNAME$:$PASSWORD$@' + self.getnodeprefix(node) + self.targetprefix + self.delimiter + self.baseurl + '/ocs/v2.php/apps/files_sharing/api/v1/shares/' + id
 
