@@ -304,7 +304,7 @@ class NodeOcsUserPerformance(threading.Thread):
 
             g_ocsPerformanceResults.append(message)
         except Exception as error:
-            logger.error(f'{error}')
+            logger.error(f'Problem in NodeOcsUserPerformance: {error}')
             g_testPassed[fullnode] = False
             g_testThreadsRunning -= 1
             return
