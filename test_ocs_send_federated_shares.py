@@ -16,6 +16,7 @@ import tempfile
 import sunetnextcloud
 
 ocsheaders = { "OCS-APIRequest" : "true" } 
+nodestotest = ['sunet', 'su', 'extern']
 
 drv = sunetnextcloud.TestTarget()
 expectedResults = drv.expectedResults
@@ -184,10 +185,14 @@ class TestOcsFederatedShares(unittest.TestCase):
         pass
 
     def test_create_federated_share(self):
-        global logger
+        global logger, nodestotest
         logger.info('test_sharing_folders')
         drv = sunetnextcloud.TestTarget()
-        for fullnode in drv.fullnodes:
+        if len(drv.fullnodes) == 1:
+            nodestotest = drv.fullnodes
+        logger.info(f'Testing node(s) {nodestotest}')
+
+        for fullnode in nodestotest:
             with self.subTest(mynode=fullnode):
                 logger.info(f'TestID: {fullnode}')
                 OcsMakeFederatedShareThread = OcsMakeFederatedShare(name=fullnode, TestOcsFederatedShares=self, basicAuth=False)
@@ -195,8 +200,8 @@ class TestOcsFederatedShares(unittest.TestCase):
 
         while(g_testThreadsRunning > 0):
             time.sleep(1)
-
-        for fullnode in drv.fullnodes:
+    
+        for fullnode in nodestotest:
             with self.subTest(mynode=fullnode):
                 self.assertTrue(g_testPassed[fullnode])
 
