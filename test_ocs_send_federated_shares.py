@@ -125,7 +125,7 @@ class OcsMakeFederatedShare(threading.Thread):
 
             for share in j['ocs']['data']:
                 url = drv.get_share_id_url(fullnode, share['id'])
-                logger.info(f'Delete share: {share['id']} - {url}')
+                logger.info(f"Delete share: {share['id']} - {url}")
                 url = url.replace("$USERNAME$", nodeuser)
                 url = url.replace("$PASSWORD$", nodepwd)
                 r = requests.delete(url, headers=ocsheaders, verify=self.verify)
