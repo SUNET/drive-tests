@@ -196,7 +196,11 @@ class TestOcsFederatedShares(unittest.TestCase):
                 url = url.replace("$PASSWORD$", nodepwd)
                 r = requests.get(url, headers=ocsheaders, timeout=g_requestTimeout)
                 j = json.loads(r.text)
-                logger.info(json.dumps(j, indent=4, sort_keys=True))
+                # logger.info(json.dumps(j, indent=4, sort_keys=True))
+
+                if len(j['ocs']['data']) == 0:
+                    logger.info(f'No pending shares to accept for {fullnode}')
+                    return
 
                 for share in j['ocs']['data']:
                     filename = share['name']
@@ -206,7 +210,7 @@ class TestOcsFederatedShares(unittest.TestCase):
                     url = url.replace("$USERNAME$", nodeuser)
                     url = url.replace("$PASSWORD$", nodepwd)
                     r = requests.post(url, headers=ocsheaders)
-                    # logger.info(f'Pending share accepted: {r.text}')
+                    logger.info(f'Pending share accepted: {filename}')
 
     def test_list_federated_shares(self):
         drv = sunetnextcloud.TestTarget()
@@ -260,7 +264,7 @@ class TestOcsFederatedShares(unittest.TestCase):
                     logger.info(f'Accept share: {share['id']} - {url}')
                     url = url.replace("$USERNAME$", nodeuser)
                     url = url.replace("$PASSWORD$", nodepwd)
-                    r = requests.post(url, headers=ocsheaders)
+                    r = requests.delete(url, headers=ocsheaders)
                     # logger.info(f'Pending share accepted: {r.text}')
 
 if __name__ == '__main__':
