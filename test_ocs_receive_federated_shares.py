@@ -208,7 +208,7 @@ class TestOcsFederatedShares(unittest.TestCase):
                     r = requests.post(url, headers=ocsheaders)
                     # logger.info(f'Pending share accepted: {r.text}')
 
-    def test_access_remote_shares(self):
+    def test_list_federated_shares(self):
         drv = sunetnextcloud.TestTarget()
         for fullnode in drv.fullnodes:
             with self.subTest(mynode=fullnode):
