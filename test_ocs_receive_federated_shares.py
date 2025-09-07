@@ -200,7 +200,7 @@ class TestOcsFederatedShares(unittest.TestCase):
 
                 if len(j['ocs']['data']) == 0:
                     logger.info(f'No pending shares to accept for {fullnode}')
-                    return
+                    continue # with next node
 
                 for share in j['ocs']['data']:
                     filename = share['name']
