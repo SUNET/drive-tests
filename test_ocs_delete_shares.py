@@ -183,12 +183,11 @@ class TestOcsFederatedShares(unittest.TestCase):
         logger.info(f'TestID: {self._testMethodName}')
         pass
 
-    def test_accept_federated_shares(self):
+    def test_delete_federated_shares(self):
         drv = sunetnextcloud.TestTarget()
         for fullnode in drv.fullnodes:
             with self.subTest(mynode=fullnode):
-                logger.info(f'Accept shares for {fullnode}')
-
+                logger.info(f'Delete shares for {fullnode}')
                 nodeuser = drv.get_seleniumuser(fullnode)
                 nodepwd = drv.get_seleniumuserapppassword(fullnode)
                 url = drv.get_pending_shares_url(fullnode)
@@ -196,53 +195,17 @@ class TestOcsFederatedShares(unittest.TestCase):
                 url = url.replace("$PASSWORD$", nodepwd)
                 r = requests.get(url, headers=ocsheaders, timeout=g_requestTimeout)
                 j = json.loads(r.text)
-                # logger.info(json.dumps(j, indent=4, sort_keys=True))
-
-                if len(j['ocs']['data']) == 0:
-                    logger.info(f'No pending shares to accept for {fullnode}')
-                    continue # with next node
+                logger.info(json.dumps(j, indent=4, sort_keys=True))
 
                 for share in j['ocs']['data']:
                     filename = share['name']
-                    logger.info(f'Accepting share {filename}')
+                    logger.info(f'Deleting share {filename}')
                     url = drv.get_pending_shares_id_url(fullnode, share['id'])
                     logger.info(f'Accept share: {share['id']} - {url}')
                     url = url.replace("$USERNAME$", nodeuser)
                     url = url.replace("$PASSWORD$", nodepwd)
-                    r = requests.post(url, headers=ocsheaders)
-                    logger.info(f'Pending share accepted: {filename}')
-
-    def test_list_federated_shares(self):
-        drv = sunetnextcloud.TestTarget()
-        for fullnode in drv.fullnodes:
-            with self.subTest(mynode=fullnode):
-                logger.info(f'List federated shares for {fullnode}')
-
-                nodeuser = drv.get_seleniumuser(fullnode)
-                nodepwd = drv.get_seleniumuserapppassword(fullnode)
-                url = drv.get_remote_shares_url(fullnode)
-                url = url.replace("$USERNAME$", nodeuser)
-                url = url.replace("$PASSWORD$", nodepwd)
-                r = requests.get(url, headers=ocsheaders, timeout=g_requestTimeout)
-                j = json.loads(r.text)
-                # logger.info(json.dumps(j, indent=4, sort_keys=True))
-
-                url = drv.get_webdav_url(fullnode, nodeuser)
-                logger.info(f'URL: {url}')
-                options = {
-                'webdav_hostname': url,
-                'webdav_login' : nodeuser,
-                'webdav_password' : nodepwd, 
-                'webdav_timeout': g_webdav_timeout
-                }
-                client = Client(options)
-                client.verify = drv.verify
-
-                for share in j['ocs']['data']:
-                    filename = share['name']
-                    logger.info(f'List share {filename}')
-                    logger.info(client.list(filename))
-
+                    r = requests.delete(url, headers=ocsheaders)
+                    # logger.info(f'Pending share accepted: {r.text}')
 
 if __name__ == '__main__':
     if drv.testrunner == 'xml':
