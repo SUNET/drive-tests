@@ -206,7 +206,7 @@ class TestOcsFederatedShares(unittest.TestCase):
                     filename = share['name']
                     logger.info(f'Accepting share {filename}')
                     url = drv.get_pending_shares_id_url(fullnode, share['id'])
-                    logger.info(f'Accept share: {share['id']} - {url}')
+                    logger.info(f"Accept share: {share['id']} - {url}")
                     url = url.replace("$USERNAME$", nodeuser)
                     url = url.replace("$PASSWORD$", nodepwd)
                     r = requests.post(url, headers=ocsheaders)
