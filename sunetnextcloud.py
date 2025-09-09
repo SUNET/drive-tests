@@ -653,10 +653,10 @@ class TestTarget(object):
         else:
             raise NotImplementedError
         
-    def run_tests(self, filename, testtype='undefined'):
+    def run_tests(self, filename):
         logger.info(f'Running tests for {filename}')
         ts = datetime.strftime(datetime.now(),'%Y%m%d%H%M%S')
-        reportName = f"nextcloud-{self.expectedResults[self.target]['status']['version']}-{testtype}-{ts}-{filename}.xml"
+        reportName = f"nextcloud-{self.expectedResults[self.target]['status']['version']}-{filename}-{ts}.xml"
         if self.testrunner == 'xml':
             reportFolder = 'test-reports/'
             reportFullPath = f'{reportFolder}{reportName}'

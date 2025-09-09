@@ -22,7 +22,6 @@ from selenium.webdriver.chrome.options import Options as ChromeOptions
 from selenium.webdriver import FirefoxOptions
 from selenium.webdriver.safari.options import Options as SafariOptions
 
-
 drv = sunetnextcloud.TestTarget()
 expectedResults = drv.expectedResults
 
@@ -134,4 +133,4 @@ class TestMfa4All(unittest.TestCase):
             self.assertTrue(False)
 
 if __name__ == '__main__':
-    drv.run_tests(os.path.basename(__file__), 'acceptance')
+    drv.run_tests(os.path.basename(__file__))

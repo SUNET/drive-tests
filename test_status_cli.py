@@ -449,4 +449,4 @@ class TestStatus(unittest.TestCase):
                 self.assertEqual(expectedResults[drv.target]['collabora']['status'], r.text)
 
 if __name__ == '__main__':
-    drv.run_tests(os.path.basename(__file__), 'acceptance')
+    drv.run_tests(os.path.basename(__file__))

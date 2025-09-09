@@ -554,4 +554,4 @@ class TestOcsCalls(unittest.TestCase):
                 self.assertTrue(g_testPassed[fullnode])
 
 if __name__ == '__main__':
-    drv.run_tests(os.path.basename(__file__), 'acceptance')
+    drv.run_tests(os.path.basename(__file__))

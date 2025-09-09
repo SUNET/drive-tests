@@ -2,15 +2,14 @@
 Author: Richard Freitag <freitag@sunet.se>
 """
 
-import xmlrunner
 import unittest
-import HtmlTestRunner
 import requests
 import threading
 import json
 import logging
 import time
 from datetime import datetime
+import os
 
 import sunetnextcloud
 
@@ -379,9 +378,4 @@ class TestPerformanceOcs(unittest.TestCase):
             logger.info(f'{message}')
                 
 if __name__ == '__main__':
-    if drv.testrunner == 'xml':
-        unittest.main(testRunner=xmlrunner.XMLTestRunner(output='test-reports'))
-    elif drv.testrunner == 'txt':
-        unittest.main(testRunner=unittest.TextTestRunner(resultclass=sunetnextcloud.NumbersTestResult))
-    else:
-        unittest.main(testRunner=HtmlTestRunner.HTMLTestRunner(output='test-reports-html', combine_reports=True, report_name=f"nextcloud-{drv.expectedResults[drv.target]['status']['version']}-performance", add_timestamp=False))
+    drv.run_tests(os.path.basename(__file__))

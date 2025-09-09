@@ -3,8 +3,6 @@ Author: Richard Freitag <freitag@sunet.se>
 Selenium tests to log on to a Sunet Drive node, and performing various operations to ensure basic operation of a node
 """
 from datetime import datetime
-import xmlrunner
-import HtmlTestRunner
 import unittest
 import sunetnextcloud
 from webdav3.client import Client
@@ -23,15 +21,14 @@ import os
 import logging
 import yaml
 
-# 'prod' for production environment, 'test' for test environment
+drv = sunetnextcloud.TestTarget()
 g_testtarget = os.environ.get('NextcloudTestTarget')
 g_expectedResultsFile = 'expected.yaml'
 g_filename=datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-g_drv={}
 g_version={}
 
 class TestLoginMultiSelenium(unittest.TestCase):
-    global g_drv, g_version
+    global drv, g_version
     logger = logging.getLogger(__name__)
     logging.basicConfig(format = '%(asctime)s - %(module)s.%(funcName)s - %(levelname)s: %(message)s',
                     datefmt = '%Y-%m-%d %H:%M:%S', level = logging.INFO)
@@ -41,7 +38,7 @@ class TestLoginMultiSelenium(unittest.TestCase):
 
     # Some class names of icons changed from Nextcloud 27 to 28
     drv = sunetnextcloud.TestTarget(g_testtarget)
-    g_drv = drv
+    drv = drv
     g_version = expectedResults[drv.target]['status']['version']
 
     def deleteCookies(self, driver):
@@ -58,18 +55,18 @@ class TestLoginMultiSelenium(unittest.TestCase):
 
     def test_node_multi_login(self):
         delay = 30 # seconds
-        for fullnode in g_drv.fullnodes:
+        for fullnode in drv.fullnodes:
             with self.subTest(mynode=fullnode):
-                loginurl = g_drv.get_node_login_url(fullnode)
+                loginurl = drv.get_node_login_url(fullnode)
                 self.logger.info(f'URL: {loginurl}')
-                nodeuser = g_drv.get_seleniummfauser(fullnode)
+                nodeuser = drv.get_seleniummfauser(fullnode)
                 self.logger.info(f'Username: {nodeuser}')
-                nodepwd = g_drv.get_seleniummfauserpassword(fullnode)
-                nodeapppwd = g_drv.get_seleniummfauserapppassword(fullnode)
-                nodetotpsecret = g_drv.get_seleniummfausertotpsecret(fullnode)
+                nodepwd = drv.get_seleniummfauserpassword(fullnode)
+                nodeapppwd = drv.get_seleniummfauserapppassword(fullnode)
+                nodetotpsecret = drv.get_seleniummfausertotpsecret(fullnode)
 
                 # Create folder for testing using webdav
-                url = g_drv.get_webdav_url(fullnode, nodeuser)
+                url = drv.get_webdav_url(fullnode, nodeuser)
                 options = {
                 'webdav_hostname': url,
                 'webdav_login' : nodeuser,
@@ -97,12 +94,12 @@ class TestLoginMultiSelenium(unittest.TestCase):
 
                 try:
                     self.logger.info('Waiting for files app button')
-                    wait.until(EC.presence_of_element_located((By.XPATH, '//a[@href="'+ g_drv.indexsuffix + '/apps/files/' +'"]')))
-                    files = driver.find_element(By.XPATH, '//a[@href="'+ g_drv.indexsuffix + '/apps/files/' +'"]')
+                    wait.until(EC.presence_of_element_located((By.XPATH, '//a[@href="'+ drv.indexsuffix + '/apps/files/' +'"]')))
+                    files = driver.find_element(By.XPATH, '//a[@href="'+ drv.indexsuffix + '/apps/files/' +'"]')
                     files.click()
                 except Exception:
                     self.logger.warning('Files app button not found, do we have to totp again?')
-                    totpselect = driver.find_element(By.XPATH, '//a[@href="'+ g_drv.indexsuffix + '/login/challenge/totp' +'"]')
+                    totpselect = driver.find_element(By.XPATH, '//a[@href="'+ drv.indexsuffix + '/login/challenge/totp' +'"]')
                     self.logger.warning('Found TOTP selection dialogue')
                     totpselect.click()
                     totp = pyotp.TOTP(nodetotpsecret)
@@ -138,14 +135,14 @@ class TestLoginMultiSelenium(unittest.TestCase):
                 self.deleteCookies(driver)
                 time.sleep(1)
 
-                loginurl = g_drv.get_node_login_url(fullnode)
+                loginurl = drv.get_node_login_url(fullnode)
                 self.logger.info(f'URL: {loginurl}')
-                nodeuser = g_drv.get_seleniumuser(fullnode)
+                nodeuser = drv.get_seleniumuser(fullnode)
                 self.logger.info(f'Username: {nodeuser}')
-                nodepwd = g_drv.get_seleniumuserapppassword(fullnode)
+                nodepwd = drv.get_seleniumuserapppassword(fullnode)
 
                 # Create folder for testing using webdav
-                url = g_drv.get_webdav_url(fullnode, nodeuser)
+                url = drv.get_webdav_url(fullnode, nodeuser)
                 options = {
                 'webdav_hostname': url,
                 'webdav_login' : nodeuser,
@@ -164,7 +161,7 @@ class TestLoginMultiSelenium(unittest.TestCase):
 
                 sel.nodelogin(sel.UserType.SELENIUM, mfaUser=True)
 
-                files = driver.find_element(By.XPATH, '//a[@href="'+ g_drv.indexsuffix + '/apps/files/' +'"]')
+                files = driver.find_element(By.XPATH, '//a[@href="'+ drv.indexsuffix + '/apps/files/' +'"]')
                 files.click()
 
                 try:
@@ -185,9 +182,4 @@ class TestLoginMultiSelenium(unittest.TestCase):
                 driver.implicitly_wait(10) # seconds before quitting                
 
 if __name__ == '__main__':
-    if g_drv.testrunner == 'xml':
-        unittest.main(testRunner=xmlrunner.XMLTestRunner(output='test-reports'))
-    elif g_drv.testrunner == 'txt':
-        unittest.main(testRunner=unittest.TextTestRunner(resultclass=sunetnextcloud.NumbersTestResult))
-    else:
-        unittest.main(testRunner=HtmlTestRunner.HTMLTestRunner(output='test-reports-html', combine_reports=True, report_name=f"nextcloud-{g_drv.expectedResults[g_drv.target]['status']['version']}-selenium-login-multi", add_timestamp=False))
+    drv.run_tests(os.path.basename(__file__))
