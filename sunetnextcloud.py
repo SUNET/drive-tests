@@ -12,6 +12,8 @@ import logging
 import time
 import pyotp
 import unittest
+import xmlrunner
+import HtmlTestRunner
 
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
@@ -20,6 +22,7 @@ from selenium.webdriver.common.keys import Keys
 from selenium.common.exceptions import TimeoutException
 
 from enum import Enum
+from datetime import datetime
 
 # Change to local directory
 abspath = os.path.abspath(__file__)
@@ -649,6 +652,21 @@ class TestTarget(object):
             return get_value(env)
         else:
             raise NotImplementedError
+        
+    def run_tests(self, filename, testtype='undefined'):
+        logger.info(f'Running tests for {filename}')
+        ts = datetime.strftime(datetime.now(),'%Y%m%d%H%M%S')
+        reportName = f"nextcloud-{self.expectedResults[self.target]['status']['version']}-{testtype}-{ts}-{filename}.xml"
+        if self.testrunner == 'xml':
+            reportFolder = 'test-reports/'
+            reportFullPath = f'{reportFolder}{reportName}'
+            with open(reportFullPath, 'wb') as output:
+                unittest.main(testRunner=xmlrunner.XMLTestRunner(output=output))
+        elif self.testrunner == 'txt':
+            unittest.main(testRunner=unittest.TextTestRunner(resultclass=NumbersTestResult))
+        else:
+            reportFolder = 'test-reports-html/'
+            unittest.main(testRunner=HtmlTestRunner.HTMLTestRunner(output=reportFolder, combine_reports=False, report_name=reportName, add_timestamp=False), resultclass=NumbersTestResult)
 
 class Helper():
     def get_random_string(self, length):
@@ -681,20 +699,20 @@ class SeleniumHelper():
         return
     def nodelogin(self, usertype : UserType, username='', password='', apppwd='', totpsecret='', mfaUser=True, skipAppMenuCheck=False, addOtp=False):
         nodetotpsecret = ''
-        loginurl = self.drv.get_node_login_url(self.nextcloudnode)
+        loginurl = self.self.get_node_login_url(self.nextcloudnode)
         if usertype == usertype.SELENIUM:
-            nodeuser = self.drv.get_seleniumuser(self.nextcloudnode)
-            nodepwd = self.drv.get_seleniumuserpassword(self.nextcloudnode)
-            nodetotpsecret = self.drv.get_seleniumusertotpsecret(self.nextcloudnode)
+            nodeuser = self.self.get_seleniumuser(self.nextcloudnode)
+            nodepwd = self.self.get_seleniumuserpassword(self.nextcloudnode)
+            nodetotpsecret = self.self.get_seleniumusertotpsecret(self.nextcloudnode)
             isMfaUser = mfaUser
         elif usertype == usertype.SELENIUM_MFA:
-            nodeuser = self.drv.get_seleniummfauser(self.nextcloudnode)
-            nodepwd = self.drv.get_seleniummfauserpassword(self.nextcloudnode)
-            nodetotpsecret = self.drv.get_seleniummfausertotpsecret(self.nextcloudnode)
+            nodeuser = self.self.get_seleniummfauser(self.nextcloudnode)
+            nodepwd = self.self.get_seleniummfauserpassword(self.nextcloudnode)
+            nodetotpsecret = self.self.get_seleniummfausertotpsecret(self.nextcloudnode)
             isMfaUser = mfaUser
         elif usertype == usertype.OCS:
-            nodeuser = self.drv.get_ocsuser(self.nextcloudnode)
-            nodepwd = self.drv.get_ocsuserpassword(self.nextcloudnode)
+            nodeuser = self.self.get_ocsuser(self.nextcloudnode)
+            nodepwd = self.self.get_ocsuserpassword(self.nextcloudnode)
             nodetotpsecret = totpsecret
             isMfaUser = True
         elif usertype == usertype.BASIC:
@@ -706,7 +724,7 @@ class SeleniumHelper():
             logger.error(f'Unknown usertype {usertype}')
             return False
 
-        loginurl = self.drv.get_node_login_url(self.nextcloudnode)
+        loginurl = self.self.get_node_login_url(self.nextcloudnode)
         self.driver.get(loginurl)
         if self.driver.current_url != loginurl:
             logger.warning(f'Retry opening login url: {loginurl}')
@@ -786,7 +804,7 @@ class SeleniumHelper():
             return ''
 
     def create_app_password(self):
-        settingsUrl = self.drv.get_settings_user_security_url(self.nextcloudnode)
+        settingsUrl = self.self.get_settings_user_security_url(self.nextcloudnode)
         logger.info(f'Open user security settings: {settingsUrl}')
         self.driver.get(settingsUrl)
         self.wait.until(EC.element_to_be_clickable((By.XPATH, '//*//input[@placeholder="App name"]'))).send_keys('__testautomation__')
