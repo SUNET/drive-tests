@@ -14,6 +14,7 @@ import xmltodict
 import threading
 import time
 import xmlrunner
+import os
 
 import sunetnextcloud
 
@@ -450,9 +451,4 @@ class TestStatus(unittest.TestCase):
                 self.assertEqual(expectedResults[drv.target]['collabora']['status'], r.text)
 
 if __name__ == '__main__':
-    if drv.testrunner == 'xml':
-        unittest.main(testRunner=xmlrunner.XMLTestRunner(output='test-reports'))
-    elif drv.testrunner == 'txt':
-        unittest.main(testRunner=unittest.TextTestRunner(resultclass=sunetnextcloud.NumbersTestResult))
-    else:
-        unittest.main(testRunner=HtmlTestRunner.HTMLTestRunner(output='test-reports-html', combine_reports=True, report_name=f"nextcloud-{drv.expectedResults[drv.target]['status']['version']}-acceptance", add_timestamp=False))
+    drv.run_tests(os.path.basename(__file__), 'acceptance')
