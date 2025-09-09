@@ -3,12 +3,11 @@ Author: Richard Freitag <freitag@sunet.se>
 """
 
 import unittest
-import HtmlTestRunner
-import xmlrunner
 import requests
 import json
 import logging
 import yaml
+import os
 
 import sunetnextcloud
 
@@ -56,9 +55,4 @@ class TestCollabora(unittest.TestCase):
         logger.info('Collabora capabilities tested')
 
 if __name__ == '__main__':
-    if drv.testrunner == 'xml':
-        unittest.main(testRunner=xmlrunner.XMLTestRunner(output='test-reports'))
-    elif drv.testrunner == 'txt':
-        unittest.main(testRunner=unittest.TextTestRunner(resultclass=sunetnextcloud.NumbersTestResult))
-    else:
-        unittest.main(testRunner=HtmlTestRunner.HTMLTestRunner(output='test-reports-html', combine_reports=True, report_name=f"nextcloud-{drv.expectedResults[drv.target]['status']['version']}-acceptance", add_timestamp=False))
+    drv.run_tests(os.path.basename(__file__), 'acceptance')

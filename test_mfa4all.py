@@ -3,15 +3,15 @@ Author: Richard Freitag <freitag@sunet.se>
 Test if MFA4ALL is enforced
 """
 import unittest
-import xmlrunner
-import HtmlTestRunner
 import sunetnextcloud
+import threading
+import time
+import os
+import logging
+
 from webdav3.client import Client
 from webdav3.exceptions import WebDavException
-import threading
-import pyotp
-import time
-
+from datetime import datetime
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import WebDriverWait
@@ -21,9 +21,7 @@ from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.chrome.options import Options as ChromeOptions
 from selenium.webdriver import FirefoxOptions
 from selenium.webdriver.safari.options import Options as SafariOptions
-import os
-import logging
-from datetime import datetime
+
 
 drv = sunetnextcloud.TestTarget()
 expectedResults = drv.expectedResults
@@ -136,9 +134,4 @@ class TestMfa4All(unittest.TestCase):
             self.assertTrue(False)
 
 if __name__ == '__main__':
-    if drv.testrunner == 'xml':
-        unittest.main(testRunner=xmlrunner.XMLTestRunner(output='test-reports'))
-    elif drv.testrunner == 'txt':
-        unittest.main(testRunner=unittest.TextTestRunner(resultclass=sunetnextcloud.NumbersTestResult))
-    else:
-        unittest.main(testRunner=HtmlTestRunner.HTMLTestRunner(output='test-reports-html', combine_reports=True, report_name=f"nextcloud-{drv.expectedResults[drv.target]['status']['version']}-mfa4all", add_timestamp=False))
+    drv.run_tests(os.path.basename(__file__), 'acceptance')

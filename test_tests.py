@@ -8,8 +8,6 @@ import os
 
 import sunetnextcloud
 import logging
-import xmlrunner
-import HtmlTestRunner
 
 opsbase='sunet-drive-ops/'
 globalconfigfile = opsbase + "/global/overlay/etc/hiera/data/common.yaml"
@@ -101,5 +99,5 @@ class TestTests(unittest.TestCase):
         self.assertFalse(test_failed)
 
 if __name__ == '__main__':
-    drv.run_tests(os.path.basename(__file__))
+    drv.run_tests(os.path.basename(__file__), 'acceptance')
     

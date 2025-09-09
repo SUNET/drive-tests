@@ -1,13 +1,12 @@
 import requests
 import json
 import unittest
-import HtmlTestRunner
 import yaml
 import sunetnextcloud
 import logging
 import time
 import threading
-import xmlrunner
+import os
 
 ocsheaders = { "OCS-APIRequest" : "true" } 
 expectedResultsFile = 'expected.yaml'
@@ -305,9 +304,4 @@ class TestAppsOcs(unittest.TestCase):
                 self.assertTrue(g_testPassed[fullnode])
 
 if __name__ == '__main__':
-    if drv.testrunner == 'xml':
-        unittest.main(testRunner=xmlrunner.XMLTestRunner(output='test-reports'))
-    elif drv.testrunner == 'txt':
-        unittest.main(testRunner=unittest.TextTestRunner(resultclass=sunetnextcloud.NumbersTestResult))
-    else:
-        unittest.main(testRunner=HtmlTestRunner.HTMLTestRunner(output='test-reports-html', combine_reports=True, report_name=f"nextcloud-{drv.expectedResults[drv.target]['status']['version']}-acceptance", add_timestamp=False))
+    drv.run_tests(os.path.basename(__file__), 'acceptance')

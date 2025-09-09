@@ -3,7 +3,6 @@ Author: Richard Freitag <freitag@sunet.se>
 Simple test for retrieving all status.php pages from Sunet Drive nodes and comparing the output to the expected result.
 """
 
-import HtmlTestRunner
 import unittest
 import requests
 import json
@@ -13,7 +12,6 @@ from xml.etree.ElementTree import fromstring
 import xmltodict
 import threading
 import time
-import xmlrunner
 import os
 
 import sunetnextcloud
