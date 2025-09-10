@@ -49,20 +49,20 @@ class AppVersions(threading.Thread):
             session = requests.Session()
             nodeuser = drv.get_ocsuser(fullnode)
             nodepwd = drv.get_ocsuserapppassword(fullnode)
-            url = drv.get_all_apps_url(fullnode)
+            rawurl = drv.get_all_apps_url(fullnode)
 
-            logger.info(url)
-            url = url.replace("$USERNAME$", nodeuser)
+            logger.info(f'Getting apps for {rawurl}')
+            url = rawurl.replace("$USERNAME$", nodeuser)
             url = url.replace("$PASSWORD$", nodepwd)
         except Exception as error:
-            logger.error(f'Error getting credentials for {url}:{error}')
+            logger.error(f'Error getting credentials for {rawurl}:{error}')
             g_testThreadsRunning -= 1
             return
 
         try:
             r=session.get(url, headers=ocsheaders, verify=self.verify)
         except Exception as error:
-            logger.error(f'Error getting {url}:{error}')
+            logger.error(f'Error getting apps for {fullnode}:{error}')
             g_testThreadsRunning -= 1
             return
         # nodeApps = []   # TODO: Check for apps installed on node
@@ -85,10 +85,10 @@ class AppVersions(threading.Thread):
         if userSamlFound:
             nodeuser = drv.get_ocsuser(fullnode)
             nodepwd = drv.get_ocsuserapppassword(fullnode)
-            url = drv.get_app_url(fullnode, 'user_saml')
+            rawurl = drv.get_app_url(fullnode, 'user_saml')
 
-            logger.info(url)
-            url = url.replace("$USERNAME$", nodeuser)
+            logger.info(f' Get app info from {url}')
+            url = rawurl.replace("$USERNAME$", nodeuser)
             url = url.replace("$PASSWORD$", nodepwd)
 
             nodeuser = drv.get_ocsuser(fullnode)
@@ -97,7 +97,7 @@ class AppVersions(threading.Thread):
             try:
                 r=session.get(url, headers=ocsheaders, verify=self.verify)
             except Exception as error:
-                logger.error(f'Error getting {url}:{error}')
+                logger.error(f'Error getting {rawurl}:{error}')
                 g_testPassed[fullnode] = False
                 g_testThreadsRunning -= 1
                 return
@@ -152,22 +152,21 @@ class NodeUsers(threading.Thread):
         logger.info(f'Setting passed for {fullnode} to {g_testPassed.get(fullnode)}')
 
         try:
-            url = drv.get_add_user_url(fullnode)
-            logger.info(f'{self.TestOcsCalls._testMethodName} {url}')
+            rawurl = drv.get_add_user_url(fullnode)
             nodeuser = drv.get_ocsuser(fullnode)
             nodepwd = drv.get_ocsuserapppassword(fullnode)
-            logger.info(f'Get users from {url}')
-            url = url.replace("$USERNAME$", nodeuser)
+            logger.info(f'Get users from {rawurl}')
+            url = rawurl.replace("$USERNAME$", nodeuser)
             url = url.replace("$PASSWORD$", nodepwd)
         except Exception as error:
-            logger.error(f'Error getting credentials for {url}:{error}')
+            logger.error(f'Error getting credentials for {rawurl}:{error}')
             g_testThreadsRunning -= 1
             return
 
         try:
             r = requests.get(url, headers=ocsheaders, timeout=g_requestTimeout, verify=self.verify)
         except Exception as error:
-            logger.error(f'Error getting {url}:{error}')
+            logger.error(f'Error getting {rawurl}:{error}')
             g_testThreadsRunning -= 1
             return
         try:
@@ -206,21 +205,21 @@ class NodeGroups(threading.Thread):
         logger.info(f'Setting passed for {fullnode} to {g_testPassed.get(fullnode)}')
 
         try:
-            url = drv.get_add_group_url(fullnode)
-            logger.info(f'{self.TestOcsCalls._testMethodName} {url}')
+            rawurl = drv.get_add_group_url(fullnode)
             nodeuser = drv.get_ocsuser(fullnode)
             nodepwd = drv.get_ocsuserapppassword(fullnode)
-            url = url.replace("$USERNAME$", nodeuser)
+            logger.info(f'Add group through {rawurl}')
+            url = rawurl.replace("$USERNAME$", nodeuser)
             url = url.replace("$PASSWORD$", nodepwd)
         except Exception as error:
-            logger.error(f'Error getting credentials for {url}:{error}')
+            logger.error(f'Error getting credentials for {rawurl}:{error}')
             g_testThreadsRunning -= 1
             return
 
         try:
             r = requests.get(url, headers=ocsheaders, timeout=g_requestTimeout, verify=self.verify)
         except Exception as error:
-            logger.error(f'Error getting {url}:{error}')
+            logger.error(f'Error getting {rawurl}:{error}')
             g_testThreadsRunning -= 1
             return
         try:
@@ -270,12 +269,12 @@ class CapabilitiesNoUser(threading.Thread):
         g_testPassed[fullnode] = False
         logger.info(f'Setting passed for {fullnode} to {g_testPassed.get(fullnode)}')
 
-        url = drv.get_ocs_capabilities_url(fullnode)
-        logger.info(f'{self.TestOcsCalls._testMethodName} {url}')
+        rawurl = drv.get_ocs_capabilities_url(fullnode)
+        logger.info(f'{self.TestOcsCalls._testMethodName} {rawurl}')
         try:
-            r = requests.get(url, headers=ocsheaders, timeout=g_requestTimeout, verify=self.verify)
+            r = requests.get(rawurl, headers=ocsheaders, timeout=g_requestTimeout, verify=self.verify)
         except Exception as error:
-            logger.error(f'Error getting {url}: {error}')
+            logger.error(f'Error getting {rawurl}: {error}')
             g_testThreadsRunning -= 1
             return
         try:
@@ -321,13 +320,13 @@ class Capabilities(threading.Thread):
         g_testPassed[fullnode] = False
         logger.info(f'Setting passed for {fullnode} to {g_testPassed.get(fullnode)}')
 
-        url = drv.get_ocs_capabilities_url(fullnode)
-        logger.info(f'{self.TestOcsCalls._testMethodName} {url}')
+        rawurl = drv.get_ocs_capabilities_url(fullnode)
+        logger.info(f'{self.TestOcsCalls._testMethodName} {rawurl}')
 
         try:
-            r = requests.get(url, headers=ocsheaders, timeout=g_requestTimeout, verify=self.verify)
+            r = requests.get(rawurl, headers=ocsheaders, timeout=g_requestTimeout, verify=self.verify)
         except Exception as error:
-            logger.error(f'Error getting {url}: {error}')
+            logger.error(f'Error getting {rawurl}: {error}')
             g_testThreadsRunning -= 1
             return
         try:
@@ -366,14 +365,14 @@ class UserLifeCycle(threading.Thread):
 
         try:
             session = requests.Session()
-            url = drv.get_add_user_url(fullnode)
-            logger.info(f'{self.TestOcsCalls._testMethodName} {url}')
+            rawurl = drv.get_add_user_url(fullnode)
+            logger.info(f'Add user through {rawurl}')
             nodeuser = drv.get_ocsuser(fullnode)
             nodepwd = drv.get_ocsuserapppassword(fullnode)
-            url = url.replace("$USERNAME$", nodeuser)
+            url = rawurl.replace("$USERNAME$", nodeuser)
             url = url.replace("$PASSWORD$", nodepwd)
         except Exception as error:
-            logger.error(f'Error getting credentials for {url}:{error}')
+            logger.error(f'Error getting credentials for {rawurl}:{error}')
             g_testThreadsRunning -= 1
             return
 
@@ -430,16 +429,16 @@ class UserLifeCycle(threading.Thread):
             self.TestOcsCalls.assertEqual(j["ocs"]["meta"]["message"], expectedResults[drv.target]['ocs_capabilities']['ocs_meta_message'])
 
             logger.info(f'Delete cli user {cliuser}')
-            userurl = drv.get_user_url(fullnode, cliuser)
-            userurl = userurl.replace("$USERNAME$", nodeuser)
-            userurl = userurl.replace("$PASSWORD$", nodepwd)
-            r = session.delete(userurl, headers=ocsheaders, verify=drv.verify)
+            rawurl = drv.get_user_url(fullnode, cliuser)
+            url = rawurl.replace("$USERNAME$", nodeuser)
+            url = url.replace("$PASSWORD$", nodepwd)
+            r = session.delete(url, headers=ocsheaders, verify=drv.verify)
             j = json.loads(r.text)
             logger.info(json.dumps(j, indent=4, sort_keys=True))
 
             if (j["ocs"]["meta"]["statuscode"] != 100):
                 logger.info(f'Retry to delete cli user after {cliuser} after error {j["ocs"]["meta"]["statuscode"]}')
-                r = session.delete(userurl, headers=ocsheaders, verify=self.verify)
+                r = session.delete(url, headers=ocsheaders, verify=self.verify)
                 j = json.loads(r.text)
                 logger.info(json.dumps(j, indent=4, sort_keys=True))
 
@@ -447,7 +446,7 @@ class UserLifeCycle(threading.Thread):
             self.TestOcsCalls.assertEqual(j["ocs"]["meta"]["statuscode"], expectedResults[drv.target]['ocs_capabilities']['ocs_meta_statuscode'])
             self.TestOcsCalls.assertEqual(j["ocs"]["meta"]["message"], expectedResults[drv.target]['ocs_capabilities']['ocs_meta_message'])
         except Exception as error:
-            logger.info(f"No or invalid JSON reply received from {fullnode}: {error}")
+            logger.info(f"No or invalid JSON reply received from {rawurl}: {error}")
             logger.info(r.text)
             g_testPassed[fullnode] = False
             g_testThreadsRunning -= 1
