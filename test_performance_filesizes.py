@@ -189,7 +189,7 @@ class TestLargeFilePerformance(unittest.TestCase):
     #     maxUploads = 1
     #     maxDeletes = 1
     #     drv = sunetnextcloud.TestTarget()
-    #     for fullnode in drv.fullnodes:
+    #     for fullnode in drv.nodestotest:
     #         with self.subTest(mynode=fullnode):
     #             for fe in range(1,2):
     #                 nodebaseurl = drv.get_node_base_url(fullnode)
@@ -291,7 +291,7 @@ class TestLargeFilePerformance(unittest.TestCase):
     #     maxUploads = 1
     #     maxDeletes = 1
     #     drv = sunetnextcloud.TestTarget()
-    #     for fullnode in drv.fullnodes:
+    #     for fullnode in drv.nodestotest:
     #         with self.subTest(mynode=fullnode):
     #             for fe in range(1,2):
     #                 nodebaseurl = drv.get_node_base_url(fullnode)
@@ -395,7 +395,7 @@ class TestLargeFilePerformance(unittest.TestCase):
     #     maxUploads = 1
     #     maxDeletes = 1
     #     drv = sunetnextcloud.TestTarget()
-    #     for fullnode in drv.fullnodes:
+    #     for fullnode in drv.nodestotest:
     #         with self.subTest(mynode=fullnode):
     #             for fe in range(1,2):
     #                 nodebaseurl = drv.get_node_base_url(fullnode)
@@ -520,7 +520,7 @@ class TestLargeFilePerformance(unittest.TestCase):
         maxDeletes = 1
 
         drv = sunetnextcloud.TestTarget()
-        for fullnode in drv.fullnodes:
+        for fullnode in drv.nodestotest:
             with self.subTest(mynode=fullnode):
                 for fe in range(1,2):
                     nodebaseurl = drv.get_node_base_url(fullnode)
@@ -654,7 +654,7 @@ class TestLargeFilePerformance(unittest.TestCase):
         maxDeletes = 1
 
         drv = sunetnextcloud.TestTarget()
-        for fullnode in drv.fullnodes:
+        for fullnode in drv.nodestotest:
             with self.subTest(mynode=fullnode):
                 for fe in range(1,2):
                     nodebaseurl = drv.get_node_base_url(fullnode)
@@ -787,7 +787,7 @@ class TestLargeFilePerformance(unittest.TestCase):
         maxDeletes = 1
 
         drv = sunetnextcloud.TestTarget()
-        for fullnode in drv.fullnodes:
+        for fullnode in drv.nodestotest:
             with self.subTest(mynode=fullnode):
                 for fe in range(1,2):
                     nodebaseurl = drv.get_node_base_url(fullnode)

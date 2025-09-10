@@ -34,7 +34,7 @@ class TestRepos(unittest.TestCase):
     def test_allnodes_tested(self):
         self.logger.info(f'{self._testMethodName}')
         drv = sunetnextcloud.TestTarget()
-        # print(len(drv.fullnodes))
+        # print(len(drv.nodestotest))
 
         testMissing = False
         # testWrongNode = False
@@ -44,10 +44,10 @@ class TestRepos(unittest.TestCase):
             allnodes=data['fullnodes'] + data['singlenodes']
 
             for node in allnodes:
-                if node not in drv.fullnodes:
+                if node not in drv.nodestotest:
                     print(f'{node} in common.yaml but not tested')
 
-            for node in drv.fullnodes:
+            for node in drv.nodestotest:
                 if node not in allnodes:
                     print(f'{node} in tests but not in common.yaml')
 

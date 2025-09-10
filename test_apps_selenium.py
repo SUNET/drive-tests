@@ -99,7 +99,7 @@ class TestAppsSelenium(unittest.TestCase):
         self.logger.info(f'TestID: {self._testMethodName}')
         pass
 
-    for nextcloudnode in drv.fullnodes:
+    for nextcloudnode in drv.nodestotest:
         g_loggedInNodes[nextcloudnode] = False
 
     def test_app_shortcuts(self):
@@ -113,7 +113,7 @@ class TestAppsSelenium(unittest.TestCase):
         version = self.expectedResults[g_drv.target]['status']['version']
         self.logger.info(f'Expected Nextcloud version: {version}')
 
-        for fullnode in g_drv.fullnodes:
+        for fullnode in g_drv.nodestotest:
             with self.subTest(mynode=fullnode):
                 self.logger.info(f'TestID: Testing node {fullnode}')
                 nodelogin(fullnode)

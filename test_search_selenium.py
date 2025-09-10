@@ -65,7 +65,7 @@ class TestSearchSelenium(unittest.TestCase):
         g_logger.error(f'Error initializing Chrome driver: {error}')
     g_wait = WebDriverWait(g_driver, delay)
 
-    for fullnode in g_drv.fullnodes:
+    for fullnode in g_drv.nodestotest:
         g_loggedInNodes[fullnode] = False
 
     def test_logger(self):
@@ -76,7 +76,7 @@ class TestSearchSelenium(unittest.TestCase):
         global g_isLoggedIn, g_wait, g_loggedInNodes, g_drv, g_logger
         g_logger.info(f'Start test test_folder_search {g_loggedInNodes}')
 
-        for fullnode in g_drv.fullnodes:
+        for fullnode in g_drv.nodestotest:
             g_logger.info(f'Testing node {fullnode}')
             with self.subTest(mynode=fullnode):
                 if not g_loggedInNodes.get(fullnode):

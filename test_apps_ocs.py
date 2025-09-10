@@ -220,7 +220,7 @@ class TestAppsOcs(unittest.TestCase):
     def test_number_of_apps_on_nodes(self):
         drv = sunetnextcloud.TestTarget()
 
-        for fullnode in drv.fullnodes:
+        for fullnode in drv.nodestotest:
             with self.subTest(mynode=fullnode):
                 logger.info(f'TestID: {fullnode}')
                 numberOfAppsOnNodeThread = NumberOfAppsOnNodes(fullnode)
@@ -229,7 +229,7 @@ class TestAppsOcs(unittest.TestCase):
         while(g_testThreadsRunning > 0):
             time.sleep(1)
 
-        for fullnode in drv.fullnodes:
+        for fullnode in drv.nodestotest:
             with self.subTest(mynode=fullnode):
                 for fe in range(1,4):
                     self.assertTrue(g_testPassed[f'node{fe}.{fullnode}'])
@@ -238,7 +238,7 @@ class TestAppsOcs(unittest.TestCase):
     def test_installed_apps_configured(self):
         drv = sunetnextcloud.TestTarget()
 
-        for fullnode in drv.fullnodes:
+        for fullnode in drv.nodestotest:
             with self.subTest(mynode=fullnode):
                 logger.info(f'TestID: {fullnode}')
                 InstalledAppsConfiguredThread = InstalledAppsConfigured(fullnode)
@@ -247,7 +247,7 @@ class TestAppsOcs(unittest.TestCase):
         while(g_testThreadsRunning > 0):
             time.sleep(1)
 
-        for fullnode in drv.fullnodes:
+        for fullnode in drv.nodestotest:
             with self.subTest(mynode=fullnode):
                 self.assertTrue(g_testPassed[fullnode])
 
@@ -255,7 +255,7 @@ class TestAppsOcs(unittest.TestCase):
     def test_configured_apps_installed(self):
         drv = sunetnextcloud.TestTarget()
 
-        for fullnode in drv.fullnodes:
+        for fullnode in drv.nodestotest:
             with self.subTest(mynode=fullnode):
                 logger.info(f'TestID: {fullnode}')
                 ConfiguredAppsInstalledThread = ConfiguredAppsInstalled(fullnode)
@@ -264,7 +264,7 @@ class TestAppsOcs(unittest.TestCase):
         while(g_testThreadsRunning > 0):
             time.sleep(1)
 
-        for fullnode in drv.fullnodes:
+        for fullnode in drv.nodestotest:
             with self.subTest(mynode=fullnode):
                 self.assertTrue(g_testPassed[fullnode])
 
@@ -272,7 +272,7 @@ class TestAppsOcs(unittest.TestCase):
     def test_app_announcementcenter(self):
         drv = sunetnextcloud.TestTarget()
 
-        for fullnode in drv.fullnodes:
+        for fullnode in drv.nodestotest:
             with self.subTest(mynode=fullnode):
                 logger.info(f'TestID: {fullnode}')
                 InstalledAppsConfiguredThread = InstalledAppsConfigured(fullnode, app='announcementcenter', checkEnabled=True)
@@ -281,7 +281,7 @@ class TestAppsOcs(unittest.TestCase):
         while(g_testThreadsRunning > 0):
             time.sleep(1)
 
-        for fullnode in drv.fullnodes:
+        for fullnode in drv.nodestotest:
             with self.subTest(mynode=fullnode):
                 logger.info(f'Passed: {g_testPassed[fullnode]} for {fullnode}')
                 self.assertTrue(g_testPassed[fullnode])
@@ -289,7 +289,7 @@ class TestAppsOcs(unittest.TestCase):
     def test_app_security_guard(self):
         drv = sunetnextcloud.TestTarget()
 
-        for fullnode in drv.fullnodes:
+        for fullnode in drv.nodestotest:
             with self.subTest(mynode=fullnode):
                 logger.info(f'TestID: {fullnode}')
                 InstalledAppsConfiguredThread = InstalledAppsConfigured(fullnode, app='security_guard', checkEnabled=True)
@@ -298,7 +298,7 @@ class TestAppsOcs(unittest.TestCase):
         while(g_testThreadsRunning > 0):
             time.sleep(1)
 
-        for fullnode in drv.fullnodes:
+        for fullnode in drv.nodestotest:
             with self.subTest(mynode=fullnode):
                 logger.info(f'Passed: {g_testPassed[fullnode]} for {fullnode}')
                 self.assertTrue(g_testPassed[fullnode])

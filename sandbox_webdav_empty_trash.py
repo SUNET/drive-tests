@@ -16,11 +16,11 @@ logging.basicConfig(format = '%(asctime)s - %(module)s.%(funcName)s - %(levelnam
 
 drv =sunetnextcloud.TestTarget()
 
-if len(drv.fullnodes) != 1:
+if len(drv.nodestotest) != 1:
     logger.error('Please set a single node to test')
     sys.exit()
 
-fullnode = drv.fullnodes[0]
+fullnode = drv.nodestotest[0]
 nodeuser = drv.get_seleniumuser(fullnode)
 nodepwd = drv.get_seleniumuserpassword(fullnode)
 url = drv.get_webdav_url(fullnode, nodeuser)

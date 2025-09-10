@@ -185,7 +185,7 @@ class TestOcsFederatedShares(unittest.TestCase):
 
     def test_accept_federated_shares(self):
         drv = sunetnextcloud.TestTarget()
-        for fullnode in drv.fullnodes:
+        for fullnode in drv.nodestotest:
             with self.subTest(mynode=fullnode):
                 logger.info(f'Accept shares for {fullnode}')
 
@@ -214,7 +214,7 @@ class TestOcsFederatedShares(unittest.TestCase):
 
     def test_list_federated_shares(self):
         drv = sunetnextcloud.TestTarget()
-        for fullnode in drv.fullnodes:
+        for fullnode in drv.nodestotest:
             with self.subTest(mynode=fullnode):
                 logger.info(f'List federated shares for {fullnode}')
 

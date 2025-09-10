@@ -190,7 +190,7 @@ class TestCollaboraSelenium(unittest.TestCase):
         self.logger.info(f'TestID: {self._testMethodName}')
         pass
 
-    for collaboranode in drv.fullnodes:
+    for collaboranode in drv.nodestotest:
         g_loggedInNodes[collaboranode] = False
 
     # text file
@@ -200,7 +200,7 @@ class TestCollaboraSelenium(unittest.TestCase):
         wait = WebDriverWait(self.driver, delay)
         g_wait = wait
 
-        for collaboranode in drv.fullnodes:
+        for collaboranode in drv.nodestotest:
             with self.subTest(mynode=collaboranode):
                 self.logger.info(f'TestID: {collaboranode}')
                 # if g_isLoggedIn == False:
@@ -358,7 +358,7 @@ class TestCollaboraSelenium(unittest.TestCase):
         wait = WebDriverWait(self.driver, delay)
         g_wait = wait
         
-        for collaboranode in drv.fullnodes:
+        for collaboranode in drv.nodestotest:
             with self.subTest(mynode=collaboranode):
                 self.logger.info(f'TestID: {collaboranode}')
                 # if g_isLoggedIn == False:
@@ -524,7 +524,7 @@ class TestCollaboraSelenium(unittest.TestCase):
         wait = WebDriverWait(self.driver, delay)
         g_wait = wait
         
-        for collaboranode in drv.fullnodes:
+        for collaboranode in drv.nodestotest:
             with self.subTest(mynode=collaboranode):
                 self.logger.info(f'TestID: {collaboranode}')
                 # if g_isLoggedIn == False:
@@ -700,7 +700,7 @@ class TestCollaboraSelenium(unittest.TestCase):
         wait = WebDriverWait(self.driver, delay)
         g_wait = wait
         
-        for collaboranode in drv.fullnodes:
+        for collaboranode in drv.nodestotest:
             with self.subTest(mynode=collaboranode):
                 self.logger.info(f'TestID: {collaboranode}')
                 # if g_isLoggedIn == False:

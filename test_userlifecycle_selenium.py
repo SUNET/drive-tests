@@ -65,7 +65,7 @@ class TestUserlifecycleSelenium(unittest.TestCase):
         drv.browsers=['firefox']
         for browser in drv.browsers:
             with self.subTest(mybrowser=browser):
-                for fullnode in drv.fullnodes:
+                for fullnode in drv.nodestotest:
                     with self.subTest(mynode=fullnode):
                         session = requests.Session()
                         addUserUrl = drv.get_add_user_url(fullnode)

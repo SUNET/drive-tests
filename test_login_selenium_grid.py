@@ -59,7 +59,7 @@ class TestLoginSelenium(unittest.TestCase):
 
         for browser in drv.browsers:
             with self.subTest(mybrowser=browser):
-                for fullnode in drv.fullnodes:
+                for fullnode in drv.nodestotest:
                     with self.subTest(mynode=fullnode):
                         self.logger.info(f'TestID: Testing node {fullnode} with browser {browser}')
                         loginurl = drv.get_node_login_url(fullnode)

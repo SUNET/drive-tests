@@ -188,8 +188,8 @@ class TestOcsFederatedShares(unittest.TestCase):
         global logger, nodestotest
         logger.info('test_sharing_folders')
         drv = sunetnextcloud.TestTarget()
-        if len(drv.fullnodes) == 1:
-            nodestotest = drv.fullnodes
+        if len(drv.nodestotest) == 1:
+            nodestotest = drv.nodestotest
         logger.info(f'Testing node(s) {nodestotest}')
 
         for fullnode in nodestotest:

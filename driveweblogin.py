@@ -29,7 +29,7 @@ if args.customer == 'all':
         print(f'{node}')
         g_exec += g_execPrefix + "'" + drv.get_node_login_url(node) + "' "
 elif args.customer == 'full':
-    for node in drv.fullnodes:
+    for node in drv.nodestotest:
         print(f'{node}')
         g_exec += g_execPrefix + "'" + drv.get_node_login_url(node) + "' "
 

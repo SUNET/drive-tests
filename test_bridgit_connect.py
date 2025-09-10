@@ -38,7 +38,7 @@ class TestBridgitSelenium(unittest.TestCase):
     
     def test_Bridgit_connect(self):
         delay = 30 # seconds
-        for fullnode in drv.fullnodes:
+        for fullnode in drv.nodestotest:
             with self.subTest(mynode=fullnode):
                 loginurl = drv.get_node_login_url(fullnode)
                 self.logger.info(f'URL: {loginurl}')

@@ -33,10 +33,10 @@ logger = logging.getLogger(__name__)
 logging.basicConfig(format = '%(asctime)s - %(module)s.%(funcName)s - %(levelname)s: %(message)s',
                 datefmt = '%Y-%m-%d %H:%M:%S', level = logging.INFO)
 
-envtarget = os.environ.get('NextcloudTestTarget')
-if envtarget == 'localhost':
+target_env = os.environ.get('NextcloudTestTarget')
+if target_env == 'localhost':
     g_expectedFile = 'expected_localhost.yaml'
-elif envtarget == 'custom':
+elif target_env == 'custom':
     g_expectedFile = 'expected_custom.yaml'
 else:
     g_expectedFile = 'expected.yaml'
@@ -59,12 +59,10 @@ def get_value(env, raiseException = True):
     return value
 
 class TestTarget(object):
-    singlenodetesting = False
-
     with open(g_expectedFile, 'r') as stream:
         expectedResults=yaml.safe_load(stream)
 
-    if os.path.exists(opsCommonFile) and not singlenodetesting:
+    if os.path.exists(opsCommonFile):
         with open(opsCommonFile, 'r') as stream:
             opsCommonConfig=yaml.safe_load(stream)
     else:
@@ -79,7 +77,7 @@ class TestTarget(object):
     # default target is test, unless overwritten by initializing with 'prod'
     targetprefix = '.' + testprefix
 
-    nodelist = expectedResults['global']['allnodes']
+    nodestotest = None
     allnodes = expectedResults['global']['allnodes']
     fullnodes = expectedResults['global']['fullnodes']
     multinodes = expectedResults['global']['multinodes']
@@ -93,17 +91,18 @@ class TestTarget(object):
     platform = sys.platform
 
     def __init__(self, target=None, loglevel=logging.INFO):
-        global envtarget
+        global target_env
         logging.getLogger().setLevel(loglevel)
         logger.info(f'Using test results file: {g_expectedFile}')
         abspath = os.path.abspath(__file__)
         dname = os.path.dirname(abspath)
         logger.info(f'Working directory is {dname}')
-        testcustomers = os.environ.get('NextcloudTestCustomers')
-        if testcustomers is not None:
-            testcustomers = testcustomers.split(',')
+        customers_env = os.environ.get('NextcloudTestCustomers')
+        if customers_env is not None:
+            customers_env = customers_env.split(',')
+            self.nodestotest = customers_env
         else:
-            testcustomers = ['all']
+            customers_env = ['all']
         testbrowsers = os.environ.get('NextcloudTestBrowsers')
         testrunner = os.environ.get('NextcloudTestRunner')
         testfilesize = os.environ.get('NextcloudTestFileSize')
@@ -131,9 +130,9 @@ class TestTarget(object):
         if target is not None:
             logger.info(f'Test target initialized by caller: {target}')
             testtarget = target
-        elif envtarget is not None:
-            logger.info(f'Test target initialized by environment variable: {envtarget}')
-            testtarget = envtarget
+        elif target_env is not None:
+            logger.info(f'Test target initialized by environment variable: {target_env}')
+            testtarget = target_env
         else:
             logger.warning('Test target initialized by default value: test')
             testtarget = 'test'
@@ -154,25 +153,25 @@ class TestTarget(object):
             self.target = "test"
             self.targetprefix = "." + self.testprefix
 
-        # if testcustomers in self.allnodes or self.target == "custom":
-        if len(testcustomers) == 1 or self.target == "custom":
-            if 'all' not in testcustomers[0]:
-                self.singlenodetesting = True
-                self.allnodes = testcustomers
-                self.fullnodes = self.allnodes
-                self.multinodes = self.allnodes
+        if len(customers_env) == 1 or self.target == "custom":
+            if 'all' not in customers_env[0]:
+                self.nodestotest = customers_env
 
-        if testcustomers[0] == 'all':
-            self.fullnodes = self.fullnodes
-            logger.info(f'Testing {len(self.fullnodes)} full nodes')
+        if customers_env[0] == 'all' or customers_env[0] == 'allnodes':
+            self.nodestotest = self.allnodes
+            logger.info(f'Testing all {len(self.nodestotest)} nodes')
 
-        if testcustomers[0] == 'allnodes':
-            self.fullnodes = self.allnodes
-            logger.info(f'Testing all {len(self.fullnodes)} nodes')
+        if customers_env[0] == 'fullnodes':
+            self.nodestotest = self.fullnodes
+            logger.info(f'Testing {len(self.nodestotest)} full nodes')
+
+        if customers_env[0] == 'multinodes':
+            self.nodestotest = self.multinodes
+            logger.info(f'Testing {len(self.nodestotest)} multi nodes')
 
         # If we have a custom list of nodes set in the environment variable
-        if len(testcustomers) != len(self.fullnodes) and 'all' not in testcustomers[0]:
-            self.allnodes = testcustomers
+        if len(customers_env) != len(self.fullnodes) and 'all' not in customers_env[0]:
+            self.allnodes = customers_env
             self.fullnodes = self.allnodes
 
         # Override browsers to test from expected.yaml with value(s) in environment variable

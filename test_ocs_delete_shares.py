@@ -185,7 +185,7 @@ class TestOcsFederatedShares(unittest.TestCase):
 
     def test_delete_federated_shares(self):
         drv = sunetnextcloud.TestTarget()
-        for fullnode in drv.fullnodes:
+        for fullnode in drv.nodestotest:
             with self.subTest(mynode=fullnode):
                 logger.info(f'Delete shares for {fullnode}')
                 nodeuser = drv.get_seleniumuser(fullnode)

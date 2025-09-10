@@ -116,7 +116,7 @@ class TestMfa4All(unittest.TestCase):
         version = drv.expectedResults[drv.target]['status']['version']
         logger.info(f'Expected Nextcloud version: {version}')
 
-        for fullnode in drv.fullnodes:
+        for fullnode in drv.nodestotest:
             with self.subTest(mynode=fullnode):
                 logger.info(f'TestID: {fullnode}')
                 WebDAVListThread = WebDAVList(name=fullnode, TestMfa4All=self)

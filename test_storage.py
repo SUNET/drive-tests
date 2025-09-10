@@ -10,6 +10,7 @@ import yaml
 import sunetnextcloud
 
 g_testtarget = os.environ.get('NextcloudTestTarget')
+drv = sunetnextcloud.TestTarget(g_testtarget)
 repobase='sunet-drive-ops/'
 expectedResultsFile = 'expected.yaml'
 
@@ -18,7 +19,6 @@ class TestStorage(unittest.TestCase):
         expectedResults=yaml.safe_load(stream)
 
     def test_existingbuckets(self):
-        # drv = sunetnextcloud.TestTarget(g_testtarget)
         premotes=os.popen('rclone listremotes')
         for remote in premotes.read().splitlines():
             print('Read: ',remote)
@@ -138,7 +138,7 @@ class TestStorage(unittest.TestCase):
     # Test if the number of buckets in the mirror project is the same in Sto4 and Sto3
     def test_project_mapping_primary_bucket_number(self):
         drv = sunetnextcloud.TestTarget(g_testtarget)
-        for fullnode in drv.fullnodes:
+        for fullnode in drv.nodestotest:
             with self.subTest(nodetotest=fullnode):
                 globalconfigfile = repobase + "/global/overlay/etc/hiera/data/common.yaml"
                 with open(globalconfigfile, "r") as stream:
@@ -271,6 +271,4 @@ class TestStorage(unittest.TestCase):
         self.assertTrue(customerShareFound)
 
 if __name__ == '__main__':
-    import xmlrunner
-    # unittest.main()
-    unittest.main(testRunner=xmlrunner.XMLTestRunner(output='test-reports'))
+    drv.run_tests(os.path.basename(__file__))

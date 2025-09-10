@@ -105,7 +105,7 @@ class TestCleanAllWebDAV(unittest.TestCase):
         global g_davPerformanceResults
         self.logger.info(f'Target: {g_testtarget}')
         drv = sunetnextcloud.TestTarget(g_testtarget)
-        for fullnode in drv.fullnodes:
+        for fullnode in drv.nodestotest:
             with self.subTest(mynode=fullnode):
                 davCleanThread = CleanWebDAV(fullnode)
                 davCleanThread.start()

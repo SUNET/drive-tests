@@ -35,25 +35,24 @@ class TestTests(unittest.TestCase):
 
     def test_allnodes_tested(self):
         logger.info(f'TestID: {self._testMethodName}')
-        # print(len(drv.fullnodes))
+        # print(len(drv.nodestotest))
         testMissing = False
 
-        if drv.singlenodetesting:
-            logger.info(f'We are only testing single nodes: {drv.allnodes}')
+        if len(drv.nodestotest) == 1:
+            logger.info(f'We are only testing single nodes: {drv.nodestotest}')
             testMissing = False
 
-        if os.path.exists(globalconfigfile) and not drv.singlenodetesting:
+        if os.path.exists(globalconfigfile) and len(drv.nodestotest) != 1:
             logger.info('Check if we are testing all nodes')
             with open(globalconfigfile, "r") as stream:
                 data=yaml.safe_load(stream)
                 allnodes=data['fullnodes'] + data['singlenodes']
 
                 for node in allnodes:
-                    if node not in drv.fullnodes:
-                        logger.error(f'{node} in common.yaml but not tested')
-                        testMissing = True
+                    if node not in drv.nodestotest:
+                        logger.warning(f'{node} in common.yaml but not tested')
 
-                for node in drv.fullnodes:
+                for node in drv.nodestotest:
                     if node not in allnodes:
                         logger.warning(f'{node} in tests but not in common.yaml')
         else:

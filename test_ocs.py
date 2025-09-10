@@ -464,7 +464,7 @@ class TestOcsCalls(unittest.TestCase):
 
     def test_capabilities_nouser(self):
         drv = sunetnextcloud.TestTarget()
-        for fullnode in drv.fullnodes:
+        for fullnode in drv.nodestotest:
             with self.subTest(mynode=fullnode):
                 logger.info(f'TestID: {fullnode}')
                 capabilitiesNoUserThread = CapabilitiesNoUser(fullnode, self, verify=drv.verify)
@@ -473,13 +473,13 @@ class TestOcsCalls(unittest.TestCase):
         while(g_testThreadsRunning > 0):
             time.sleep(1)
 
-        for fullnode in drv.fullnodes:
+        for fullnode in drv.nodestotest:
             with self.subTest(mynode=fullnode):
                 self.assertTrue(g_testPassed[fullnode])
 
     def test_capabilities(self):
         drv = sunetnextcloud.TestTarget()
-        for fullnode in drv.fullnodes:
+        for fullnode in drv.nodestotest:
             with self.subTest(mynode=fullnode):
                 logger.info(f'TestID: {fullnode}')
                 capabilitiesThread = Capabilities(fullnode, self, verify=drv.verify)
@@ -488,13 +488,13 @@ class TestOcsCalls(unittest.TestCase):
         while(g_testThreadsRunning > 0):
             time.sleep(1)
 
-        for fullnode in drv.fullnodes:
+        for fullnode in drv.nodestotest:
             with self.subTest(mynode=fullnode):
                 self.assertTrue(g_testPassed[fullnode])
 
     def test_nodeusers(self):
         drv = sunetnextcloud.TestTarget()
-        for fullnode in drv.fullnodes:
+        for fullnode in drv.nodestotest:
             with self.subTest(mynode=fullnode):
                 logger.info(f'TestID: {fullnode}')
                 nodeUsersThread = NodeUsers(fullnode, self, verify=drv.verify)
@@ -503,13 +503,13 @@ class TestOcsCalls(unittest.TestCase):
         while(g_testThreadsRunning > 0):
             time.sleep(1)
 
-        for fullnode in drv.fullnodes:
+        for fullnode in drv.nodestotest:
             with self.subTest(mynode=fullnode):
                 self.assertTrue(g_testPassed[fullnode])
 
     def test_nodegroups(self):
         drv = sunetnextcloud.TestTarget()
-        for fullnode in drv.fullnodes:
+        for fullnode in drv.nodestotest:
             with self.subTest(mynode=fullnode):
                 logger.info(f'TestID: {fullnode}')
                 nodeGroupsThread = NodeGroups(fullnode, self, verify=drv.verify)
@@ -518,13 +518,13 @@ class TestOcsCalls(unittest.TestCase):
         while(g_testThreadsRunning > 0):
             time.sleep(1)
 
-        for fullnode in drv.fullnodes:
+        for fullnode in drv.nodestotest:
             with self.subTest(mynode=fullnode):
                 self.assertTrue(g_testPassed[fullnode])
 
     def test_userlifecycle(self):
         drv = sunetnextcloud.TestTarget()
-        for fullnode in drv.fullnodes:
+        for fullnode in drv.nodestotest:
             with self.subTest(mynode=fullnode):
                 logger.info(f'TestID: {fullnode}')
                 userLifecycleThread = UserLifeCycle(fullnode, self, verify=drv.verify)
@@ -533,13 +533,13 @@ class TestOcsCalls(unittest.TestCase):
         while(g_testThreadsRunning > 0):
             time.sleep(1)
 
-        for fullnode in drv.fullnodes:
+        for fullnode in drv.nodestotest:
             with self.subTest(mynode=fullnode):
                 self.assertTrue(g_testPassed[fullnode])
 
     def test_app_versions(self):
         drv = sunetnextcloud.TestTarget()
-        for fullnode in drv.fullnodes:
+        for fullnode in drv.nodestotest:
             with self.subTest(mynode=fullnode):
                 logger.info(f'TestID: {fullnode}')
                 appVersionsThread = AppVersions(fullnode, self, verify=drv.verify)
@@ -548,7 +548,7 @@ class TestOcsCalls(unittest.TestCase):
         while(g_testThreadsRunning > 0):
             time.sleep(1)
 
-        for fullnode in drv.fullnodes:
+        for fullnode in drv.nodestotest:
             with self.subTest(mynode=fullnode):
                 self.assertTrue(g_testPassed[fullnode])
 

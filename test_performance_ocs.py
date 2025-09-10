@@ -318,7 +318,7 @@ class TestPerformanceOcs(unittest.TestCase):
         global g_ocsPerformanceResults
         g_ocsPerformanceResults.append('Result of test_performance_ocs_userlist_samesession')
         drv = sunetnextcloud.TestTarget()
-        for fullnode in drv.fullnodes:
+        for fullnode in drv.nodestotest:
             with self.subTest(mynode=fullnode):
                 logger.info(f'TestID: {fullnode}')
                 nodeUsersThread = NodeOcsUserPerformance(fullnode, self, newSession=False, verify=drv.verify)
@@ -327,7 +327,7 @@ class TestPerformanceOcs(unittest.TestCase):
         while(g_testThreadsRunning > 0):
             time.sleep(1)
 
-        for fullnode in drv.fullnodes:
+        for fullnode in drv.nodestotest:
             with self.subTest(mynode=fullnode):
                 self.assertTrue(g_testPassed[fullnode])
 
@@ -339,7 +339,7 @@ class TestPerformanceOcs(unittest.TestCase):
         global g_ocsPerformanceResults
         g_ocsPerformanceResults.append('Result of test_performance_ocs_userlist_newsession')
         drv = sunetnextcloud.TestTarget()
-        for fullnode in drv.fullnodes:
+        for fullnode in drv.nodestotest:
             with self.subTest(mynode=fullnode):
                 logger.info(f'TestID: {fullnode}')
                 nodeUsersThread = NodeOcsUserPerformance(fullnode, self, newSession=True, verify=drv.verify)
@@ -348,7 +348,7 @@ class TestPerformanceOcs(unittest.TestCase):
         while(g_testThreadsRunning > 0):
             time.sleep(1)
 
-        for fullnode in drv.fullnodes:
+        for fullnode in drv.nodestotest:
             with self.subTest(mynode=fullnode):
                 self.assertTrue(g_testPassed[fullnode])
 
@@ -360,7 +360,7 @@ class TestPerformanceOcs(unittest.TestCase):
         global g_ocsPerformanceResults
         g_ocsPerformanceResults.append('Result of test_performance_ocs_userlifecycle')
         drv = sunetnextcloud.TestTarget()
-        for fullnode in drv.fullnodes:
+        for fullnode in drv.nodestotest:
             with self.subTest(mynode=fullnode):
                 logger.info(f'TestID: {fullnode}')
                 userLifecycleThread = NodeOcsUserLifecycle(fullnode)
@@ -369,7 +369,7 @@ class TestPerformanceOcs(unittest.TestCase):
         while (g_testThreadsRunning > 0):
             time.sleep(1)
 
-        for fullnode in drv.fullnodes:
+        for fullnode in drv.nodestotest:
             with self.subTest(mynode=fullnode):
                 self.assertTrue(g_testPassed[fullnode])
 

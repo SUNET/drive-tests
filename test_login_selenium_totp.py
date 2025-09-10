@@ -52,7 +52,7 @@ class TestLoginSeleniumTotp(unittest.TestCase):
         self.logger.info(f'Expected Nextcloud version: {version}')
         sharedClass = 'files-list__row-action-sharing-status'
 
-        for fullnode in drv.fullnodes:
+        for fullnode in drv.nodestotest:
             with self.subTest(mynode=fullnode):
                 self.logger.info(f'TestID: {fullnode}')
                 loginurl = drv.get_node_login_url(fullnode)

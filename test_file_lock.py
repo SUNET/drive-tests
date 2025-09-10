@@ -41,7 +41,7 @@ class TestFileLock(unittest.TestCase):
 
     def test_lock_unlock_curl_webdav(self):
         drv = sunetnextcloud.TestTarget()
-        for fullnode in drv.fullnodes:
+        for fullnode in drv.nodestotest:
             with self.subTest(mynode=fullnode):
                 with open(g_localFile, "w") as text_file:
                     text_file.write(f'WebDAV Test File: {fullnode} - {drv.target}\n{datetime.now().strftime("%Y-%m-%d_%H-%M-%S")}')
@@ -76,7 +76,7 @@ class TestFileLock(unittest.TestCase):
     def test_lock_unlock_ocs(self):
         drv = sunetnextcloud.TestTarget()
 
-        for fullnode in drv.fullnodes:
+        for fullnode in drv.nodestotest:
             with self.subTest(mynode=fullnode):
                 with open(g_localFile, "w") as text_file:
                     text_file.write(f'WebDAV Test File: {fullnode} - {drv.target}\n{datetime.now().strftime("%Y-%m-%d_%H-%M-%S")}')

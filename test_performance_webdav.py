@@ -94,7 +94,7 @@ class TestWebDavPerformance(unittest.TestCase):
         numFiles = 100
         maxUploads = 2
         maxDeletes = 4
-        for fullnode in drv.fullnodes:
+        for fullnode in drv.nodestotest:
             with self.subTest(mynode=fullnode):
                 for fe in range(1,4):
                     nodebaseurl = drv.get_node_base_url(fullnode)
@@ -216,7 +216,7 @@ class TestWebDavPerformance(unittest.TestCase):
         logger.info(f'{header}')
 
         drv = sunetnextcloud.TestTarget()
-        for fullnode in drv.fullnodes:
+        for fullnode in drv.nodestotest:
             with self.subTest(mynode=fullnode):
                 logger.info('Generate local files')
                 files = []

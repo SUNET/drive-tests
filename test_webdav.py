@@ -652,7 +652,7 @@ class TestWebDAV(unittest.TestCase):
         global g_testThreadsRunning
         logger.info('test_webdav_dne_check')
         drv = sunetnextcloud.TestTarget()
-        for fullnode in drv.fullnodes:
+        for fullnode in drv.nodestotest:
             with self.subTest(mynode=fullnode):
                 logger.info(f'TestID: {fullnode}')
                 WebDAVDneCheckThread = WebDAVDneCheck(name=fullnode, basicAuth=True, TestWebDAV=self)
@@ -661,7 +661,7 @@ class TestWebDAV(unittest.TestCase):
         while(g_testThreadsRunning > 0):
             time.sleep(1)
 
-        for fullnode in drv.fullnodes:
+        for fullnode in drv.nodestotest:
             with self.subTest(mynode=fullnode):
                 self.assertTrue(g_testPassed[fullnode])
 
@@ -670,7 +670,7 @@ class TestWebDAV(unittest.TestCase):
         global g_testThreadsRunning
         logger.info('test_webdav_dne_check')
         drv = sunetnextcloud.TestTarget()
-        for fullnode in drv.fullnodes:
+        for fullnode in drv.nodestotest:
             with self.subTest(mynode=fullnode):
                 logger.info(f'TestID: {fullnode}')
                 WebDAVDneCheckThread = WebDAVDneCheck(name=fullnode, basicAuth=False, TestWebDAV=self)
@@ -679,7 +679,7 @@ class TestWebDAV(unittest.TestCase):
         while(g_testThreadsRunning > 0):
             time.sleep(1)
 
-        for fullnode in drv.fullnodes:
+        for fullnode in drv.nodestotest:
             with self.subTest(mynode=fullnode):
                 self.assertTrue(g_testPassed[fullnode])
 
@@ -687,7 +687,7 @@ class TestWebDAV(unittest.TestCase):
         global logger
         logger.info('test_webdav_list')
         drv = sunetnextcloud.TestTarget()
-        for fullnode in drv.fullnodes:
+        for fullnode in drv.nodestotest:
             with self.subTest(mynode=fullnode):
                 logger.info(f'TestID: {fullnode}')
                 WebDAVListThread = WebDAVList(name=fullnode, basicAuth=False, TestWebDAV=self)
@@ -696,7 +696,7 @@ class TestWebDAV(unittest.TestCase):
         while(g_testThreadsRunning > 0):
             time.sleep(1)
 
-        for fullnode in drv.fullnodes:
+        for fullnode in drv.nodestotest:
             with self.subTest(mynode=fullnode):
                 self.assertTrue(g_testPassed[fullnode])
 
@@ -705,7 +705,7 @@ class TestWebDAV(unittest.TestCase):
         global g_testPassed
         logger.info('test_webdav_multicheckandremove')
         drv = sunetnextcloud.TestTarget()
-        for fullnode in drv.fullnodes:
+        for fullnode in drv.nodestotest:
             logger.info(f'WebDAV multicheck for {fullnode}')
             with self.subTest(mynode=fullnode):
                 logger.info(f'TestID: {fullnode}')
@@ -715,7 +715,7 @@ class TestWebDAV(unittest.TestCase):
         while(g_testThreadsRunning > 0):
             time.sleep(1)
 
-        for fullnode in drv.fullnodes:
+        for fullnode in drv.nodestotest:
             with self.subTest(mynode=fullnode):
                 self.assertTrue(g_testPassed[fullnode])
 
@@ -723,7 +723,7 @@ class TestWebDAV(unittest.TestCase):
         global logger
         logger.info('test_clean_seleniumuserfolders')
         drv = sunetnextcloud.TestTarget()
-        for fullnode in drv.fullnodes:
+        for fullnode in drv.nodestotest:
             with self.subTest(mynode=fullnode):
                 logger.info(f'TestID: {fullnode}')
                 WebDAVCleanSeleniumFoldersThread = WebDAVCleanSeleniumFolders(name=fullnode, basicAuth=False, TestWebDAV=self)
@@ -732,7 +732,7 @@ class TestWebDAV(unittest.TestCase):
         while(g_testThreadsRunning > 0):
             time.sleep(1)
 
-        for fullnode in drv.fullnodes:
+        for fullnode in drv.nodestotest:
             with self.subTest(mynode=fullnode):
                 self.assertTrue(g_testPassed[fullnode])
 
@@ -740,7 +740,7 @@ class TestWebDAV(unittest.TestCase):
         global logger
         logger.info('test_sharing_folders')
         drv = sunetnextcloud.TestTarget()
-        for fullnode in drv.fullnodes:
+        for fullnode in drv.nodestotest:
             with self.subTest(mynode=fullnode):
                 logger.info(f'TestID: {fullnode}')
                 WebDAVMakeSharingFolderThread = WebDAVMakeSharingFolder(name=fullnode, basicAuth=False, TestWebDAV=self)
@@ -749,7 +749,7 @@ class TestWebDAV(unittest.TestCase):
         while(g_testThreadsRunning > 0):
             time.sleep(1)
 
-        for fullnode in drv.fullnodes:
+        for fullnode in drv.nodestotest:
             with self.subTest(mynode=fullnode):
                 self.assertTrue(g_testPassed[fullnode])
 
@@ -757,7 +757,7 @@ class TestWebDAV(unittest.TestCase):
         global logger
         logger.info('test_personal_bucket_folders')
         drv = sunetnextcloud.TestTarget()
-        for fullnode in drv.fullnodes:
+        for fullnode in drv.nodestotest:
             with self.subTest(mynode=fullnode):
                 logger.info(f'TestID: {fullnode}')
                 WebDAVPersonalBucketFoldersThread = WebDAVPersonalBucketFolders(name=fullnode, basicAuth=False, TestWebDAV=self)
@@ -766,7 +766,7 @@ class TestWebDAV(unittest.TestCase):
         while(g_testThreadsRunning > 0):
             time.sleep(1)
 
-        for fullnode in drv.fullnodes:
+        for fullnode in drv.nodestotest:
             with self.subTest(mynode=fullnode):
                 self.assertTrue(g_testPassed[fullnode])
 
@@ -774,7 +774,7 @@ class TestWebDAV(unittest.TestCase):
         global logger
         logger.info('test_system_bucket_folders')
         drv = sunetnextcloud.TestTarget()
-        for fullnode in drv.fullnodes:
+        for fullnode in drv.nodestotest:
             with self.subTest(mynode=fullnode):
                 logger.info(f'TestID: {fullnode}')
                 WebDAVSystemBucketFoldersThread = WebDAVSystemBucketFolders(name=fullnode, basicAuth=False, TestWebDAV=self)
@@ -783,7 +783,7 @@ class TestWebDAV(unittest.TestCase):
         while(g_testThreadsRunning > 0):
             time.sleep(1)
 
-        for fullnode in drv.fullnodes:
+        for fullnode in drv.nodestotest:
             with self.subTest(mynode=fullnode):
                 self.assertTrue(g_testPassed[fullnode])
 
@@ -791,7 +791,7 @@ class TestWebDAV(unittest.TestCase):
         global logger
         logger.info('test_cmd_in_home_folder')
         drv = sunetnextcloud.TestTarget()
-        for fullnode in drv.fullnodes:
+        for fullnode in drv.nodestotest:
             with self.subTest(mynode=fullnode):
                 logger.info(f'TestID: {fullnode}')
                 WebDAVSystemBucketFoldersThread = WebDAVCreateMoveDelete(name=fullnode, target='selenium-home', basicAuth=False, TestWebDAV=self)
@@ -800,7 +800,7 @@ class TestWebDAV(unittest.TestCase):
         while(g_testThreadsRunning > 0):
             time.sleep(1)
 
-        for fullnode in drv.fullnodes:
+        for fullnode in drv.nodestotest:
             with self.subTest(mynode=fullnode):
                 self.assertTrue(g_testPassed[fullnode])
 
@@ -808,7 +808,7 @@ class TestWebDAV(unittest.TestCase):
         global logger
         logger.info('test_cmd_in_personal_bucket')
         drv = sunetnextcloud.TestTarget()
-        for fullnode in drv.fullnodes:
+        for fullnode in drv.nodestotest:
             with self.subTest(mynode=fullnode):
                 logger.info(f'TestID: {fullnode}')
                 WebDAVSystemBucketFoldersThread = WebDAVCreateMoveDelete(name=fullnode, target=g_personalBucket, basicAuth=False, TestWebDAV=self)
@@ -817,7 +817,7 @@ class TestWebDAV(unittest.TestCase):
         while(g_testThreadsRunning > 0):
             time.sleep(1)
 
-        for fullnode in drv.fullnodes:
+        for fullnode in drv.nodestotest:
             with self.subTest(mynode=fullnode):
                 self.assertTrue(g_testPassed[fullnode])
 
@@ -825,7 +825,7 @@ class TestWebDAV(unittest.TestCase):
         global logger
         logger.info('test_cmd_in_system_bucket')
         drv = sunetnextcloud.TestTarget()
-        for fullnode in drv.fullnodes:
+        for fullnode in drv.nodestotest:
             with self.subTest(mynode=fullnode):
                 logger.info(f'TestID: {fullnode}')
                 WebDAVSystemBucketFoldersThread = WebDAVCreateMoveDelete(name=fullnode, target=g_systemBucket, basicAuth=False, TestWebDAV=self)
@@ -834,7 +834,7 @@ class TestWebDAV(unittest.TestCase):
         while(g_testThreadsRunning > 0):
             time.sleep(1)
 
-        for fullnode in drv.fullnodes:
+        for fullnode in drv.nodestotest:
             with self.subTest(mynode=fullnode):
                 self.assertTrue(g_testPassed[fullnode])
 
@@ -842,7 +842,7 @@ class TestWebDAV(unittest.TestCase):
         global logger
         logger.info('test_empty_trashbin')
         drv = sunetnextcloud.TestTarget()
-        for fullnode in drv.fullnodes:
+        for fullnode in drv.nodestotest:
             with self.subTest(mynode=fullnode):
                 logger.info(f'TestID: {fullnode}')
                 WebDAVCleanTrashbinThread = WebDAVCleanTrashbin(name=fullnode, basicAuth=False, TestWebDAV=self)
@@ -851,7 +851,7 @@ class TestWebDAV(unittest.TestCase):
         while(g_testThreadsRunning > 0):
             time.sleep(1)
 
-        for fullnode in drv.fullnodes:
+        for fullnode in drv.nodestotest:
             with self.subTest(mynode=fullnode):
                 self.assertTrue(g_testPassed[fullnode])
 
