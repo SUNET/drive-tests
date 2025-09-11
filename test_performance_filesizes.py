@@ -196,7 +196,7 @@ class TestLargeFilePerformance(unittest.TestCase):
     #                 serverid = f'node{fe}.{nodebaseurl}'
     #                 logger.info(f'TestID: {fullnode}')
     #                 nodeuser = drv.get_seleniumuser(fullnode)
-    #                 nodepwd = drv.get_seleniumuserpassword(fullnode)
+    #                 nodepwd = drv.get_seleniumuserapppassword(fullnode)
     #                 url = drv.get_webdav_url(fullnode, nodeuser)
     #                 logger.info(f'URL: {url}')
     #                 options = {
@@ -300,7 +300,7 @@ class TestLargeFilePerformance(unittest.TestCase):
     #                 logger.info(f'TestID: {fullnode}')
 
     #                 nodeuser = drv.get_seleniumuser(fullnode)
-    #                 nodepwd = drv.get_seleniumuserpassword(fullnode)
+    #                 nodepwd = drv.get_seleniumuserapppassword(fullnode)
     #                 url = drv.get_webdav_url(fullnode, nodeuser)
     #                 logger.info(f'URL: {url}')
     #                 options = {
@@ -404,7 +404,7 @@ class TestLargeFilePerformance(unittest.TestCase):
     #                 logger.info(f'TestID: {fullnode}')
 
     #                 nodeuser = drv.get_seleniumuser(fullnode)
-    #                 nodepwd = drv.get_seleniumuserpassword(fullnode)
+    #                 nodepwd = drv.get_seleniumuserapppassword(fullnode)
     #                 url = drv.get_webdav_url(fullnode, nodeuser)
     #                 logger.info(f'URL: {url}')
     #                 options = {
@@ -527,7 +527,7 @@ class TestLargeFilePerformance(unittest.TestCase):
                     serverid = f'node{fe}.{nodebaseurl}'
                     logger.info(f'TestID: {fullnode}')
                     nodeuser = drv.get_seleniumuser(fullnode)
-                    nodepwd = drv.get_seleniumuserpassword(fullnode)
+                    nodepwd = drv.get_seleniumuserapppassword(fullnode)
                     url = drv.get_webdav_url(fullnode, nodeuser)
                     logger.info(f'URL: {url}')
                     options = {
@@ -661,7 +661,7 @@ class TestLargeFilePerformance(unittest.TestCase):
                     serverid = f'node{fe}.{nodebaseurl}'
                     logger.info(f'TestID: {fullnode}')
                     nodeuser = drv.get_seleniumuser(fullnode)
-                    nodepwd = drv.get_seleniumuserpassword(fullnode)
+                    nodepwd = drv.get_seleniumuserapppassword(fullnode)
                     url = drv.get_webdav_url(fullnode, nodeuser)
                     logger.info(f'URL: {url}')
                     options = {
@@ -794,7 +794,7 @@ class TestLargeFilePerformance(unittest.TestCase):
                     serverid = f'node{fe}.{nodebaseurl}'
                     logger.info(f'TestID: {fullnode}')
                     nodeuser = drv.get_seleniumuser(fullnode)
-                    nodepwd = drv.get_seleniumuserpassword(fullnode)
+                    nodepwd = drv.get_seleniumuserapppassword(fullnode)
                     url = drv.get_webdav_url(fullnode, nodeuser)
                     logger.info(f'URL: {url}')
                     options = {
