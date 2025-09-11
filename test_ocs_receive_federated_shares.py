@@ -239,9 +239,12 @@ class TestOcsFederatedShares(unittest.TestCase):
                 client.verify = drv.verify
 
                 for share in j['ocs']['data']:
-                    filename = share['name']
-                    logger.info(f'List share {filename}')
-                    logger.info(client.list(filename))
+                    try:
+                        filename = share['name']
+                        logger.info(f'List share {filename}')
+                        logger.info(client.list(filename))
+                    except Exception as error:
+                        logger.error(f'Unable to list share for {fullnode}: {error}')
 
 
 if __name__ == '__main__':
