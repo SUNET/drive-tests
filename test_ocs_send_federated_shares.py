@@ -1,4 +1,4 @@
-""" Testing OCS functions for Sunet Drive
+ """ Testing OCS functions for Sunet Drive
 Author: Richard Freitag <freitag@sunet.se>
 """
 
@@ -135,7 +135,7 @@ class OcsMakeFederatedShare(threading.Thread):
             g_testThreadsRunning -= 1
             return      
 
-        for shareNode in drv.nodelist:
+        for shareNode in drv.allnodes:
             if shareNode == fullnode:
                 logger.info(f'Do not share with self')
                 continue # with next node
