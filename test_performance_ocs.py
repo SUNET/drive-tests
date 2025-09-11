@@ -92,8 +92,8 @@ class NodeOcsUserLifecycle(threading.Thread):
                         r = requests.delete(userurl, headers=ocsheaders)
                         j = json.loads(r.text)
                         logger.info(j["ocs"]["meta"]["status"])
-                except Exception:
-                    logger.error(f'Unable to test user lifecycle for {fullnode}')
+                except Exception as error:
+                    logger.error(f'Unable to test user lifecycle for {fullnode}: {error}')
                     g_testPassed[fullnode] = False
                     g_testThreadsRunning -= 1
                     return
