@@ -1,4 +1,4 @@
- """ Testing OCS functions for Sunet Drive
+""" Testing OCS functions for Sunet Drive
 Author: Richard Freitag <freitag@sunet.se>
 """
 
