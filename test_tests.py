@@ -15,8 +15,11 @@ dname = os.path.dirname(abspath)
 os.chdir(dname)
 
 opsbase='sunet-drive-ops/'
-xmlout='test-reports'
-htmlout='html-reports'
+xmlout='test-reports/archive'
+htmlout='html-reports/archive'
+os.makedirs(xmlout, exist_ok=True)
+os.makedirs(htmlout, exist_ok=True)
+
 globalconfigfile = opsbase + "/global/overlay/etc/hiera/data/common.yaml"
 drv = sunetnextcloud.TestTarget()
 
@@ -25,10 +28,6 @@ logging.basicConfig(format = '%(asctime)s - %(module)s.%(funcName)s - %(levelnam
                 datefmt = '%Y-%m-%d %H:%M:%S', level = logging.INFO)
 
 class TestTests(unittest.TestCase):
-    def test_output_directories(self):
-        os.makedirs(xmlout, exist_ok=True)
-        os.makedirs(htmlout, exist_ok=True)
-
     def test_logger(self):
         logger.info(f'TestID: {self._testMethodName}')
         pass
