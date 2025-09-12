@@ -563,7 +563,7 @@ class TestLargeFilePerformance(unittest.TestCase):
                     cmd = f'rm {targetDirectory}/*conflicted*'
                     os.system(cmd)
 
-                    cmd = f'nextcloudcmd --non-interactive --path {serverTargetFolder} -u ${{NEXTCLOUD_SELENIUM_USER_{fullnode.upper()}_{drv.target.upper()}}} -p ${{NEXTCLOUD_SELENIUM_PASSWORD_{fullnode.upper()}_{drv.target.upper()}}} {targetDirectory} https://{drv.get_node_base_url(fullnode)}'
+                    cmd = f'nextcloudcmd --non-interactive --path {serverTargetFolder} -u ${{NEXTCLOUD_SELENIUM_USER_{fullnode.upper()}_{drv.target.upper()}}} -p ${{NEXTCLOUD_SELENIUM_APP_PASSWORD_{fullnode.upper()}_{drv.target.upper()}}} {targetDirectory} https://{drv.get_node_base_url(fullnode)}'
                     logger.info(f'Executing {cmd}')
                     os.system(cmd)
 
@@ -642,7 +642,7 @@ class TestLargeFilePerformance(unittest.TestCase):
 
         # Command to run for a basic sync
         # rm /tmp/largefiles/.sync_*
-        # nextcloudcmd --non-interactive --silent --path selenium-home/nextcloudcmd -u ${NEXTCLOUD_SELENIUM_USER_SUNET_TEST} -p ${NEXTCLOUD_SELENIUM_PASSWORD_SUNET_TEST} /tmp/largefiles https://sunet.drive.test.sunet.se 
+        # nextcloudcmd --non-interactive --silent --path selenium-home/nextcloudcmd -u ${NEXTCLOUD_SELENIUM_USER_SUNET_TEST} -p ${NEXTCLOUD_SELENIUM_APP_PASSWORD_SUNET_TEST} /tmp/largefiles https://sunet.drive.test.sunet.se 
         global logger, g_testThreadsRunning, g_davPerformanceResults
         g_davPerformanceResults.clear()
 
@@ -697,7 +697,7 @@ class TestLargeFilePerformance(unittest.TestCase):
                     cmd = f'rm {targetDirectory}/*conflicted*'
                     os.system(cmd)
 
-                    cmd = f'nextcloudcmd --non-interactive --path {serverTargetFolder} -u ${{NEXTCLOUD_SELENIUM_USER_{fullnode.upper()}_{drv.target.upper()}}} -p ${{NEXTCLOUD_SELENIUM_PASSWORD_{fullnode.upper()}_{drv.target.upper()}}} {targetDirectory} https://{drv.get_node_base_url(fullnode)}'
+                    cmd = f'nextcloudcmd --non-interactive --path {serverTargetFolder} -u ${{NEXTCLOUD_SELENIUM_USER_{fullnode.upper()}_{drv.target.upper()}}} -p ${{NEXTCLOUD_SELENIUM_APP_PASSWORD_{fullnode.upper()}_{drv.target.upper()}}} {targetDirectory} https://{drv.get_node_base_url(fullnode)}'
                     logger.info(f'Executing {cmd}')
                     os.system(cmd)
 
