@@ -83,15 +83,22 @@ class WebDAVList(threading.Thread):
             g_failedNodes.append(fullnode)
             g_testThreadsRunning -= 1
             return
-        except WebDavException as error:
-            logger.info(f'{fullnode} - Expected fail: {error.code}')
-            g_testThreadsRunning -= 1
-            return
         except Exception as error:
-            logger.error(f'Unknown exception: {error}')
-            g_failedNodes.append(fullnode)
-            g_testThreadsRunning -= 1
-            return
+            if hasattr(error, 'code'):
+                if error.code == 401:
+                    logger.info(f'{fullnode} - Expected fail: {error.code}')
+                    g_testThreadsRunning -= 1
+                    return
+                else:
+                    logger.error(f'Unknown error code: {error.code}')
+                    g_failedNodes.append(fullnode)
+                    g_testThreadsRunning -= 1
+                    return
+            else:
+                logger.error(f'Unknown exception: {error}')
+                g_failedNodes.append(fullnode)
+                g_testThreadsRunning -= 1
+                return
 
 class TestMfa4All(unittest.TestCase):
     def deleteCookies(self, driver):
