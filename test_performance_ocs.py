@@ -102,7 +102,7 @@ class NodeOcsUserLifecycle(threading.Thread):
 
         g_testPassed[fullnode] = True
         g_testThreadsRunning -= 1
-        logger.info(f'NodeOcsUserLifecycle thread done for node {self.name}, test passed: {g_testPassed[fullnode]}')
+        logger.info(f'NodeOcsUserLifecycle thread done for node {self.name}, test passed: {g_testPassed[fullnode]}, remaining: {g_testThreadsRunning}')
         return
 
 class NodeOcsUserPerformance(threading.Thread):
@@ -145,7 +145,7 @@ class NodeOcsUserPerformance(threading.Thread):
                     # logger.info(f'SERVERID cookie: {s.cookies.get_dict()["SERVERID"]}')
 
                 message += f' - {totalTime:<3.1f}s'
-                logger.info(f'{calls} request to {nodebaseurl} took {totalTime:<3.1f}s - {info}')
+                logger.info(f'{calls} requests to {nodebaseurl} took {totalTime:<3.1f}s - {info}')
             else:
                 info = 'Main URL without cookie, same session'
                 totalTime = 0.0
@@ -165,7 +165,7 @@ class NodeOcsUserPerformance(threading.Thread):
                     lastServerId = newServerId
 
                 message += f' - {totalTime:<3.1f}s'
-                logger.info(f'{calls} request to {nodebaseurl} took {totalTime:<3.1f}s - {info}')
+                logger.info(f'{calls} requests to {nodebaseurl} took {totalTime:<3.1f}s - {info}')
 
             if self.newSession:
                 info = 'Main URL with cookie, new session'
@@ -180,7 +180,7 @@ class NodeOcsUserPerformance(threading.Thread):
                         s.get(url, headers=ocsheaders)
                         totalTime += (datetime.now() - startTime).total_seconds()
                     message += f' - {totalTime:<3.1f}s'
-                    logger.info(f'{calls} request to {serverid} took {totalTime:<3.1f}s - {info}')
+                    logger.info(f'{calls} requests to {serverid} took {totalTime:<3.1f}s - {info}')
                 else:
                     for fe in range(1,4):
                         totalTime = 0.0
@@ -193,7 +193,7 @@ class NodeOcsUserPerformance(threading.Thread):
                             s.get(url, headers=ocsheaders)
                             totalTime += (datetime.now() - startTime).total_seconds()
                         message += f' - {totalTime:<3.1f}s'
-                        logger.info(f'{calls} request to {serverid} took {totalTime:<3.1f}s - {info}')
+                        logger.info(f'{calls} requests to {serverid} took {totalTime:<3.1f}s - {info}')
             else:
                 info = 'Main URL with cookie, same session'
                 if isMultinode:
@@ -208,7 +208,7 @@ class NodeOcsUserPerformance(threading.Thread):
                         s.get(url, headers=ocsheaders)
                         totalTime += (datetime.now() - startTime).total_seconds()
                     message += f' - {totalTime:<3.1f}s'
-                    logger.info(f'{calls} request to {serverid} took {totalTime:<3.1f}s - {info}')
+                    logger.info(f'{calls} requests to {serverid} took {totalTime:<3.1f}s - {info}')
                 else:
                     for fe in range(1,4):
                         totalTime = 0.0
@@ -221,7 +221,7 @@ class NodeOcsUserPerformance(threading.Thread):
                             s.get(url, headers=ocsheaders)
                             totalTime += (datetime.now() - startTime).total_seconds()
                         message += f' - {totalTime:<3.1f}s'
-                        logger.info(f'{calls} request to {serverid} took {totalTime:<3.1f}s - {info}')
+                        logger.info(f'{calls} requests to {serverid} took {totalTime:<3.1f}s - {info}')
 
 
             if self.newSession:
@@ -242,7 +242,7 @@ class NodeOcsUserPerformance(threading.Thread):
                         s.get(url, headers=ocsheaders, verify=False)
                         totalTime += (datetime.now() - startTime).total_seconds()
                     message += f' - {totalTime:<3.1f}s'
-                    logger.info(f'{calls} request to {serverid} took {totalTime:<3.1f}s - {info}')
+                    logger.info(f'{calls} requests to {serverid} took {totalTime:<3.1f}s - {info}')
                 
                 else:
                     info = 'Full node fe urls, new session'
@@ -261,7 +261,7 @@ class NodeOcsUserPerformance(threading.Thread):
                             s.get(url, headers=ocsheaders, verify=False)
                             totalTime += (datetime.now() - startTime).total_seconds()
                         message += f' - {totalTime:<3.1f}s'
-                        logger.info(f'{calls} request to {serverid} took {totalTime:<3.1f}s - {info}')
+                        logger.info(f'{calls} requests to {serverid} took {totalTime:<3.1f}s - {info}')
 
             else: # Same session
                 logger.info('Direct url(s), same session')
@@ -281,7 +281,7 @@ class NodeOcsUserPerformance(threading.Thread):
                         s.get(url, headers=ocsheaders, verify=False)
                         totalTime += (datetime.now() - startTime).total_seconds()
                     message += f' - {totalTime:<3.1f}s'
-                    logger.info(f'{calls} request to {serverid} took {totalTime:<3.1f}s - {info}')
+                    logger.info(f'{calls} requests to {serverid} took {totalTime:<3.1f}s - {info}')
                 else:
                     info = 'Full node fe urls, same session'
                     for fe in range(1,4):
@@ -299,7 +299,7 @@ class NodeOcsUserPerformance(threading.Thread):
                             s.get(url, headers=ocsheaders, verify=False)
                             totalTime += (datetime.now() - startTime).total_seconds()
                         message += f' - {totalTime:<3.1f}s'
-                        logger.info(f'{calls} request to {serverid} took {totalTime:<3.1f}s - {info}')
+                        logger.info(f'{calls} requests to {serverid} took {totalTime:<3.1f}s - {info}')
 
             g_ocsPerformanceResults.append(message)
         except Exception as error:
@@ -310,7 +310,7 @@ class NodeOcsUserPerformance(threading.Thread):
 
         g_testPassed[fullnode] = True
         g_testThreadsRunning -= 1
-        logger.info(f'NodeOcsUserPerformance thread done for node {self.name}, test passed: {g_testPassed[fullnode]}')
+        logger.info(f'NodeOcsUserPerformance thread done for node {self.name}, test passed: {g_testPassed[fullnode]}, remaining: {g_testThreadsRunning}')
         return
 
 class TestPerformanceOcs(unittest.TestCase):
