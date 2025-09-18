@@ -20,7 +20,9 @@ ocsheaders = { "OCS-APIRequest" : "true" }
 nodestotest = ['sunet', 'su', 'extern']
 g_requestTimeout = 30
 g_webdav_timeout = 30
-g_sharedTestFolder = 'PublicFileRequestFolder'
+g_sharedTestFolder = 'HomeFileRequestFolder'
+g_personalBucket = 'selenium-personal/PersonalS3FileRequestFolder'
+g_systemBucket = 'selenium-system/SystemS3FileRequestFolder'
 g_filename = 'public_share.txt'
 g_testPassed = {}
 g_testThreadsRunning = 0
@@ -131,11 +133,11 @@ class OcsMakePublicShare(threading.Thread):
 
         logger.info(f'Create public share for {self.name}')
         url = drv.get_share_url(fullnode)
-        logger.info(f'Share url: {url}')
+        logger.info(f'Create share: {url}')
         url = url.replace("$USERNAME$", nodeuser)
         url = url.replace("$PASSWORD$", nodepwd)
         session = requests.Session()
-        data = { 'path': targetfolder, 'shareType': 3, 'note': 'Testautomation'}
+        data = { 'path': targetfolder, 'shareType': 3, 'permissions': 4, 'note': 'Testautomation'}
 
         try:
             # logger.info(f'Share to {url}')
@@ -152,36 +154,6 @@ class OcsMakePublicShare(threading.Thread):
             logger.warning(f'Failed to share {targetfolder}: {error}')
             g_testThreadsRunning -= 1
             return
-
-        # Update share id with new permissions
-        url = drv.get_share_id_url(fullnode, shareId)
-        logger.info(f"Update share: {shareId} - {url}")
-        url = url.replace("$USERNAME$", nodeuser)
-        url = url.replace("$PASSWORD$", nodepwd)
-
-        attributes = [
-            {
-                "scope": "file-request",
-                "key": "enabled",
-                "value": True
-            }
-        ]
-
-        # data = { 'permissions': 31, 'publicUpload': 'true', 'attributes:': urllib.parse.quote(json.dumps(attributes)) }
-        # r = requests.put(url, headers=ocsheaders, data=data, verify=self.verify)
-        # j = json.loads(r.text)
-        # logger.info(f'Share updated: {json.dumps(j, indent=4, sort_keys=True)}')
-
-        data = { 'permissions': 1 }
-        r = requests.put(url, headers=ocsheaders, data=data, verify=self.verify)
-        j = json.loads(r.text)
-        logger.info(f'Updated permissions: {j["ocs"]["data"]["permissions"]}')
-        # logger.info(f'Share updated: {json.dumps(j, indent=4, sort_keys=True)}')
-
-        # data = { 'publicUpload': 'true' }
-        # r = requests.put(url, headers=ocsheaders, data=data, verify=self.verify)
-        # j = json.loads(r.text)
-        # logger.info(f'Share updated: {json.dumps(j, indent=4, sort_keys=True)}')
 
         try:
             self.TestOcsPublicShares.assertEqual(j["ocs"]["meta"]["status"], 'ok')
