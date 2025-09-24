@@ -43,8 +43,8 @@ prod:
       hasTemplateSource: true
       hasZoteroSupport: true
       productName: "Collabora Online"
-      productVersion: "24.04.4.5"
-      productVersionHash: "72c164e"
+      productVersion: "25.04.4.3"
+      productVersionHash: "997d8ce391"
 test:
   loginexceptions: [suni,kau,scilifelab]
   defaultapps: [dashboard,files,photos,activity,contacts,calendar,announcementcenter,collectives,polls,forms,tasks]
@@ -79,8 +79,8 @@ test:
       hasTemplateSource: true
       hasZoteroSupport: true
       productName: "Collabora Online"
-      productVersion: "24.04.4.5"
-      productVersionHash: "72c164e"
+      productVersion: "25.04.4.3"
+      productVersionHash: "997d8ce391"
 storage:
     mainStorageLocation: 's3.sto4.safedc.net'
     backupStorageLocation: 's3.sto3.safedc.net'
