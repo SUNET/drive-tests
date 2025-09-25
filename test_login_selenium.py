@@ -123,14 +123,28 @@ class TestLoginSelenium(unittest.TestCase):
                         if browser == 'chrome':
                             driver.set_window_size(1920, 1152)
                         else:
-                            driver.maximize_window()        
+                            driver.maximize_window()    
+                        wait = WebDriverWait(driver, delay)
+
                         # driver2 = webdriver.Firefox()
+
+                        # Test login page for community edition
+                        driver.get(drv.get_node_login_url(fullnode, True))
+                        wait.until(EC.element_to_be_clickable((By.ID, 'user')))
+                        hasCommunityWarning=False
+                        try:
+                            driver.find_element(By.CLASS_NAME, 'notecard--warning')
+                            self.logger.error(f'Node has a warning card on login page: {url}')
+                            hasCommunityWarning=True
+                        except Exception as e:
+                            self.logger.info(f'Regular login page found')
+
+                        self.assertFalse(hasCommunityWarning)
+                        # time.sleep(900)
 
                         sel = sunetnextcloud.SeleniumHelper(driver, fullnode)
                         sel.delete_cookies()
                         sel.nodelogin(sel.UserType.SELENIUM, mfaUser=True)
-
-                        wait = WebDriverWait(driver, delay)
 
                         try:
                             wait.until(EC.presence_of_element_located((By.XPATH, '//a[@href="' + drv.indexsuffix + '/apps/files/' +'"]')))
