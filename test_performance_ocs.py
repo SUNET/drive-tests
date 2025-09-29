@@ -117,15 +117,15 @@ class NodeOcsUserPerformance(threading.Thread):
         global logger, g_testPassed, g_testThreadsRunning, g_ocsPerformanceResults
         g_testThreadsRunning += 1
         logger.info(f'NodeOcsUserPerformance thread started for node {self.name}')
-        drv = sunetnextcloud.TestTarget()
-        fullnode = self.name
-        isMultinode = drv.is_multinode(fullnode)
-        nodeuser = drv.get_ocsuser(fullnode)
-        nodepwd = drv.get_ocsuserapppassword(fullnode)
-        g_testPassed[fullnode] = False
-        logger.info(f'Setting passed for {fullnode} to {g_testPassed.get(fullnode)}')
-
         try:
+            drv = sunetnextcloud.TestTarget()
+            fullnode = self.name
+            isMultinode = drv.is_multinode(fullnode)
+            nodeuser = drv.get_ocsuser(fullnode)
+            nodepwd = drv.get_ocsuserapppassword(fullnode)
+            g_testPassed[fullnode] = False
+            logger.info(f'Setting passed for {fullnode} to {g_testPassed.get(fullnode)}')
+
             url = drv.get_status_url(fullnode)
             nodebaseurl = drv.get_node_base_url(fullnode)
             url = drv.get_add_user_url(fullnode)
@@ -230,7 +230,7 @@ class NodeOcsUserPerformance(threading.Thread):
                     info = 'Multinode url, new session'
                     totalTime = 0.0
                     url = drv.get_add_user_multinode_url(fullnode)
-                    logger.info(f'Test direct call to {url}')
+                    logger.info(f'Test direct call to {fullnode} - {url}')
 
                     url = url.replace("$USERNAME$", nodeuser)
                     url = url.replace("$PASSWORD$", nodepwd)
@@ -249,7 +249,7 @@ class NodeOcsUserPerformance(threading.Thread):
                     for fe in range(1,4):
                         totalTime = 0.0
                         url = drv.get_add_user_fe_url(fullnode, fe)
-                        logger.info(f'Test direct call to {url}')
+                        logger.info(f'Test direct call to {fullnode} FE{fe} - {url}')
 
                         url = url.replace("$USERNAME$", nodeuser)
                         url = url.replace("$PASSWORD$", nodepwd)
@@ -271,7 +271,7 @@ class NodeOcsUserPerformance(threading.Thread):
                     s = requests.Session()
                     s.headers.update(ocsheaders)
                     url = drv.get_add_user_multinode_url(fullnode)
-                    logger.info(f'Test direct call to {url}')
+                    logger.info(f'Test direct call to {fullnode} - {url}')
 
                     url = url.replace("$USERNAME$", nodeuser)
                     url = url.replace("$PASSWORD$", nodepwd)
@@ -289,7 +289,7 @@ class NodeOcsUserPerformance(threading.Thread):
                         s = requests.Session()
                         s.headers.update(ocsheaders)
                         url = drv.get_add_user_fe_url(fullnode, fe)
-                        logger.info(f'Test direct call to {url}')
+                        logger.info(f'Test direct call to {fullnode} FE{fe} - {url}')
 
                         url = url.replace("$USERNAME$", nodeuser)
                         url = url.replace("$PASSWORD$", nodepwd)
