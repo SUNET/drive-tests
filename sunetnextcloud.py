@@ -758,6 +758,7 @@ class SeleniumHelper():
             self.wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'two-factor-provider'))) # Wait for mfa login button and proceed
 
         if isMfaUser:
+            self.wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'two-factor-provider'))) # Wait for mfa login button and proceed
             logger.info(f'MFA login {self.driver.current_url}')
             totpXpath = '//a[contains(@href,"/challenge/totp")]'
 
@@ -768,6 +769,8 @@ class SeleniumHelper():
                 totpselect.click()
             elif 'challenge/totp' in self.driver.current_url:
                 logger.info('No need to select TOTP provider')
+            else:
+                logger.error(f'Unexpected url: {self.driver.current_url}')
 
             currentOtp = 0
             totpRetry = 0
