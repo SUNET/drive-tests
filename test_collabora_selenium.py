@@ -204,11 +204,16 @@ class TestCollaboraSelenium(unittest.TestCase):
             with self.subTest(mynode=collaboranode):
                 self.logger.info(f'TestID: {collaboranode}')
                 # if g_isLoggedIn == False:
-                removeFolder(collaboranode, 'Templates')
-                if not g_loggedInNodes.get(collaboranode):
-                    nodelogin(collaboranode)
-                self.assertTrue(g_loggedInNodes.get(collaboranode))
-                success = True
+                try:
+                    removeFolder(collaboranode, 'Templates')
+                    if not g_loggedInNodes.get(collaboranode):
+                        nodelogin(collaboranode)
+                    self.assertTrue(g_loggedInNodes.get(collaboranode))
+                    success = True
+                except Exception as error:
+                    self.logger.error('Error preparing nodelogin!')
+                    success = False
+                self.assertTrue(success)
 
                 self.logger.info('Waiting for app menu')
                 try:
@@ -362,11 +367,16 @@ class TestCollaboraSelenium(unittest.TestCase):
             with self.subTest(mynode=collaboranode):
                 self.logger.info(f'TestID: {collaboranode}')
                 # if g_isLoggedIn == False:
-                removeFolder(collaboranode, 'Templates')
-                if not g_loggedInNodes.get(collaboranode):
-                    nodelogin(collaboranode)
-                self.assertTrue(g_loggedInNodes.get(collaboranode))
-                success = True
+                try:
+                    removeFolder(collaboranode, 'Templates')
+                    if not g_loggedInNodes.get(collaboranode):
+                        nodelogin(collaboranode)
+                    self.assertTrue(g_loggedInNodes.get(collaboranode))
+                    success = True
+                except Exception as error:
+                    self.logger.error('Error preparing nodelogin!')
+                    success = False
+                self.assertTrue(success)
 
                 self.logger.info('Waiting for app menu')
                 try:
@@ -528,11 +538,16 @@ class TestCollaboraSelenium(unittest.TestCase):
             with self.subTest(mynode=collaboranode):
                 self.logger.info(f'TestID: {collaboranode}')
                 # if g_isLoggedIn == False:
-                removeFolder(collaboranode, 'Templates')
-                if not g_loggedInNodes.get(collaboranode):
-                    nodelogin(collaboranode)
-                self.assertTrue(g_loggedInNodes.get(collaboranode))
-                success = True
+                try:
+                    removeFolder(collaboranode, 'Templates')
+                    if not g_loggedInNodes.get(collaboranode):
+                        nodelogin(collaboranode)
+                    self.assertTrue(g_loggedInNodes.get(collaboranode))
+                    success = True
+                except Exception as error:
+                    self.logger.error('Error preparing nodelogin!')
+                    success = False
+                self.assertTrue(success)
 
                 self.logger.info('Waiting for app menu')
                 try:
@@ -704,11 +719,16 @@ class TestCollaboraSelenium(unittest.TestCase):
             with self.subTest(mynode=collaboranode):
                 self.logger.info(f'TestID: {collaboranode}')
                 # if g_isLoggedIn == False:
-                removeFolder(collaboranode, 'Templates')
-                if not g_loggedInNodes.get(collaboranode):
-                    nodelogin(collaboranode)
-                self.assertTrue(g_loggedInNodes.get(collaboranode))
-                success = True
+                try:
+                    removeFolder(collaboranode, 'Templates')
+                    if not g_loggedInNodes.get(collaboranode):
+                        nodelogin(collaboranode)
+                    self.assertTrue(g_loggedInNodes.get(collaboranode))
+                    success = True
+                except Exception as error:
+                    self.logger.error('Error preparing nodelogin!')
+                    success = False
+                self.assertTrue(success)
 
                 self.logger.info('Waiting for app menu')
                 try:
