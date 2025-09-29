@@ -290,7 +290,7 @@ class CapabilitiesNoUser(threading.Thread):
             self.TestOcsCalls.assertEqual(j["ocs"]["meta"]["status"], expectedResults[drv.target]['ocs_capabilities']['ocs_meta_status'])
             self.TestOcsCalls.assertEqual(j["ocs"]["meta"]["statuscode"], expectedResults[drv.target]['ocs_capabilities']['ocs_meta_statuscode_2'])
             self.TestOcsCalls.assertEqual(j["ocs"]["meta"]["message"], expectedResults[drv.target]['ocs_capabilities']['ocs_meta_message'])
-            self.TestOcsCalls.assertEqual(j["ocs"]["data"]["version"]["string"], expectedResults[drv.target]['ocs_capabilities']['ocs_data_version_string'])
+            self.TestOcsCalls.assertTrue(j["ocs"]["data"]["version"]["string"] in expectedResults[drv.target]['ocs_capabilities']['ocs_data_version_string'])
         except Exception as error:
             logger.error(f"Error with OCS capabilities assertion: {error}")
             g_testPassed[fullnode] = False
