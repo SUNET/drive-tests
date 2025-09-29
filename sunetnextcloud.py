@@ -731,9 +731,9 @@ class SeleniumHelper():
 
         try:
             logger.info('Enter username and password')
+            currentUrl = self.driver.current_url
             self.wait.until(EC.element_to_be_clickable((By.ID, 'user'))).send_keys(nodeuser)
             self.wait.until(EC.element_to_be_clickable((By.ID, 'password'))).send_keys(nodepwd + Keys.ENTER)
-            currentUrl = self.driver.current_url
         except Exception as error:
             logger.error(f'Error logging in to {loginurl}: {error}')
 
@@ -758,7 +758,9 @@ class SeleniumHelper():
             self.wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'two-factor-provider'))) # Wait for mfa login button and proceed
 
         if isMfaUser:
-            self.wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'two-factor-provider'))) # Wait for mfa login button and proceed
+            while self.driver.current_url == currentUrl:
+                logger.info(f'Wait for URL change after login')
+                time.sleep(1)
             logger.info(f'MFA login {self.driver.current_url}')
             totpXpath = '//a[contains(@href,"/challenge/totp")]'
 
