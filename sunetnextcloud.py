@@ -13,6 +13,7 @@ import time
 import pyotp
 import unittest
 import xmlrunner
+import requests
 import HtmlTestRunner
 
 from selenium.webdriver.support.ui import WebDriverWait
@@ -23,6 +24,8 @@ from selenium.common.exceptions import TimeoutException
 
 from enum import Enum
 from datetime import datetime
+
+g_requestTimeout=30
 
 # Change to local directory
 abspath = os.path.abspath(__file__)
@@ -724,6 +727,15 @@ class SeleniumHelper():
             return False
 
         loginurl = self.drv.get_node_login_url(self.nextcloudnode)
+
+        try:
+            r=requests.get(loginurl, timeout=g_requestTimeout, verify=False)
+            if 'This service is currently unavailable.' in r.text:
+                raise Exception(f'{self.nextcloudnode} is not available!') 
+        except Exception as error:
+            logger.error(f'Failed to request data from {loginurl}: {error}')
+            return
+
         self.driver.get(loginurl)
         if self.driver.current_url != loginurl:
             logger.warning(f'Retry opening login url: {loginurl}')
