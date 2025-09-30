@@ -84,17 +84,8 @@ class TestLoginSelenium(unittest.TestCase):
                         self.assertEqual(client.list().count('SharedFolder/'), 1)
 
                         sel = sunetnextcloud.SeleniumHelper(browser, fullnode)
-                        sel.delete_cookies()
-                        sel.nodelogin(sel.UserType.SELENIUM, mfaUser=True)
-
-                        driver = sel.driver                        
-                        if browser == 'chrome':
-                            driver.set_window_size(1920, 1152)
-                        else:
-                            driver.maximize_window()    
+                        driver = sel.driver
                         wait = WebDriverWait(driver, delay)
-
-                        # driver2 = webdriver.Firefox()
 
                         # Test login page for community edition
                         driver.get(drv.get_node_login_url(fullnode, True))
@@ -106,9 +97,15 @@ class TestLoginSelenium(unittest.TestCase):
                             hasCommunityWarning=True
                         except Exception as e:
                             self.logger.info(f'Regular login page found')
-
                         self.assertFalse(hasCommunityWarning)
-                        # time.sleep(900)
+
+                        sel.delete_cookies()
+                        sel.nodelogin(sel.UserType.SELENIUM, mfaUser=True)
+
+                        if browser == 'chrome':
+                            driver.set_window_size(1920, 1152)
+                        else:
+                            driver.maximize_window()    
 
                         try:
                             wait.until(EC.presence_of_element_located((By.XPATH, '//a[@href="' + drv.indexsuffix + '/apps/files/' +'"]')))
