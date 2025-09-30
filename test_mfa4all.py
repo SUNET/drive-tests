@@ -135,9 +135,10 @@ class TestMfa4All(unittest.TestCase):
         if len(g_failedNodes) > 0:
             logger.error(f'Webdav mfa4all list failed for {len(g_failedNodes)} of {len(drv.allnodes)} nodes:')
             for node in g_failedNodes:
-                logger.error(f'   {node}')
+                with self.subTest(mynode=node):
+                    logger.error(f'   {node}')
+                    self.assertTrue(False)
             g_failedNodes = []
-            self.assertTrue(False)
 
 if __name__ == '__main__':
     drv.run_tests(os.path.basename(__file__))
