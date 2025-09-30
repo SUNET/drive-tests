@@ -109,6 +109,11 @@ class TestTarget(object):
         testbrowsers = os.environ.get('NextcloudTestBrowsers')
         testrunner = os.environ.get('NextcloudTestRunner')
         testfilesize = os.environ.get('NextcloudTestFileSize')
+        testgridaddress = os.environ.get('NextcloudTestGridAddress')
+
+        if testgridaddress is None:
+            logger.info('Using default grid address http://127.0.0.1:4444/wd/hub')
+            self.testgridaddress = 'http://127.0.0.1:4444/wd/hub'
 
         if testfilesize is None:
             logger.info('Using default file size M')
