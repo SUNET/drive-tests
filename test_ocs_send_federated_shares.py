@@ -16,7 +16,7 @@ import tempfile
 import sunetnextcloud
 
 ocsheaders = { "OCS-APIRequest" : "true" } 
-nodestotest = ['sunet', 'su', 'extern']
+nodestotest = ['sunet', 'su', 'extern', 'vr']
 
 drv = sunetnextcloud.TestTarget()
 expectedResults = drv.expectedResults
