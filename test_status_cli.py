@@ -274,9 +274,10 @@ class TestStatus(unittest.TestCase):
         if len(g_failedNodes) > 0:
             logger.error(f'Frontend status test failed for {len(g_failedNodes)} of {len(drv.allnodes)} nodes:')
             for node in g_failedNodes:
-                logger.error(f'   {node}')
+                with self.subTest(mynode=node):
+                    logger.error(f'   {node}')
+                    self.assertTrue(False)
             g_failedNodes = []
-            self.assertTrue(False)
 
     def test_frontend_statusinfo(self):
         global g_failedNodes
@@ -293,9 +294,10 @@ class TestStatus(unittest.TestCase):
         if len(g_failedNodes) > 0:
             logger.error(f'FrontendStatusInfo test failed for {len(g_failedNodes)} of {len(drv.allnodes)} nodes:')
             for node in g_failedNodes:
-                logger.error(f'   {node}')
+                with self.subTest(mynode=node):
+                    logger.error(f'   {node}')
+                    self.assertTrue(False)
             g_failedNodes = []
-            self.assertTrue(False)
 
     # def test_frontend_statusinfo_http(self):
     #     global g_failedNodes
@@ -335,9 +337,10 @@ class TestStatus(unittest.TestCase):
         if len(g_failedNodes) > 0:
             logger.error(f'NodeStatusInfo test failed for {len(g_failedNodes)} of {len(drv.allnodes)} nodes:')
             for node in g_failedNodes:
-                logger.error(f'   {node}')
+                with self.subTest(mynode=node):
+                    logger.error(f'   {node}')
+                    self.assertTrue(False)
             g_failedNodes = []
-            self.assertTrue(False)
 
 # Test status.php for all nodes
     def test_statusinfo(self):
@@ -356,9 +359,10 @@ class TestStatus(unittest.TestCase):
         if len(g_failedNodes) > 0:
             logger.error(f'NodeStatusInfo test failed for {len(g_failedNodes)} of {len(drv.allnodes)} nodes:')
             for node in g_failedNodes:
-                logger.error(f'   {node}')
+                with self.subTest(mynode=node):
+                    logger.error(f'   {node}')
+                    self.assertTrue(False)
             g_failedNodes = []
-            self.assertTrue(False)
 
     def test_seamlessaccessinfo(self):
         global g_failedNodes
@@ -381,9 +385,10 @@ class TestStatus(unittest.TestCase):
         if len(g_failedNodes) > 0:
             logger.error(f'SeamlessAccessInfo test failed for {len(g_failedNodes)} of {len(drv.allnodes)} nodes:')
             for node in g_failedNodes:
-                logger.error(f'   {node}')
+                with self.subTest(mynode=node):
+                    logger.error(f'   {node}')
+                    self.assertTrue(False)
             g_failedNodes = []
-            self.assertTrue(False)
 
     def test_saml_metadata(self):
         global logger
