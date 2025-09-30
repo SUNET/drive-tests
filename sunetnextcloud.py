@@ -853,9 +853,14 @@ class SeleniumHelper():
             self.wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'two-factor-provider'))) # Wait for mfa login button and proceed
 
         if isMfaUser:
+            retryCount = 0
             while self.driver.current_url == currentUrl:
                 logger.info(f'Wait for URL change after login')
                 time.sleep(1)
+                retryCount+=1
+                if retryCount>g_requestTimeout:
+                    logger.error(f'URL did not change after {g_requestTimeout}s: {self.driver.current_url}')
+                    raise TimeoutException
             logger.info(f'MFA login {self.driver.current_url}')
             totpXpath = '//a[contains(@href,"/challenge/totp")]'
 
