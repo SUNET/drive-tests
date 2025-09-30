@@ -8,7 +8,8 @@ global:
   fullnodes: [extern,sunet,su,kau,ki,suni,scilifelab,hh,gih,mdu,mau,hv,shh,bth,kmh,ltu,hb,his,lnu,uu,swamid,vr]
   redundantnodes: [extern,gih,hh,kau,lnu,ltu,mdu,scilifelab,su,sunet,vr]
   multinodes: [ki,lu,uu,gu,kth,liu,umu,chalmers,slu,lnu,mau,ltu,oru,miun,du,hj,hb,hig,hv,his,bth,rkh,hhs,fhs,uniarts,konstfack,esh,kmh,shh,kkh,ths,nordunet,kb,kva,sics,sp,irf,vr,nrm,smhi,uhr,antagning,swamid,vinnova]
-  testBrowsers: [firefox,chrome]
+  # testBrowsers: [firefox,chrome]
+  testBrowsers: [edge_grid]
 prod:
   loginexceptions: [kau,scilifelab]
   defaultapps: [dashboard,files,photos,activity,contacts,calendar,announcementcenter,collectives,polls,forms,tasks]
@@ -53,7 +54,7 @@ test:
     installed: true
     maintenance: false
     needsDbUpgrade: false
-    version: ['30.0.14.2', '31.0.9.2']
+    version: ['31.0.9.2']
     versionstring: ['30.0.14 Enterprise', '31.0.9 Enterprise']
     edition: ''
     productname: 'Nextcloud'
@@ -63,7 +64,7 @@ test:
     ocs_meta_statuscode: 100
     ocs_meta_statuscode_2: 200
     ocs_meta_message: 'OK'
-    ocs_data_version_string: ['30.0.14 Enterprise', '31.0.9 Enterprise']
+    ocs_data_version_string: ['31.0.9 Enterprise']
     ocs_data_capabilities_globalscale_enabled: true
   cert_md5: '9dc0f8318dcda31e78308705449f1e2a'
   ocsapps:
