@@ -83,70 +83,11 @@ class TestLoginSelenium(unittest.TestCase):
                         client.mkdir(dir)
                         self.assertEqual(client.list().count('SharedFolder/'), 1)
 
-                        try:
-                            if browser == 'chrome':
-                                options = ChromeOptions()
-                                options.add_argument("--no-sandbox")
-                                options.add_argument("--disable-dev-shm-usage")
-                                options.add_argument("--disable-gpu")
-                                options.add_argument("--disable-extensions")
+                        sel = sunetnextcloud.SeleniumHelper(browser, fullnode)
+                        sel.delete_cookies()
+                        sel.nodelogin(sel.UserType.SELENIUM, mfaUser=True)
 
-                                if not drv.verify:
-                                    options.add_argument("--ignore-certificate-errors")
-                                driver = webdriver.Chrome(options=options)
-                            elif browser == 'firefox':
-                                if not use_driver_service:
-                                    self.logger.info('Initialize Firefox driver without driver service')
-                                    options = FirefoxOptions()
-                                    if not drv.verify:
-                                        options.add_argument("--ignore-certificate-errors")
-                                    # options.add_argument("--headless")
-                                    driver = webdriver.Firefox(options=options)
-                                else:
-                                    self.logger.info('Initialize Firefox driver using snap geckodriver and driver service')
-                                    driver_service = webdriver.FirefoxService(executable_path=geckodriver_path)
-                                    driver = webdriver.Firefox(service=driver_service, options=options)
-                            elif browser == 'edge':
-                                if not use_driver_service:
-                                    self.logger.info('Initialize Edge driver without driver service')
-                                    options = EdgeOptions()
-                                    if not drv.verify:
-                                        options.add_argument("--ignore-certificate-errors")
-                                    # options.add_argument("--headless")
-                                    driver = webdriver.Edge(options=options)
-                                else:
-                                    self.logger.info('Initialize Edge driver using snap geckodriver and driver service')
-                                    driver_service = webdriver.FirefoxService(executable_path=geckodriver_path)
-                                    driver = webdriver.Firefox(service=driver_service, options=options)
-                            elif browser == 'firefox_grid':
-                                    self.logger.info('Initialize Firefox grid driver')
-                                    options = FirefoxOptions()
-                                    # options.add_argument("--no-sandbox")
-                                    # options.add_argument("--disable-dev-shm-usage")
-                                    # options.add_argument("--disable-gpu")
-                                    # options.add_argument("--disable-extensions")
-                                    if not drv.verify:
-                                        options.add_argument("--ignore-certificate-errors")
-                                    driver = webdriver.Remote(command_executor=drv.testgridaddress, options=options)
-                            elif browser == 'chrome_grid':
-                                    self.logger.info(f'Initialize Chrome grid driver')
-                                    if not drv.verify:
-                                        options.add_argument("--ignore-certificate-errors")
-                                    options = ChromeOptions()
-                                    driver = webdriver.Remote(command_executor=drv.testgridaddress, options=options)
-                            elif browser == 'edge_grid':
-                                    self.logger.info(f'Initialize Edge grid driver')
-                                    if not drv.verify:
-                                        options.add_argument("--ignore-certificate-errors")
-                                    options = EdgeOptions()
-                                    driver = webdriver.Remote(command_executor=drv.testgridaddress, options=options)
-                                    self.logger.info(f'Edge grid driver init done')
-                            else:
-                                self.logger.error(f'Unknown browser {browser}')
-                                self.assertTrue(False)
-                        except Exception as e:
-                            self.logger.error(f'Error initializing driver for {browser}: {e}')
-                            self.assertTrue(False)
+                        driver = sel.driver                        
                         if browser == 'chrome':
                             driver.set_window_size(1920, 1152)
                         else:
@@ -168,10 +109,6 @@ class TestLoginSelenium(unittest.TestCase):
 
                         self.assertFalse(hasCommunityWarning)
                         # time.sleep(900)
-
-                        sel = sunetnextcloud.SeleniumHelper(driver, fullnode)
-                        sel.delete_cookies()
-                        sel.nodelogin(sel.UserType.SELENIUM, mfaUser=True)
 
                         try:
                             wait.until(EC.presence_of_element_located((By.XPATH, '//a[@href="' + drv.indexsuffix + '/apps/files/' +'"]')))

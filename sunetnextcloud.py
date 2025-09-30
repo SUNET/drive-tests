@@ -16,11 +16,16 @@ import xmlrunner
 import requests
 import HtmlTestRunner
 
+from selenium import webdriver
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from selenium.common.exceptions import TimeoutException
+from selenium.webdriver.chrome.options import Options as ChromeOptions
+from selenium.webdriver import FirefoxOptions
+from selenium.webdriver import EdgeOptions
+from selenium.webdriver.safari.options import Options as SafariOptions
 
 from enum import Enum
 from datetime import datetime
@@ -43,6 +48,11 @@ elif target_env == 'custom':
     g_expectedFile = 'expected_custom.yaml'
 else:
     g_expectedFile = 'expected.yaml'
+
+use_driver_service = False
+if os.environ.get('SELENIUM_DRIVER_SERVICE') == 'True':
+    use_driver_service = True
+geckodriver_path = "/snap/bin/geckodriver"
 
 opsbase='sunet-drive-ops/'
 opsCommonFile = opsbase + "/global/overlay/etc/hiera/data/common.yaml"
@@ -690,13 +700,80 @@ class SeleniumHelper():
         BASIC = 4
         UNKNOWN = -1
 
-    def __init__(self, driver, nextcloudnode) -> None:
-        self.driver = driver
+    def __init__(self, browser, nextcloudnode) -> None:
         self.nextcloudnode = nextcloudnode
         self.drv = TestTarget()
         delay = 30
+        self.prepare_driver(browser)        
         self.wait = WebDriverWait(self.driver, delay)
         pass
+
+    def prepare_driver(self, browser):
+        try:
+            if browser == 'chrome':
+                options = ChromeOptions()
+                options.add_argument("--no-sandbox")
+                options.add_argument("--disable-dev-shm-usage")
+                options.add_argument("--disable-gpu")
+                options.add_argument("--disable-extensions")
+
+                if not self.drv.verify:
+                    options.add_argument("--ignore-certificate-errors")
+                self.driver = webdriver.Chrome(options=options)
+            elif browser == 'firefox':
+                if not use_driver_service:
+                    logger.info('Initialize Firefox driver without driver service')
+                    options = FirefoxOptions()
+                    if not self.drv.verify:
+                        options.add_argument("--ignore-certificate-errors")
+                    # options.add_argument("--headless")
+                    self.driver = webdriver.Firefox(options=options)
+                else:
+                    logger.info('Initialize Firefox driver using snap geckodriver and driver service')
+                    driver_service = webdriver.FirefoxService(executable_path=geckodriver_path)
+                    self.driver = webdriver.Firefox(service=driver_service, options=options)
+            elif browser == 'edge':
+                if not use_driver_service:
+                    logger.info('Initialize Edge driver without driver service')
+                    options = EdgeOptions()
+                    if not self.drv.verify:
+                        options.add_argument("--ignore-certificate-errors")
+                    # options.add_argument("--headless")
+                    self.driver = webdriver.Edge(options=options)
+                else:
+                    logger.info('Initialize Edge driver using snap geckodriver and driver service')
+                    driver_service = webdriver.FirefoxService(executable_path=geckodriver_path)
+                    self.driver = webdriver.Firefox(service=driver_service, options=options)
+            elif browser == 'firefox_grid':
+                    logger.info('Initialize Firefox grid driver')
+                    options = FirefoxOptions()
+                    # options.add_argument("--no-sandbox")
+                    # options.add_argument("--disable-dev-shm-usage")
+                    # options.add_argument("--disable-gpu")
+                    # options.add_argument("--disable-extensions")
+                    if not self.drv.verify:
+                        options.add_argument("--ignore-certificate-errors")
+                    self.driver = webdriver.Remote(command_executor=self.drv.testgridaddress, options=options)
+            elif browser == 'chrome_grid':
+                    logger.info(f'Initialize Chrome grid driver')
+                    if not self.drv.verify:
+                        options.add_argument("--ignore-certificate-errors")
+                    options = ChromeOptions()
+                    self.driver = webdriver.Remote(command_executor=self.drv.testgridaddress, options=options)
+            elif browser == 'edge_grid':
+                    logger.info(f'Initialize Edge grid driver')
+                    if not self.drv.verify:
+                        options.add_argument("--ignore-certificate-errors")
+                    options = EdgeOptions()
+                    self.driver = webdriver.Remote(command_executor=self.drv.testgridaddress, options=options)
+                    logger.info(f'Edge grid driver init done')
+            else:
+                logger.error(f'Unknown browser {browser}')
+                raise Exception(f'Unknown browser {browser}')
+        except Exception as e:
+            logger.error(f'Error initializing driver for {browser}: {e}')
+            raise Exception(f'Error initializing driver for {browser}: {e}')
+        return
 
     def delete_cookies(self):
         cookies = self.driver.get_cookies()
@@ -704,6 +781,7 @@ class SeleniumHelper():
         self.driver.delete_all_cookies()
         logger.info('All cookies deleted')
         return
+    
     def nodelogin(self, usertype : UserType, username='', password='', apppwd='', totpsecret='', mfaUser=True, skipAppMenuCheck=False, addOtp=False):
         nodetotpsecret = ''
         loginurl = self.drv.get_node_login_url(self.nextcloudnode)

@@ -44,13 +44,6 @@ class TestUserlifecycleSelenium(unittest.TestCase):
     with open(expectedResultsFile, "r") as stream:
         expectedResults=yaml.safe_load(stream)
 
-    def deleteCookies(self, driver):
-        cookies = driver.get_cookies()
-        self.logger.info(f'Deleting all cookies: {cookies}')
-        driver.delete_all_cookies()
-        cookies = driver.get_cookies()
-        self.logger.info(f'Cookies deleted: {cookies}')
-
     def test_logger(self):
         self.logger.info(f'TestID: {self._testMethodName}')
         pass
@@ -124,38 +117,11 @@ class TestUserlifecycleSelenium(unittest.TestCase):
                             return
 
                         self.logger.info(f'TestID: Testing node {fullnode} with browser {browser}')
-                        # loginurl = drv.get_node_login_url(fullnode)
-
-                        try:
-                            if browser == 'chrome':
-                                options = Options()
-                                options.add_argument("--no-sandbox")
-                                options.add_argument("--disable-dev-shm-usage")
-                                options.add_argument("--disable-gpu")
-                                options.add_argument("--disable-extensions")
-                                driver = webdriver.Chrome(options=options)
-                            elif browser == 'firefox':
-                                options = FirefoxOptions()
-                                if not use_driver_service:
-                                    self.logger.info('Initialize Firefox driver without driver service')
-                                    # options.add_argument("--headless")
-                                    driver = webdriver.Firefox(options=options)
-                                else:
-                                    self.logger.info('Initialize Firefox driver using snap geckodriver and driver service')
-                                    driver_service = webdriver.FirefoxService(executable_path=geckodriver_path)
-                                    driver = webdriver.Firefox(service=driver_service, options=options)
-                            else:
-                                self.logger.error(f'Unknown browser {browser}')
-                                self.assertTrue(False)
-                        except Exception as e:
-                            self.logger.error(f'Error initializing driver for {browser}: {e}')
-                            self.assertTrue(False)
-                        driver.set_window_size(1920, 1152)
-                        # driver2 = webdriver.Firefox()
 
                         newOtpSecret = ''
-                        sel = sunetnextcloud.SeleniumHelper(driver, fullnode)
+                        sel = sunetnextcloud.SeleniumHelper(browser, fullnode)
                         sel.delete_cookies()
+                        driver = sel.driver
                         if drv.target == 'test':
                             mfaUser = True
                         else:

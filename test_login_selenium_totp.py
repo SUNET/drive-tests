@@ -33,13 +33,6 @@ class TestLoginSeleniumTotp(unittest.TestCase):
     with open(expectedResultsFile, "r") as stream:
         expectedResults=yaml.safe_load(stream)
 
-    def deleteCookies(self, driver):
-        cookies = driver.get_cookies()
-        self.logger.info(f'Deleting all cookies: {cookies}')
-        driver.delete_all_cookies()
-        cookies = driver.get_cookies()
-        self.logger.info(f'Cookies deleted: {cookies}')
-
     def test_logger(self):
         self.logger.info(f'TestID: {self._testMethodName}')
         pass
@@ -75,17 +68,17 @@ class TestLoginSeleniumTotp(unittest.TestCase):
                 client.mkdir(dir)
                 self.assertEqual(client.list().count('SharedFolder/'), 1)
 
-                try:
-                    options = Options()
-                    driver = webdriver.Chrome(options=options)
-                except Exception as error:
-                    self.logger.error(f'Error initializing Chrome driver: {error}')
-                    self.assertTrue(False)
-                driver.set_window_size(1920, 1152)
 
-                sel = sunetnextcloud.SeleniumHelper(driver, fullnode)
+                browser = 'chrome'
+                sel = sunetnextcloud.SeleniumHelper(browser, fullnode)
                 sel.delete_cookies()
-                sel.nodelogin(sel.UserType.SELENIUM_MFA)
+                sel.nodelogin(sel.UserType.SELENIUM_MFA, mfaUser=True)
+                driver = sel.driver
+
+                if browser == 'chrome':
+                    driver.set_window_size(1920, 1152)
+                else:
+                    driver.maximize_window()    
                 wait = WebDriverWait(driver, delay)
 
                 wait.until(EC.presence_of_element_located((By.XPATH, '//a[@href="'+ drv.indexsuffix + '/apps/files/' +'"]')))

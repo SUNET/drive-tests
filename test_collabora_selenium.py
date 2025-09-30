@@ -33,26 +33,7 @@ g_collaboraRetryCount = 5
 g_clickWait = 2
 g_loggedInNodes={}
 g_logger={}
-g_driver={}
-drv={}
 g_wait={}
-
-def deleteCookies():
-    cookies = g_driver.get_cookies()
-    g_logger.info(f'Deleting all cookies: {cookies}')
-    g_driver.delete_all_cookies()
-    cookies = g_driver.get_cookies()
-    g_logger.info(f'Cookies deleted: {cookies}')
-
-def nodelogin(collaboranode):
-    # global g_wait
-    global drv, g_driver, g_loggedInNodes
-
-    sel = sunetnextcloud.SeleniumHelper(g_driver, collaboranode)
-    sel.delete_cookies()
-    sel.nodelogin(sel.UserType.SELENIUM, mfaUser=True)
-    g_loggedInNodes[collaboranode] = True
-    return
 
 def removeFolder(node, foldername):
     fullPath = foldername + '/'
@@ -142,7 +123,7 @@ def hasFiles(node, foldername):
     return len(client.list(foldername))
 
 class TestCollaboraSelenium(unittest.TestCase):
-    global g_loggedInNodes, g_logger, drv, g_wait, g_driver
+    global g_loggedInNodes, g_logger, drv, g_wait
     drv = sunetnextcloud.TestTarget()
 
     logger = logging.getLogger(__name__)
@@ -161,30 +142,35 @@ class TestCollaboraSelenium(unittest.TestCase):
         logger.warning(f'Please test only one browser by setting NextcloudTestBrowsers to the one you want to test: {drv.browsers}')
     
     logger.info(f'Testing browser: {drv.browsers[0]}')
-    if drv.browsers[0] == 'chrome':
-        try:
-            options = ChromeOptions()
-            options.add_argument("--no-sandbox")
-            options.add_argument("--disable-dev-shm-usage")
-            options.add_argument("--disable-gpu")
-            options.add_argument("--disable-extensions")
-            if not drv.verify:
-                options.add_argument("--ignore-certificate-errors")
-            driver = webdriver.Chrome(options=options)
-            g_driver=driver
-        except Exception as error:
-            logger.error(f'Error initializing Chrome driver: {error}')
-    elif drv.browsers[0] == 'firefox':
-        try:
-            options = FirefoxOptions()
-            if not drv.verify:
-                options.add_argument("--ignore-certificate-errors")
-            driver = webdriver.Firefox(options=options)
-            g_driver=driver
-        except Exception as error:
-            logger.error(f'Error initializing Firefox driver: {error}')
-    else:
-        logger.error(f'Unknown browser: {drv.browsers[0]}')
+
+    sel = sunetnextcloud.SeleniumHelper(drv.browsers[0], 'sunet')
+    sel.delete_cookies()
+    driver = sel.driver
+
+    # if drv.browsers[0] == 'chrome':
+    #     try:
+    #         options = ChromeOptions()
+    #         options.add_argument("--no-sandbox")
+    #         options.add_argument("--disable-dev-shm-usage")
+    #         options.add_argument("--disable-gpu")
+    #         options.add_argument("--disable-extensions")
+    #         if not drv.verify:
+    #             options.add_argument("--ignore-certificate-errors")
+    #         driver = webdriver.Chrome(options=options)
+    #         self.driver=driver
+    #     except Exception as error:
+    #         logger.error(f'Error initializing Chrome driver: {error}')
+    # elif drv.browsers[0] == 'firefox':
+    #     try:
+    #         options = FirefoxOptions()
+    #         if not drv.verify:
+    #             options.add_argument("--ignore-certificate-errors")
+    #         driver = webdriver.Firefox(options=options)
+    #         self.driver=driver
+    #     except Exception as error:
+    #         logger.error(f'Error initializing Firefox driver: {error}')
+    # else:
+    #     logger.error(f'Unknown browser: {drv.browsers[0]}')
 
     def test_logger(self):
         self.logger.info(f'TestID: {self._testMethodName}')
@@ -201,17 +187,20 @@ class TestCollaboraSelenium(unittest.TestCase):
         g_wait = wait
 
         for collaboranode in drv.nodestotest:
+            self.sel.nextcloudnode = collaboranode
             with self.subTest(mynode=collaboranode):
                 self.logger.info(f'TestID: {collaboranode}')
                 # if g_isLoggedIn == False:
                 try:
                     removeFolder(collaboranode, 'Templates')
                     if not g_loggedInNodes.get(collaboranode):
-                        nodelogin(collaboranode)
+                        self.logger.info(f'Log in to {collaboranode}')
+                        self.sel.nodelogin(self.sel.UserType.SELENIUM, mfaUser=True)
+                        g_loggedInNodes[collaboranode] = True
                     self.assertTrue(g_loggedInNodes.get(collaboranode))
                     success = True
                 except Exception as error:
-                    self.logger.error('Error preparing nodelogin!')
+                    self.logger.error(f'Error preparing nodelogin for {collaboranode}: {error}')
                     success = False
                 self.assertTrue(success)
 
@@ -305,7 +294,7 @@ class TestCollaboraSelenium(unittest.TestCase):
                         self.logger.info('Click on new text file')
                         time.sleep(g_clickWait)
 
-                        button = g_driver.find_element(By.XPATH, "//*[contains(text(), 'New text file')]")
+                        button = self.driver.find_element(By.XPATH, "//*[contains(text(), 'New text file')]")
                         button.click()
 
                         time.sleep(g_clickWait)
@@ -364,13 +353,16 @@ class TestCollaboraSelenium(unittest.TestCase):
         g_wait = wait
         
         for collaboranode in drv.nodestotest:
+            self.sel.nextcloudnode = collaboranode
             with self.subTest(mynode=collaboranode):
                 self.logger.info(f'TestID: {collaboranode}')
                 # if g_isLoggedIn == False:
                 try:
                     removeFolder(collaboranode, 'Templates')
                     if not g_loggedInNodes.get(collaboranode):
-                        nodelogin(collaboranode)
+                        self.logger.info(f'Log in to {collaboranode}')
+                        self.sel.nodelogin(self.sel.UserType.SELENIUM, mfaUser=True)
+                        g_loggedInNodes[collaboranode] = True
                     self.assertTrue(g_loggedInNodes.get(collaboranode))
                     success = True
                 except Exception as error:
@@ -469,7 +461,7 @@ class TestCollaboraSelenium(unittest.TestCase):
                                 time.sleep(g_clickWait)
                                 self.logger.info('Click on new document')
 
-                                button = g_driver.find_element(By.XPATH, "//*[contains(text(), 'New document')]")
+                                button = self.driver.find_element(By.XPATH, "//*[contains(text(), 'New document')]")
                                 button.click()
 
                                 time.sleep(g_clickWait)
@@ -535,13 +527,16 @@ class TestCollaboraSelenium(unittest.TestCase):
         g_wait = wait
         
         for collaboranode in drv.nodestotest:
+            self.sel.nextcloudnode = collaboranode
             with self.subTest(mynode=collaboranode):
                 self.logger.info(f'TestID: {collaboranode}')
                 # if g_isLoggedIn == False:
                 try:
                     removeFolder(collaboranode, 'Templates')
                     if not g_loggedInNodes.get(collaboranode):
-                        nodelogin(collaboranode)
+                        self.logger.info(f'Log in to {collaboranode}')
+                        self.sel.nodelogin(self.sel.UserType.SELENIUM, mfaUser=True)
+                        g_loggedInNodes[collaboranode] = True
                     self.assertTrue(g_loggedInNodes.get(collaboranode))
                     success = True
                 except Exception as error:
@@ -648,7 +643,7 @@ class TestCollaboraSelenium(unittest.TestCase):
                         self.logger.info('Click on new spreadsheet')
                         time.sleep(g_clickWait)
 
-                        button = g_driver.find_element(By.XPATH, "//*[contains(text(), 'New spreadsheet')]")
+                        button = self.driver.find_element(By.XPATH, "//*[contains(text(), 'New spreadsheet')]")
                         button.click()
 
                         time.sleep(g_clickWait)
@@ -716,13 +711,16 @@ class TestCollaboraSelenium(unittest.TestCase):
         g_wait = wait
         
         for collaboranode in drv.nodestotest:
+            self.sel.nextcloudnode = collaboranode
             with self.subTest(mynode=collaboranode):
                 self.logger.info(f'TestID: {collaboranode}')
                 # if g_isLoggedIn == False:
                 try:
                     removeFolder(collaboranode, 'Templates')
                     if not g_loggedInNodes.get(collaboranode):
-                        nodelogin(collaboranode)
+                        self.logger.info(f'Log in to {collaboranode}')
+                        self.sel.nodelogin(self.sel.UserType.SELENIUM, mfaUser=True)
+                        g_loggedInNodes[collaboranode] = True
                     self.assertTrue(g_loggedInNodes.get(collaboranode))
                     success = True
                 except Exception as error:
@@ -828,7 +826,7 @@ class TestCollaboraSelenium(unittest.TestCase):
                         self.logger.info('Click on new presentation')
                         time.sleep(g_clickWait)
 
-                        button = g_driver.find_element(By.XPATH, "//*[contains(text(), 'New presentation')]")
+                        button = self.driver.find_element(By.XPATH, "//*[contains(text(), 'New presentation')]")
                         button.click()
 
                         time.sleep(g_clickWait)

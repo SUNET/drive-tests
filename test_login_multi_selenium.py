@@ -41,13 +41,6 @@ class TestLoginMultiSelenium(unittest.TestCase):
     drv = drv
     g_version = expectedResults[drv.target]['status']['version']
 
-    def deleteCookies(self, driver):
-        cookies = driver.get_cookies()
-        self.logger.info(f'Deleting all cookies: {cookies}')
-        driver.delete_all_cookies()
-        cookies = driver.get_cookies()
-        self.logger.info(f'Cookies deleted: {cookies}')
-
     def test_logger(self):
         self.logger.info('self.logger.info test_logger')
         self.logger.info(f'Expecting Nextcloud version: {g_version}')
@@ -79,18 +72,17 @@ class TestLoginMultiSelenium(unittest.TestCase):
                 client.mkdir(dir)
                 self.assertEqual(client.list().count('SharedFolder/'), 1)
 
-                try:
-                    options = Options()
-                    driver = webdriver.Chrome(options=options)
-                except Exception as error:
-                    self.logger.error(f'Error initializing Chrome driver {error}')
-                    self.assertTrue(False)
-                wait = WebDriverWait(driver, delay)
-                driver.set_window_size(1920, 1152)
-
-                sel = sunetnextcloud.SeleniumHelper(driver, fullnode)
+                browser = 'chrome'
+                sel = sunetnextcloud.SeleniumHelper(browser, fullnode)
                 sel.delete_cookies()
                 sel.nodelogin(sel.UserType.SELENIUM, mfaUser=True)
+                driver = sel.driver
+
+                if browser == 'chrome':
+                    driver.set_window_size(1920, 1152)
+                else:
+                    driver.maximize_window()    
+                wait = WebDriverWait(driver, delay)
 
                 try:
                     self.logger.info('Waiting for files app button')
@@ -132,7 +124,7 @@ class TestLoginMultiSelenium(unittest.TestCase):
                 self.logger.info(f'{driver.current_url}')
 
                 self.logger.info('TOTP Login done, testing normal login now')
-                self.deleteCookies(driver)
+                sel.delete_cookies()
                 time.sleep(1)
 
                 loginurl = drv.get_node_login_url(fullnode)
