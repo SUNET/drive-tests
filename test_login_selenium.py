@@ -90,6 +90,7 @@ class TestLoginSelenium(unittest.TestCase):
                                 options.add_argument("--disable-dev-shm-usage")
                                 options.add_argument("--disable-gpu")
                                 options.add_argument("--disable-extensions")
+
                                 if not drv.verify:
                                     options.add_argument("--ignore-certificate-errors")
                                 driver = webdriver.Chrome(options=options)
@@ -114,7 +115,7 @@ class TestLoginSelenium(unittest.TestCase):
                                     # options.add_argument("--headless")
                                     driver = webdriver.Edge(options=options)
                                 else:
-                                    self.logger.info('Initialize Firefox driver using snap geckodriver and driver service')
+                                    self.logger.info('Initialize Edge driver using snap geckodriver and driver service')
                                     driver_service = webdriver.FirefoxService(executable_path=geckodriver_path)
                                     driver = webdriver.Firefox(service=driver_service, options=options)
                             elif browser == 'firefox_grid':
