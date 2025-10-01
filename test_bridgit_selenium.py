@@ -808,7 +808,7 @@ class TestBridgITSelenium(unittest.TestCase):
         g_delay = 30 # seconds
         g_drv = sunetnextcloud.TestTarget()
 
-        projectName = 'Zenodo Project'
+        projectName = f'Zenodo Project - {g_filename}'
         folderName = 'Zenodo_TestData'
 
         for bridgitnode in g_bridgitnodes:
@@ -1005,8 +1005,9 @@ class TestBridgITSelenium(unittest.TestCase):
 
                 # Move to and click on Zenodo Upload Type
                 uploadTypeElement = driver.find_element(By.CLASS_NAME, 'p-select-label')
-                action.move_to_element(uploadTypeElement).click().perform()
-                # driver.find_element(By.CLASS_NAME, 'p-select-label').click()
+                action.move_to_element(uploadTypeElement).perform()
+                time.sleep(3)
+                uploadTypeElement.click()
                 wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'p-select-option-label')))
                 # Go through select option labels and click on data
                 optionSelectElements = driver.find_elements(By.CLASS_NAME, 'p-select-option-label')
