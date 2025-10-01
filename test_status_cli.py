@@ -396,10 +396,10 @@ class TestStatus(unittest.TestCase):
         logger.info(f'TestID: {self._testMethodName}')
         drv = sunetnextcloud.TestTarget()
 
-        if drv.target == 'localhost':
-            logger.warning('We are not testing Saml metadata locally (yet)')
+        if drv.target == 'localhost' or drv.target == 'custom':
+            logger.warning(f'We are not testing Saml metadata for {drv.target} (yet)')
             return
-
+        
         for node in drv.allnodes:           
             with self.subTest(mynode=node):
                 if node in expectedResults[drv.target]['loginexceptions']:
