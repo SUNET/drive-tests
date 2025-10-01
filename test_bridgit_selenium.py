@@ -15,6 +15,7 @@ from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
+from selenium.webdriver.common.action_chains import ActionChains
 from selenium.common.exceptions import TimeoutException
 from webdav3.client import Client
 import os
@@ -830,6 +831,7 @@ class TestBridgITSelenium(unittest.TestCase):
                 self.deleteCookies(driver)
                 driver.set_window_size(1920, 1152)        
                 driver.get(loginurl)
+                action = ActionChains(driver)
 
                 wait = WebDriverWait(driver, g_delay)
                 wait.until(EC.presence_of_element_located((By.ID, 'user'))).send_keys(nodeuser)
@@ -1000,8 +1002,10 @@ class TestBridgITSelenium(unittest.TestCase):
                 
                 self.assertTrue(proceed)
 
-                # Click on Zenodo Upload Type
-                driver.find_element(By.CLASS_NAME, 'p-select-label').click()
+                # Move to and click on Zenodo Upload Type
+                uploadTypeElement = driver.find_element(By.CLASS_NAME, 'p-select-label')
+                action.move_to_element(uploadTypeElement).click().perform()
+                # driver.find_element(By.CLASS_NAME, 'p-select-label').click()
                 wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'p-select-option-label')))
                 # Go through select option labels and click on data
                 optionSelectElements = driver.find_elements(By.CLASS_NAME, 'p-select-option-label')
