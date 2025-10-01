@@ -26,7 +26,8 @@ import yaml
 # 'prod' for production environment, 'test' for test environment, 'custom' for custom environment
 g_testtarget = os.environ.get('NextcloudTestTarget')
 g_bridgitnodes = ["richir"]
-g_required_connections = ['OSF', 'Zenodo']
+# g_required_connections = ['OSF', 'Zenodo']
+g_required_connections = ['Zenodo']
 expectedResultsFile = 'expected.yaml'
 g_drv = sunetnextcloud.TestTarget(g_testtarget)
 g_filename=datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
