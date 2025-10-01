@@ -159,6 +159,96 @@ def get_connection_status(driver, connections):
                 elif button.text == 'Disconnect':
                     requiredConnection.connected = True
 
+# Bridgit 1.2 and later - configure and connect in one step
+def configure_and_connect(driver, connection):
+    g_logger.info(f'Configuring connection to {connection.name}')
+    if connection.configured:
+        g_logger.warning(f'{connection.name} is already configured')
+        return
+
+    for elem in driver.find_elements(By.XPATH, './/span'):
+        if elem.text == 'Add a new connection...':
+            g_logger.info(f'Click on new connection')
+            elem.click()
+            break
+
+    # look for p-tag-label buttons for the repositories and click on the first one
+    repositoryButtons = driver.find_elements(By.CLASS_NAME, 'truncate')
+    addRepositoryButton = None
+    for button in repositoryButtons:
+        buttonText = button.get_attribute('title') # Get title text to see if it is the OSF or Zenodo button
+
+        if connection.name in buttonText:
+            addRepositoryButton = button
+
+    addRepositoryButton.click()
+    original_window = driver.current_window_handle
+
+    # Wait until we can input some text
+    wait = WebDriverWait(driver, g_delay)
+    wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'p-inputtext'))).send_keys(connection.name + Keys.ENTER)
+
+    # Connect depending on the connector
+    if 'OSF' in connection.name:
+        g_logger.info(f'Start connecting to {connection.name}')
+        if get_connector_connect_button(driver, connection.name) is None:
+            g_logger.error(f'No connect button found for {connection.name} on {driver.current_url}')
+            return
+        get_connector_connect_button(driver, connection.name).click()
+
+        osfuserenv = "OSF_TEST_USER"
+        osfuser = os.environ.get(osfuserenv)
+        osfpwdenv = "OSF_TEST_USER_PASSWORD"
+        osfpwd = os.environ.get(osfpwdenv)
+
+        for window_handle in driver.window_handles:
+            if window_handle != original_window:
+                driver.switch_to.window(window_handle)
+                break
+
+        wait.until(EC.presence_of_element_located((By.ID, 'username'))).send_keys(osfuser)
+        wait.until(EC.presence_of_element_located((By.ID, 'password'))).send_keys(osfpwd + Keys.ENTER)
+
+        # Allow connection
+        wait.until(EC.element_to_be_clickable((By.XPATH, '//*[@id="allow"]/span'))).click()
+        g_logger.info('Done connecting to OSF')
+
+        # Switch back to main window
+        driver.switch_to.window(original_window)
+        wait.until(EC.frame_to_be_available_and_switch_to_it((By.ID, "app-frame")))
+        connection.connected = True
+    elif 'Zenodo' in connection.name:
+        if get_connector_connect_button(driver, connection.name) is None:
+            g_logger.error(f'No connect button found for {connection.name} on {driver.current_url}')
+            return
+        g_logger.info(f'Start connecting to {connection.name}')
+        get_connector_connect_button(driver, connection.name).click()
+
+        zenodouserenv = "ZENODO_TEST_USER"
+        zenodouser = os.environ.get(zenodouserenv)
+        zenodopwdenv = "ZENODO_TEST_USER_PASSWORD"
+        zenodopwd = os.environ.get(zenodopwdenv)
+
+        # Loop through until we find a new window handle
+        for window_handle in driver.window_handles:
+            if window_handle != original_window:
+                driver.switch_to.window(window_handle)
+                break
+
+        wait.until(EC.presence_of_element_located((By.ID, 'email'))).send_keys(zenodouser)
+        wait.until(EC.presence_of_element_located((By.ID, 'password'))).send_keys(zenodopwd + Keys.ENTER)
+        # Allow connection
+        WebDriverWait(driver, g_delay).until(EC.element_to_be_clickable((By.CLASS_NAME, 'positive'))).click()
+        g_logger.info(f'Done connecting to Zenodo')
+
+        # Switch back to main window
+        driver.switch_to.window(original_window)
+        wait.until(EC.frame_to_be_available_and_switch_to_it((By.ID, "app-frame")))
+        connection.connected = True
+    else:
+        g_logger.error(f'Unknown connector {connection.name}')
+
+# Pre bridgit 1.2 - Configure first
 def configure_connection(driver, connection):
     g_logger.info(f'Configuring connection to {connection.name}')
     if connection.configured:
@@ -173,20 +263,21 @@ def configure_connection(driver, connection):
 
     # look for p-tag-label buttons for the repositories and click on the first one
     repositoryButtons = driver.find_elements(By.CLASS_NAME, 'truncate')
-    addOSFButton = None
+    addRepositoryButton = None
     for button in repositoryButtons:
         buttonText = button.get_attribute('title') # Get title text to see if it is the OSF or Zenodo button
 
         if connection.name in buttonText:
-            addOSFButton = button
+            addRepositoryButton = button
 
-    addOSFButton.click()
+    addRepositoryButton.click()
 
     # Wait until we can input some text
     wait = WebDriverWait(driver, g_delay)
     wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'p-inputtext'))).send_keys(connection.name + Keys.ENTER)
     g_logger.info(f'{connection.name} connection configured')
 
+# Pre bridgit 1.2 - Connect later
 def connect_connection(driver, connection):
     g_logger.info(f'Connect to {connection.name}')
     original_window = driver.current_window_handle
@@ -467,28 +558,40 @@ class TestBridgITSelenium(unittest.TestCase):
                 time.sleep(1)
 
                 get_connection_status(driver, connections)
-                configuredConnections = connections
                 for connection in connections:
                     g_logger.info(f'{connection.name} - {connection.configured} - {connection.connected}')
 
                 get_connection_status(driver, connections)                
                 requiredConfiguration = next((x for x in connections if x.configured == False), None)
+                
+                # Configure and connect
                 while requiredConfiguration is not None:
                     g_logger.info(f'Configure {requiredConfiguration.name}')
-                    configure_connection(driver, requiredConfiguration)
+                    configure_and_connect(driver, requiredConfiguration)
                     time.sleep(7) # TODO: Wait for connecting in UI
                     get_connection_status(driver, connections)
                     requiredConfiguration = next((x for x in connections if x.configured == False), None)
 
-                get_connection_status(driver, connections)
-                requiredConnection = next((x for x in connections if x.connected == False), None)
-                while requiredConnection is not None:
-                    g_logger.info(f'Connect to {requiredConnection.name}')
-                    connect_connection(driver, requiredConnection)
-                    time.sleep(7)  # TODO: Wait for connecting in UI
-                    get_connection_status(driver, connections)
-                    requiredConnection = next((x for x in connections if x.connected == False), None)
-                    time.sleep(1)
+
+                # Previously, configure and connect have been two different operations; pre 1.2 bridgit code
+                # # First we configure and name the connections
+                # while requiredConfiguration is not None:
+                #     g_logger.info(f'Configure {requiredConfiguration.name}')
+                #     configure_connection(driver, requiredConfiguration)
+                #     time.sleep(7) # TODO: Wait for connecting in UI
+                #     get_connection_status(driver, connections)
+                #     requiredConfiguration = next((x for x in connections if x.configured == False), None)
+
+                # # Now we connect the connections
+                # get_connection_status(driver, connections)
+                # requiredConnection = next((x for x in connections if x.connected == False), None)
+                # while requiredConnection is not None:
+                #     g_logger.info(f'Connect to {requiredConnection.name}')
+                #     connect_connection(driver, requiredConnection)
+                #     time.sleep(7)  # TODO: Wait for connecting in UI
+                #     get_connection_status(driver, connections)
+                #     requiredConnection = next((x for x in connections if x.connected == False), None)
+                #     time.sleep(1)
 
                 time.sleep(5)
                 g_logger.info('Done...')
