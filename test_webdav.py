@@ -568,10 +568,15 @@ class WebDAVCreateMoveDelete(threading.Thread):
             g_testPassed[fullnode] = False
             g_testThreadsRunning -= 1
             return
-        
-        with open(tmpfilename, 'w') as f:
-            f.write('Lorem ipsum')
-            f.close()
+
+        try:
+            with open(tmpfilename, 'w') as f:
+                f.write('Lorem ipsum')
+                f.close()
+        except Exception as error:
+            logger.error(f'Error writing to file {tmpfilename} for {fullnode}: {error}')
+            g_testThreadsRunning -= 1
+            return
         
         try:
             client = Client(options)
