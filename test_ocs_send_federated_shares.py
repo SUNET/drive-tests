@@ -114,8 +114,8 @@ class OcsMakeFederatedShare(threading.Thread):
             return
 
         logger.info(f'Get all shares for {fullnode}')
-        url = drv.get_share_url(fullnode)
-        url = url.replace("$USERNAME$", nodeuser)
+        clean_url = drv.get_share_url(fullnode)
+        url = clean_url.replace("$USERNAME$", nodeuser)
         url = url.replace("$PASSWORD$", nodepwd)
 
         try:
@@ -124,14 +124,14 @@ class OcsMakeFederatedShare(threading.Thread):
             # logger.info(f'Found shares: {json.dumps(j, indent=4, sort_keys=True)}')
 
             for share in j['ocs']['data']:
-                url = drv.get_share_id_url(fullnode, share['id'])
-                logger.info(f"Delete share: {share['id']} - {url}")
-                url = url.replace("$USERNAME$", nodeuser)
+                clean_url = drv.get_share_id_url(fullnode, share['id'])
+                logger.info(f"Delete share: {share['id']} - {clean_url}")
+                url = clean_url.replace("$USERNAME$", nodeuser)
                 url = url.replace("$PASSWORD$", nodepwd)
                 r = requests.delete(url, headers=ocsheaders, verify=self.verify)
                 logger.info(f'Share deleted: {r.text}')
         except Exception as error:
-            logger.error(f'Error getting {url}: {error}')
+            logger.error(f'Error getting {clean_url}: {error}')
             g_testThreadsRunning -= 1
             return      
 
