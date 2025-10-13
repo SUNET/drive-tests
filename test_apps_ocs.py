@@ -79,6 +79,98 @@ class ConfiguredAppsInstalled(threading.Thread):
         logger.info(f'ConfiguredAppsInstalled thread done for node {self.name}')
         g_testThreadsRunning -= 1
 
+class InstalledAppsCompatibility(threading.Thread):
+    def __init__(self, name):
+        threading.Thread.__init__(self)
+        self.name = name
+
+    def run(self):
+        global testThreadRunning, logger, g_testPassed, g_testThreadsRunning
+        g_testThreadsRunning += 1
+        logger.info(f'InstalledAppsCompatibility thread started for node {self.name}')
+        drv = sunetnextcloud.TestTarget()
+        fullnode = self.name
+        g_testPassed[fullnode] = True
+
+        session = requests.Session()
+        nodeuser = drv.get_ocsuser(fullnode)
+        nodepwd = drv.get_ocsuserapppassword(fullnode)
+        url = drv.get_all_apps_url(fullnode)
+
+        logger.info(f'{url}')
+        url = url.replace("$USERNAME$", nodeuser)
+        url = url.replace("$PASSWORD$", nodepwd)
+
+        try:
+            r=session.get(url, headers=ocsheaders)
+        except Exception:
+            logger.error(f'Error getting {url}')
+            g_testThreadsRunning -=1
+            return
+        nodeApps = []
+        try:
+            j = json.loads(r.text)
+            # print(json.dumps(j, indent=4, sort_keys=True))
+            nodeApps = j["ocs"]["data"]["apps"]
+            logger.info(f'Apps found on node {fullnode}: {json.dumps(j, indent=4, sort_keys=True)}')
+        except Exception:
+            logger.warning(f'No JSON reply received on {fullnode}')
+            # self.logger.warning(r.text)
+            g_testPassed[fullnode] = False
+            g_testThreadsRunning -= 1
+            return
+        
+        # We check against this manual exception list until the deployment is clean
+        excludeList = ['drive_email_template','sciencemesh','edusign','login_notes']
+        expectedVersion = expectedResults[drv.target]['status']['major_version']
+        for nodeApp in nodeApps:
+            allPassed = True
+            try:
+                # appInfo = expectedResults['apps'][nodeApp]
+                clean_url = drv.get_app_url(fullnode, nodeApp)
+                secret_url = clean_url
+                secret_url = secret_url.replace("$USERNAME$", nodeuser)
+                secret_url = secret_url.replace("$PASSWORD$", nodepwd)
+
+                try:
+                    r=session.get(secret_url, headers=ocsheaders)
+                except Exception:
+                    logger.error(f'Error getting {clean_url}')
+                    g_testThreadsRunning -=1
+                    g_testPassed[fullnode] = False
+                    return
+                
+                try:
+                    j = json.loads(r.text)
+                    # print(json.dumps(j, indent=4, sort_keys=True))
+                    maxVersion = j["ocs"]["data"]["dependencies"]["nextcloud"]["@attributes"]["max-version"]
+                    logger.info(f'App {nodeApp} has max version {maxVersion}')
+                    if int(maxVersion) < expectedVersion:
+                        if nodeApp in excludeList:
+                            logger.warning(f'App {nodeApp} is not supported by Nextcloud {expectedVersion} (max {maxVersion})')
+                        else:
+                            logger.error(f'App {nodeApp} is not supported by Nextcloud {expectedVersion} (max {maxVersion})')
+                            g_testPassed[fullnode] = False
+                            allPassed = False
+
+                except Exception as error:
+                    logger.warning(f'No JSON reply received on {fullnode}: {error}')
+                    # self.logger.warning(r.text)
+                    g_testPassed[fullnode] = False
+                    g_testThreadsRunning -= 1
+                    return
+            except Exception:
+                logger.warning(f'{nodeApp} NOT found on {fullnode}')
+
+        if allPassed == False:
+            logger.error(f'Not all apps compatible with {fullnode}')
+            g_testPassed[fullnode] = False
+
+
+        logger.info(f'InstalledAppsCompatibility thread done for node {self.name}')
+        g_testThreadsRunning -= 1
+
+
 class InstalledAppsConfigured(threading.Thread):
     def __init__(self, name, app='all', checkEnabled=False):
         threading.Thread.__init__(self)
@@ -140,7 +232,7 @@ class InstalledAppsConfigured(threading.Thread):
                 logger.error(f'{self.app} NOT found on {fullnode}')
                 logger.info(f'Apps found are: {nodeApps}')
                 g_testThreadsRunning -= 1
-                return       
+                return
 
         logger.info(f'InstalledAppsConfigured thread done for node {self.name}')
         g_testThreadsRunning -= 1
@@ -268,6 +360,25 @@ class TestAppsOcs(unittest.TestCase):
             with self.subTest(mynode=fullnode):
                 self.assertTrue(g_testPassed[fullnode])
 
+    # Test if configured apps are compatible with the installed Nextcloud version
+    def test_apps_compatibility(self):
+        drv = sunetnextcloud.TestTarget()
+
+        for fullnode in drv.nodestotest:
+            with self.subTest(mynode=fullnode):
+                logger.info(f'TestID: {fullnode}')
+                InstalledAppsConfiguredThread = InstalledAppsCompatibility(fullnode)
+                InstalledAppsConfiguredThread.start()
+
+        while(g_testThreadsRunning > 0):
+            time.sleep(1)
+
+        for fullnode in drv.nodestotest:
+            with self.subTest(mynode=fullnode):
+                logger.info(f'Passed: {g_testPassed[fullnode]} for {fullnode}')
+                self.assertTrue(g_testPassed[fullnode])
+
+
     # Test if the apps installed on the node are found in the configuration file
     def test_app_announcementcenter(self):
         drv = sunetnextcloud.TestTarget()
@@ -293,6 +404,23 @@ class TestAppsOcs(unittest.TestCase):
             with self.subTest(mynode=fullnode):
                 logger.info(f'TestID: {fullnode}')
                 InstalledAppsConfiguredThread = InstalledAppsConfigured(fullnode, app='security_guard', checkEnabled=True)
+                InstalledAppsConfiguredThread.start()
+
+        while(g_testThreadsRunning > 0):
+            time.sleep(1)
+
+        for fullnode in drv.nodestotest:
+            with self.subTest(mynode=fullnode):
+                logger.info(f'Passed: {g_testPassed[fullnode]} for {fullnode}')
+                self.assertTrue(g_testPassed[fullnode])
+
+    def test_app_stepupauth(self):
+        drv = sunetnextcloud.TestTarget()
+
+        for fullnode in drv.nodestotest:
+            with self.subTest(mynode=fullnode):
+                logger.info(f'TestID: {fullnode}')
+                InstalledAppsConfiguredThread = InstalledAppsConfigured(fullnode, app='stepupauth', checkEnabled=True)
                 InstalledAppsConfiguredThread.start()
 
         while(g_testThreadsRunning > 0):
