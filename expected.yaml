@@ -18,8 +18,8 @@ prod:
     maintenance: false
     needsDbUpgrade: false
     major_version: 30
-    version: ['31.0.9.2', '30.0.14.2']
-    versionstring: ['30.0.14 Enterprise', '31.0.9 Enterprise']
+    version: ['31.0.9.2']
+    versionstring: ['31.0.9 Enterprise']
     edition: ''
     productname: 'Nextcloud'
     extendedSupport: false
@@ -28,7 +28,7 @@ prod:
     ocs_meta_statuscode: 100
     ocs_meta_statuscode_2: 200
     ocs_meta_message: 'OK'
-    ocs_data_version_string: '30.0.14 Enterprise'
+    ocs_data_version_string: ['31.0.9 Enterprise']
     ocs_data_capabilities_globalscale_enabled: true
   cert_md5: '702b0112df7e6e4b2ca2af3280841196'
   ocsapps: 
