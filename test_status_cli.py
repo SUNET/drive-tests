@@ -107,6 +107,15 @@ class NodeStatusInfo(threading.Thread):
             
             try:
                 j = json.loads(r.text)
+            except Exception as error:
+                g_failedNodes.append(url)
+                logger.info(f'No valid JSON reply received for {url}: {error}')
+                testThreadsRunning -= 1
+                logger.info(r.text)
+                self.TestStatus.assertTrue(False)
+                return
+
+            try:
                 self.TestStatus.assertEqual(j["maintenance"], expectedResults[drv.target]['status']['maintenance'])
                 self.TestStatus.assertEqual(j["needsDbUpgrade"], expectedResults[drv.target]['status']['needsDbUpgrade'])
                 self.TestStatus.assertTrue(j["version"] in expectedResults[drv.target]['status']['version'])
@@ -117,7 +126,7 @@ class NodeStatusInfo(threading.Thread):
                 logger.info(f'Status information tested: {url}')
             except Exception as error:
                 g_failedNodes.append(url)
-                logger.info(f'No valid JSON reply received for {url}: {error}')
+                logger.info(f'Assertion error for {url}: {error}')
                 testThreadsRunning -= 1
                 logger.info(r.text)
                 self.TestStatus.assertTrue(False)
