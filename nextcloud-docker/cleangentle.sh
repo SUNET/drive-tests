@@ -44,3 +44,5 @@ docker volume rm nextcloud-docker_data3-1
 docker volume rm nextcloud-docker_data3-2
 docker volume rm nextcloud-docker_data4-1
 docker volume rm nextcloud-docker_data4-2
+
+rmdir /tmp/localhost.pem

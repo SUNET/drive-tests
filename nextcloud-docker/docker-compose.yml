@@ -43,7 +43,7 @@ services:
 
   nextcloud-app:
     container_name: nextcloud-local
-    image: nextcloud:30
+    image: nextcloud:31
     restart: always
     # expose:
     #   - 8080:80
@@ -52,7 +52,6 @@ services:
     ports:
       - 8443:8443
       - 8080:80
-      - 80:80
     links:
       - db1
       - collabora-server
