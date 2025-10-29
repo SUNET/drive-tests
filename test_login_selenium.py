@@ -62,6 +62,8 @@ class TestLoginSelenium(unittest.TestCase):
                 for fullnode in drv.nodestotest:
                     with self.subTest(mynode=fullnode):
                         self.logger.info(f'TestID: Testing node {fullnode} with browser {browser}')
+                        acceptToS = False
+
                         loginurl = drv.get_node_login_url(fullnode)
                         self.logger.info(f'URL: {loginurl}')
                         nodeuser = drv.get_seleniumuser(fullnode)
@@ -76,12 +78,20 @@ class TestLoginSelenium(unittest.TestCase):
                         'webdav_password' : nodepwd 
                         }
 
-                        client = Client(options)
-                        client.verify = drv.verify
-                        dir = 'SharedFolder'
-                        self.logger.info(f'Make and check directory: {dir}')
-                        client.mkdir(dir)
-                        self.assertEqual(client.list().count('SharedFolder/'), 1)
+                        try:
+                            client = Client(options)
+                            client.verify = drv.verify
+                            dir = 'SharedFolder'
+                            client.list()
+                            self.logger.info(f'Make and check directory: {dir}')
+                            client.mkdir(dir)
+                            self.assertEqual(client.list().count('SharedFolder/'), 1)
+                        except Exception as error:
+                            if "OCA\\\\TermsOfService\\\\TermsNotSignedException" in str(error):
+                                self.logger.warning(f'ToS have not been accepted yet')
+                                acceptToS = True
+                            else:
+                                self.logger.error(f'Error making {dir}: {error}')
 
                         sel = sunetnextcloud.SeleniumHelper(browser, fullnode)
                         driver = sel.driver
@@ -100,7 +110,7 @@ class TestLoginSelenium(unittest.TestCase):
                         self.assertFalse(hasCommunityWarning)
 
                         sel.delete_cookies()
-                        sel.nodelogin(sel.UserType.SELENIUM, mfaUser=True)
+                        sel.nodelogin(sel.UserType.SELENIUM, mfaUser=True, acceptToS=acceptToS)
 
                         if browser == 'chrome':
                             driver.set_window_size(1920, 1152)

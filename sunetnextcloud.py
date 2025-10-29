@@ -782,7 +782,7 @@ class SeleniumHelper():
         logger.info('All cookies deleted')
         return
     
-    def nodelogin(self, usertype : UserType, username='', password='', apppwd='', totpsecret='', mfaUser=True, skipAppMenuCheck=False, addOtp=False):
+    def nodelogin(self, usertype : UserType, username='', password='', apppwd='', totpsecret='', mfaUser=True, skipAppMenuCheck=False, addOtp=False, acceptToS=False):
         nodetotpsecret = ''
         loginurl = self.drv.get_node_login_url(self.nextcloudnode)
         if usertype == usertype.SELENIUM:
@@ -892,6 +892,23 @@ class SeleniumHelper():
                     break
         else:
             logger.info('No MFA login')
+
+        if acceptToS:
+            logger.info(f'Try to accept ToS: {acceptToS}')
+            self.wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'terms-content')))   # Wait for the ToS content field
+
+            # Find accept tos button
+            acceptButton = None
+            try:
+                buttons = self.driver.find_elements(By.CLASS_NAME, 'button-vue__text')
+                for button in buttons:
+                    if 'I acknowledge that I have read and agree to the above terms of service' in button.text:
+                        acceptButton = button
+            except Exception as error:
+                logger.error(f'Unable to find create new app button: {error}')
+                return None
+            
+            acceptButton.click()
 
         try:
             if skipAppMenuCheck:
