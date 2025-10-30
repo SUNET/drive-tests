@@ -9,6 +9,7 @@ import time
 import logging
 import threading
 import os
+from urllib.parse import quote
 
 import sunetnextcloud
 
@@ -205,7 +206,7 @@ class NodeGroups(threading.Thread):
         logger.info(f'Setting passed for {fullnode} to {g_testPassed.get(fullnode)}')
 
         try:
-            rawurl = drv.get_add_group_url(fullnode)
+            rawurl = drv.get_groups_url(fullnode)
             nodeuser = drv.get_ocsuser(fullnode)
             nodepwd = drv.get_ocsuserapppassword(fullnode)
             logger.info(f'Add group through {rawurl}')
@@ -226,7 +227,18 @@ class NodeGroups(threading.Thread):
             j = json.loads(r.text)
             # logger.info(json.dumps(j, indent=4, sort_keys=True))
             groups = j["ocs"]["data"]["groups"]
-            logger.info(f'Received {len(groups)} from {self.name}')
+            logger.info(f'Received {len(groups)} groups from {self.name}')
+            for group in groups:
+                logger.info(f'{group}')
+
+                group = quote(group)
+                logger.info(f'Question mark in group name: {group}')
+                rawurl = drv.get_group_url(fullnode, group)
+                url = rawurl.replace("$USERNAME$", nodeuser)
+                url = url.replace("$PASSWORD$", nodepwd)
+                r = requests.get(url, headers=ocsheaders, timeout=g_requestTimeout, verify=self.verify)
+                logger.info(f'{r.text}')
+
         except Exception as error:
             logger.info(f"No JSON reply received from {fullnode}:{error}")
             logger.info(r.text)
