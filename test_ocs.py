@@ -230,9 +230,7 @@ class NodeGroups(threading.Thread):
             logger.info(f'Received {len(groups)} groups from {self.name}')
             for group in groups:
                 logger.info(f'{group}')
-
                 group = quote(group)
-                logger.info(f'Question mark in group name: {group}')
                 rawurl = drv.get_group_url(fullnode, group)
                 url = rawurl.replace("$USERNAME$", nodeuser)
                 url = url.replace("$PASSWORD$", nodepwd)
