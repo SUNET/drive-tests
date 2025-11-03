@@ -46,7 +46,7 @@ class NodeOcsUserLifecycle(threading.Thread):
         drv = sunetnextcloud.TestTarget()
         fullnode = self.name
 
-        url = drv.get_add_user_url(fullnode)
+        url = drv.get_users_url(fullnode)
         # logger.info(self._testMethodName, url)
         startTime = datetime.now()
         for nodeindex in range(1, nodes+1):
@@ -128,7 +128,7 @@ class NodeOcsUserPerformance(threading.Thread):
 
             url = drv.get_status_url(fullnode)
             nodebaseurl = drv.get_node_base_url(fullnode)
-            url = drv.get_add_user_url(fullnode)
+            url = drv.get_users_url(fullnode)
             url = url.replace("$USERNAME$", nodeuser)
             url = url.replace("$PASSWORD$", nodepwd)
             message = f'{calls} calls to {nodebaseurl:<30}'

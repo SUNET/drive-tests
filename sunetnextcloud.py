@@ -274,8 +274,11 @@ class TestTarget(object):
     def get_app_url(self, node, app):
         return 'https://$USERNAME$:$PASSWORD$@' + self.getnodeprefix(node) + self.targetprefix + self.delimiter + self.baseurl + '/ocs/v2.php/cloud/apps/' + app + '?format=json'
 
-    def get_add_user_url(self, node):
+    def get_users_url(self, node):
         return 'https://$USERNAME$:$PASSWORD$@' + self.getnodeprefix(node) + self.targetprefix + self.delimiter + self.baseurl + '/ocs/v1.php/cloud/users?format=json'
+
+    def get_user_url(self, node, user):
+        return 'https://$USERNAME$:$PASSWORD$@' + self.getnodeprefix(node) + self.targetprefix + self.delimiter + self.baseurl + '/ocs/v1.php/cloud/users/' + user + '?format=json'
 
     def get_groups_url(self, node):
         return 'https://$USERNAME$:$PASSWORD$@' + self.getnodeprefix(node) + self.targetprefix + self.delimiter + self.baseurl + '/ocs/v1.php/cloud/groups?format=json'

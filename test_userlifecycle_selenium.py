@@ -61,7 +61,7 @@ class TestUserlifecycleSelenium(unittest.TestCase):
                 for fullnode in drv.nodestotest:
                     with self.subTest(mynode=fullnode):
                         session = requests.Session()
-                        addUserUrl = drv.get_add_user_url(fullnode)
+                        addUserUrl = drv.get_users_url(fullnode)
                         self.logger.info(f'{self._testMethodName} {addUserUrl}')
                         nodeuser = drv.get_ocsuser(fullnode)
                         nodepwd = drv.get_ocsuserapppassword(fullnode)

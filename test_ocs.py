@@ -153,7 +153,7 @@ class NodeUsers(threading.Thread):
         logger.info(f'Setting passed for {fullnode} to {g_testPassed.get(fullnode)}')
 
         try:
-            rawurl = drv.get_add_user_url(fullnode)
+            rawurl = drv.get_users_url(fullnode)
             nodeuser = drv.get_ocsuser(fullnode)
             nodepwd = drv.get_ocsuserapppassword(fullnode)
             logger.info(f'Get users from {rawurl}')
@@ -375,7 +375,7 @@ class UserLifeCycle(threading.Thread):
 
         try:
             session = requests.Session()
-            rawurl = drv.get_add_user_url(fullnode)
+            rawurl = drv.get_users_url(fullnode)
             logger.info(f'Add user through {rawurl}')
             nodeuser = drv.get_ocsuser(fullnode)
             nodepwd = drv.get_ocsuserapppassword(fullnode)
