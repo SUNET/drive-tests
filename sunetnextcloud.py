@@ -286,6 +286,12 @@ class TestTarget(object):
     def get_group_url(self, node, group):
         return 'https://$USERNAME$:$PASSWORD$@' + self.getnodeprefix(node) + self.targetprefix + self.delimiter + self.baseurl + '/ocs/v1.php/cloud/groups/' + group + '?format=json'
 
+    def get_groups_details_url(self, node):
+        return 'https://$USERNAME$:$PASSWORD$@' + self.getnodeprefix(node) + self.targetprefix + self.delimiter + self.baseurl + '/ocs/v1.php/cloud/groups/details?format=json'
+
+    def get_group_details_url(self, node, group):
+        return 'https://$USERNAME$:$PASSWORD$@' + self.getnodeprefix(node) + self.targetprefix + self.delimiter + self.baseurl + '/ocs/v1.php/cloud/groups/' + group + '?format=json'
+
     def get_add_user_fe_url(self, node, id):
         return 'https://$USERNAME$:$PASSWORD$@node' + str(id) + '.' + self.getnodeprefix(node) + self.targetprefix + self.delimiter + self.baseurl + '/ocs/v1.php/cloud/users?format=json'
 

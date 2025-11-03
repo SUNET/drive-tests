@@ -175,6 +175,14 @@ class NodeUsers(threading.Thread):
             # logger.info(json.dumps(j, indent=4, sort_keys=True))
             users = j["ocs"]["data"]["users"]
             logger.info(f'Received {len(users)} from {self.name}')
+            # for user in users:
+            #     rawurl = drv.get_user_url(fullnode, user)
+            #     url = rawurl.replace("$USERNAME$", nodeuser)
+            #     url = url.replace("$PASSWORD$", nodepwd)
+            #     r = requests.get(url, headers=ocsheaders, timeout=g_requestTimeout, verify=self.verify)
+            #     j = json.loads(r.text)
+            #     logger.info(json.dumps(j, indent=4, sort_keys=True))
+
         except Exception as error:
             logger.info(f"No JSON reply received from {fullnode}:{error}")
             logger.info(r.text)
@@ -206,7 +214,8 @@ class NodeGroups(threading.Thread):
         logger.info(f'Setting passed for {fullnode} to {g_testPassed.get(fullnode)}')
 
         try:
-            rawurl = drv.get_groups_url(fullnode)
+            # rawurl = drv.get_groups_url(fullnode)
+            rawurl = drv.get_groups_details_url(fullnode)
             nodeuser = drv.get_ocsuser(fullnode)
             nodepwd = drv.get_ocsuserapppassword(fullnode)
             logger.info(f'Add group through {rawurl}')
@@ -225,17 +234,18 @@ class NodeGroups(threading.Thread):
             return
         try:
             j = json.loads(r.text)
-            # logger.info(json.dumps(j, indent=4, sort_keys=True))
+            logger.info(json.dumps(j, indent=4, sort_keys=True))
             groups = j["ocs"]["data"]["groups"]
             logger.info(f'Received {len(groups)} groups from {self.name}')
-            for group in groups:
-                logger.info(f'{group}')
-                group = quote(group)
-                rawurl = drv.get_group_url(fullnode, group)
-                url = rawurl.replace("$USERNAME$", nodeuser)
-                url = url.replace("$PASSWORD$", nodepwd)
-                r = requests.get(url, headers=ocsheaders, timeout=g_requestTimeout, verify=self.verify)
-                logger.info(f'{r.text}')
+            # for group in groups:
+            #     groupid = group["id"]
+            #     logger.info(f'Group id: {groupid}')
+            #     groupid = quote(groupid)
+            #     rawurl = drv.get_group_url(fullnode, groupid)
+            #     url = rawurl.replace("$USERNAME$", nodeuser)
+            #     url = url.replace("$PASSWORD$", nodepwd)
+            #     r = requests.get(url, headers=ocsheaders, timeout=g_requestTimeout, verify=self.verify)
+            #     logger.info(f'{r.text}')
 
         except Exception as error:
             logger.info(f"No JSON reply received from {fullnode}:{error}")
