@@ -11,3 +11,4 @@ PyYAML>=6.0.1
 html-testRunner==1.2.1
 pip_audit>=2.9.0
 junit2html>=31.0.2
+PyScreeze>=1.0.1
