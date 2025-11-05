@@ -256,7 +256,12 @@ class NodeGroups(threading.Thread):
         
         # Test for forcemfa group
         # logger.info(json.dumps(j, indent=4, sort_keys=True))
-        if "forcemfa" in j["ocs"]["data"]["groups"]:
+        forceMfaFound = False
+        for group in j["ocs"]["data"]["groups"]:
+            if group["displayname"] == "forcemfa":
+                forceMfaFound = True
+
+        if forceMfaFound:
             logger.info(f'Found forcemfa on {fullnode}')
         else:
             logger.info(f"Group forcemfa does not exist on {fullnode}")
