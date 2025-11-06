@@ -346,6 +346,27 @@ class TestTarget(object):
             + "/ocs/v2.php/cloud/capabilities?format=json"
         )
 
+    def get_openapi_url(self, node, path, basic_auth=True, return_json=True):
+        if basic_auth:
+            urlPrefix = "https://$USERNAME$:$PASSWORD$@"
+        else:
+            urlPrefix = ""
+
+        if return_json:
+            urlSuffix = "?format=json"
+        else:
+            urlSuffix = ""
+
+        return (
+            urlPrefix
+            + self.getnodeprefix(node)
+            + self.targetprefix
+            + self.delimiter
+            + self.baseurl
+            + path
+            + urlSuffix
+        )
+
     def get_all_apps_url(self, node):
         return (
             "https://$USERNAME$:$PASSWORD$@"
