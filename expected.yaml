@@ -17,7 +17,7 @@ prod:
     installed: true
     maintenance: false
     needsDbUpgrade: false
-    major_version: 30
+    major_version: 31
     version: ['31.0.9.2']
     versionstring: ['31.0.9 Enterprise']
     edition: ''
