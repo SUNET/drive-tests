@@ -14,7 +14,6 @@ import sunetnextcloud
 drv = sunetnextcloud.TestTarget()
 expectedResults = drv.expectedResults
 
-
 ocsheaders = {"OCS-APIRequest": "true"}
 openApiSource = f"resources/nextcloud/document{expectedResults[drv.target]['status']['major_version']}.json"
 logger = sunetnextcloud.logger
@@ -48,6 +47,7 @@ class TestOpenApi(unittest.TestCase):
             for method in openApiSpec["paths"][path].keys():
                 if method == "get":
                     logger.info(f"Get found for {path}")
+
                     cleanUrl = drv.get_openapi_url(
                         fullnode, path, return_json=return_json
                     )
@@ -58,31 +58,84 @@ class TestOpenApi(unittest.TestCase):
                         logger.info(f"Skip parametrized get: {cleanUrl}")
                         continue
 
+                    # Check if we require additional parameters
+                    requireParameters = False
+                    requireSecurity = True
+                    customHeader = ocsheaders
+
+                    if "security" not in openApiSpec["paths"][path]["get"]:
+                        logger.info(f"{method} does not require security")
+                        requireSecurity = False
+
+                    parameterSuffix = ""  # url parameter suffix for functions requiring additional input
+                    if "parameters" not in openApiSpec["paths"][path]["get"]:
+                        logger.info(f"{path} does not require additional parameters")
+                        customHeader = {}
+                    else:
+                        for parameter in openApiSpec["paths"][path]["get"][
+                            "parameters"
+                        ]:
+                            # OCS-APIRequest is always required, so we skip this
+                            if parameter["name"] == "OCS-APIRequest":
+                                continue
+
+                            # Check if other parameters are required
+                            try:
+                                requireParameters = parameter["required"]
+                            except:
+                                requireParameters = False
+
+                            # Add required (empty) parameters
+                            if requireParameters:
+                                logger.info(
+                                    f"Adding required header: {parameter['name']}"
+                                )
+                                parameterSuffix = f"&{parameter['name']}=testautomation"
+                                # customHeader[parameter["name"]] = "testautomation"
+                                # logger.info(f"Call with custom header: {customHeader}")
+
                     try:
                         nodeuser = drv.get_ocsuser(fullnode)
                         nodepwd = drv.get_ocsuserapppassword(fullnode)
-                        secretUrl = secretUrl.replace("$USERNAME$", nodeuser)
-                        secretUrl = secretUrl.replace("$PASSWORD$", nodepwd)
+                        if requireSecurity:
+                            secretUrl = secretUrl.replace("$USERNAME$", nodeuser)
+                            secretUrl = secretUrl.replace("$PASSWORD$", nodepwd)
+                        else:  # remove username and password call if it is not required
+                            secretUrl = secretUrl.replace("$USERNAME$:$PASSWORD$@", "")
+                        secretUrl = f"{secretUrl}{parameterSuffix}"
+
+                        # if "ocs" not in secretUrl:
+                        #     logger.info(f"Remove custom header for {cleanUrl}")
+                        #     customHeader = {}
 
                         r = requests.get(
                             secretUrl,
-                            headers=ocsheaders,
+                            headers=customHeader,
                             timeout=g_requestTimeout,
                         )
+
                         if return_json:
                             j = json.loads(r.text)
                             logger.info(f"Called get on {cleanUrl}")
 
-                            if j["ocs"]["meta"]["statuscode"] != 200:
-                                failedFunctions[cleanUrl] = j["ocs"]["meta"][
-                                    "statuscode"
-                                ]
-                                print(json.dumps(j, indent=4, sort_keys=True))
+                            if "ocs" in cleanUrl:
+                                if j["ocs"]["meta"]["statuscode"] != 200:
+                                    failedFunctions[cleanUrl] = j["ocs"]["meta"][
+                                        "statuscode"
+                                    ]
+                                    logger.error(
+                                        json.dumps(j, indent=4, sort_keys=True)
+                                    )
+                                else:
+                                    logger.info(f"Good call on {cleanUrl}")
                             else:
-                                logger.info(f"Good call on {cleanUrl}")
-
+                                logger.info(
+                                    f"Non-ocs method {cleanUrl} returned {json.dumps(j, indent=4, sort_keys=True)}"
+                                )
                         if (
-                            return_json and j["ocs"]["meta"]["statuscode"] >= 500
+                            "ocs" in cleanUrl
+                            and return_json
+                            and j["ocs"]["meta"]["statuscode"] >= 500
                         ):  # Get reply from non-json call
                             cleanUrl = drv.get_openapi_url(
                                 fullnode, path, return_json=False
@@ -103,16 +156,32 @@ class TestOpenApi(unittest.TestCase):
                         else:
                             logger.info(f"Good call on {cleanUrl}")
 
-                            # if "997" in r.text:
-                            #     logger.error(f"Bad call on {cleanUrl}")
-                            #     logger.error(f"{r.text}")
-                            #     failedFunctions[cleanUrl] = "997"
-                            # else:
-                            #     logger.info(f"Good call on {cleanUrl}")
-                            # logger.info(f"Returned: {r.text}")
                     except Exception as error:
                         logger.error(f"Error calling get from {cleanUrl}: {error}")
                         failedFunctions[cleanUrl] = error
+                        # input("Press Enter to continue...")
+
+                        if return_json:
+                            logger.warning(
+                                f"Retry non-json call to {cleanUrl} due to {error}"
+                            )
+
+                            cleanUrl = drv.get_openapi_url(
+                                fullnode, path, return_json=False
+                            )
+                            secretUrl = cleanUrl
+                            secretUrl = secretUrl.replace("$USERNAME$", nodeuser)
+                            secretUrl = secretUrl.replace("$PASSWORD$", nodepwd)
+
+                            r = requests.get(
+                                secretUrl,
+                                headers=ocsheaders,
+                                timeout=g_requestTimeout,
+                            )
+                            logger.warning(f"Non-json reply to {cleanUrl}: {r.text}")
+                            failedFunctions[cleanUrl] = f"Non-json reply: {len(r.text)}"
+
+                        # input("Press Enter to continue after non-json retry...")
 
         logger.info(f"Done with {len(failedFunctions)} errors")
         for failedFunction in failedFunctions:
