@@ -39,12 +39,20 @@ class TestOpenApi(unittest.TestCase):
             f"Testing {openApiSpec['info']['title']} - {openApiSpec['info']['description']} - {openApiSpec['info']['version']}"
         )
 
-        failedFunctions = {}
+        allPaths = {}
+        testedPaths = {}
+        failedPaths = {}
         return_json = True
+        add_required_parameters = True
+
         for path in openApiSpec["paths"]:
             # logger.info(path)
             fullnode = "sunet"
             for method in openApiSpec["paths"][path].keys():
+                allPaths[
+                    drv.get_openapi_url(fullnode, path, return_json=return_json)
+                ] = method
+
                 if method == "get":
                     logger.info(f"Get found for {path}")
 
@@ -90,7 +98,7 @@ class TestOpenApi(unittest.TestCase):
                                 logger.info(
                                     f"Adding required header: {parameter['name']}"
                                 )
-                                parameterSuffix = f"&{parameter['name']}=testautomation"
+                                parameterSuffix = f"{parameterSuffix}&{parameter['name']}=testautomation"
                                 # customHeader[parameter["name"]] = "testautomation"
                                 # logger.info(f"Call with custom header: {customHeader}")
 
@@ -102,17 +110,18 @@ class TestOpenApi(unittest.TestCase):
                             secretUrl = secretUrl.replace("$PASSWORD$", nodepwd)
                         else:  # remove username and password call if it is not required
                             secretUrl = secretUrl.replace("$USERNAME$:$PASSWORD$@", "")
-                        secretUrl = f"{secretUrl}{parameterSuffix}"
 
-                        # if "ocs" not in secretUrl:
-                        #     logger.info(f"Remove custom header for {cleanUrl}")
-                        #     customHeader = {}
+                        # Only add parameters if it is configured to do so
+                        if add_required_parameters:
+                            secretUrl = f"{secretUrl}{parameterSuffix}"
+                            cleanUrl = f"{cleanUrl}{parameterSuffix}"
 
                         r = requests.get(
                             secretUrl,
                             headers=customHeader,
                             timeout=g_requestTimeout,
                         )
+                        testedPaths[cleanUrl] = "Failed"
 
                         if return_json:
                             j = json.loads(r.text)
@@ -120,7 +129,7 @@ class TestOpenApi(unittest.TestCase):
 
                             if "ocs" in cleanUrl:
                                 if j["ocs"]["meta"]["statuscode"] != 200:
-                                    failedFunctions[cleanUrl] = j["ocs"]["meta"][
+                                    failedPaths[cleanUrl] = j["ocs"]["meta"][
                                         "statuscode"
                                     ]
                                     logger.error(
@@ -128,6 +137,8 @@ class TestOpenApi(unittest.TestCase):
                                     )
                                 else:
                                     logger.info(f"Good call on {cleanUrl}")
+                                    testedPaths[cleanUrl] = "Passed"
+
                             else:
                                 logger.info(
                                     f"Non-ocs method {cleanUrl} returned {json.dumps(j, indent=4, sort_keys=True)}"
@@ -146,6 +157,12 @@ class TestOpenApi(unittest.TestCase):
                             )
                             secretUrl = secretUrl.replace("$USERNAME$", nodeuser)
                             secretUrl = secretUrl.replace("$PASSWORD$", nodepwd)
+                            # Replace the first & of the parameter suffix with a ?
+                            # Do so only  if we want to test with added parameters
+                            if len(parameterSuffix) > 0 and add_required_parameters:
+                                parameterSuffix = parameterSuffix.replace("&", "?", 1)
+                                secretUrl = f"{secretUrl}{parameterSuffix}"
+                                cleanUrl = f"{cleanUrl}{parameterSuffix}"
 
                             r = requests.get(
                                 secretUrl,
@@ -153,13 +170,14 @@ class TestOpenApi(unittest.TestCase):
                                 timeout=g_requestTimeout,
                             )
                             logger.warning(f"Non-json reply to {cleanUrl}: {r.text}")
+                            failedPaths[cleanUrl] = f"Non-json reply: {len(r.text)}"
                         else:
                             logger.info(f"Good call on {cleanUrl}")
+                            testedPaths[cleanUrl] = "Passed"
 
                     except Exception as error:
                         logger.error(f"Error calling get from {cleanUrl}: {error}")
-                        failedFunctions[cleanUrl] = error
-                        # input("Press Enter to continue...")
+                        failedPaths[cleanUrl] = error
 
                         if return_json:
                             logger.warning(
@@ -172,6 +190,11 @@ class TestOpenApi(unittest.TestCase):
                             secretUrl = cleanUrl
                             secretUrl = secretUrl.replace("$USERNAME$", nodeuser)
                             secretUrl = secretUrl.replace("$PASSWORD$", nodepwd)
+                            # Replace the first & of the parameter suffix with a ?
+                            if len(parameterSuffix) > 0:
+                                parameterSuffix = parameterSuffix.replace("&", "?", 1)
+                                secretUrl = f"{secretUrl}{parameterSuffix}"
+                                cleanUrl = f"{cleanUrl}{parameterSuffix}"
 
                             r = requests.get(
                                 secretUrl,
@@ -179,13 +202,21 @@ class TestOpenApi(unittest.TestCase):
                                 timeout=g_requestTimeout,
                             )
                             logger.warning(f"Non-json reply to {cleanUrl}: {r.text}")
-                            failedFunctions[cleanUrl] = f"Non-json reply: {len(r.text)}"
+                            failedPaths[cleanUrl] = f"Non-json reply: {len(r.text)}"
 
                         # input("Press Enter to continue after non-json retry...")
 
-        logger.info(f"Done with {len(failedFunctions)} errors")
-        for failedFunction in failedFunctions:
-            logger.info(f"{failedFunction} - {failedFunctions.get(failedFunction)}")
+        logger.info(f"All paths: {len(allPaths)}")
+        for allPath in allPaths:
+            logger.info(f"{allPath} - {allPaths.get(allPath)}")
+
+        logger.info(f"Tested paths: {len(testedPaths)}")
+        for testedPath in testedPaths:
+            logger.info(f"{testedPath} - {testedPaths.get(testedPath)}")
+
+        logger.info(f"Done with {len(failedPaths)} errors")
+        for failedPath in failedPaths:
+            logger.info(f"{failedPath} - {failedPaths.get(failedPath)}")
         pass
 
 
