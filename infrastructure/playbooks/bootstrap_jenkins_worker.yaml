@@ -1,0 +1,241 @@
+- name: Provision a new jenkins node
+  hosts: allhosts
+  vars:
+    swap_file_path: /var/swap/swapfile
+    swap_file_size_mb: 32768
+    ansible_remote_tmp: ~/.ansible/tmp
+    remote_tmp: ~/.ansible/tmp
+  tasks:
+    - name: Create home temp directory
+      become: true
+      ansible.builtin.file:
+        path: ~/.ansible/tmp
+        state: directory
+
+    - name: Unmount /tmp
+      become: true
+      ansible.posix.mount:
+        path: /tmp
+        state: unmounted
+
+    - name: Resize tmpfs filesystem
+      become: true
+
+      environment:
+        TMP: ~/.ansible/tmp
+        TMPDIR: ~/.ansible/tmp
+
+      ansible.posix.mount:
+        path: /tmp
+        src: tmpfs
+        state: mounted
+        fstype: tmpfs
+        opts: "size=64G"
+
+    - name: Create swap directory
+      become: true
+      ansible.builtin.file:
+        path: /var/swap
+        state: directory
+
+    - name: Create swap file
+      become: true
+      command:
+        dd if=/dev/zero of={{ swap_file_path }} bs=1024 count={{ swap_file_size_mb }}k
+        creates="{{ swap_file_path }}"
+      tags:
+        - swap.file.create
+
+    - name: Change swap file permissions
+      become: true
+      file: path="{{ swap_file_path }}"
+        owner=root
+        group=root
+        mode=0600
+      tags:
+        - swap.file.permissions
+
+    - name: "Check swap file type"
+      become: true
+      command: file {{ swap_file_path }}
+      register: swapfile
+      tags:
+        - swap.file.mkswap
+
+    - name: Make swap file
+      become: true
+      command: "sudo mkswap {{ swap_file_path }}"
+      when: swapfile.stdout.find('swap file') == -1
+      tags:
+        - swap.file.mkswap
+
+    - name: Write swap entry in fstab
+      become: true
+      mount: name=none
+        src={{ swap_file_path }}
+        fstype=swap
+        opts=sw
+        passno=0
+        dump=0
+        state=present
+      tags:
+        - swap.fstab
+
+    - name: Mount swap
+      become: true
+      command: "swapon {{ swap_file_path }}"
+      when: ansible_swaptotal_mb < 1
+      tags:
+        - swap.file.swapon
+
+    - name: Update and upgrade apt packages
+      become: true
+      apt:
+        upgrade: yes
+        update_cache: yes
+        cache_valid_time: 86400
+
+    - name: Install package dependencies
+      become: true
+      apt:
+        update_cache: yes
+        autoremove: yes
+        state: present
+        pkg:
+          - openjdk-21-jdk-headless
+          - python-is-python3
+          - python3-pip
+          - python3-virtualenv
+          - git
+          - acl
+          - xvfb
+          - fluxbox
+          - libxtst6
+          - libgtk-3-0
+          - libx11-xcb-dev
+          - libdbus-glib-1-2
+          - libxt6
+          - python3-tk
+          - python3-dev
+          - nextcloud-desktop-cmd
+          # NOTE:
+          # libxi6 libgconf-2-4 jq libjq1 libonig5 libxkbcommon0 libxss1 libglib2.0-0 libnss3   libfontconfig1 libatk-bridge2.0-0 libatspi2.0-0 libgtk-3-0 libpango-1.0-0 libgdk-pixbuf2.0-0 libxcomposite1   libxcursor1 libxdamage1 libxtst6 libappindicator3-1 libasound2 libatk1.0-0 libc6 libcairo2 libcups2 libxfixes3   libdbus-1-3 libexpat1 libgcc1 libnspr4 libgbm1 libpangocairo-1.0-0 libstdc++6 libx11-6 libx11-xcb1 libxcb1 libxext6   libxrandr2 libxrender1 gconf-service ca-certificates fonts-liberation libappindicator1 lsb-release xdg-utils
+
+    - name: Ensure that jenkins group exists
+      become: true
+      ansible.builtin.group:
+        name: jenkins
+        state: present
+
+    - name: Add user for jenkins
+      become: true
+      ansible.builtin.user:
+        name: jenkins
+        shell: /bin/bash
+        groups: jenkins
+        home: /var/lib/jenkins
+
+    - name: Create jenkins user home directory
+      become: true
+      ansible.builtin.file:
+        path: /var/lib/jenkins
+        state: directory
+        owner: jenkins
+        group: jenkins
+
+    - name: Create folder for jenkins service
+      become: true
+      ansible.builtin.file:
+        path: /usr/local/jenkins-service
+        state: directory
+        owner: jenkins
+        group: jenkins
+
+    - name: Download jenkins agent
+      become: true
+      ansible.builtin.get_url:
+        url: https://testautomation.drive.sunet.dev/jnlpJars/agent.jar
+        dest: /usr/local/jenkins-service/agent.jar
+
+    - name: Set permissions for jenkins agent
+      become: true
+      ansible.builtin.file:
+        path: /usr/local/jenkins-service/agent.jar
+        owner: jenkins
+        group: jenkins
+
+    - name: Download start agent script
+      become: true
+      become_user: jenkins
+      ansible.builtin.get_url:
+        url: https://raw.githubusercontent.com/SUNET/drive-tests/refs/heads/main/infrastructure/overlay/usr/local/jenkins-service/start-agent.sh
+        dest: /usr/local/jenkins-service/start-agent.sh
+
+    - name: Download jenkins service script
+      become: true
+      ansible.builtin.get_url:
+        url: https://raw.githubusercontent.com/SUNET/drive-tests/refs/heads/main/infrastructure/overlay/etc/systemd/system/jenkins-agent.service
+        dest: /etc/systemd/system/jenkins-agent.service
+
+    # TBD: Replace with Research Cloud secret
+    - name: Write jenkins secret into secrets-file
+      become: true
+      shell: echo '{{ lookup('ansible.builtin.env', jenkins_secret_var) }}' > /usr/local/jenkins-service/secret-file
+
+    - name: Set owner of secret-file to jenkins
+      become: true
+      ansible.builtin.file:
+        path: /usr/local/jenkins-service/secret-file
+        owner: jenkins
+        group: jenkins
+
+    # - name: Prints hostvar for debugging
+    #   ansible.builtin.debug:
+    #     msg:
+    #     - "Setting hostname to {{ jenkins_hostname }}"
+
+    # - name: Set hostname to value set in hostvar jenkins_hostname
+    #   become: true
+    #   ansible.builtin.hostname:
+    #     name: "{{ jenkins_hostname }}"
+
+    - name: Reboot the machine
+      become: true
+      ansible.builtin.reboot:
+        msg: "Rebooting machine in 5 seconds"
+
+    - name: Enable and start jenkins-agent service
+      become: true
+      systemd:
+        name: jenkins-agent
+        state: started
+        enabled: true
+
+    - name: Download testautomation requirements.txt file
+      become: true
+      become_user: jenkins
+      ansible.builtin.get_url:
+        url: https://raw.githubusercontent.com/SUNET/drive-tests/refs/heads/main/requirements.txt
+        dest: ~/requirements.txt
+
+    - name: Create virtual environment for testautomation user
+      become: true
+      become_user: jenkins
+      pip:
+        requirements: ~/requirements.txt
+        virtualenv: ~/testautomation
+        virtualenv_python: python3
+
+    - name: Download jenkins user bashrc
+      become: true
+      become_user: jenkins
+      ansible.builtin.get_url:
+        url: https://raw.githubusercontent.com/SUNET/drive-tests/refs/heads/main/infrastructure/overlay/var/lib/jenkins/bashrc
+        dest: ~/.bashrc
+
+    - name: Touch .Xauthority file required by some tests
+      become: true
+      become_user: jenkins
+      ansible.builtin.file:
+        path: ~/.Xauthority
+        state: touch
