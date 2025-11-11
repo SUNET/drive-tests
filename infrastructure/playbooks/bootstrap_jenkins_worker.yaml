@@ -180,7 +180,7 @@
     # TBD: Replace with Research Cloud secret
     - name: Write jenkins secret into secrets-file
       become: true
-      shell: echo '{{ lookup('ansible.builtin.env', jenkins_secret_var) }}' > /usr/local/jenkins-service/secret-file
+      shell: echo "{{ jenkins_secret_var }}" > /usr/local/jenkins-service/secret-file
 
     - name: Set owner of secret-file to jenkins
       become: true
