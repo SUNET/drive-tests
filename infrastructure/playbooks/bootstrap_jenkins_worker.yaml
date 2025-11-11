@@ -1,5 +1,5 @@
 - name: Provision a new jenkins node
-  hosts: allhosts
+  hosts: localhost
   vars:
     swap_file_path: /var/swap/swapfile
     swap_file_size_mb: 32768
