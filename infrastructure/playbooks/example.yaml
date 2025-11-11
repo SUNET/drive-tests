@@ -1,0 +1,15 @@
+---
+- name: Getting Started First Playbook Extended
+  hosts: localhost
+  gather_facts: true
+  become: true
+  tasks:
+    - name: Create local folder for downloads
+      file:
+        path: "/opt/{{ test_input }}"
+        state: directory
+        mode: 0777
+
+    - name: print to file
+      shell:
+        cmd: echo "hello {{ secret }}" > "/opt/{{ test_input }}/{{ co_name }}.txt"
