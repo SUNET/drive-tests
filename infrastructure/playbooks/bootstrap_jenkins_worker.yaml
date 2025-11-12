@@ -199,10 +199,10 @@
     #   ansible.builtin.hostname:
     #     name: "{{ jenkins_hostname }}"
 
-    - name: Reboot the machine
-      become: true
-      ansible.builtin.reboot:
-        msg: "Rebooting machine in 5 seconds"
+    # - name: Reboot the machine
+    #   become: true
+    #   ansible.builtin.reboot:
+    #     msg: "Rebooting machine in 5 seconds"
 
     - name: Enable and start jenkins-agent service
       become: true
