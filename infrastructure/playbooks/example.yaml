@@ -4,6 +4,10 @@
   gather_facts: true
   become: true
   tasks:
+    - name: Print all variables
+      debug:
+        var: hostvars[inventory_hostname]
+
     - name: Print test input value
       debug:
         msg: "test_input set to {{ test_input }}"
@@ -15,10 +19,6 @@
     - name: Print co name value
       debug:
         msg: "co_name set to {{ co_name }}"
-
-    - name: Print all variables
-      debug:
-        var: hostvars[inventory_hostname]
 
     - name: Create local folder for downloads
       file:
