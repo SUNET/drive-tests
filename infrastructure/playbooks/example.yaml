@@ -1,6 +1,6 @@
 ---
 - name: Getting Started First Playbook Extended
-  hosts: allhosts
+  hosts: localhost
   gather_facts: true
   become: true
   tasks:
