@@ -1,7 +1,7 @@
 ---
 - name: Getting Started First Playbook Extended
   hosts: localhost
-  # gather_facts: true
+  gather_facts: true
   become: true
   vars:
     test_var1: "Test variable value"
