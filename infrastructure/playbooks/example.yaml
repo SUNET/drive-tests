@@ -11,13 +11,13 @@
       debug:
         var: hostvars[inventory_hostname]
 
-    # - name: Print test variable 1
-    #   debug:
-    #     msg: "test_var1: {{ test_var1 }}"
+    - name: Print test variable 1
+      debug:
+        msg: "test_var1: {{ test_var1 }}"
 
-    # - name: Print test variable 2
-    #   debug:
-    #     msg: "test_var1: {{ test_var1 }}"
+    - name: Print test variable 2
+      debug:
+        msg: "test_var1: {{ test_var1 }}"
 
     # - name: Print test input value
     #   debug:
