@@ -27,9 +27,9 @@
       debug:
         msg: "secret set to {{ secret }}"
 
-    # - name: Print co name value
-    #   debug:
-    #     msg: "co_name set to {{ co_name }}"
+    - name: Print co name value
+      debug:
+        msg: "co_name set to {{ co_name }}"
 
     # - name: Create local folder for downloads
     #   file:
