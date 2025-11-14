@@ -17,15 +17,15 @@
 
     - name: Print test variable 2
       debug:
-        msg: "test_var1: {{ test_var1 }}"
+        msg: "test_var2: {{ test_var2 }}"
 
-    # - name: Print test input value
-    #   debug:
-    #     msg: "test_input set to {{ test_input }}"
+    - name: Print test input value
+      debug:
+        msg: "test_input set to {{ test_input }}"
 
-    # - name: Print secret value
-    #   debug:
-    #     msg: "secret set to {{ secret }}"
+    - name: Print secret value
+      debug:
+        msg: "secret set to {{ secret }}"
 
     # - name: Print co name value
     #   debug:
