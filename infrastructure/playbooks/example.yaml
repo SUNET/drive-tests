@@ -1,38 +1,42 @@
 ---
 - name: Getting Started First Playbook Extended
   hosts: localhost
+  gather_facts: true
+  become: true
   vars:
     test_var1: "Test variable value"
     test_var2: 12345
   tasks:
-    - name: Print all variables
-      become: true
+    - name: Print all hostvars
       debug:
         var: hostvars[inventory_hostname]
 
-    # - name: Print test input value
-    #   become: true
-    #   debug:
-    #     msg: "test_input set to {{ test_input }}"
+    - name: Print test variable 1
+      debug:
+        msg: "test_var1: {{ test_var1 }}"
 
-    # - name: Print secret value
-    #   become: true
-    #   debug:
-    #     msg: "secret set to {{ secret }}"
+    - name: Print test variable 2
+      debug:
+        msg: "test_var2: {{ test_var2 }}"
 
-    # - name: Print co name value
-    #   become: true
-    #   debug:
-    #     msg: "co_name set to {{ co_name }}"
+    - name: Print test input value
+      debug:
+        msg: "test_input set to {{ test_input }}"
+
+    - name: Print secret value
+      debug:
+        msg: "secret set to {{ secret }}"
+
+    - name: Print co name value
+      debug:
+        msg: "co_name set to {{ co_name }}"
 
     # - name: Create local folder for downloads
-    #   become: true
     #   file:
     #     path: "/opt/{{ test_input }}"
     #     state: directory
     #     mode: 0777
 
     # - name: print to file
-    #   become: true
     #   shell:
     #     cmd: echo "hello {{ secret }}" > "/opt/{{ test_input }}/{{ co_name }}.txt"
