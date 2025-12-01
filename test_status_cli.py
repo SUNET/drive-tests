@@ -3,17 +3,18 @@ Author: Richard Freitag <freitag@sunet.se>
 Simple test for retrieving all status.php pages from Sunet Drive nodes and comparing the output to the expected result.
 """
 
-import unittest
-import xmlrunner
-import requests
+import hashlib
 import json
 import logging
-import hashlib
-from xml.etree.ElementTree import fromstring
-import xmltodict
+import os
 import threading
 import time
-import os
+import unittest
+from xml.etree.ElementTree import fromstring
+
+import requests
+import xmlrunner
+import xmltodict
 
 import sunetnextcloud
 
@@ -509,7 +510,11 @@ class TestStatus(unittest.TestCase):
                     expectedEntityId = ""
                     certMd5 = ""
                     logger.info(f"Verify metadata for {url}")
-                    r = requests.get(url, timeout=g_requestTimeout)
+                    try:
+                        r = requests.get(url, timeout=g_requestTimeout)
+                    except Exception as error:
+                        logger.error(f"Error getting {url}: {error}")
+                        continue
 
                     try:
                         metadataXml = fromstring(r.text)
@@ -530,6 +535,7 @@ class TestStatus(unittest.TestCase):
                     except Exception as error:
                         logger.error(f"Metadata is not valid XML for {node}: {error}")
                         logger.error(f"Metadata: {r.text}")
+                        continue
 
                     self.assertEqual(expectedEntityId, drv.get_node_entity_id(node))
                     self.assertEqual(certMd5, expectedResults[drv.target]["cert_md5"])
