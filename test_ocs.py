@@ -2,21 +2,21 @@
 Author: Richard Freitag <freitag@sunet.se>
 """
 
-import unittest
-import xmlrunner
-import requests
 import json
-import time
 import logging
-import threading
 import os
+import threading
+import time
+import unittest
 from urllib.parse import quote
+
+import requests
+import xmlrunner
 
 import sunetnextcloud
 
-ocsheaders = {"OCS-APIRequest": "true"}
-
 drv = sunetnextcloud.TestTarget()
+ocsheaders = drv.ocsheaders
 expectedResults = drv.expectedResults
 
 g_testPassed = {}
@@ -53,9 +53,9 @@ class AppVersions(threading.Thread):
         try:
             userSamlFound = False
             session = requests.Session()
+            rawurl = drv.get_all_apps_url(fullnode)
             nodeuser = drv.get_ocsuser(fullnode)
             nodepwd = drv.get_ocsuserapppassword(fullnode)
-            rawurl = drv.get_all_apps_url(fullnode)
 
             logger.info(f"Getting apps for {rawurl}")
             url = rawurl.replace("$USERNAME$", nodeuser)
