@@ -4,32 +4,30 @@ TestTarget is a helper class containing node-information, as well as for saving 
 expected.yaml contains expected results when retrieving status.php from a Sunet Drive node
 """
 
+import logging
 import os
-import sys
 import random
 import string
-import yaml
-import logging
+import sys
 import time
-import pyotp
 import unittest
-import xmlrunner
-import requests
-import HtmlTestRunner
+from datetime import datetime
+from enum import Enum
 
+import HtmlTestRunner
+import pyotp
+import requests
+import xmlrunner
+import yaml
 from selenium import webdriver
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
+from selenium.common.exceptions import TimeoutException
+from selenium.webdriver import EdgeOptions, FirefoxOptions
+from selenium.webdriver.chrome.options import Options as ChromeOptions
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
-from selenium.common.exceptions import TimeoutException
-from selenium.webdriver.chrome.options import Options as ChromeOptions
-from selenium.webdriver import FirefoxOptions
-from selenium.webdriver import EdgeOptions
 from selenium.webdriver.safari.options import Options as SafariOptions
-
-from enum import Enum
-from datetime import datetime
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.support.ui import WebDriverWait
 
 g_requestTimeout = 30
 
@@ -61,6 +59,8 @@ geckodriver_path = "/snap/bin/geckodriver"
 opsbase = "sunet-drive-ops/"
 opsCommonFile = opsbase + "/global/overlay/etc/hiera/data/common.yaml"
 # opsCosmosDbFile = opsbase + "/global/overlay/etc/puppet/cosmos-db.yaml"
+
+ocsheaders = {"OCS-APIRequest": "true"}
 
 
 def get_value(env, raiseException=True):
@@ -94,6 +94,7 @@ class TestTarget(object):
     nodeprefix = expectedResults["global"]["nodePrefix"]
     docprefix = expectedResults["global"]["docPrefix"]
     indexsuffix = expectedResults["global"]["indexSuffix"]
+    ocsheaders = ocsheaders
 
     # default target is test, unless overwritten by initializing with 'prod'
     targetprefix = "." + testprefix
