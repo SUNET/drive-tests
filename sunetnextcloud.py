@@ -112,6 +112,12 @@ class TestTarget(object):
     target = "test"
     platform = sys.platform
 
+    ocsheaders = {
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+        "OCS-APIRequest": "true",
+    }
+
     def __init__(self, target=None, loglevel=logging.INFO):
         global target_env
         logging.getLogger().setLevel(loglevel)
@@ -344,19 +350,14 @@ class TestTarget(object):
             + self.targetprefix
             + self.delimiter
             + self.baseurl
-            + "/ocs/v2.php/cloud/capabilities?format=json"
+            + "/ocs/v2.php/cloud/capabilities"
         )
 
-    def get_openapi_url(self, node, path, basic_auth=True, return_json=True):
+    def get_openapi_url(self, node, path, basic_auth=True):
         if basic_auth:
             urlPrefix = "https://$USERNAME$:$PASSWORD$@"
         else:
             urlPrefix = ""
-
-        if return_json:
-            urlSuffix = "?format=json"
-        else:
-            urlSuffix = ""
 
         return (
             urlPrefix
@@ -365,7 +366,6 @@ class TestTarget(object):
             + self.delimiter
             + self.baseurl
             + path
-            + urlSuffix
         )
 
     def get_all_apps_url(self, node):
@@ -375,7 +375,7 @@ class TestTarget(object):
             + self.targetprefix
             + self.delimiter
             + self.baseurl
-            + "/ocs/v2.php/cloud/apps?format=json"
+            + "/ocs/v2.php/cloud/apps"
         )
 
     def get_app_url(self, node, app):
@@ -387,7 +387,6 @@ class TestTarget(object):
             + self.baseurl
             + "/ocs/v2.php/cloud/apps/"
             + app
-            + "?format=json"
         )
 
     def get_users_url(self, node):
@@ -397,7 +396,7 @@ class TestTarget(object):
             + self.targetprefix
             + self.delimiter
             + self.baseurl
-            + "/ocs/v1.php/cloud/users?format=json"
+            + "/ocs/v1.php/cloud/users"
         )
 
     def get_user_url(self, node, user):
@@ -409,7 +408,6 @@ class TestTarget(object):
             + self.baseurl
             + "/ocs/v1.php/cloud/users/"
             + user
-            + "?format=json"
         )
 
     def get_groups_url(self, node):
@@ -419,7 +417,7 @@ class TestTarget(object):
             + self.targetprefix
             + self.delimiter
             + self.baseurl
-            + "/ocs/v1.php/cloud/groups?format=json"
+            + "/ocs/v1.php/cloud/groups"
         )
 
     def get_group_url(self, node, group):
@@ -431,7 +429,6 @@ class TestTarget(object):
             + self.baseurl
             + "/ocs/v1.php/cloud/groups/"
             + group
-            + "?format=json"
         )
 
     def get_groups_details_url(self, node):
@@ -441,7 +438,7 @@ class TestTarget(object):
             + self.targetprefix
             + self.delimiter
             + self.baseurl
-            + "/ocs/v1.php/cloud/groups/details?format=json"
+            + "/ocs/v1.php/cloud/groups/details"
         )
 
     def get_group_details_url(self, node, group):
@@ -453,7 +450,6 @@ class TestTarget(object):
             + self.baseurl
             + "/ocs/v1.php/cloud/groups/"
             + group
-            + "?format=json"
         )
 
     def get_add_user_fe_url(self, node, id):
@@ -465,7 +461,7 @@ class TestTarget(object):
             + self.targetprefix
             + self.delimiter
             + self.baseurl
-            + "/ocs/v1.php/cloud/users?format=json"
+            + "/ocs/v1.php/cloud/users"
         )
 
     def get_share_url(self, node):
@@ -475,7 +471,7 @@ class TestTarget(object):
             + self.targetprefix
             + self.delimiter
             + self.baseurl
-            + "/ocs/v1.php/apps/files_sharing/api/v1/shares?format=json"
+            + "/ocs/v1.php/apps/files_sharing/api/v1/shares"
         )
 
     def get_share_id_url(self, node, id):
@@ -487,7 +483,6 @@ class TestTarget(object):
             + self.baseurl
             + "/ocs/v1.php/apps/files_sharing/api/v1/shares/"
             + id
-            + "?format=json"
         )
 
     def get_add_user_multinode_url(self, node):
@@ -503,7 +498,7 @@ class TestTarget(object):
             + self.baseurl
             + ":"
             + str(port)
-            + "/ocs/v1.php/cloud/users?format=json"
+            + "/ocs/v1.php/cloud/users"
         )
 
     def get_userinfo_url(self, node, userid):
@@ -515,7 +510,6 @@ class TestTarget(object):
             + self.baseurl
             + "/ocs/v1.php/cloud/users/"
             + userid
-            + "?format=json"
         )
 
     def get_user_url(self, node, username):
@@ -527,7 +521,6 @@ class TestTarget(object):
             + self.baseurl
             + "/ocs/v1.php/cloud/users/"
             + username
-            + "?format=json"
         )
 
     def get_disable_user_url(self, node, username):
@@ -539,7 +532,7 @@ class TestTarget(object):
             + self.baseurl
             + "/ocs/v1.php/cloud/users/"
             + username
-            + "/disable?format=json"
+            + "/disable"
         )
 
     def get_dashboard_url(self, node):
@@ -627,7 +620,7 @@ class TestTarget(object):
             + self.targetprefix
             + self.delimiter
             + self.baseurl
-            + "/ocs/v2.php/apps/files_sharing/api/v1/shares?format=json"
+            + "/ocs/v2.php/apps/files_sharing/api/v1/shares"
         )
 
     def get_remote_shares_url(self, node):
@@ -637,7 +630,7 @@ class TestTarget(object):
             + self.targetprefix
             + self.delimiter
             + self.baseurl
-            + "/ocs/v2.php/apps/files_sharing/api/v1/remote_shares?format=json"
+            + "/ocs/v2.php/apps/files_sharing/api/v1/remote_shares"
         )
 
     def get_pending_shares_url(self, node):
@@ -647,7 +640,7 @@ class TestTarget(object):
             + self.targetprefix
             + self.delimiter
             + self.baseurl
-            + "/ocs/v2.php/apps/files_sharing/api/v1/remote_shares/pending?format=json"
+            + "/ocs/v2.php/apps/files_sharing/api/v1/remote_shares/pending"
         )
 
     def get_pending_shares_id_url(self, node, id):
@@ -679,7 +672,7 @@ class TestTarget(object):
             + self.targetprefix
             + self.delimiter
             + self.baseurl
-            + "/ocs/v2.php/apps/serverinfo/api/v1/info?format=json"
+            + "/ocs/v2.php/apps/serverinfo/api/v1/info"
         )
 
     def get_metadata_url(self, node):
@@ -713,7 +706,6 @@ class TestTarget(object):
                 + self.targetprefix
                 + self.delimiter
                 + self.baseurl
-                + ""
             )
         return (
             "https://"
@@ -724,7 +716,6 @@ class TestTarget(object):
             + self.targetprefix
             + self.delimiter
             + self.baseurl
-            + ""
         )
 
     def get_collabora_capabilities_url(self, node):
