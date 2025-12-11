@@ -37,8 +37,6 @@
 #        "build": "node node_modules/gulp-cli/bin/gulp.js"
 #    },
 
-cert_dir=$(HOME)/.nextcloud/certificates
-
 # Global for all targets
 # export NextcloudTestTarget=localhost
 export NextcloudTestTarget=localhost
@@ -60,10 +58,6 @@ NEXTCLOUD_VERSION = $(shell yq '.localhost.status.version' ../expected_localhost
 
 all: docker
 release: docker
-.PHONY: selfsignedcert
-selfsignedcert:
-	test -f /tmp/localhost.crt || openssl req -new -newkey rsa:4096 -days 365 -nodes -x509 -subj "/C=US/ST=Denial/L=Springfield/O=Dis/CN=localhost"  -keyout /tmp/localhost.key  -out /tmp/localhost.crt; \
-	cat /tmp/localhost.key /tmp/localhost.crt > /tmp/localhost.pem
 
 .PHONY: docker_kill
 docker_kill:
@@ -76,22 +70,16 @@ docker_kill:
 	docker kill nextcloud-local-minio3 2&> /dev/null || true
 	docker kill nextcloud-local-minio4 2&> /dev/null || true
 
-.PHONY: preparecert
-preparecert:
-	# Prepare certificates
-	$(shell printf 'LoadModule socache_shmcb_module /usr/lib/apache2/modules/mod_socache_shmcb.so \nLoadModule ssl_module /usr/lib/apache2/modules/mod_ssl.so \nSSLRandomSeed startup builtin \nSSLRandomSeed startup file:/dev/urandom 512 \nSSLRandomSeed connect builtin \nSSLRandomSeed connect file:/dev/urandom 512 \nAddType application/x-x509-ca-cert .crt \nAddType application/x-pkcs7-crl .crl \nSSLPassPhraseDialog  exec:/usr/share/apache2/ask-for-passphrase \nSSLSessionCache     shmcb:$${APACHE_RUN_DIR}/ssl_scache(512000) \nSSLSessionCacheTimeout  300 \nSSLCipherSuite HIGH:!aNULL \nSSLProtocol all -SSLv3 \nSSLSessionTickets off' > /tmp/nextcloud-ssl.conf )
-	$(shell printf 'Listen 8443 \n<VirtualHost *:8443> \nServerAdmin webmaster@localhost \nDocumentRoot /var/www/html \nSSLEngine on \nSSLCertificateFile /etc/ssl/private/localhost.pem \nSSLCertificateKeyFile /etc/ssl/private/localhost.pem \nHeader always set Strict-Transport-Security "max-age=0" \nErrorLog $${APACHE_LOG_DIR}/sslerror.log \nCustomLog $${APACHE_LOG_DIR}/sslaccess.log combined \n</VirtualHost>' > /tmp/nextcloud-8443.conf)
-
 .PHONY: docker
-docker: selfsignedcert preparecert docker_kill jupyterhub
+docker: docker_kill
 	docker compose -p nextcloudlocal -f docker-compose.yml build
 	docker compose -p nextcloudlocal up -d
 	sleep 15
 	-./occ_docker maintenance:install --admin-user='admin' --admin-pass='adminpassword' --database='mysql' --database-name='nextcloud' --database-host='nextcloud-local-db' --database-user='nextcloud' --database-pass='userpass'
 
-	./occ_docker config:system:set overwrite.cli.url --value="https://localhost:8443"
-	./occ_docker config:system:set overwriteprotocol --value="https"
-	./occ_docker config:system:set overwritehost --value="localhost:8443"
+	./occ_docker config:system:set overwrite.cli.url --value="http://localhost:8080"
+	./occ_docker config:system:set overwritehost --value="localhost:8080"
+	./occ_docker config:system:set overwriteprotocol --value="http"
 
 	./occ_docker config:system:set trusted_proxies --value="127.0.0.1,172.18.0.1,$(LOCALIP)"
 	./occ_docker config:system:set trusted_domains 10 --value=localhost
@@ -104,7 +92,7 @@ docker: selfsignedcert preparecert docker_kill jupyterhub
 	-./occ_docker app:install richdocuments
 	./occ_docker config:app:set richdocuments wopi_allowlist --value="127.0.0.1,172.18.0.0/12"
 	./occ_docker config:app:set richdocuments disable_certificate_verification --value="yes"
-	./occ_docker config:app:set richdocuments wopi_url --value="https://localhost:8443/custom_apps/richdocumentscode/proxy.php?req=/"
+	./occ_docker config:app:set richdocuments wopi_url --value="http://collabora-server:9980"
 	./occ_docker richdocuments:setup
 
 	-./occ_docker app:install whiteboard
@@ -160,7 +148,7 @@ docker: selfsignedcert preparecert docker_kill jupyterhub
 	# Copy bucket configuration file to container and import mounts
 	docker cp files_external.json nextcloud-local:/var/www/html
 	-./occ_docker files_external:import files_external.json
-	
+
 	-firefox -new-tab https://localhost:8443/ -new-tab http://localhost:9001 -new-tab https://localhost:9443
 
 .PHONY: commandtest
@@ -168,7 +156,7 @@ commandtest:
 	docker exec -u www-data nextcloud-local /bin/bash -c "env NC_PASS=$(NEXTCLOUD_OCS_APP_PASSWORD_LOCALHOST_LOCALHOST) /var/www/html/occ user:auth-tokens:add --password-from-env _ocs_localhost"
 
 .PHONY: expected
-expected: 
+expected:
 	cp -f ../expected_localhost_template.yaml ../expected_localhost.yaml
 	python ../expected_localhost.py
 
