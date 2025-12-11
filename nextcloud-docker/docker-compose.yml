@@ -29,17 +29,16 @@ x-minio-common: &minio-common
     retries: 5
 
 services:
-
   haproxy-alpine:
-      container_name: haproxy
-      networks:
-          - sciencemesh-federation
-      volumes:
-          - ./haproxy:/usr/local/etc/haproxy:ro
-      ports:
-          - 80:80
-          - 8404:8404
-      image: haproxytech/haproxy-alpine:2.4
+    container_name: haproxy
+    networks:
+      - sciencemesh-federation
+    volumes:
+      - ./haproxy:/usr/local/etc/haproxy:ro
+    ports:
+      - 80:80
+      - 8404:8404
+    image: haproxytech/haproxy-alpine:2.4
 
   nextcloud-app:
     container_name: nextcloud-local
@@ -174,38 +173,38 @@ services:
     networks:
       - sciencemesh-federation
 
-  jupyterhub:
-    container_name: nextcloud-local-jupyterhub
-    ports:
-        - 8100:8000
-        - 8081:8081
-        - 8082:8082
-    image: jupyterhub-local
-    environment:
-      - HUB_SERVICE_HOST=nextcloud-local-jupyterhub
-      - HUB_SERVICE_PORT_REFRESH_TOKEN=8082
-      - NEXTCLOUD_HOST=nextcloud-local
-      - NEXTCLOUD_CLIENT_ID=AdHJg6nsDeNdYGYxHfisUojXHYw7YBx4SR7DjRWIB8E9FFdfwky21tO7pD9uJ6sV
-      - NEXTCLOUD_CLIENT_SECRET=9belLuRY4h12UsHWMO6kO3IhH01EiLeueNprnTe1PyhxKiMW6vnKfKAQpzJ3qUbT
-      - JUPYTERHUB_CRYPT_KEY=4195e318e435326c21739c3b398d841592c780e824320f1729be43ff56b15681
-      - JUPYTER_HOST=nextcloud-local-jupyterhub
-      - JUPYTER_PORT=9444
-      - JUPYTERHUB_API_KEY=randomapikey
-      - JUPYTERHUB_SERVICE_URL=http://nextcloud-local-jupyterhub:8100
-      # Prepare for DockerSpawner
-      # This username will be a JupyterHub admin
-      - JUPYTERHUB_ADMIN=admin
-      # All containers will join this network
-      - DOCKER_NETWORK_NAME=jupyterhub-network
-      # JupyterHub will spawn this Notebook image for users
-      # - DOCKER_NOTEBOOK_IMAGE=quay.io/jupyter/base-notebook:latest
-      - DOCKER_NOTEBOOK_IMAGE=jupyterhub-local
-      # Notebook directory inside user image
-      - DOCKER_NOTEBOOK_DIR=/home/jovyan/work
-    volumes:
-        - /var/run/docker.sock:/var/run/docker.sock
-    networks:
-      - sciencemesh-federation
+  # jupyterhub:
+  #   container_name: nextcloud-local-jupyterhub
+  #   ports:
+  #       - 8100:8000
+  #       - 8081:8081
+  #       - 8082:8082
+  #   image: jupyterhub-local
+  #   environment:
+  #     - HUB_SERVICE_HOST=nextcloud-local-jupyterhub
+  #     - HUB_SERVICE_PORT_REFRESH_TOKEN=8082
+  #     - NEXTCLOUD_HOST=nextcloud-local
+  #     - NEXTCLOUD_CLIENT_ID=AdHJg6nsDeNdYGYxHfisUojXHYw7YBx4SR7DjRWIB8E9FFdfwky21tO7pD9uJ6sV
+  #     - NEXTCLOUD_CLIENT_SECRET=9belLuRY4h12UsHWMO6kO3IhH01EiLeueNprnTe1PyhxKiMW6vnKfKAQpzJ3qUbT
+  #     - JUPYTERHUB_CRYPT_KEY=4195e318e435326c21739c3b398d841592c780e824320f1729be43ff56b15681
+  #     - JUPYTER_HOST=nextcloud-local-jupyterhub
+  #     - JUPYTER_PORT=9444
+  #     - JUPYTERHUB_API_KEY=randomapikey
+  #     - JUPYTERHUB_SERVICE_URL=http://nextcloud-local-jupyterhub:8100
+  #     # Prepare for DockerSpawner
+  #     # This username will be a JupyterHub admin
+  #     - JUPYTERHUB_ADMIN=admin
+  #     # All containers will join this network
+  #     - DOCKER_NETWORK_NAME=jupyterhub-network
+  #     # JupyterHub will spawn this Notebook image for users
+  #     # - DOCKER_NOTEBOOK_IMAGE=quay.io/jupyter/base-notebook:latest
+  #     - DOCKER_NOTEBOOK_IMAGE=jupyterhub-local
+  #     # Notebook directory inside user image
+  #     - DOCKER_NOTEBOOK_DIR=/home/jovyan/work
+  #   volumes:
+  #       - /var/run/docker.sock:/var/run/docker.sock
+  #   networks:
+  #     - sciencemesh-federation
 
   mock-oauth2-server:
     container_name: nextcloud-local-mock-oauth
@@ -213,7 +212,7 @@ services:
     stdin_open: true
     tty: true
     ports:
-        - 8880:8880
+      - 8880:8880
     environment:
       - SERVER_PORT=8880
     networks:
