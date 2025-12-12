@@ -1,42 +1,255 @@
 global:
-  baseUrl: 'sunet.se'
-  nodePrefix: 'drive'
-  testPrefix: 'test'
-  docPrefix: 'document'
-  indexSuffix: ''
-  allnodes: [extern,sunet,su,kau,suni,scilifelab,hh,gih,ki,lu,uu,gu,kth,liu,umu,chalmers,slu,lnu,mau,ltu,oru,miun,du,hj,hb,hig,hv,his,hkr,mdu,bth,rkh,hhs,fhs,uniarts,konstfack,esh,kmh,shh,kkh,ths,nordunet,kb,kva,irf,vr,nrm,smhi,uhr,antagning,swamid,vinnova]
-  fullnodes: [extern,sunet,su,kau,ki,suni,scilifelab,hh,gih,mdu,mau,hv,shh,bth,kmh,ltu,hb,his,lnu,uu,swamid,vr]
-  redundantnodes: [extern,gih,hh,kau,lnu,ltu,mdu,scilifelab,su,sunet,vr]
-  multinodes: [ki,lu,uu,gu,kth,liu,umu,chalmers,slu,lnu,mau,ltu,oru,miun,du,hj,hb,hig,hv,his,bth,rkh,hhs,fhs,uniarts,konstfack,esh,kmh,shh,kkh,ths,nordunet,kb,kva,sics,sp,irf,vr,nrm,smhi,uhr,antagning,swamid,vinnova]
-  testBrowsers: [firefox,chrome]
+  baseUrl: "sunet.se"
+  nodePrefix: "drive"
+  testPrefix: "test"
+  docPrefix: "document"
+  indexSuffix: ""
+  allnodes:
+    [
+      extern,
+      sunet,
+      su,
+      kau,
+      suni,
+      scilifelab,
+      hh,
+      gih,
+      ki,
+      lu,
+      uu,
+      gu,
+      kth,
+      liu,
+      umu,
+      chalmers,
+      slu,
+      lnu,
+      mau,
+      ltu,
+      oru,
+      miun,
+      du,
+      hj,
+      hb,
+      hig,
+      hv,
+      his,
+      hkr,
+      mdu,
+      bth,
+      rkh,
+      hhs,
+      fhs,
+      uniarts,
+      konstfack,
+      esh,
+      kmh,
+      shh,
+      kkh,
+      ths,
+      nordunet,
+      kb,
+      kva,
+      sp,
+      irf,
+      vr,
+      nrm,
+      smhi,
+      uhr,
+      antagning,
+      swamid,
+      vinnova,
+    ]
+  fullnodes:
+    [
+      extern,
+      sunet,
+      su,
+      kau,
+      ki,
+      suni,
+      scilifelab,
+      hh,
+      gih,
+      mdu,
+      mau,
+      hv,
+      shh,
+      bth,
+      kmh,
+      ltu,
+      hb,
+      his,
+      lnu,
+      uu,
+      swamid,
+      vr,
+    ]
+  redundantnodes:
+    [extern, gih, hh, kau, lnu, ltu, mdu, scilifelab, su, sunet, vr]
+  multinodes:
+    [
+      ki,
+      lu,
+      uu,
+      gu,
+      kth,
+      liu,
+      umu,
+      chalmers,
+      slu,
+      lnu,
+      mau,
+      ltu,
+      oru,
+      miun,
+      du,
+      hj,
+      hb,
+      hig,
+      hv,
+      his,
+      bth,
+      rkh,
+      hhs,
+      fhs,
+      uniarts,
+      konstfack,
+      esh,
+      kmh,
+      shh,
+      kkh,
+      ths,
+      nordunet,
+      kb,
+      kva,
+      sics,
+      sp,
+      irf,
+      vr,
+      nrm,
+      smhi,
+      uhr,
+      antagning,
+      swamid,
+      vinnova,
+    ]
+  testBrowsers: [firefox, chrome]
 prod:
-  loginexceptions: [kau,scilifelab]
-  defaultapps: [dashboard,files,photos,activity,contacts,calendar,announcementcenter,collectives,polls,forms,tasks]
-  optionalapps: [rds,integration_jupyterhub]
+  loginexceptions: [kau, scilifelab]
+  defaultapps:
+    [
+      dashboard,
+      files,
+      photos,
+      activity,
+      contacts,
+      calendar,
+      announcementcenter,
+      collectives,
+      polls,
+      forms,
+      tasks,
+    ]
+  optionalapps: [rds, integration_jupyterhub]
   status:
     installed: true
     maintenance: false
     needsDbUpgrade: false
     major_version: 31
-    version: ['31.0.9.2']
-    versionstring: ['31.0.9 Enterprise']
-    edition: ''
-    productname: 'Nextcloud'
+    version: ["31.0.9.2"]
+    versionstring: ["31.0.9 Enterprise"]
+    edition: ""
+    productname: "Nextcloud"
     extendedSupport: false
   ocs_capabilities:
-    ocs_meta_status: 'ok'
+    ocs_meta_status: "ok"
     ocs_meta_statuscode: 100
     ocs_meta_statuscode_2: 200
-    ocs_meta_message: 'OK'
-    ocs_data_version_string: ['31.0.9 Enterprise']
+    ocs_meta_message: "OK"
+    ocs_data_version_string: ["31.0.9 Enterprise"]
     ocs_data_capabilities_globalscale_enabled: true
-  cert_md5: '702b0112df7e6e4b2ca2af3280841196'
-  ocsapps: 
+  cert_md5: "702b0112df7e6e4b2ca2af3280841196"
+  ocsapps:
     default: 75
-    known_apps: ['nextcloud_announcements', 'twofactor_totp', 'related_resources', 'systemtags', 'security_guard', 'user_ldap', 'support', 'files_versions', 'text', 'files_sharing', 'files_external', 'notifications', 'files_reminders', 'weather_status', 'photos', 'encryption', 'files_downloadlimit', 'twofactor_nextcloud_notification', 'privacy', 'app_api', 'webhook_listeners', 'files_trashbin', 'globalsiteselector', 'federation', 'bruteforcesettings', 'user_status', 'logreader', 'admin_audit', 'files_confidential', 'comments', 'recommendations', 'updatenotification', 'serverinfo', 'firstrunwizard', 'files_lock', 'sharebymail', 'circles', 'activity', 'files_pdfviewer', 'dashboard', 'contactsinteraction', 'user_saml', 'password_policy', 'survey_client', 'suspicious_login', 'files_accesscontrol', 'richdocuments', 'checksum', 'deck', 'dicomviewer', 'calendar', 'announcementcenter', 'collectives', 'contacts', 'tasks', 'twofactor_admin', 'twofactor_webauthn', 'polls', 'edusign', 'files_automatedtagging', 'rds', 'forms', 'mfazones', 'mail', 'sciencemesh', 'stepupauth', 'drive_email_template', 'assistant', 'theming_customcss', 'login_notes', 'integration_openai', 'integration_jupyterhub']
+    known_apps:
+      [
+        "nextcloud_announcements",
+        "twofactor_totp",
+        "related_resources",
+        "systemtags",
+        "security_guard",
+        "user_ldap",
+        "support",
+        "files_versions",
+        "text",
+        "files_sharing",
+        "files_external",
+        "notifications",
+        "files_reminders",
+        "weather_status",
+        "photos",
+        "encryption",
+        "files_downloadlimit",
+        "twofactor_nextcloud_notification",
+        "privacy",
+        "app_api",
+        "webhook_listeners",
+        "files_trashbin",
+        "globalsiteselector",
+        "federation",
+        "bruteforcesettings",
+        "user_status",
+        "logreader",
+        "admin_audit",
+        "files_confidential",
+        "comments",
+        "recommendations",
+        "updatenotification",
+        "serverinfo",
+        "firstrunwizard",
+        "files_lock",
+        "sharebymail",
+        "circles",
+        "activity",
+        "files_pdfviewer",
+        "dashboard",
+        "contactsinteraction",
+        "user_saml",
+        "password_policy",
+        "survey_client",
+        "suspicious_login",
+        "files_accesscontrol",
+        "richdocuments",
+        "checksum",
+        "deck",
+        "dicomviewer",
+        "calendar",
+        "announcementcenter",
+        "collectives",
+        "contacts",
+        "tasks",
+        "twofactor_admin",
+        "twofactor_webauthn",
+        "polls",
+        "edusign",
+        "files_automatedtagging",
+        "rds",
+        "forms",
+        "mfazones",
+        "mail",
+        "sciencemesh",
+        "stepupauth",
+        "drive_email_template",
+        "assistant",
+        "theming_customcss",
+        "login_notes",
+        "integration_openai",
+        "integration_jupyterhub",
+      ]
   collabora:
     nodes: 3
-    status: 'OK'
+    status: "OK"
     capabilities:
       hasMobileSupport: true
       hasProxyPrefix: false
@@ -47,33 +260,120 @@ prod:
       productVersion: "25.04.4.3"
       productVersionHash: "997d8ce391"
 test:
-  loginexceptions: [suni,kau,scilifelab]
-  defaultapps: [dashboard,files,photos,activity,contacts,calendar,announcementcenter,collectives,polls,forms,tasks]
-  optionalapps: [rds,integration_jupyterhub]
+  loginexceptions: [suni, kau, scilifelab]
+  defaultapps:
+    [
+      dashboard,
+      files,
+      photos,
+      activity,
+      contacts,
+      calendar,
+      announcementcenter,
+      collectives,
+      polls,
+      forms,
+      tasks,
+    ]
+  optionalapps: [rds, integration_jupyterhub]
   status:
     installed: true
     maintenance: false
     needsDbUpgrade: false
     major_version: 31
-    version: ['31.0.9.2']
-    versionstring: ['30.0.14 Enterprise', '31.0.9 Enterprise']
-    edition: ''
-    productname: 'Nextcloud'
+    version: ["31.0.9.2"]
+    versionstring: ["30.0.14 Enterprise", "31.0.9 Enterprise"]
+    edition: ""
+    productname: "Nextcloud"
     extendedSupport: false
   ocs_capabilities:
-    ocs_meta_status: 'ok'
+    ocs_meta_status: "ok"
     ocs_meta_statuscode: 100
     ocs_meta_statuscode_2: 200
-    ocs_meta_message: 'OK'
-    ocs_data_version_string: ['31.0.9 Enterprise']
+    ocs_meta_message: "OK"
+    ocs_data_version_string: ["31.0.9 Enterprise"]
     ocs_data_capabilities_globalscale_enabled: true
-  cert_md5: '9dc0f8318dcda31e78308705449f1e2a'
+  cert_md5: "9dc0f8318dcda31e78308705449f1e2a"
   ocsapps:
     default: 75
-    known_apps: ['nextcloud_announcements', 'twofactor_totp', 'related_resources', 'systemtags', 'security_guard', 'user_ldap', 'support', 'files_versions', 'text', 'files_sharing', 'files_external', 'notifications', 'files_reminders', 'weather_status', 'photos', 'encryption', 'files_downloadlimit', 'twofactor_nextcloud_notification', 'privacy', 'app_api', 'webhook_listeners', 'files_trashbin', 'globalsiteselector', 'federation', 'bruteforcesettings', 'user_status', 'logreader', 'admin_audit', 'files_confidential', 'comments', 'recommendations', 'updatenotification', 'serverinfo', 'firstrunwizard', 'files_lock', 'sharebymail', 'circles', 'activity', 'files_pdfviewer', 'dashboard', 'contactsinteraction', 'user_saml', 'password_policy', 'survey_client', 'suspicious_login', 'files_accesscontrol', 'richdocuments', 'checksum', 'deck', 'dicomviewer', 'calendar', 'announcementcenter', 'collectives', 'contacts', 'tasks', 'twofactor_admin', 'twofactor_webauthn', 'polls', 'edusign', 'files_automatedtagging', 'rds', 'forms', 'mfazones', 'mail', 'sciencemesh', 'stepupauth', 'drive_email_template', 'assistant', 'theming_customcss', 'login_notes', 'integration_openai', 'integration_jupyterhub']
+    known_apps:
+      [
+        "nextcloud_announcements",
+        "twofactor_totp",
+        "related_resources",
+        "systemtags",
+        "security_guard",
+        "user_ldap",
+        "support",
+        "files_versions",
+        "text",
+        "files_sharing",
+        "files_external",
+        "notifications",
+        "files_reminders",
+        "weather_status",
+        "photos",
+        "encryption",
+        "files_downloadlimit",
+        "twofactor_nextcloud_notification",
+        "privacy",
+        "app_api",
+        "webhook_listeners",
+        "files_trashbin",
+        "globalsiteselector",
+        "federation",
+        "bruteforcesettings",
+        "user_status",
+        "logreader",
+        "admin_audit",
+        "files_confidential",
+        "comments",
+        "recommendations",
+        "updatenotification",
+        "serverinfo",
+        "firstrunwizard",
+        "files_lock",
+        "sharebymail",
+        "circles",
+        "activity",
+        "files_pdfviewer",
+        "dashboard",
+        "contactsinteraction",
+        "user_saml",
+        "password_policy",
+        "survey_client",
+        "suspicious_login",
+        "files_accesscontrol",
+        "richdocuments",
+        "checksum",
+        "deck",
+        "dicomviewer",
+        "calendar",
+        "announcementcenter",
+        "collectives",
+        "contacts",
+        "tasks",
+        "twofactor_admin",
+        "twofactor_webauthn",
+        "polls",
+        "edusign",
+        "files_automatedtagging",
+        "rds",
+        "forms",
+        "mfazones",
+        "mail",
+        "sciencemesh",
+        "stepupauth",
+        "drive_email_template",
+        "assistant",
+        "theming_customcss",
+        "login_notes",
+        "integration_openai",
+        "integration_jupyterhub",
+      ]
   collabora:
     nodes: 3
-    status: 'OK'
+    status: "OK"
     capabilities:
       hasMobileSupport: true
       hasProxyPrefix: false
@@ -84,11 +384,11 @@ test:
       productVersion: "25.04.4.3"
       productVersionHash: "997d8ce391"
 storage:
-    mainStorageLocation: 's3.sto4.safedc.net'
-    backupStorageLocation: 's3.sto3.safedc.net'
+  mainStorageLocation: "s3.sto4.safedc.net"
+  backupStorageLocation: "s3.sto3.safedc.net"
 apps:
   activity:
-    version: 2.18.0 
+    version: 2.18.0
     installed: true
     enabled: true
   admin_audit:
@@ -97,275 +397,275 @@ apps:
     enabled: true
   announcementcenter:
     version: 6.6.1
-    installed:  true
+    installed: true
     enabled: true
   circles:
     version: 26.0.0
-    installed:  true
+    installed: true
     enabled: true
   cloud_federation_api:
     version: 1.9.0
-    installed:  true
+    installed: true
     enabled: true
-  comments:  
+  comments:
     version: 1.16.0
-    installed:  true
+    installed: true
     enabled: true
-  contactsinteraction:  
+  contactsinteraction:
     version: 1.7.0
-    installed:  true
+    installed: true
     enabled: true
   dashboard:
     version: 7.6.0
-    installed:  true
+    installed: true
     enabled: true
-  federatedfilesharing:  
+  federatedfilesharing:
     version: 1.16.0
     installed: true
     enabled: true
   federation:
     version: 1.16.0
-    installed:  true
+    installed: true
     enabled: true
-  files:  
+  files:
     version: 1.21.1
-    installed:  true
+    installed: true
     enabled: true
   files_external:
-    version:   1.18.0
-    installed:  true
+    version: 1.18.0
+    installed: true
     enabled: true
   files_lock:
-    version:   26.0.0
-    installed:  true
+    version: 26.0.0
+    installed: true
     enabled: true
   files_pdfviewer:
-    version:  2.7.0
-    installed:  true
+    version: 2.7.0
+    installed: true
     enabled: true
   files_rightclick:
-    version:  1.5.0
-    installed:  true
+    version: 1.5.0
+    installed: true
     enabled: true
   files_sharing:
-    version:  1.18.0
-    installed:  true
+    version: 1.18.0
+    installed: true
     enabled: true
   files_trashbin:
-    version:  1.16.0
-    installed:  true
+    version: 1.16.0
+    installed: true
     enabled: true
   files_versions:
-    version:  1.19.1
-    installed:  true
+    version: 1.19.1
+    installed: true
     enabled: true
   firstrunwizard:
-    version:  2.15.0
-    installed:  true
+    version: 2.15.0
+    installed: true
     enabled: true
   logreader:
-    version:  2.11.0
-    installed:  true
+    version: 2.11.0
+    installed: true
     enabled: true
   lookup_server_connector:
-    version:  1.14.0
-    installed:  true
+    version: 1.14.0
+    installed: true
     enabled: true
   nextcloud_announcements:
-    version:  1.15.0
-    installed:  true
+    version: 1.15.0
+    installed: true
     enabled: true
   notifications:
-    version:  2.14.0
-    installed:  true
+    version: 2.14.0
+    installed: true
     enabled: true
   oauth2:
-    version:  1.14.0
-    installed:  true
+    version: 1.14.0
+    installed: true
     enabled: true
   password_policy:
-    version:  1.16.0
-    installed:  true
+    version: 1.16.0
+    installed: true
     enabled: true
   photos:
-    version:  2.2.0
-    installed:  true
+    version: 2.2.0
+    installed: true
     enabled: true
   privacy:
-    version:  1.10.0
-    installed:  true
+    version: 1.10.0
+    installed: true
     enabled: true
   provisioning_api:
-    version:  1.16.0
-    installed:  true
+    version: 1.16.0
+    installed: true
     enabled: true
   recommendations:
-    version:  1.5.0
-    installed:  true
+    version: 1.5.0
+    installed: true
     enabled: true
   related_resources:
-    version:  '1.1.0-alpha1'
-    installed:  true
+    version: "1.1.0-alpha1"
+    installed: true
     enabled: true
   richdocuments:
-    version:  8.0.2
-    installed:  true
+    version: 8.0.2
+    installed: true
     enabled: true
   security_guard:
-    version:  1.2.1
-    installed:  true
+    version: 1.2.1
+    installed: true
     enabled: true
   serverinfo:
-    version:  1.16.0
-    installed:  true
+    version: 1.16.0
+    installed: true
     enabled: true
   settings:
-    version:  1.8.0
-    installed:  true
+    version: 1.8.0
+    installed: true
     enabled: true
   sharebymail:
-    version:  1.16.0
-    installed:  true
+    version: 1.16.0
+    installed: true
     enabled: true
   support:
-    version:  1.9.0
-    installed:  true
+    version: 1.9.0
+    installed: true
     enabled: true
   systemtags:
-    version:  1.16.0
-    installed:  true
+    version: 1.16.0
+    installed: true
     enabled: true
   text:
-    version:  3.7.2
-    installed:  true
+    version: 3.7.2
+    installed: true
     enabled: true
   theming:
-    version:  2.1.1
-    installed:  true
+    version: 2.1.1
+    installed: true
     enabled: true
   twofactor_admin:
-    version:  4.2.0
-    installed:  true
+    version: 4.2.0
+    installed: true
     enabled: true
   twofactor_backupcodes:
-    version:  1.15.0
-    installed:  true
+    version: 1.15.0
+    installed: true
     enabled: true
   twofactor_totp:
-    version:  8.0.0
-    installed:  true
+    version: 8.0.0
+    installed: true
     enabled: true
   twofactor_webauthn:
-    version:  1.2.0
-    installed:  true
+    version: 1.2.0
+    installed: true
     enabled: true
   updatenotification:
-    version:  1.16.0
-    installed:  true
+    version: 1.16.0
+    installed: true
     enabled: true
   user_status:
-    version:  1.6.0
-    installed:  true
+    version: 1.6.0
+    installed: true
     enabled: true
   viewer:
-    version:  1.10.0
-    installed:  true
+    version: 1.10.0
+    installed: true
     enabled: true
   weather_status:
-    version:  1.6.0
-    installed:  true
+    version: 1.6.0
+    installed: true
     enabled: true
   workflowengine:
-    version:  2.8.0
-    installed:  true
+    version: 2.8.0
+    installed: true
     enabled: true
   approval:
-    version:  1.0.12
-    installed:  true
+    version: 1.0.12
+    installed: true
     enabled: false
   bruteforcesettings:
-    version:  2.6.0
-    installed:  true
+    version: 2.6.0
+    installed: true
     enabled: false
   checksum:
-    version:  1.2.2
-    installed:  true
+    version: 1.2.2
+    installed: true
     enabled: true
   drive_email_template:
-    version:  0.1
-    installed:  true
+    version: 0.1
+    installed: true
     enabled: false
   encryption:
-    version:  2.14.0
-    installed:  true
+    version: 2.14.0
+    installed: true
     enabled: false
   files_accesscontrol:
-    version:  1.16.0
-    installed:  true
+    version: 1.16.0
+    installed: true
     enabled: false
   files_automatedtagging:
-    version:  1.16.1
-    installed:  true
+    version: 1.16.1
+    installed: true
     enabled: false
   files_confidential:
-    version:  1.0.2
-    installed:  true
+    version: 1.0.2
+    installed: true
     enabled: false
   globalsiteselector:
     prod:
-      version:  2.5.2
-      installed:  true
+      version: 2.5.2
+      installed: true
       enabled: true
       exceptdisabled:
         - kau
     test:
-      version:  2.5.2
-      installed:  true
+      version: 2.5.2
+      installed: true
       enabled: true
       exceptdisabled:
         - kau
   login_notes:
-    version:  1.2.0
-    installed:  true
+    version: 1.2.0
+    installed: true
     enabled: false
   loginpagebutton:
-    version:  1.0.0
-    installed:  true
+    version: 1.0.0
+    installed: true
     enabled: false
   rds:
-    version:  0.0.1
-    installed:  true
+    version: 0.0.1
+    installed: true
     enabled: false
   sciencemesh:
-    version:  0.1.0
-    installed:  true
+    version: 0.1.0
+    installed: true
     enabled: false
   survey_client:
-    version:  1.14.0
-    installed:  true
+    version: 1.14.0
+    installed: true
     enabled: false
   suspicious_login:
-    version:  4.4.0
-    installed:  true
+    version: 4.4.0
+    installed: true
     enabled: false
   theming_customcss:
-    version:  1.14.0
-    installed:  true
+    version: 1.14.0
+    installed: true
     enabled: false
   user_ldap:
-    version:  1.16.0
-    installed:  true
+    version: 1.16.0
+    installed: true
     enabled: false
   user_saml:
     prod:
       version: 6.6.0
-      installed:  true
+      installed: true
       enabled: false
       exceptenabled:
-        - scilifelab 
+        - scilifelab
     test:
       version: 6.6.0
-      installed:  true
+      installed: true
       enabled: false
       exceptenabled:
         - scilifelab
