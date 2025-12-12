@@ -74,7 +74,7 @@ docker_kill:
 docker: docker_kill
 	docker compose -p nextcloudlocal -f docker-compose.yml build
 	docker compose -p nextcloudlocal up -d
-	sleep 15
+	sleep 30
 	-./occ_docker maintenance:install --admin-user='admin' --admin-pass='adminpassword' --database='mysql' --database-name='nextcloud' --database-host='nextcloud-local-db' --database-user='nextcloud' --database-pass='userpass'
 
 	./occ_docker config:system:set overwrite.cli.url --value="http://localhost:8080"
