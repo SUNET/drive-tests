@@ -44,13 +44,9 @@ services:
     container_name: nextcloud-local
     image: nextcloud:31
     restart: always
-    # expose:
-    #   - 8080:80
-    #   - "8080"
-    #   - "8443"
     ports:
-      - 8443:8443
-      - 8080:80
+      - 443:443
+      - 80:80
     links:
       - db1
       - collabora-server
@@ -74,41 +70,6 @@ services:
     networks:
       - sciencemesh-federation
 
-  # nextcloud-app2:
-  #   container_name: nextcloud-local2
-  #   image: nextcloud:30
-  #   restart: always
-  #   # expose:
-  #   #   - 8080:80
-  #   #   - "8080"
-  #   #   - "8443"
-  #   ports:
-  #     - 7443:8443
-  #     - 7080:80
-  #     # - 80:80
-  #   links:
-  #     - db2
-  #     - collabora-server
-  #   volumes:
-  #     - nextcloud2:/var/www/html
-
-  #     - type: bind
-  #       source: /tmp/nextcloud-ssl.conf
-  #       target: /etc/apache2/mods-enabled/nextcloud.conf
-  #     - type: bind
-  #       source: /tmp/nextcloud-8443.conf
-  #       target: /etc/apache2/sites-enabled/nextcloud.conf
-  #     - type: bind
-  #       source: /tmp/localhost.pem
-  #       target: /etc/ssl/private/localhost.pem
-  #   environment:
-  #     - MYSQL_PASSWORD=userpass
-  #     - MYSQL_DATABASE=nextcloud
-  #     - MYSQL_USER=nextcloud
-  #     - MYSQL_HOST=db
-  #   networks:
-  #     - sciencemesh-federation
-
   db1:
     container_name: nextcloud-local-db
     image: mariadb:latest
@@ -123,21 +84,6 @@ services:
       - MYSQL_USER=nextcloud
     networks:
       - sciencemesh-federation
-
-  # db2:
-  #   container_name: nextcloud-local-db2
-  #   image: mariadb:latest
-  #   restart: always
-  #   command: --transaction-isolation=READ-COMMITTED --log-bin=binlog --binlog-format=ROW
-  #   volumes:
-  #     - db2:/var/lib/mysql
-  #   environment:
-  #     - MYSQL_ROOT_PASSWORD=rootpass
-  #     - MYSQL_PASSWORD=userpass
-  #     - MYSQL_DATABASE=nextcloud
-  #     - MYSQL_USER=nextcloud
-  #   networks:
-  #     - sciencemesh-federation
 
   collabora-server:
     image: collabora/code:latest
@@ -173,38 +119,38 @@ services:
     networks:
       - sciencemesh-federation
 
-  # jupyterhub:
-  #   container_name: nextcloud-local-jupyterhub
-  #   ports:
-  #       - 8100:8000
-  #       - 8081:8081
-  #       - 8082:8082
-  #   image: jupyterhub-local
-  #   environment:
-  #     - HUB_SERVICE_HOST=nextcloud-local-jupyterhub
-  #     - HUB_SERVICE_PORT_REFRESH_TOKEN=8082
-  #     - NEXTCLOUD_HOST=nextcloud-local
-  #     - NEXTCLOUD_CLIENT_ID=AdHJg6nsDeNdYGYxHfisUojXHYw7YBx4SR7DjRWIB8E9FFdfwky21tO7pD9uJ6sV
-  #     - NEXTCLOUD_CLIENT_SECRET=9belLuRY4h12UsHWMO6kO3IhH01EiLeueNprnTe1PyhxKiMW6vnKfKAQpzJ3qUbT
-  #     - JUPYTERHUB_CRYPT_KEY=4195e318e435326c21739c3b398d841592c780e824320f1729be43ff56b15681
-  #     - JUPYTER_HOST=nextcloud-local-jupyterhub
-  #     - JUPYTER_PORT=9444
-  #     - JUPYTERHUB_API_KEY=randomapikey
-  #     - JUPYTERHUB_SERVICE_URL=http://nextcloud-local-jupyterhub:8100
-  #     # Prepare for DockerSpawner
-  #     # This username will be a JupyterHub admin
-  #     - JUPYTERHUB_ADMIN=admin
-  #     # All containers will join this network
-  #     - DOCKER_NETWORK_NAME=jupyterhub-network
-  #     # JupyterHub will spawn this Notebook image for users
-  #     # - DOCKER_NOTEBOOK_IMAGE=quay.io/jupyter/base-notebook:latest
-  #     - DOCKER_NOTEBOOK_IMAGE=jupyterhub-local
-  #     # Notebook directory inside user image
-  #     - DOCKER_NOTEBOOK_DIR=/home/jovyan/work
-  #   volumes:
-  #       - /var/run/docker.sock:/var/run/docker.sock
-  #   networks:
-  #     - sciencemesh-federation
+  jupyterhub:
+    container_name: nextcloud-local-jupyterhub
+    ports:
+      - 8100:8000
+      - 8081:8081
+      - 8082:8082
+    image: jupyterhub-local
+    environment:
+      - HUB_SERVICE_HOST=nextcloud-local-jupyterhub
+      - HUB_SERVICE_PORT_REFRESH_TOKEN=8082
+      - NEXTCLOUD_HOST=nextcloud-local
+      - NEXTCLOUD_CLIENT_ID=AdHJg6nsDeNdYGYxHfisUojXHYw7YBx4SR7DjRWIB8E9FFdfwky21tO7pD9uJ6sV
+      - NEXTCLOUD_CLIENT_SECRET=9belLuRY4h12UsHWMO6kO3IhH01EiLeueNprnTe1PyhxKiMW6vnKfKAQpzJ3qUbT
+      - JUPYTERHUB_CRYPT_KEY=4195e318e435326c21739c3b398d841592c780e824320f1729be43ff56b15681
+      - JUPYTER_HOST=nextcloud-local-jupyterhub
+      - JUPYTER_PORT=9444
+      - JUPYTERHUB_API_KEY=randomapikey
+      - JUPYTERHUB_SERVICE_URL=http://nextcloud-local-jupyterhub:8100
+      # Prepare for DockerSpawner
+      # This username will be a JupyterHub admin
+      - JUPYTERHUB_ADMIN=admin
+      # All containers will join this network
+      - DOCKER_NETWORK_NAME=jupyterhub-network
+      # JupyterHub will spawn this Notebook image for users
+      # - DOCKER_NOTEBOOK_IMAGE=quay.io/jupyter/base-notebook:latest
+      - DOCKER_NOTEBOOK_IMAGE=jupyterhub-local
+      # Notebook directory inside user image
+      - DOCKER_NOTEBOOK_DIR=/home/jovyan/work
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - sciencemesh-federation
 
   mock-oauth2-server:
     container_name: nextcloud-local-mock-oauth
