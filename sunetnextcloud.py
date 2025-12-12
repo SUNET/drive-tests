@@ -103,6 +103,7 @@ class TestTarget(object):
     allnodes = expectedResults["global"]["allnodes"]
     fullnodes = expectedResults["global"]["fullnodes"]
     multinodes = expectedResults["global"]["multinodes"]
+    aliasnodes = expectedResults["global"]["aliasnodes"]
     browsers = expectedResults["global"]["testBrowsers"]
 
     allnodes.sort()
@@ -396,7 +397,7 @@ class TestTarget(object):
             + self.targetprefix
             + self.delimiter
             + self.baseurl
-            + "/ocs/v1.php/cloud/users"
+            + "/ocs/v2.php/cloud/users"
         )
 
     def get_user_url(self, node, user):
@@ -406,7 +407,7 @@ class TestTarget(object):
             + self.targetprefix
             + self.delimiter
             + self.baseurl
-            + "/ocs/v1.php/cloud/users/"
+            + "/ocs/v2.php/cloud/users/"
             + user
         )
 
