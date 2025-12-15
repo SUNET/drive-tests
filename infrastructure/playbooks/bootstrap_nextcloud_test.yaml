@@ -3,6 +3,7 @@
   hosts: allhosts
   vars:
     swap_file_path: /var/swap/swapfile
+    swap_file_size_mb: 8192
     testrepo: "drive-tests"
     certfiles:
       - /etc/letsencrypt/live/{{ src_fqdn }}/cert.pem
