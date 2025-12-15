@@ -149,7 +149,10 @@ docker: docker_kill
 	docker cp files_external.json nextcloud-local:/var/www/html
 	-./occ_docker files_external:import files_external.json
 
-	-firefox -new-tab https://localhost:8443/ -new-tab http://localhost:9001 -new-tab https://localhost:9443
+.PHONY: docker-local
+docker-local: docker nextcloud-http-localhost
+	./occ_docker  twofactorauth:enforce --off --group forcemfa
+	-firefox -new-tab http://localhost:8080/ -new-tab http://localhost:9001
 
 .PHONY: commandtest
 commandtest:
