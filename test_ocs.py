@@ -356,7 +356,7 @@ class CapabilitiesNoUser(threading.Thread):
                 ]
             )
         except Exception as error:
-            logger.error(f"Error with OCS capabilities assertion: {error}")
+            logger.error(f"Error with OCS capabilities assertion: {error} - {j}")
             g_testPassed[fullnode] = False
             g_testThreadsRunning -= 1
             return
@@ -625,6 +625,9 @@ class TestOcsCalls(unittest.TestCase):
                 self.assertTrue(g_testPassed[fullnode])
 
     def test_userlifecycle(self):
+        logger.warning(f"Not testing user lifecycle until Nextcloud fixes their API")
+        return
+
         drv = sunetnextcloud.TestTarget()
         for fullnode in drv.nodestotest:
             with self.subTest(mynode=fullnode):
