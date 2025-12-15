@@ -29,24 +29,24 @@ x-minio-common: &minio-common
     retries: 5
 
 services:
-  haproxy-alpine:
-    container_name: haproxy
-    networks:
-      - sciencemesh-federation
-    volumes:
-      - ./haproxy:/usr/local/etc/haproxy:ro
-    ports:
-      - 80:80
-      - 8404:8404
-    image: haproxytech/haproxy-alpine:2.4
+  # haproxy-alpine:
+  #   container_name: haproxy
+  #   networks:
+  #     - sciencemesh-federation
+  #   volumes:
+  #     - ./haproxy:/usr/local/etc/haproxy:ro
+  #   ports:
+  #     - 80:80
+  #     - 8404:8404
+  #   image: haproxytech/haproxy-alpine:2.4
 
   nextcloud-app:
     container_name: nextcloud-local
     image: nextcloud:31
     restart: always
     ports:
-      - 443:443
-      - 80:80
+      - 8443:443
+      - 8080:80
     links:
       - db1
       - collabora-server

@@ -77,9 +77,9 @@ docker: docker_kill
 	sleep 30
 	-./occ_docker maintenance:install --admin-user='admin' --admin-pass='adminpassword' --database='mysql' --database-name='nextcloud' --database-host='nextcloud-local-db' --database-user='nextcloud' --database-pass='userpass'
 
-	./occ_docker config:system:set overwrite.cli.url --value="http://localhost:8080"
-	./occ_docker config:system:set overwritehost --value="localhost:8080"
-	./occ_docker config:system:set overwriteprotocol --value="http"
+	./occ_docker config:system:set overwrite.cli.url --value="https://SRC_DOMAIN:8080"
+	./occ_docker config:system:set overwritehost --value="SRC_DOMAIN:8080"
+	./occ_docker config:system:set overwriteprotocol --value="https"
 
 	./occ_docker config:system:set trusted_proxies --value="127.0.0.1,172.18.0.1,$(LOCALIP)"
 	./occ_docker config:system:set trusted_domains 10 --value=localhost

@@ -1,0 +1,184 @@
+- name: Provision a new jenkins node
+  # hosts: localhost
+  hosts: allhosts
+  vars:
+    swap_file_path: /var/swap/swapfile
+    testrepo: "drive-tests"
+    certfiles:
+      - /etc/letsencrypt/live/{{ src_fqdn }}/cert.pem
+      - /etc/letsencrypt/live/{{ src_fqdn }}/chain.pem
+      - /etc/letsencrypt/live/{{ src_fqdn }}/fullchain.pem
+      - /etc/letsencrypt/live/{{ src_fqdn }}/privkey.pem
+  tasks:
+    - name: Create swap directory
+      become: true
+      ansible.builtin.file:
+        path: /var/swap
+        state: directory
+
+    - name: Create swap file
+      become: true
+      command:
+        dd if=/dev/zero of={{ swap_file_path }} bs=1024 count={{ swap_file_size_mb }}k
+        creates="{{ swap_file_path }}"
+      tags:
+        - swap.file.create
+
+    - name: Change swap file permissions
+      become: true
+      file: path="{{ swap_file_path }}"
+        owner=root
+        group=root
+        mode=0600
+      tags:
+        - swap.file.permissions
+
+    - name: "Check swap file type"
+      become: true
+      command: file {{ swap_file_path }}
+      register: swapfile
+      tags:
+        - swap.file.mkswap
+
+    - name: Make swap file
+      become: true
+      command: "sudo mkswap {{ swap_file_path }}"
+      when: swapfile.stdout.find('swap file') == -1
+      tags:
+        - swap.file.mkswap
+
+    - name: Write swap entry in fstab
+      become: true
+      mount: name=none
+        src={{ swap_file_path }}
+        fstype=swap
+        opts=sw
+        passno=0
+        dump=0
+        state=present
+      tags:
+        - swap.fstab
+
+    - name: Mount swap
+      become: true
+      command: "swapon {{ swap_file_path }}"
+      tags:
+        - swap.file.swapon
+
+    - name: Update and upgrade apt packages
+      become: true
+      apt:
+        upgrade: yes
+        update_cache: yes
+        cache_valid_time: 86400
+
+    - name: Checkout drive-tests repository
+      ansible.builtin.git:
+        repo: "https://github.com/SUNET/{{ testrepo }}.git"
+        dest: "~/{{ testrepo }}"
+
+    - name: Overwrite docker compose with local copy during development (REMOVEME LATER!)
+      copy:
+        dest: ~/{{ testrepo }}/nextcloud-docker/docker-compose.yml
+        src: ../../nextcloud-docker/docker-compose.yml
+
+    - name: Overwrite Makefile local copy during development (REMOVEME LATER!)
+      copy:
+        dest: ~/{{ testrepo }}/nextcloud-docker/Makefile
+        src: ../../nextcloud-docker/Makefile
+
+    - name: Add user to docker group
+      become: true
+      ansible.builtin.user:
+        name: "{{ ansible_ssh_user }}"
+        groups: docker
+        append: true
+
+    - name: Reset ssh connection to allow user changes to affect ansible user
+      ansible.builtin.meta: reset_connection
+
+    - name: Install package dependencies
+      become: true
+      apt:
+        update_cache: yes
+        autoremove: yes
+        state: present
+        pkg:
+          - haproxy
+
+    - name: Install certbot snap
+      become: true
+      community.general.snap:
+        name: certbot
+        classic: true
+
+    - name: Copy haproxy configuration
+      become: true
+      copy:
+        dest: /etc/haproxy/haproxy.cfg
+        src: ../overlay/etc/haproxy/haproxy.cfg
+
+    - name: Create folder for scripts
+      become: true
+      ansible.builtin.file:
+        path: /root/scripts
+        state: directory
+
+    - name: Copy renew certificate script
+      become: true
+      copy:
+        dest: /root/scripts/renew.sh
+        src: ../overlay/root/scripts/renew.sh
+        mode: "0755"
+
+    - name: Create folder for haproxy certificates
+      become: true
+      ansible.builtin.file:
+        path: /etc/haproxy/sslexports/
+        state: directory
+
+    - name: Create folder for letsencrypt certificates
+      become: true
+      ansible.builtin.file:
+        path: /etc/letsencrypt/live/{{ src_fqdn  }}
+        state: directory
+
+    - name: Replace domain name in haproxy configuration
+      become: true
+      ansible.builtin.replace:
+        path: /etc/haproxy/haproxy.cfg
+        regexp: "SRC_DOMAIN"
+        replace: "{{ src_fqdn }}"
+
+    - name: Replace domain name in Makefile
+      ansible.builtin.replace:
+        path: ~/{{ testrepo }}/nextcloud-docker/Makefile
+        regexp: "SRC_DOMAIN"
+        replace: "{{ src_fqdn }}"
+
+    - name: Time to get the initial certificate - DO NOT RUN TOO OFTEN FOR SAME FQDN
+      become: true
+      command: certbot certonly --standalone --agree-tos -m {{ src_email }} --no-eff-email -d {{ src_fqdn }} --force-renewal
+
+    - name: Read certificate files
+      become: true
+      command: awk 1 {{ certfiles | join(' ') }}
+      register: cert_contents
+
+    - name: Create haproxy cert file from letsencrypt output
+      become: true
+      copy:
+        dest: /etc/haproxy/sslexports/{{ src_fqdn }}
+        content: "{{ cert_contents.stdout_lines | join('\n') }}"
+
+    - name: Enable and restart haproxy service
+      become: true
+      systemd:
+        name: haproxy
+        state: restarted
+        enabled: true
+
+    - name: Make Nextcloud docker and see if it works
+      ansible.builtin.command: make docker
+      args:
+        chdir: "~/{{ testrepo }}/nextcloud-docker/"
