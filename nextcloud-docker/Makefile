@@ -37,6 +37,9 @@
 #        "build": "node node_modules/gulp-cli/bin/gulp.js"
 #    },
 
+# include .env file
+include .env
+
 # Global for all targets
 # export NextcloudTestTarget=localhost
 export NextcloudTestTarget=localhost
@@ -53,6 +56,7 @@ export NEXTCLOUD_SELENIUM_MFA_USER_LOCALHOST_LOCALHOST=_selenium_localhost_mfa
 export NEXTCLOUD_SELENIUM_MFA_PASSWORD_LOCALHOST_LOCALHOST=_selenium_localhost_mfa_password
 export NEXTCLOUD_SELENIUM_MFA_APP_PASSWORD_LOCALHOST_LOCALHOST=
 export NEXTCLOUD_SELENIUM_MFA_SECRET_LOCALHOST_LOCALHOST=
+# export MINIO_ROOT_PASSWORD=$(shell tr -dc 'A-Za-z0-9!?%' < /dev/urandom | head -c 10)
 LOCALIP = $(shell hostname -i | awk '{print $$1; exit}')
 NEXTCLOUD_VERSION = $(shell yq '.localhost.status.version' ../expected_localhost.yaml -r)
 
@@ -139,8 +143,8 @@ docker: docker_kill
 	# -docker exec -u www-data nextcloud-local /bin/bash -c "env NC_PASS=notimportant /var/www/html/occ user:auth-tokens:add --password-from-env _selenium_localhost"
 	# -docker exec -u www-data nextcloud-local /bin/bash -c "env NC_PASS=notimportant /var/www/html/occ user:auth-tokens:add --password-from-env _selenium_localhost_mfa"
 
-	# docker exec nextcloud-local-minio1 mc config host add myminio http://nextcloud-local-minio:9000 minioadmin minioadmin
-	docker exec nextcloud-local-minio1 mc alias set myminio http://nextcloud-local-minio:9000 minioadmin minioadmin
+	# docker exec nextcloud-local-minio1 mc config host add myminio http://nextcloud-local-minio:9000 minioadmin
+	docker exec nextcloud-local-minio1 mc alias set myminio http://nextcloud-local-minio:9000 minioadmin $(MINIO_ROOT_PASSWORD)
 	-docker exec nextcloud-local-minio1 mc mb myminio/project-bucket
 	-docker exec nextcloud-local-minio1 mc mb myminio/selenium-system
 	-docker exec nextcloud-local-minio1 mc mb myminio/selenium-personal
@@ -150,7 +154,7 @@ docker: docker_kill
 	-./occ_docker files_external:import files_external.json
 
 .PHONY: docker-local
-docker-local: docker nextcloud-http-localhost
+docker-local: docker nextcloud-http-localhost printpasswords
 	./occ_docker  twofactorauth:enforce --off --group forcemfa
 	-firefox -new-tab http://localhost:8080/ -new-tab http://localhost:9001
 
@@ -282,3 +286,11 @@ printenv:
 	echo 'export NEXTCLOUD_SELENIUM_MFA_PASSWORD_LOCALHOST_LOCALHOST="$(NEXTCLOUD_SELENIUM_MFA_PASSWORD_LOCALHOST_LOCALHOST)"'
 	echo 'export NEXTCLOUD_SELENIUM_MFA_APP_PASSWORD_LOCALHOST_LOCALHOST="$(NEXTCLOUD_SELENIUM_MFA_APP_PASSWORD_LOCALHOST_LOCALHOST)"'
 	echo 'export NEXTCLOUD_SELENIUM_MFA_SECRET_LOCALHOST_LOCALHOST="$(NEXTCLOUD_SELENIUM_MFA_SECRET_LOCALHOST_LOCALHOST)"'
+
+.PHONY: passwords
+passwords:
+	echo MINIO_ROOT_PASSWORD="$(shell tr -dc 'A-Za-z0-9!?%' < /dev/urandom | head -c 10)" > .env
+
+.PHONY: printpasswords
+printpasswords:
+	cat .env
