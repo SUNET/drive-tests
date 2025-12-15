@@ -93,7 +93,7 @@ class AppVersions(threading.Thread):
             nodepwd = drv.get_ocsuserapppassword(fullnode)
             rawurl = drv.get_app_url(fullnode, "user_saml")
 
-            logger.info(f" Get app info from {url}")
+            logger.info(f" Get app info from {rawurl}")
             url = rawurl.replace("$USERNAME$", nodeuser)
             url = url.replace("$PASSWORD$", nodepwd)
 
@@ -456,6 +456,8 @@ class UserLifeCycle(threading.Thread):
         logger.info(f"Create cli user {cliuser}")
         try:
             r = session.post(url, headers=ocsheaders, data=data, verify=self.verify)
+            logger.info(f"cli user created with status {r.status_code} - {r.text}")
+            time.sleep(900)
         except Exception as error:
             logger.error(f"Error posting to create cli user: {error}")
             g_testPassed[fullnode] = False
