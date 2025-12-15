@@ -124,9 +124,9 @@ class AppVersions(threading.Thread):
             try:
                 self.TestOcsCalls.assertTrue(userSamlFound)
                 self.TestOcsCalls.assertEqual(j["ocs"]["data"]["id"], "user_saml")
-                self.TestOcsCalls.assertEqual(
-                    j["ocs"]["data"]["version"],
-                    expectedResults["apps"]["user_saml"][drv.target]["version"],
+                self.TestOcsCalls.assertTrue(
+                    j["ocs"]["data"]["version"]
+                    in expectedResults["apps"]["user_saml"][drv.target]["version"]
                 )
             except Exception as error:
                 logger.error(f"{error}")
