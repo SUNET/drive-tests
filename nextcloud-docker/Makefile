@@ -78,7 +78,7 @@ docker: docker_kill
 	-./occ_docker maintenance:install --admin-user='admin' --admin-pass='adminpassword' --database='mysql' --database-name='nextcloud' --database-host='nextcloud-local-db' --database-user='nextcloud' --database-pass='userpass'
 
 	./occ_docker config:system:set overwrite.cli.url --value="https://SRC_DOMAIN:8080"
-	./occ_docker config:system:set overwritehost --value="SRC_DOMAIN:8080"
+	./occ_docker config:system:set overwritehost --value="SRC_DOMAIN"
 	./occ_docker config:system:set overwriteprotocol --value="https"
 
 	./occ_docker config:system:set trusted_proxies --value="127.0.0.1,172.18.0.1,$(LOCALIP)"
