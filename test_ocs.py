@@ -457,7 +457,6 @@ class UserLifeCycle(threading.Thread):
         try:
             r = session.post(url, headers=ocsheaders, data=data, verify=self.verify)
             logger.info(f"cli user created with status {r.status_code} - {r.text}")
-            time.sleep(900)
         except Exception as error:
             logger.error(f"Error posting to create cli user: {error}")
             g_testPassed[fullnode] = False
