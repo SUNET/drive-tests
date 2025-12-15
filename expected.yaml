@@ -168,7 +168,7 @@ prod:
     ocs_meta_statuscode: 100
     ocs_meta_statuscode_2: 200
     ocs_meta_message: "OK"
-    ocs_data_version_string: ["31.0.9 Enterprise"]
+    ocs_data_version_string: ["31.0.9 Enterprise", "31.0.12 Enterprise"]
     ocs_data_capabilities_globalscale_enabled: true
   cert_md5: "702b0112df7e6e4b2ca2af3280841196"
   ocsapps:
@@ -294,7 +294,7 @@ test:
     ocs_meta_statuscode: 100
     ocs_meta_statuscode_2: 200
     ocs_meta_message: "OK"
-    ocs_data_version_string: ["31.0.9 Enterprise"]
+    ocs_data_version_string: ["31.0.9 Enterprise", "31.0.12 Enterprise"]
     ocs_data_capabilities_globalscale_enabled: true
   cert_md5: "9dc0f8318dcda31e78308705449f1e2a"
   ocsapps:
