@@ -10,7 +10,6 @@ import yaml
 
 import sunetnextcloud
 
-ocsheaders = {"OCS-APIRequest": "true"}
 expectedResultsFile = "expected.yaml"
 g_testThreadsRunning = 0
 testThreadRunning = False
@@ -24,6 +23,7 @@ logging.basicConfig(
 )
 
 drv = sunetnextcloud.TestTarget()
+ocsheaders = drv.ocsheaders
 
 with open(expectedResultsFile, "r") as stream:
     expectedResults = yaml.safe_load(stream)
