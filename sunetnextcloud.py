@@ -418,7 +418,7 @@ class TestTarget(object):
             + self.targetprefix
             + self.delimiter
             + self.baseurl
-            + "/ocs/v1.php/cloud/groups"
+            + "/ocs/v2.php/cloud/groups"
         )
 
     def get_group_url(self, node, group):
@@ -428,7 +428,7 @@ class TestTarget(object):
             + self.targetprefix
             + self.delimiter
             + self.baseurl
-            + "/ocs/v1.php/cloud/groups/"
+            + "/ocs/v2.php/cloud/groups/"
             + group
         )
 
@@ -439,7 +439,7 @@ class TestTarget(object):
             + self.targetprefix
             + self.delimiter
             + self.baseurl
-            + "/ocs/v1.php/cloud/groups/details"
+            + "/ocs/v2.php/cloud/groups/details"
         )
 
     def get_group_details_url(self, node, group):
@@ -449,7 +449,7 @@ class TestTarget(object):
             + self.targetprefix
             + self.delimiter
             + self.baseurl
-            + "/ocs/v1.php/cloud/groups/"
+            + "/ocs/v2.php/cloud/groups/"
             + group
         )
 
@@ -462,7 +462,7 @@ class TestTarget(object):
             + self.targetprefix
             + self.delimiter
             + self.baseurl
-            + "/ocs/v1.php/cloud/users"
+            + "/ocs/v2.php/cloud/users"
         )
 
     def get_share_url(self, node):
@@ -472,7 +472,7 @@ class TestTarget(object):
             + self.targetprefix
             + self.delimiter
             + self.baseurl
-            + "/ocs/v1.php/apps/files_sharing/api/v1/shares"
+            + "/ocs/v2.php/apps/files_sharing/api/v1/shares"
         )
 
     def get_share_id_url(self, node, id):
@@ -482,7 +482,7 @@ class TestTarget(object):
             + self.targetprefix
             + self.delimiter
             + self.baseurl
-            + "/ocs/v1.php/apps/files_sharing/api/v1/shares/"
+            + "/ocs/v2.php/apps/files_sharing/api/v1/shares/"
             + id
         )
 
@@ -499,7 +499,7 @@ class TestTarget(object):
             + self.baseurl
             + ":"
             + str(port)
-            + "/ocs/v1.php/cloud/users"
+            + "/ocs/v2.php/cloud/users"
         )
 
     def get_userinfo_url(self, node, userid):
@@ -509,7 +509,7 @@ class TestTarget(object):
             + self.targetprefix
             + self.delimiter
             + self.baseurl
-            + "/ocs/v1.php/cloud/users/"
+            + "/ocs/v2.php/cloud/users/"
             + userid
         )
 
@@ -520,7 +520,7 @@ class TestTarget(object):
             + self.targetprefix
             + self.delimiter
             + self.baseurl
-            + "/ocs/v1.php/cloud/users/"
+            + "/ocs/v2.php/cloud/users/"
             + username
         )
 
@@ -531,7 +531,7 @@ class TestTarget(object):
             + self.targetprefix
             + self.delimiter
             + self.baseurl
-            + "/ocs/v1.php/cloud/users/"
+            + "/ocs/v2.php/cloud/users/"
             + username
             + "/disable"
         )
