@@ -16,7 +16,8 @@ from webdav3.client import Client
 
 import sunetnextcloud
 
-nodestotest = ["sunet", "su", "extern", "vr"]
+# nodestotest = ["sunet", "su", "extern", "vr"]
+nodestotest = ["sunet"]
 
 drv = sunetnextcloud.TestTarget()
 expectedResults = drv.expectedResults
@@ -104,7 +105,7 @@ class OcsMakeFederatedShare(threading.Thread):
             client = Client(options)
             client.verify = drv.verify
             client.mkdir(g_sharedTestFolder)
-            targetfile = g_sharedTestFolder + "/" + filename
+            targetfile = f"{g_sharedTestFolder}/{filename}"
             # deleteoriginal=False # TODO: Implement delete original file
         except Exception as error:
             logger.error(
@@ -148,7 +149,8 @@ class OcsMakeFederatedShare(threading.Thread):
             g_testThreadsRunning -= 1
             return
 
-        for shareNode in drv.allnodes:
+        # for shareNode in drv.allnodes:
+        for shareNode in ["bth"]:
             if shareNode == fullnode:
                 logger.info(f"{self.name} - Do not share with self")
                 continue  # with next node
@@ -167,24 +169,23 @@ class OcsMakeFederatedShare(threading.Thread):
             url = url.replace("$USERNAME$", nodeuser)
             url = url.replace("$PASSWORD$", nodepwd)
             session = requests.Session()
-            data = {
-                "path": targetfile,
+            payload = {
+                "path": f"{targetfile}",
                 "shareWith": shareWith,
                 "shareType": 6,
                 "note": "Testautomation",
             }
-            logger.info(f"{self.name} - Data: {data}")
-
-            # logger.info(
-            #     f"List folder to ensure file exists before posting a share: {client.list(g_sharedTestFolder)}"
-            # )
+            logger.info(f"{self.name} - Payload: {payload}")
 
             try:
                 # logger.info(f'Share to {url}')
-                r = session.post(url, headers=ocsheaders, data=data, verify=self.verify)
+                r = session.post(
+                    url, headers=ocsheaders, data=payload, verify=self.verify
+                )
+
                 j = json.loads(r.text)
                 logger.info(
-                    f"{self.name} - Result of sharing to {clean_url}: {j} - WebDAV List: {client.list(g_sharedTestFolder)} - Data: {data}"
+                    f"{self.name} - Result of sharing to {clean_url}: {j} - WebDAV List: {client.list(targetfile)} - Payload: {payload}"
                 )
             except Exception as error:
                 logger.warning(
@@ -205,8 +206,9 @@ class OcsMakeFederatedShare(threading.Thread):
                     f"{self.name} - Sharing result not okay {targetfile}:{error}"
                 )
                 logger.warning(f"{self.name} - {j}")
-                # g_testThreadsRunning -= 1
-                # return
+                g_testPassed[fullnode] = False
+                g_testThreadsRunning -= 1
+                return
 
         logger.info(f"{self.name} - OcsMakeFederatedShare thread done")
         g_testPassed[fullnode] = True
