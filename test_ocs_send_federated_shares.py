@@ -52,18 +52,18 @@ class OcsMakeFederatedShare(threading.Thread):
         fullnode = self.name
         g_testPassed[fullnode] = False
         g_testThreadsRunning += 1
-        logger.info(f"OcsMakeFederatedShare thread started for node {self.name}")
+        logger.info(f"{self.name} - OcsMakeFederatedShare thread started")
         drv = sunetnextcloud.TestTarget()
 
         nodeuser = drv.get_seleniumuser(fullnode)
         if self.basicAuth:
-            logger.info("Testing with basic authentication")
+            logger.info(f"{self.name} - Testing with basic authentication")
             nodepwd = drv.get_seleniumuserpassword(fullnode)
         else:
-            logger.info("Testing with application password")
+            logger.info(f"{self.name} - Testing with application password")
             nodepwd = drv.get_seleniumuserapppassword(fullnode)
         url = drv.get_webdav_url(fullnode, nodeuser)
-        logger.info(f"URL: {url}")
+        logger.info(f"{self.name} - URL: {url}")
         options = {
             "webdav_hostname": url,
             "webdav_login": nodeuser,
@@ -75,12 +75,12 @@ class OcsMakeFederatedShare(threading.Thread):
         client.verify = drv.verify
 
         try:
-            logger.info(f"Before mkdir: {client.list()}")
+            logger.info(f"{self.name} - Before mkdir: {client.list()}")
             client.mkdir(g_sharedTestFolder)
-            logger.info(f"After mkdir: {client.list()}")
+            logger.info(f"{self.name} - After mkdir: {client.list()}")
         except Exception as error:
             logger.error(
-                f"Error making folder {g_sharedTestFolder} on {self.name}: {error}"
+                f"{self.name} - Error making folder {g_sharedTestFolder} on {self.name}: {error}"
             )
             g_testPassed[fullnode] = False
             g_testThreadsRunning -= 1
@@ -91,13 +91,13 @@ class OcsMakeFederatedShare(threading.Thread):
         try:
             tmpfilename = tempfile.gettempdir() + "/" + fullnode + "_" + g_filename
         except Exception as error:
-            logger.error(f"Getting temp dir for {fullnode}: {error}")
+            logger.error(f"{self.name} - Getting temp dir for {fullnode}: {error}")
             g_testPassed[fullnode] = False
             g_testThreadsRunning -= 1
             return
 
         with open(tmpfilename, "w") as f:
-            f.write(f"Federated share for {fullnode}")
+            f.write(f"{self.name} - Federated share for {fullnode}")
             f.close()
 
         try:
@@ -107,20 +107,22 @@ class OcsMakeFederatedShare(threading.Thread):
             targetfile = g_sharedTestFolder + "/" + filename
             # deleteoriginal=False # TODO: Implement delete original file
         except Exception as error:
-            logger.error(f"Error preparing webdav client for {fullnode}: {error}")
+            logger.error(
+                f"{self.name} - Error preparing webdav client for {fullnode}: {error}"
+            )
             g_testThreadsRunning -= 1
             return
 
         try:
-            logger.info(f"Uploading {tmpfilename} to {targetfile}")
+            logger.info(f"{self.name} - Uploading {tmpfilename} to {targetfile}")
             client.upload_sync(remote_path=targetfile, local_path=tmpfilename)
         except Exception as error:
-            logger.error(f"Error uploading file to {fullnode}: {error}")
+            logger.error(f"{self.name} - Error uploading file to {fullnode}: {error}")
             g_testPassed[fullnode] = False
             g_testThreadsRunning -= 1
             return
 
-        logger.info(f"Get all shares for {fullnode}")
+        logger.info(f"{self.name} - Get all shares for {fullnode}")
         clean_url = drv.get_share_url(fullnode)
         url = clean_url.replace("$USERNAME$", nodeuser)
         url = url.replace("$PASSWORD$", nodepwd)
@@ -134,13 +136,13 @@ class OcsMakeFederatedShare(threading.Thread):
 
             for share in j["ocs"]["data"]:
                 clean_url = drv.get_share_id_url(fullnode, share["id"])
-                logger.info(f"Delete share: {share['id']} - {clean_url}")
+                logger.info(f"{self.name} - Delete share: {share['id']} - {clean_url}")
                 url = clean_url.replace("$USERNAME$", nodeuser)
                 url = url.replace("$PASSWORD$", nodepwd)
                 r = requests.delete(url, headers=ocsheaders, verify=self.verify)
-                logger.info(f"Share deleted: {r.text}")
+                logger.info(f"{self.name} - Share deleted: {r.text}")
         except Exception as error:
-            logger.error(f"Error getting {clean_url}: {error}")
+            logger.error(f"{self.name} - Error getting {clean_url}: {error}")
             if r is not None:
                 logger.error(r.text)
             g_testThreadsRunning -= 1
@@ -148,7 +150,7 @@ class OcsMakeFederatedShare(threading.Thread):
 
         for shareNode in drv.allnodes:
             if shareNode == fullnode:
-                logger.info(f"Do not share with self")
+                logger.info(f"{self.name} - Do not share with self")
                 continue  # with next node
 
             if drv.target == "test":
@@ -161,7 +163,7 @@ class OcsMakeFederatedShare(threading.Thread):
             logger.info(f"Share with {shareWith}")
 
             url = drv.get_share_url(fullnode)
-            logger.info(f"Share url: {url}")
+            logger.info(f"{self.name} - Share url: {url}")
             url = url.replace("$USERNAME$", nodeuser)
             url = url.replace("$PASSWORD$", nodepwd)
             session = requests.Session()
@@ -171,18 +173,22 @@ class OcsMakeFederatedShare(threading.Thread):
                 "shareType": 6,
                 "note": "Testautomation",
             }
-            logger.info(f"Data: {data}")
+            logger.info(f"{self.name} - Data: {data}")
+
+            # logger.info(
+            #     f"List folder to ensure file exists before posting a share: {client.list(g_sharedTestFolder)}"
+            # )
 
             try:
                 # logger.info(f'Share to {url}')
                 r = session.post(url, headers=ocsheaders, data=data, verify=self.verify)
                 j = json.loads(r.text)
                 logger.info(
-                    f"Result of sharing: {j['ocs']['meta']['status']} - {j['ocs']['meta']['statuscode']}"
+                    f"{self.name} - Result of sharing to {clean_url}: {j} - WebDAV List: {client.list(g_sharedTestFolder)} - Data: {data}"
                 )
             except Exception as error:
                 logger.warning(
-                    f"Failed to share {targetfile} with {shareWith}: {error}"
+                    f"{self.name} - Failed to share {targetfile} with {shareWith}: {error}"
                 )
                 # g_testThreadsRunning -= 1
                 # return
@@ -195,11 +201,14 @@ class OcsMakeFederatedShare(threading.Thread):
                     j["ocs"]["meta"]["statuscode"], 100
                 )
             except Exception as error:
-                logger.warning(f"Sharing result not okay {targetfile}:{error}")
+                logger.warning(
+                    f"{self.name} - Sharing result not okay {targetfile}:{error}"
+                )
+                logger.warning(f"{self.name} - {j}")
                 # g_testThreadsRunning -= 1
                 # return
 
-        logger.info(f"OcsMakeFederatedShare thread done for node {self.name}")
+        logger.info(f"{self.name} - OcsMakeFederatedShare thread done")
         g_testPassed[fullnode] = True
         g_testThreadsRunning -= 1
 
