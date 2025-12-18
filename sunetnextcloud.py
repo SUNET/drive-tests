@@ -219,6 +219,9 @@ class TestTarget(object):
             self.nodeprefix = ""
             self.delimiter = ""
             self.verify = False  # Do not verify SSL when testing locally
+        elif testtarget == "custom":
+            self.delimiter = ""
+            self.verify = True
         else:
             self.delimiter = "."  # URL delimiter
             self.verify = True
