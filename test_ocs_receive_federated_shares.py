@@ -17,7 +17,10 @@ from webdav3.client import Client
 import sunetnextcloud
 
 drv = sunetnextcloud.TestTarget()
-ocsheaders = drv.ocsheaders
+ocsheaders = {
+    "Accept": "application/json",
+    "OCS-APIRequest": "true",
+}
 expectedResults = drv.expectedResults
 
 g_testPassed = {}
@@ -42,8 +45,7 @@ class TestOcsFederatedShares(unittest.TestCase):
 
     def test_accept_federated_shares(self):
         drv = sunetnextcloud.TestTarget()
-        # for fullnode in drv.nodestotest:
-        for fullnode in ["bth"]:
+        for fullnode in drv.nodestotest:
             with self.subTest(mynode=fullnode):
                 logger.info(f"Accept shares for {fullnode}")
 
@@ -72,8 +74,7 @@ class TestOcsFederatedShares(unittest.TestCase):
 
     def test_list_federated_shares(self):
         drv = sunetnextcloud.TestTarget()
-        # for fullnode in drv.nodestotest:
-        for fullnode in ["bth"]:
+        for fullnode in drv.nodestotest:
             with self.subTest(mynode=fullnode):
                 logger.info(f"List federated shares for {fullnode}")
 

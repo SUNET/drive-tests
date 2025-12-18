@@ -21,7 +21,10 @@ nodestotest = ["sunet"]
 
 drv = sunetnextcloud.TestTarget()
 expectedResults = drv.expectedResults
-ocsheaders = drv.ocsheaders
+ocsheaders = {
+    "Accept": "application/json",
+    "OCS-APIRequest": "true",
+}
 
 g_testPassed = {}
 g_testThreadsRunning = 0
@@ -149,8 +152,7 @@ class OcsMakeFederatedShare(threading.Thread):
             g_testThreadsRunning -= 1
             return
 
-        # for shareNode in drv.allnodes:
-        for shareNode in ["bth"]:
+        for shareNode in drv.allnodes:
             if shareNode == fullnode:
                 logger.info(f"{self.name} - Do not share with self")
                 continue  # with next node
@@ -161,7 +163,6 @@ class OcsMakeFederatedShare(threading.Thread):
                 delimiter = ""
 
             shareWith = f"_selenium_{shareNode}@{shareNode}.drive.{delimiter}sunet.se"
-            # shareWith = '_selenium_bth@bth.drive.test.sunet.se'
             logger.info(f"Share with {shareWith}")
 
             url = drv.get_share_url(fullnode)
@@ -199,7 +200,7 @@ class OcsMakeFederatedShare(threading.Thread):
                     j["ocs"]["meta"]["status"], "ok"
                 )
                 self.TestOcsFederatedShares.assertEqual(
-                    j["ocs"]["meta"]["statuscode"], 100
+                    j["ocs"]["meta"]["statuscode"], 200
                 )
             except Exception as error:
                 logger.warning(

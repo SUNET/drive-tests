@@ -17,7 +17,10 @@ from webdav3.client import Client
 import sunetnextcloud
 
 drv = sunetnextcloud.TestTarget()
-ocsheaders = drv.ocsheaders
+ocsheaders = {
+    "Accept": "application/json",
+    "OCS-APIRequest": "true",
+}
 
 expectedResults = drv.expectedResults
 
