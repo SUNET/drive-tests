@@ -466,7 +466,7 @@ class UserLifeCycle(threading.Thread):
             j = json.loads(r.text)
             logger.info(json.dumps(j, indent=4, sort_keys=True))
 
-            if j["ocs"]["meta"]["statuscode"] != 100:
+            if j["ocs"]["meta"]["statuscode"] != 200:
                 logger.info(
                     f"Retry to create cli user {cliuser} after error {j['ocs']['meta']['statuscode']}"
                 )
@@ -493,7 +493,7 @@ class UserLifeCycle(threading.Thread):
             j = json.loads(r.text)
             logger.info(json.dumps(j, indent=4, sort_keys=True))
 
-            if j["ocs"]["meta"]["statuscode"] != 100:
+            if j["ocs"]["meta"]["statuscode"] != 200:
                 logger.info(
                     f"Retry to disable cli user {cliuser} after error {j['ocs']['meta']['statuscode']}"
                 )
@@ -507,7 +507,9 @@ class UserLifeCycle(threading.Thread):
             )
             self.TestOcsCalls.assertEqual(
                 j["ocs"]["meta"]["statuscode"],
-                expectedResults[drv.target]["ocs_capabilities"]["ocs_meta_statuscode"],
+                expectedResults[drv.target]["ocs_capabilities"][
+                    "ocs_meta_statuscode_2"
+                ],
             )
             self.TestOcsCalls.assertEqual(
                 j["ocs"]["meta"]["message"],
@@ -522,7 +524,7 @@ class UserLifeCycle(threading.Thread):
             j = json.loads(r.text)
             logger.info(json.dumps(j, indent=4, sort_keys=True))
 
-            if j["ocs"]["meta"]["statuscode"] != 100:
+            if j["ocs"]["meta"]["statuscode"] != 200:
                 logger.info(
                     f"Retry to delete cli user after {cliuser} after error {j['ocs']['meta']['statuscode']}"
                 )
@@ -536,7 +538,9 @@ class UserLifeCycle(threading.Thread):
             )
             self.TestOcsCalls.assertEqual(
                 j["ocs"]["meta"]["statuscode"],
-                expectedResults[drv.target]["ocs_capabilities"]["ocs_meta_statuscode"],
+                expectedResults[drv.target]["ocs_capabilities"][
+                    "ocs_meta_statuscode_2"
+                ],
             )
             self.TestOcsCalls.assertEqual(
                 j["ocs"]["meta"]["message"],
@@ -625,9 +629,6 @@ class TestOcsCalls(unittest.TestCase):
                 self.assertTrue(g_testPassed[fullnode])
 
     def test_userlifecycle(self):
-        logger.warning(f"Not testing user lifecycle until Nextcloud fixes their API")
-        return
-
         drv = sunetnextcloud.TestTarget()
         for fullnode in drv.nodestotest:
             with self.subTest(mynode=fullnode):
