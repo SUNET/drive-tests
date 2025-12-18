@@ -16,8 +16,7 @@ from webdav3.client import Client
 
 import sunetnextcloud
 
-# nodestotest = ["sunet", "su", "extern", "vr"]
-nodestotest = ["sunet"]
+nodestotest = ["sunet", "su", "extern", "vr"]
 
 drv = sunetnextcloud.TestTarget()
 expectedResults = drv.expectedResults
