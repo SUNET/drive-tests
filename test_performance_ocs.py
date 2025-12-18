@@ -28,8 +28,7 @@ g_testPassed = {}
 
 drv = sunetnextcloud.TestTarget()
 expectedResults = drv.expectedResults
-
-ocsheaders = {"OCS-APIRequest": "true"}
+ocsheaders = drv.ocsheaders
 
 logger = logging.getLogger("TestLogger")
 logging.basicConfig(
@@ -75,7 +74,6 @@ class NodeOcsUserLifecycle(threading.Thread):
 
                         r = requests.post(url, headers=ocsheaders, data=data)
                         j = json.loads(r.text)
-                        # logger.info(json.dumps(j, indent=4, sort_keys=True))
                         logger.info(j["ocs"]["meta"]["status"])
 
                     if disableusers:
@@ -86,7 +84,6 @@ class NodeOcsUserLifecycle(threading.Thread):
                         r = requests.put(disableuserurl, headers=ocsheaders)
                         j = json.loads(r.text)
                         logger.info(j["ocs"]["meta"]["status"])
-                        # logger.info(json.dumps(j, indent=4, sort_keys=True))
 
                     if deleteusers:
                         logger.info("Delete cli user " + cliuser)
@@ -96,9 +93,10 @@ class NodeOcsUserLifecycle(threading.Thread):
                         r = requests.delete(userurl, headers=ocsheaders)
                         j = json.loads(r.text)
                         logger.info(j["ocs"]["meta"]["status"])
+
                 except Exception as error:
                     logger.error(
-                        f"Unable to test user lifecycle for {fullnode}: {error}"
+                        f"Unable to test user lifecycle for {fullnode}: {error} \n {r.text}"
                     )
                     g_testPassed[fullnode] = False
                     g_testThreadsRunning -= 1
@@ -402,9 +400,6 @@ class TestPerformanceOcs(unittest.TestCase):
             logger.info(f"{message}")
 
     def test_performance_ocs_userlifecycle(self):
-        logger.warning(f"Not testing user lifecycle until Nextcloud fixes their API")
-        return
-
         global g_ocsPerformanceResults
         g_ocsPerformanceResults.append("Result of test_performance_ocs_userlifecycle")
         drv = sunetnextcloud.TestTarget()
