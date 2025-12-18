@@ -76,8 +76,8 @@ docker_kill:
 
 .PHONY: docker
 docker: docker_kill
-	docker compose -p nextcloudlocal -f docker-compose.yml build
-	docker compose -p nextcloudlocal up -d
+	docker compose -f docker-compose.yml build
+	docker compose up -d
 	sleep 30
 	-./occ_docker maintenance:install --admin-user='admin' --admin-pass='adminpassword' --database='mysql' --database-name='nextcloud' --database-host='nextcloud-local-db' --database-user='nextcloud' --database-pass='userpass'
 
