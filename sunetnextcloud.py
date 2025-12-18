@@ -114,7 +114,7 @@ class TestTarget(object):
     platform = sys.platform
 
     ocsheaders = {
-        "Content-Type": "application/json",
+        # "Content-Type": "application/json",
         "Accept": "application/json",
         "OCS-APIRequest": "true",
     }
