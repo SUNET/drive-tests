@@ -121,8 +121,8 @@ docker: docker_kill
 
 	docker exec nextcloud-local /bin/bash -c "chown -R www-data:www-data /var/www/html/custom_apps/integration_jupyterhub"
 	rm integration_jupyterhub-0.1.2.tar.gz
-	./occ_docker app:enable integration_jupyterhub
-	./occ_docker config:app:set integration_jupyterhub jupyter_url --value="http://localhost:8100"
+	-./occ_docker app:enable integration_jupyterhub
+	-./occ_docker config:app:set integration_jupyterhub jupyter_url --value="http://localhost:8100"
 
 	-./occ_docker  group:add forcemfa
 	-./occ_docker  twofactorauth:enforce --on --group forcemfa
