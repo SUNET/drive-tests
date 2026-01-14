@@ -622,6 +622,7 @@ class TestLargeFilePerformance(unittest.TestCase):
                 cmd = f"nextcloudcmd --non-interactive --path {serverTargetFolder} -u ${{NEXTCLOUD_SELENIUM_USER_{fullnode.upper()}_{drv.target.upper()}}} -p ${{NEXTCLOUD_SELENIUM_APP_PASSWORD_{fullnode.upper()}_{drv.target.upper()}}} {targetDirectory} https://{drv.get_node_base_url(fullnode)}"
                 logger.info(f"Executing {cmd}")
                 os.system(cmd)
+                time.sleep(3)
 
                 logger.info(
                     f"Deleting local temp files in {targetDirectory} after sync"
@@ -774,6 +775,7 @@ class TestLargeFilePerformance(unittest.TestCase):
                 cmd = f"nextcloudcmd --non-interactive --path {serverTargetFolder} -u ${{NEXTCLOUD_SELENIUM_USER_{fullnode.upper()}_{drv.target.upper()}}} -p ${{NEXTCLOUD_SELENIUM_APP_PASSWORD_{fullnode.upper()}_{drv.target.upper()}}} {targetDirectory} https://{drv.get_node_base_url(fullnode)}"
                 logger.info(f"Executing {cmd}")
                 os.system(cmd)
+                time.sleep(3)
 
                 logger.info(
                     f"Deleting local temp files in {targetDirectory} after sync"
@@ -926,6 +928,7 @@ class TestLargeFilePerformance(unittest.TestCase):
                 cmd = f"nextcloudcmd --non-interactive --path {serverTargetFolder} -u ${{NEXTCLOUD_SELENIUM_USER_{fullnode.upper()}_{drv.target.upper()}}} -p ${{NEXTCLOUD_SELENIUM_APP_PASSWORD_{fullnode.upper()}_{drv.target.upper()}}} {targetDirectory} https://{drv.get_node_base_url(fullnode)}"
                 logger.info(f"Executing {cmd}")
                 os.system(cmd)
+                time.sleep(3)
 
                 logger.info(
                     f"Deleting local temp files in {targetDirectory} after sync"
