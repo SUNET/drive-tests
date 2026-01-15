@@ -984,6 +984,9 @@ class TestLargeFilePerformance(unittest.TestCase):
 
                 localElements = os.listdir(targetDirectory)
                 localElements.sort()
+                logger.info(
+                    f"Checking davElements and localElements: {davElements} - {localElements}"
+                )
                 self.assertEqual(len(davElements), len(localElements))
                 # Compare the elements
                 for index in range(0, len(davElements)):
