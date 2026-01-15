@@ -676,7 +676,7 @@ class TestLargeFilePerformance(unittest.TestCase):
                 davElements.pop(0)
                 davElements.sort()
 
-                localElements = os.listdir(targetDirectory)
+                localElements = [f for f in os.listdir(targetDirectory) if not f.startswith('.')] # no hidden files
                 localElements.sort()
                 logger.info(
                     f"Checking davElements and localElements: {davElements} - {localElements}"
@@ -829,7 +829,7 @@ class TestLargeFilePerformance(unittest.TestCase):
                 davElements.pop(0)
                 davElements.sort()
 
-                localElements = os.listdir(targetDirectory)
+                localElements = [f for f in os.listdir(targetDirectory) if not f.startswith('.')] # no hidden files
                 localElements.sort()
                 logger.info(
                     f"Checking davElements and localElements: {davElements} - {localElements}"
@@ -982,7 +982,7 @@ class TestLargeFilePerformance(unittest.TestCase):
                 davElements.pop(0)
                 davElements.sort()
 
-                localElements = os.listdir(targetDirectory)
+                localElements = [f for f in os.listdir(targetDirectory) if not f.startswith('.')] # no hidden files
                 localElements.sort()
                 logger.info(
                     f"Checking davElements and localElements: {davElements} - {localElements}"
