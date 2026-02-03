@@ -156,8 +156,6 @@ prod:
     maintenance: false
     needsDbUpgrade: false
     major_version: 31
-    # version: ["31.0.9.2"]
-    # versionstring: ["31.0.9 Enterprise"]
     version: ["31.0.9.2", "31.0.12.4"]
     versionstring: ["31.0.9 Enterprise", "31.0.12 Enterprise"]
     edition: ""
@@ -282,10 +280,8 @@ test:
     maintenance: false
     needsDbUpgrade: false
     major_version: 31
-    # version: ["31.0.9.2"]
-    # versionstring: ["30.0.14 Enterprise", "31.0.9 Enterprise"]
-    version: ["31.0.9.2", "31.0.12.4"]
-    versionstring: ["31.0.9 Enterprise", "31.0.12 Enterprise"]
+    version: ["31.0.12.4", "32.0.5.1"]
+    versionstring: ["31.0.12 Enterprise", "32.0.5 Enterprise"]
     edition: ""
     productname: "Nextcloud"
     extendedSupport: false
@@ -294,7 +290,7 @@ test:
     ocs_meta_statuscode: 100
     ocs_meta_statuscode_2: 200
     ocs_meta_message: "OK"
-    ocs_data_version_string: ["31.0.9 Enterprise", "31.0.12 Enterprise"]
+    ocs_data_version_string: ["31.0.12 Enterprise", "32.0.5 Enterprise"]
     ocs_data_capabilities_globalscale_enabled: true
   cert_md5: "9dc0f8318dcda31e78308705449f1e2a"
   ocsapps:
