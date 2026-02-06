@@ -4,6 +4,7 @@ Selenium tests to test Collabora on a local node
 """
 import unittest
 import sunetnextcloud
+import pyscreeze
 import pyautogui
 from datetime import datetime
 
@@ -44,7 +45,7 @@ def removeFolder(node, foldername):
     options = {
         'webdav_hostname': url,
         'webdav_login' : nodeuser,
-        'webdav_password' : nodepwd, 
+        'webdav_password' : nodepwd,
         'webdav_timeout': g_webdav_timeout
     }
     client = Client(options)
@@ -67,7 +68,7 @@ def checkFile(node, foldername, filename):
     options = {
         'webdav_hostname': url,
         'webdav_login' : nodeuser,
-        'webdav_password' : nodepwd, 
+        'webdav_password' : nodepwd,
         'webdav_timeout': g_webdav_timeout
     }
     client = Client(options)
@@ -94,7 +95,7 @@ def checkFolder(node, foldername, create=False):
     options = {
         'webdav_hostname': url,
         'webdav_login' : nodeuser,
-        'webdav_password' : nodepwd, 
+        'webdav_password' : nodepwd,
         'webdav_timeout': g_webdav_timeout
     }
     client = Client(options)
@@ -115,7 +116,7 @@ def hasFiles(node, foldername):
     options = {
         'webdav_hostname': url,
         'webdav_login' : nodeuser,
-        'webdav_password' : nodepwd, 
+        'webdav_password' : nodepwd,
         'webdav_timeout': g_webdav_timeout
     }
     client = Client(options)
@@ -130,7 +131,7 @@ class TestCollaboraSelenium(unittest.TestCase):
     g_logger = logger
     logging.basicConfig(format = '%(asctime)s - %(module)s.%(funcName)s - %(levelname)s: %(message)s',
                     datefmt = '%Y-%m-%d %H:%M:%S', level = logging.INFO)
-    
+
     testfolders = ['SeleniumCollaboraTest', 'selenium-system', 'selenium-personal']
 
     # Some class names of icons changed from Nextcloud 27 to 28
@@ -140,7 +141,7 @@ class TestCollaboraSelenium(unittest.TestCase):
 
     if len(drv.browsers) > 1:
         logger.warning(f'Please test only one browser by setting NextcloudTestBrowsers to the one you want to test: {drv.browsers}')
-    
+
     logger.info(f'Testing browser: {drv.browsers[0]}')
 
     sel = sunetnextcloud.SeleniumHelper(drv.browsers[0], 'sunet')
@@ -327,7 +328,7 @@ class TestCollaboraSelenium(unittest.TestCase):
                             self.driver.refresh()
                     except Exception as e:
                         self.logger.error(f'Error: {e}')
-                        
+
                 self.logger.info('Sleep for 3 seconds...')
                 time.sleep(3)
 
@@ -351,7 +352,7 @@ class TestCollaboraSelenium(unittest.TestCase):
         global g_isLoggedIn, g_loggedInNodes, g_wait
         wait = WebDriverWait(self.driver, delay)
         g_wait = wait
-        
+
         for collaboranode in drv.nodestotest:
             self.sel.nextcloudnode = collaboranode
             with self.subTest(mynode=collaboranode):
@@ -387,7 +388,7 @@ class TestCollaboraSelenium(unittest.TestCase):
                 # TODO: Check URLs after login
                 # dashboardUrl = drv.get_dashboard_url(collaboranode)
                 # currentUrl = self.driver.current_url
-                # self.assertEqual(dashboardUrl, currentUrl)                
+                # self.assertEqual(dashboardUrl, currentUrl)
 
                 for testfolder in self.testfolders:
                     with self.subTest(myFolder=testfolder):
@@ -454,7 +455,7 @@ class TestCollaboraSelenium(unittest.TestCase):
                             else:
                                 isEmpty = True
                             time.sleep(3)
-                        
+
                             try:
                                 self.logger.info('Click on add icon')
                                 wait.until(EC.element_to_be_clickable((By.CLASS_NAME, self.addIcon))).click()
@@ -525,7 +526,7 @@ class TestCollaboraSelenium(unittest.TestCase):
         global g_isLoggedIn, g_loggedInNodes, g_wait
         wait = WebDriverWait(self.driver, delay)
         g_wait = wait
-        
+
         for collaboranode in drv.nodestotest:
             self.sel.nextcloudnode = collaboranode
             with self.subTest(mynode=collaboranode):
@@ -562,7 +563,7 @@ class TestCollaboraSelenium(unittest.TestCase):
                 # TODO: Check URLs after login
                 # dashboardUrl = drv.get_dashboard_url(collaboranode)
                 # currentUrl = self.driver.current_url
-                # self.assertEqual(dashboardUrl, currentUrl)                
+                # self.assertEqual(dashboardUrl, currentUrl)
 
                 try:
                     self.logger.info(f'Wait for {drv.indexsuffix}/apps/files/')
@@ -590,11 +591,11 @@ class TestCollaboraSelenium(unittest.TestCase):
 
                 self.driver.implicitly_wait(10) # seconds before quitting
                 self.logger.info(self.driver.current_url)
-                
+
                 self.logger.info(f'Looking for all files text in {self.version}')
                 # //*[@id="app-content-vue"]/div[1]/div/nav/ul/li/a/span/span[2] "//h4/a[contains(text(),'SAP M')]"
                 self.driver.find_element(By.XPATH, "//*[contains(text(), 'All files')]")
-                self.logger.info('All files found!')                
+                self.logger.info('All files found!')
 
                 self.logger.info('Looking for SeleniumCollaboraTest folder')
                 folderExists = checkFolder(collaboranode, "SeleniumCollaboraTest", create=True)
@@ -702,14 +703,14 @@ class TestCollaboraSelenium(unittest.TestCase):
                 self.assertTrue(success)
 
                 self.logger.info('End of test!')
-                
+
     # presentation
     def test_collabora_presentation(self):
         delay = 30 # seconds
         global g_isLoggedIn, g_loggedInNodes, g_wait
         wait = WebDriverWait(self.driver, delay)
         g_wait = wait
-        
+
         for collaboranode in drv.nodestotest:
             self.sel.nextcloudnode = collaboranode
             with self.subTest(mynode=collaboranode):
@@ -745,7 +746,7 @@ class TestCollaboraSelenium(unittest.TestCase):
                 # TODO: Check URLs after login
                 # dashboardUrl = drv.get_dashboard_url(collaboranode)
                 # currentUrl = self.driver.current_url
-                # self.assertEqual(dashboardUrl, currentUrl)                
+                # self.assertEqual(dashboardUrl, currentUrl)
 
                 try:
                     self.logger.info(f'Wait for {drv.indexsuffix}/apps/files/')
@@ -776,12 +777,12 @@ class TestCollaboraSelenium(unittest.TestCase):
                 self.logger.info(f'Looking for all files text in {self.version}')
                 # //*[@id="app-content-vue"]/div[1]/div/nav/ul/li/a/span/span[2] "//h4/a[contains(text(),'SAP M')]"
                 self.driver.find_element(By.XPATH, "//*[contains(text(), 'All files')]")
-                self.logger.info('All files found!')                
+                self.logger.info('All files found!')
 
                 self.logger.info('Looking for SeleniumCollaboraTest folder')
                 folderExists = checkFolder(collaboranode, "SeleniumCollaboraTest", create=True)
                 self.assertTrue(folderExists)
-                
+
                 folderurl = drv.get_folder_url(collaboranode, "SeleniumCollaboraTest")
                 self.driver.get(folderurl)
 

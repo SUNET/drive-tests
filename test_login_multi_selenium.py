@@ -7,6 +7,7 @@ import unittest
 import sunetnextcloud
 from webdav3.client import Client
 import pyotp
+import pyscreeze
 import pyautogui
 import time
 
@@ -63,7 +64,7 @@ class TestLoginMultiSelenium(unittest.TestCase):
                 options = {
                 'webdav_hostname': url,
                 'webdav_login' : nodeuser,
-                'webdav_password' : nodeapppwd 
+                'webdav_password' : nodeapppwd
                 }
 
                 client = Client(options)
@@ -81,7 +82,7 @@ class TestLoginMultiSelenium(unittest.TestCase):
                 if browser == 'chrome':
                     driver.set_window_size(1920, 1152)
                 else:
-                    driver.maximize_window()    
+                    driver.maximize_window()
                 wait = WebDriverWait(driver, delay)
 
                 try:
@@ -138,7 +139,7 @@ class TestLoginMultiSelenium(unittest.TestCase):
                 options = {
                 'webdav_hostname': url,
                 'webdav_login' : nodeuser,
-                'webdav_password' : nodepwd 
+                'webdav_password' : nodepwd
                 }
 
                 client = Client(options)
@@ -171,7 +172,7 @@ class TestLoginMultiSelenium(unittest.TestCase):
                 self.logger.info('Logout complete')
 
                 self.logger.info(driver.current_url)
-                driver.implicitly_wait(10) # seconds before quitting                
+                driver.implicitly_wait(10) # seconds before quitting
 
 if __name__ == '__main__':
     drv.run_tests(os.path.basename(__file__))

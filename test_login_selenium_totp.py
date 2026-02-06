@@ -6,6 +6,7 @@ from datetime import datetime
 import unittest
 import sunetnextcloud
 from webdav3.client import Client
+import pyscreeze
 import pyautogui
 
 
@@ -53,13 +54,13 @@ class TestLoginSeleniumTotp(unittest.TestCase):
                 nodeuser = drv.get_seleniummfauser(fullnode)
                 self.logger.info(f'Username: {nodeuser}')
                 nodeapppwd = drv.get_seleniummfauserapppassword(fullnode)
-                
+
                 # Create folder for testing using webdav
                 url = drv.get_webdav_url(fullnode, nodeuser)
                 options = {
                 'webdav_hostname': url,
                 'webdav_login' : nodeuser,
-                'webdav_password' : nodeapppwd 
+                'webdav_password' : nodeapppwd
                 }
 
                 client = Client(options)
@@ -78,7 +79,7 @@ class TestLoginSeleniumTotp(unittest.TestCase):
                 if browser == 'chrome':
                     driver.set_window_size(1920, 1152)
                 else:
-                    driver.maximize_window()    
+                    driver.maximize_window()
                 wait = WebDriverWait(driver, delay)
 
                 wait.until(EC.presence_of_element_located((By.XPATH, '//a[@href="'+ drv.indexsuffix + '/apps/files/' +'"]')))
