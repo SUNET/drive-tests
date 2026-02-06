@@ -202,14 +202,19 @@ class InstalledAppsConfigured(threading.Thread):
         fullnode = self.name
         g_testPassed[fullnode] = False
 
-        session = requests.Session()
-        nodeuser = drv.get_ocsuser(fullnode)
-        nodepwd = drv.get_ocsuserapppassword(fullnode)
-        url = drv.get_all_apps_url(fullnode)
+        try:
+            session = requests.Session()
+            nodeuser = drv.get_ocsuser(fullnode)
+            nodepwd = drv.get_ocsuserapppassword(fullnode)
+            url = drv.get_all_apps_url(fullnode)
 
-        logger.info(f"{url}")
-        url = url.replace("$USERNAME$", nodeuser)
-        url = url.replace("$PASSWORD$", nodepwd)
+            logger.info(f"{url}")
+            url = url.replace("$USERNAME$", nodeuser)
+            url = url.replace("$PASSWORD$", nodepwd)
+        except Exception:
+            logger.error(f"Credentials error for {self.name}")
+            g_testThreadsRunning -= 1
+            return
 
         try:
             r = session.get(url, headers=ocsheaders)
