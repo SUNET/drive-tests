@@ -262,7 +262,7 @@ prod:
       productVersion: "25.04.4.3"
       productVersionHash: "997d8ce391"
 test:
-  loginexceptions: [kau, scilifelab, sp, sics]
+  loginexceptions: [kau, scilifelab, suni, sp, sics]
   defaultapps:
     [
       dashboard,
