@@ -41,17 +41,23 @@ class ConfiguredAppsInstalled(threading.Thread):
         drv = sunetnextcloud.TestTarget()
         fullnode = self.name
         g_testPassed[fullnode] = False
-        session = requests.Session()
-        nodeuser = drv.get_ocsuser(fullnode)
-        nodepwd = drv.get_ocsuserapppassword(fullnode)
-        url = drv.get_all_apps_url(fullnode)
 
-        logger.info(f"{url}")
-        url = url.replace("$USERNAME$", nodeuser)
-        url = url.replace("$PASSWORD$", nodepwd)
+        try:
+            session = requests.Session()
+            nodeuser = drv.get_ocsuser(fullnode)
+            nodepwd = drv.get_ocsuserapppassword(fullnode)
+            url = drv.get_all_apps_url(fullnode)
 
-        nodeuser = drv.get_ocsuser(fullnode)
-        nodepwd = drv.get_ocsuserpassword(fullnode)
+            logger.info(f"{url}")
+            url = url.replace("$USERNAME$", nodeuser)
+            url = url.replace("$PASSWORD$", nodepwd)
+
+            nodeuser = drv.get_ocsuser(fullnode)
+            nodepwd = drv.get_ocsuserpassword(fullnode)
+        except Exception:
+            logger.error(f"Credentials error for {self.name}")
+            g_testThreadsRunning -= 1
+            return
 
         try:
             r = session.get(url, headers=ocsheaders)
@@ -101,14 +107,19 @@ class InstalledAppsCompatibility(threading.Thread):
         fullnode = self.name
         g_testPassed[fullnode] = True
 
-        session = requests.Session()
-        nodeuser = drv.get_ocsuser(fullnode)
-        nodepwd = drv.get_ocsuserapppassword(fullnode)
-        url = drv.get_all_apps_url(fullnode)
+        try:
+            session = requests.Session()
+            nodeuser = drv.get_ocsuser(fullnode)
+            nodepwd = drv.get_ocsuserapppassword(fullnode)
+            url = drv.get_all_apps_url(fullnode)
 
-        logger.info(f"{url}")
-        url = url.replace("$USERNAME$", nodeuser)
-        url = url.replace("$PASSWORD$", nodepwd)
+            logger.info(f"{url}")
+            url = url.replace("$USERNAME$", nodeuser)
+            url = url.replace("$PASSWORD$", nodepwd)
+        except Exception:
+            logger.error(f"Credentials error for {self.name}")
+            g_testThreadsRunning -= 1
+            return
 
         try:
             r = session.get(url, headers=ocsheaders)
@@ -276,17 +287,22 @@ class NumberOfAppsOnNodes(threading.Thread):
         fullnode = self.name
         g_testPassed[fullnode] = False
 
-        session = requests.Session()
-        nodeuser = drv.get_ocsuser(fullnode)
-        nodepwd = drv.get_ocsuserapppassword(fullnode)
-        url = drv.get_all_apps_url(fullnode)
+        try:
+            session = requests.Session()
+            nodeuser = drv.get_ocsuser(fullnode)
+            nodepwd = drv.get_ocsuserapppassword(fullnode)
+            url = drv.get_all_apps_url(fullnode)
 
-        logger.info(f"{url}")
-        url = url.replace("$USERNAME$", nodeuser)
-        url = url.replace("$PASSWORD$", nodepwd)
+            logger.info(f"{url}")
+            url = url.replace("$USERNAME$", nodeuser)
+            url = url.replace("$PASSWORD$", nodepwd)
 
-        nodeuser = drv.get_ocsuser(fullnode)
-        nodepwd = drv.get_ocsuserpassword(fullnode)
+            nodeuser = drv.get_ocsuser(fullnode)
+            nodepwd = drv.get_ocsuserpassword(fullnode)
+        except Exception:
+            logger.error(f"Credentials error for {self.name}")
+            g_testThreadsRunning -= 1
+            return
 
         for fe in range(1, 4):
             nodebaseurl = drv.get_node_base_url(fullnode)
