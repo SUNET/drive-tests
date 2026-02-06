@@ -4,7 +4,8 @@ global:
   testPrefix: "test"
   docPrefix: "document"
   indexSuffix: ""
-  allnodes: [
+  allnodes:
+    [
       extern,
       sunet,
       su,
@@ -49,7 +50,6 @@ global:
       nordunet,
       kb,
       kva,
-      # sp,
       irf,
       vr,
       nrm,
@@ -58,6 +58,10 @@ global:
       antagning,
       swamid,
       vinnova,
+      forte,
+      formas,
+      sp,
+      sics,
     ]
   fullnodes:
     [
@@ -86,7 +90,8 @@ global:
     ]
   redundantnodes:
     [extern, gih, hh, kau, lnu, ltu, mdu, scilifelab, su, sunet, vr]
-  multinodes: [
+  multinodes:
+    [
       ki,
       lu,
       uu,
@@ -121,8 +126,6 @@ global:
       nordunet,
       kb,
       kva,
-      sics,
-      # sp,
       irf,
       vr,
       nrm,
@@ -135,7 +138,7 @@ global:
   aliasnodes: [mdh, mdu, ju, hj, extern]
   testBrowsers: [firefox, chrome]
 prod:
-  loginexceptions: [kau, scilifelab]
+  loginexceptions: [kau, scilifelab, sp, sics]
   defaultapps:
     [
       dashboard,
@@ -259,7 +262,7 @@ prod:
       productVersion: "25.04.4.3"
       productVersionHash: "997d8ce391"
 test:
-  loginexceptions: [suni, kau, scilifelab]
+  loginexceptions: [kau, scilifelab, sp, sics]
   defaultapps:
     [
       dashboard,
