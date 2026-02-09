@@ -95,9 +95,14 @@ class NodeOcsUserLifecycle(threading.Thread):
                         logger.info(j["ocs"]["meta"]["status"])
 
                 except Exception as error:
-                    logger.error(
-                        f"Unable to test user lifecycle for {fullnode}: {error} \n {r.text}"
-                    )
+                    if r is not None:
+                        logger.error(
+                            f"Unable to test user lifecycle for {fullnode}: {error} \n {r.text}"
+                        )
+                    else:
+                        logger.error(
+                            f"Unable to test user lifecycle for {fullnode}: {error}"
+                        )
                     g_testPassed[fullnode] = False
                     g_testThreadsRunning -= 1
                     return
