@@ -23,7 +23,7 @@ expectedResults = drv.expectedResults
 
 testThreadsRunning = 0
 g_failedNodes = []
-g_requestTimeout = 30
+g_requestTimeout = 3
 logger = logging.getLogger(__name__)
 logging.basicConfig(
     format="%(asctime)s - %(module)s.%(funcName)s - %(levelname)s: %(message)s",
