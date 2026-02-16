@@ -276,7 +276,7 @@ class NodeGroups(threading.Thread):
         # logger.info(json.dumps(j, indent=4, sort_keys=True))
         forceMfaFound = False
         for group in j["ocs"]["data"]["groups"]:
-            if group["displayname"] == "forcemfa":
+            if group["displayname"].lower() == "forcemfa":
                 forceMfaFound = True
 
         if forceMfaFound:
