@@ -143,7 +143,7 @@ class InstalledAppsCompatibility(threading.Thread):
             return
 
         # We check against this manual exception list until the deployment is clean
-        excludeList = ["drive_email_template", "sciencemesh", "edusign", "login_notes"]
+        excludeList = expectedResults[drv.target]["ocsapps"]["excluded_apps"]
         expectedVersion = expectedResults[drv.target]["status"]["major_version"]
         for nodeApp in nodeApps:
             allPassed = True
