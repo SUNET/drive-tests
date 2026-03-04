@@ -442,7 +442,7 @@ if __name__ == "__main__":
             testRunner=HtmlTestRunner.HTMLTestRunner(
                 output="test-reports-html",
                 combine_reports=True,
-                report_name=f"nextcloud-{drv.expectedResults[drv.target]['status']['version']}-performance-ocs",
+                report_name=f"nextcloud-{drv.expectedResults[drv.target]['status']['version'][-1]}-performance-ocs",
                 add_timestamp=False,
             )
         )

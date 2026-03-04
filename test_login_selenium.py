@@ -429,7 +429,7 @@ if __name__ == '__main__':
             testRunner=HtmlTestRunner.HTMLTestRunner(
                 output="test-reports-html",
                 combine_reports=True,
-                report_name=f"nextcloud-{drv.expectedResults[drv.target]['status']['version']}-selenium",
+                report_name=f"nextcloud-{drv.expectedResults[drv.target]['status']['version'][-1]}-selenium",
                 add_timestamp=False,
             )
         )
