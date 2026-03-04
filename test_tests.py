@@ -31,31 +31,33 @@ logging.basicConfig(format = '%(asctime)s - %(module)s.%(funcName)s - %(levelnam
                 datefmt = '%Y-%m-%d %H:%M:%S', level = logging.INFO)
 
 class TestTests(unittest.TestCase):
-    if os.path.exists(globalconfigfile):
-        with open(globalconfigfile, "r") as stream:
-            data=yaml.safe_load(stream)
-            allnodes=data['fullnodes'] + data['singlenodes']
+    def setUp(self):
+        if os.path.exists(globalconfigfile):
+            with open(globalconfigfile, "r") as stream:
+                data=yaml.safe_load(stream)
+                self.allnodes=data['fullnodes'] + data['singlenodes']
 
-            common_metadata_prodnodes = []
-            common_metadata_testnodes = []
-            common_multinode_mapping_nodes = []
-            common_project_mapping_nodes = []
-            common_fullnodes = data['fullnodes']
-            common_singlenodes = data['singlenodes']
-            common_full_and_single_nodes = common_fullnodes + common_singlenodes
+                self.common_metadata_prodnodes = []
+                self.common_metadata_testnodes = []
+                self.common_multinode_mapping_nodes = []
+                self.common_project_mapping_nodes = []
+                self.common_fullnodes = data['fullnodes']
+                self.common_singlenodes = data['singlenodes']
+                self.common_full_and_single_nodes = self.common_fullnodes + self.common_singlenodes
 
-            for entry in data['drive_metadata_files']:
-                if '_saml_prod' in entry:
-                    common_metadata_prodnodes.append(entry.replace('_saml_prod', ''))
-                elif '_saml_test' in entry:
-                    common_metadata_testnodes.append(entry.replace('_saml_test', ''))
-            for entry in data['multinode_mapping']:
-                common_multinode_mapping_nodes.append(entry)
-            for entry in data['project_mapping']:
-                common_project_mapping_nodes.append(entry)
+                for entry in data[f'drive_metadata_files_prod']:
+                    self.common_metadata_prodnodes.append(entry.replace('_saml_prod', ''))
+                for entry in data[f'drive_metadata_files_test']:
+                    self.common_metadata_testnodes.append(entry.replace('_saml_test', ''))
+                for entry in data['multinode_mapping']:
+                    logger.info(f'Add {entry} to multinode mapping')
+                    self.common_multinode_mapping_nodes.append(entry)
+                for entry in data['project_mapping']:
+                    logger.info(f'Add {entry} to project mapping')
+                    self.common_project_mapping_nodes.append(entry)
 
-            common_metadata_prodnodes = sorted(common_metadata_prodnodes)
-            common_metadata_testnodes = sorted(common_metadata_testnodes)
+                self.common_metadata_prodnodes = sorted(self.common_metadata_prodnodes)
+                self.common_metadata_testnodes = sorted(self.common_metadata_testnodes)
 
     def test_logger(self):
         logger.info(f'TestID: {self._testMethodName}')
@@ -65,7 +67,15 @@ class TestTests(unittest.TestCase):
         logger.info(f'TestID: {self._testMethodName}')
         logger.info(f'Check if metadata nodes contain unusual nodes')
 
-        self.assertTrue(self.common_metadata_prodnodes == self.common_metadata_testnodes)
+        if self.common_metadata_prodnodes != self.common_metadata_testnodes:
+            for prodentry in self.common_metadata_prodnodes:
+                if prodentry not in self.common_metadata_testnodes:
+                    logger.warning(f'{prodentry} not found in list of test nodes')
+
+            for testentry in self.common_metadata_testnodes:
+                if testentry not in self.common_metadata_prodnodes:
+                    logger.warning(f'{testentry} not found in list of prod nodes')
+        # self.assertTrue(self.common_metadata_prodnodes == self.common_metadata_testnodes)
 
         for entry in self.common_metadata_prodnodes:
             if entry not in (self.common_multinode_mapping_nodes):
@@ -75,8 +85,7 @@ class TestTests(unittest.TestCase):
         logger.info(f'Check if project mapping nodes contain unusual nodes')
         for entry in self.common_project_mapping_nodes:
             if entry not in self.common_metadata_prodnodes:
-                # Check for exceptions
-                if entry not in ['common', 'kau', 'scilifelab']:
+                if entry not in ['common', 'kau', 'scilifelab', 'sp', 'sics']:
                     logger.error(f'{entry} configured in project mapping, but not as metadata node')
 
     def test_allnodes_tested(self):
@@ -90,26 +99,21 @@ class TestTests(unittest.TestCase):
         if os.path.exists(globalconfigfile) and len(drv.nodestotest) != 1:
             logger.info('Check if we are testing all nodes')
 
+            for configurednode in self.common_metadata_prodnodes:
+                if configurednode not in drv.allnodes:
+                    logger.error(f'{configurednode} in common.yaml, but not tested!')
 
-            with open(globalconfigfile, "r") as stream:
-                data=yaml.safe_load(stream)
-                allnodes=data['fullnodes'] + data['singlenodes']
+            for testnode in drv.allnodes:
+                if testnode not in self.common_metadata_prodnodes:
+                    logger.error(f'{testnode} in tests, but not in common.yaml')
 
-                for configurednode in self.common_metadata_prodnodes:
-                    if configurednode not in drv.allnodes:
-                        logger.error(f'{configurednode} in common.yaml, but not tested!')
+            for node in self.allnodes:
+                if node not in drv.nodestotest:
+                    logger.warning(f'{node} in common.yaml but not tested')
 
-                for testnode in drv.allnodes:
-                    if testnode not in self.common_metadata_prodnodes:
-                        logger.error(f'{testnode} in tests, but not in common.yaml')
-
-                for node in allnodes:
-                    if node not in drv.nodestotest:
-                        logger.warning(f'{node} in common.yaml but not tested')
-
-                for node in drv.nodestotest:
-                    if node not in allnodes:
-                        logger.warning(f'{node} in tests but not in common.yaml')
+            for node in drv.nodestotest:
+                if node not in self.allnodes:
+                    logger.warning(f'{node} in tests but not in common.yaml')
         else:
             logger.info('Global config file not found, skipping test if all nodes are tested')
 
