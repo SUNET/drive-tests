@@ -11,6 +11,8 @@ import unittest
 from datetime import datetime
 
 import requests
+import xmlrunner
+import HtmlTestRunner
 
 import sunetnextcloud
 

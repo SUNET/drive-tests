@@ -19,6 +19,8 @@ from selenium.common.exceptions import TimeoutException
 import os
 import yaml
 import logging
+import xmlrunner
+import HtmlTestRunner
 
 # 'prod' for production environment, 'test' for test environment
 expectedResultsFile = 'expected.yaml'

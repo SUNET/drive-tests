@@ -7,6 +7,8 @@ import sunetnextcloud
 from webdav3.client import Client
 import pyotp
 import time
+import xmlrunner
+import HtmlTestRunner
 
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys

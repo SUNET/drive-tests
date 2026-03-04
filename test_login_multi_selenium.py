@@ -10,6 +10,8 @@ import pyotp
 import pyscreeze
 import pyautogui
 import time
+import xmlrunner
+import HtmlTestRunner
 
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys

@@ -8,6 +8,8 @@ import json
 import logging
 import yaml
 import os
+import xmlrunner
+import HtmlTestRunner
 
 import sunetnextcloud
 

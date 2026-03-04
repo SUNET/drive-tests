@@ -14,6 +14,8 @@ from xml.etree.ElementTree import fromstring
 
 import requests
 import xmlrunner
+import HtmlTestRunner
+
 import xmltodict
 
 import sunetnextcloud

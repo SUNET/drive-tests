@@ -12,6 +12,7 @@ from urllib.parse import quote
 
 import requests
 import xmlrunner
+import HtmlTestRunner
 
 import sunetnextcloud
 

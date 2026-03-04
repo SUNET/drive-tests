@@ -9,6 +9,8 @@ import time
 
 import sunetnextcloud
 import logging
+import xmlrunner
+import HtmlTestRunner
 
 # Change to local directory
 abspath = os.path.abspath(__file__)

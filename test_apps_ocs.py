@@ -6,6 +6,8 @@ import time
 import unittest
 
 import requests
+import xmlrunner
+import HtmlTestRunner
 import yaml
 
 import sunetnextcloud

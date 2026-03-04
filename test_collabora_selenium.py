@@ -19,6 +19,8 @@ from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver import FirefoxOptions
 
 from webdav3.client import Client
+import xmlrunner
+import HtmlTestRunner
 
 import logging
 import time
