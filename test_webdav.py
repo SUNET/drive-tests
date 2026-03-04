@@ -24,7 +24,7 @@ g_systemBucket = 'selenium-system'
 g_filename=datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 g_testPassed = {}
 g_testThreadsRunning = 0
-ocsheaders = { "OCS-APIRequest" : "true" } 
+ocsheaders = { "OCS-APIRequest" : "true" }
 logger = logging.getLogger(__name__)
 logging.basicConfig(format = '%(asctime)s - %(module)s.%(funcName)s - %(levelname)s: %(message)s',
                 datefmt = '%Y-%m-%d %H:%M:%S', level = logging.INFO)
@@ -47,7 +47,7 @@ class WebDAVDneCheck(threading.Thread):
         g_testThreadsRunning += 1
         logger.info(f'WebDAVDneCheck thread started for node {self.name}')
         logger.info(f'Setting passed for {fullnode} to {g_testPassed.get(fullnode)}')
-        
+
         nodeuser = drv.get_seleniumuser(fullnode)
         if self.basicAuth:
             logger.info('Testing with basic authentication')
@@ -143,7 +143,7 @@ class WebDAVList(threading.Thread):
                 options = {
                 'webdav_hostname': url,
                 'webdav_login' : nodeuser[user],
-                'webdav_password' : nodepwd[user], 
+                'webdav_password' : nodepwd[user],
                 'webdav_timeout': g_webdav_timeout
                 }
                 client = Client(options)
@@ -195,7 +195,7 @@ class WebDAVMultiCheckAndRemove(threading.Thread):
 
         client = Client(options)
         client.verify = drv.verify
-        
+
         count = 0
         try:
             while count <= g_maxCheck:
@@ -207,14 +207,14 @@ class WebDAVMultiCheckAndRemove(threading.Thread):
                 else:
                     logger.info(f'Removing folder {g_testFolder}')
                     if (client.clean(g_testFolder)):
-                        logger.info(f'Folder removed {g_testFolder}')    
+                        logger.info(f'Folder removed {g_testFolder}')
                 logger.warning(f'Multiple tries to remove folder: {count}')
         except Exception as error:
             logger.warning(f'Error during iteration {count} of removing {g_testFolder}: {error}')
             g_testPassed[fullnode] = False
             g_testThreadsRunning -= 1
             return
-        
+
         try:
             self.TestWebDAV.assertFalse(client.check(g_testFolder))
         except Exception as error:
@@ -238,7 +238,7 @@ class WebDAVCleanSeleniumFolders(threading.Thread):
         global logger
         global g_testPassed
         global g_testThreadsRunning
-        fullnode = self.name    
+        fullnode = self.name
         g_testPassed[fullnode] = False
         g_testThreadsRunning += 1
         logger.info(f'WebDAVCleanSeleniumFolders thread started for node {self.name}')
@@ -297,7 +297,7 @@ class WebDAVCleanTrashbin(threading.Thread):
         global logger
         global g_testPassed
         global g_testThreadsRunning
-        fullnode = self.name    
+        fullnode = self.name
         g_testPassed[fullnode] = False
         g_testThreadsRunning += 1
         logger.info(f'WebDAVCleanTrashbin thread started for node {self.name}')
@@ -386,7 +386,7 @@ class WebDAVMakeSharingFolder(threading.Thread):
             g_testPassed[fullnode] = False
             g_testThreadsRunning -= 1
             return
-        
+
         try:
             self.TestWebDAV.assertEqual(client.list().count(f'{g_sharedTestFolder}/'), 1)
         except Exception as error:
@@ -577,7 +577,7 @@ class WebDAVCreateMoveDelete(threading.Thread):
             logger.error(f'Error writing to file {tmpfilename} for {fullnode}: {error}')
             g_testThreadsRunning -= 1
             return
-        
+
         try:
             client = Client(options)
             client.verify = drv.verify
@@ -589,7 +589,7 @@ class WebDAVCreateMoveDelete(threading.Thread):
             logger.error(f'Error preparing webdav client for {fullnode}: {error}')
             g_testThreadsRunning -= 1
             return
-        
+
         try:
             logger.info(f'Uploading {tmpfilename} to {targetfile}')
             client.upload_sync(remote_path=targetfile, local_path=tmpfilename)
@@ -598,7 +598,7 @@ class WebDAVCreateMoveDelete(threading.Thread):
             g_testPassed[fullnode] = False
             g_testThreadsRunning -= 1
             return
-        
+
         fileMoved = False
         moveCount = 0
         while  not fileMoved:
@@ -636,7 +636,10 @@ class WebDAVCreateMoveDelete(threading.Thread):
 
         try:
             logger.info(f'Removing local temp file: {tmpfilename}')
-            os.remove(tmpfilename)
+            if tmpfilename.isfile():
+                os.remove(tmpfilename)
+            else:
+                logger.warning(f'File {filename} not found anymore for node {fullnode}')
         except Exception as error:
             logger.error(f'Error removing the local temp file on {fullnode}: {error}')
             g_testPassed[fullnode] = False
