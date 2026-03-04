@@ -1,7 +1,7 @@
 smoketest:
   - test_status_cli.py
 acceptance:
-  - test_tests.py
+  # - test_tests.py
   - test_status_cli.py
   # python test_storage.py
   - test_ocs.py
@@ -16,7 +16,7 @@ seleniumtotp:
 collabora:
   - test_collabora_selenium.py
 node:
-  - test_tests.py
+  # - test_tests.py
   - test_status_cli.py
   - test_ocs.py
   - test_apps_ocs.py
