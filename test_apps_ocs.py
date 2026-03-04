@@ -424,7 +424,10 @@ class TestAppsOcs(unittest.TestCase):
 
         for fullnode in drv.nodestotest:
             with self.subTest(mynode=fullnode):
-                logger.info(f"Passed: {g_testPassed[fullnode]} for {fullnode}")
+                if {g_testPassed[fullnode]}:
+                    logger.info(f"Passed: {g_testPassed[fullnode]} for {fullnode}")
+                else:
+                    logger.error(f"Failed: {g_testPassed[fullnode]} for {fullnode}")
                 self.assertTrue(g_testPassed[fullnode])
 
     # Test if the apps installed on the node are found in the configuration file
