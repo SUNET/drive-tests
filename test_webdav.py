@@ -636,10 +636,10 @@ class WebDAVCreateMoveDelete(threading.Thread):
 
         try:
             logger.info(f'Removing local temp file: {tmpfilename}')
-            if tmpfilename.isfile():
+            if os.path.isfile(tmpfilename):
                 os.remove(tmpfilename)
             else:
-                logger.warning(f'File {filename} not found anymore for node {fullnode}')
+                logger.warning(f'File {filename} not found anymore for node {fullnode')
         except Exception as error:
             logger.error(f'Error removing the local temp file on {fullnode}: {error}')
             g_testPassed[fullnode] = False
