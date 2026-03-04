@@ -75,7 +75,7 @@ class TestLoginSelenium(unittest.TestCase):
                         options = {
                         'webdav_hostname': url,
                         'webdav_login' : nodeuser,
-                        'webdav_password' : nodepwd 
+                        'webdav_password' : nodepwd
                         }
 
                         try:
@@ -115,7 +115,7 @@ class TestLoginSelenium(unittest.TestCase):
                         if browser == 'chrome':
                             driver.set_window_size(1920, 1152)
                         else:
-                            driver.maximize_window()    
+                            driver.maximize_window()
 
                         try:
                             wait.until(EC.presence_of_element_located((By.XPATH, '//a[@href="' + drv.indexsuffix + '/apps/files/' +'"]')))
@@ -168,13 +168,13 @@ class TestLoginSelenium(unittest.TestCase):
     #     if len(drv.allnodes) == 1:
     #         self.logger.info(f'Only testing {drv.allnodes[0]}, not testing eduid saml')
     #         return
-        
+
     #     loginurl = drv.get_login_url()
     #     self.logger.info(f'URL: {loginurl}')
     #     samluser=drv.get_samlusername("eduidtest")
     #     self.logger.info(f'Username: {samluser}')
     #     samlpassword=drv.get_samluserpassword("eduidtest")
-        
+
     #     # try:
     #     #     options = ChromeOptions()
     #     #     options.add_argument("--no-sandbox")
@@ -229,7 +229,7 @@ class TestLoginSelenium(unittest.TestCase):
     #     if browser == 'chrome':
     #         driver.set_window_size(1920, 1152)
     #     else:
-    #         driver.maximize_window()        
+    #         driver.maximize_window()
 
 
 
@@ -246,7 +246,7 @@ class TestLoginSelenium(unittest.TestCase):
 
     #     wait.until(EC.presence_of_element_located((By.ID, 'dsclient')))
     #     driver.implicitly_wait(g_driver_timeout)
-        
+
     #     wait.until(EC.element_to_be_clickable((By.ID, 'searchinput'))).send_keys("eduid.se", Keys.RETURN)
     #     driver.implicitly_wait(g_driver_timeout)
 
@@ -297,7 +297,7 @@ class TestLoginSelenium(unittest.TestCase):
             if drv.allnodes[0] != nodeName:
                 self.logger.info(f'Only testing {drv.allnodes[0]}, not testing su saml')
                 return
-            
+
         for browser in drv.browsers:
             totp = 0
             loginurl = drv.get_login_url()
@@ -335,14 +335,14 @@ class TestLoginSelenium(unittest.TestCase):
             if browser == 'chrome':
                 driver.set_window_size(1920, 1152)
             else:
-                driver.maximize_window()        
+                driver.maximize_window()
             driver.get(loginurl)
 
             wait = WebDriverWait(driver, delay)
 
             wait.until(EC.presence_of_element_located((By.ID, 'dsclient')))
             driver.implicitly_wait(g_driver_timeout)
-            
+
             wait.until(EC.element_to_be_clickable((By.ID, 'searchinput'))).send_keys("su.se", Keys.RETURN)
             driver.implicitly_wait(g_driver_timeout)
 
@@ -414,4 +414,20 @@ class TestLoginSelenium(unittest.TestCase):
             self.logger.info('And done...')
 
 if __name__ == '__main__':
-    drv.run_tests(os.path.basename(__file__))
+    if drv.testrunner == "xml":
+        unittest.main(testRunner=xmlrunner.XMLTestRunner(output="test-reports"))
+    elif drv.testrunner == "txt":
+        unittest.main(
+            testRunner=unittest.TextTestRunner(
+                resultclass=sunetnextcloud.NumbersTestResult
+            )
+        )
+    else:
+        unittest.main(
+            testRunner=HtmlTestRunner.HTMLTestRunner(
+                output="test-reports-html",
+                combine_reports=True,
+                report_name=f"nextcloud-{drv.expectedResults[drv.target]['status']['version']}-selenium",
+                add_timestamp=False,
+            )
+        )

@@ -178,12 +178,12 @@ class TestWebDavPerformance(unittest.TestCase):
                     #         client.clean('performance/' + element)
                     #     except:
                     #         logger.info(f'Error deleting {element}')
-                    
+
                     deleteTime = (datetime.now() - startTime).total_seconds()
 
                     lText = f'{fullnode} '
                     mText = f'Node {fe} - Up: {uploadTime:.1f}s at {uploadTime/numFiles:.2f} s/file'
-                    rText = f'Node {fe} - Del: {deleteTime:.1f}s at {deleteTime/numFiles:.2f} s/file' 
+                    rText = f'Node {fe} - Del: {deleteTime:.1f}s at {deleteTime/numFiles:.2f} s/file'
 
                     message = f'{lText : <16}{mText : <40}{rText : <40}'
                     # message = f'{fullnode} - Upload: {uploadTime:.1f}s at {uploadTime/numFiles:.2f} s/file - Delete: {deleteTime:.1f}s at {deleteTime/numFiles:.2f} s/file'
@@ -267,7 +267,7 @@ class TestWebDavPerformance(unittest.TestCase):
                                 logger.error(f'Error uploading {filename}: {exception}')
                                 g_testThreadsRunning -= 1
                             while g_testThreadsRunning > 0:
-                                time.sleep(0.01)                            
+                                time.sleep(0.01)
 
 
 
@@ -316,14 +316,14 @@ class TestWebDavPerformance(unittest.TestCase):
                         #         client.clean('performance/' + element)
                         #     except:
                         #         logger.info(f'Error deleting {element}')
-                        
+
                         # deleteTime = (datetime.now() - startTime).total_seconds()
 
                         result += f'{uploadTime:<10.1f}'
 
                         # lText = f'{fullnode} '
                         # mText = f'Size: {fileSize}'
-                        # rText = f'Upload: {uploadTime:.1f}s' 
+                        # rText = f'Upload: {uploadTime:.1f}s'
 
                         # message = f'{lText : <16}{mText : <40}{rText : <40}'
                         # # message = f'{fullnode} - Upload: {uploadTime:.1f}s at {uploadTime/numFiles:.2f} s/file - Delete: {deleteTime:.1f}s at {deleteTime/numFiles:.2f} s/file'
@@ -348,4 +348,20 @@ class TestWebDavPerformance(unittest.TestCase):
         pass
 
 if __name__ == '__main__':
-    drv.run_tests(os.path.basename(__file__))
+    if drv.testrunner == "xml":
+        unittest.main(testRunner=xmlrunner.XMLTestRunner(output="test-reports"))
+    elif drv.testrunner == "txt":
+        unittest.main(
+            testRunner=unittest.TextTestRunner(
+                resultclass=sunetnextcloud.NumbersTestResult
+            )
+        )
+    else:
+        unittest.main(
+            testRunner=HtmlTestRunner.HTMLTestRunner(
+                output="test-reports-html",
+                combine_reports=True,
+                report_name=f"nextcloud-{drv.expectedResults[drv.target]['status']['version']}-performance-webdav",
+                add_timestamp=False,
+            )
+        )

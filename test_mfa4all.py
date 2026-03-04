@@ -65,7 +65,7 @@ class WebDAVList(threading.Thread):
         passwordOptions = {
         'webdav_hostname': url,
         'webdav_login' : nodeuser,
-        'webdav_password' : nodepwd 
+        'webdav_password' : nodepwd
         }
         passwordClient = Client(passwordOptions)
         passwordClient.verify = drv.verify
@@ -73,13 +73,13 @@ class WebDAVList(threading.Thread):
         appPasswordOptions = {
         'webdav_hostname': url,
         'webdav_login' : nodeuser,
-        'webdav_password' : nodeapppwd 
+        'webdav_password' : nodeapppwd
         }
         appPasswordClient = Client(appPasswordOptions)
         appPasswordClient.verify = drv.verify
 
         try:
-            logger.error(f'Client list should not be possible for {fullnode} - {passwordClient.list()}')            
+            logger.error(f'Client list should not be possible for {fullnode} - {passwordClient.list()}')
             g_failedNodes.append(fullnode)
             g_testThreadsRunning -= 1
             return
@@ -141,4 +141,20 @@ class TestMfa4All(unittest.TestCase):
             g_failedNodes = []
 
 if __name__ == '__main__':
-    drv.run_tests(os.path.basename(__file__))
+    if drv.testrunner == "xml":
+        unittest.main(testRunner=xmlrunner.XMLTestRunner(output="test-reports"))
+    elif drv.testrunner == "txt":
+        unittest.main(
+            testRunner=unittest.TextTestRunner(
+                resultclass=sunetnextcloud.NumbersTestResult
+            )
+        )
+    else:
+        unittest.main(
+            testRunner=HtmlTestRunner.HTMLTestRunner(
+                output="test-reports-html",
+                combine_reports=True,
+                report_name=f"nextcloud-{drv.expectedResults[drv.target]['status']['version']}-mfa4all",
+                add_timestamp=False,
+            )
+        )

@@ -427,4 +427,20 @@ class TestPerformanceOcs(unittest.TestCase):
 
 
 if __name__ == "__main__":
-    drv.run_tests(os.path.basename(__file__))
+    if drv.testrunner == "xml":
+        unittest.main(testRunner=xmlrunner.XMLTestRunner(output="test-reports"))
+    elif drv.testrunner == "txt":
+        unittest.main(
+            testRunner=unittest.TextTestRunner(
+                resultclass=sunetnextcloud.NumbersTestResult
+            )
+        )
+    else:
+        unittest.main(
+            testRunner=HtmlTestRunner.HTMLTestRunner(
+                output="test-reports-html",
+                combine_reports=True,
+                report_name=f"nextcloud-{drv.expectedResults[drv.target]['status']['version']}-performance-ocs",
+                add_timestamp=False,
+            )
+        )

@@ -5,6 +5,7 @@ Author: Richard Freitag <freitag@sunet.se>
 import unittest
 import yaml
 import os
+import time
 
 import sunetnextcloud
 import logging
@@ -28,13 +29,56 @@ logging.basicConfig(format = '%(asctime)s - %(module)s.%(funcName)s - %(levelnam
                 datefmt = '%Y-%m-%d %H:%M:%S', level = logging.INFO)
 
 class TestTests(unittest.TestCase):
+    if os.path.exists(globalconfigfile):
+        with open(globalconfigfile, "r") as stream:
+            data=yaml.safe_load(stream)
+            allnodes=data['fullnodes'] + data['singlenodes']
+
+            common_metadata_prodnodes = []
+            common_metadata_testnodes = []
+            common_multinode_mapping_nodes = []
+            common_project_mapping_nodes = []
+            common_fullnodes = data['fullnodes']
+            common_singlenodes = data['singlenodes']
+            common_full_and_single_nodes = common_fullnodes + common_singlenodes
+
+            for entry in data['drive_metadata_files']:
+                if '_saml_prod' in entry:
+                    common_metadata_prodnodes.append(entry.replace('_saml_prod', ''))
+                elif '_saml_test' in entry:
+                    common_metadata_testnodes.append(entry.replace('_saml_test', ''))
+            for entry in data['multinode_mapping']:
+                common_multinode_mapping_nodes.append(entry)
+            for entry in data['project_mapping']:
+                common_project_mapping_nodes.append(entry)
+
+            common_metadata_prodnodes = sorted(common_metadata_prodnodes)
+            common_metadata_testnodes = sorted(common_metadata_testnodes)
+
     def test_logger(self):
         logger.info(f'TestID: {self._testMethodName}')
         pass
 
+    def test_common_mapping(self):
+        logger.info(f'TestID: {self._testMethodName}')
+        logger.info(f'Check if metadata nodes contain unusual nodes')
+
+        self.assertTrue(self.common_metadata_prodnodes == self.common_metadata_testnodes)
+
+        for entry in self.common_metadata_prodnodes:
+            if entry not in (self.common_multinode_mapping_nodes):
+                if entry not in self.common_full_and_single_nodes:
+                    logger.error(f'{entry} has metadata configuration, but is neither in multinode mapping nor configured as single/full node')
+
+        logger.info(f'Check if project mapping nodes contain unusual nodes')
+        for entry in self.common_project_mapping_nodes:
+            if entry not in self.common_metadata_prodnodes:
+                # Check for exceptions
+                if entry not in ['common', 'kau', 'scilifelab']:
+                    logger.error(f'{entry} configured in project mapping, but not as metadata node')
+
     def test_allnodes_tested(self):
         logger.info(f'TestID: {self._testMethodName}')
-        # print(len(drv.nodestotest))
         testMissing = False
 
         if len(drv.nodestotest) == 1:
@@ -43,9 +87,19 @@ class TestTests(unittest.TestCase):
 
         if os.path.exists(globalconfigfile) and len(drv.nodestotest) != 1:
             logger.info('Check if we are testing all nodes')
+
+
             with open(globalconfigfile, "r") as stream:
                 data=yaml.safe_load(stream)
                 allnodes=data['fullnodes'] + data['singlenodes']
+
+                for configurednode in self.common_metadata_prodnodes:
+                    if configurednode not in drv.allnodes:
+                        logger.error(f'{configurednode} in common.yaml, but not tested!')
+
+                for testnode in drv.allnodes:
+                    if testnode not in self.common_metadata_prodnodes:
+                        logger.error(f'{testnode} in tests, but not in common.yaml')
 
                 for node in allnodes:
                     if node not in drv.nodestotest:
@@ -108,5 +162,20 @@ class TestTests(unittest.TestCase):
         self.assertFalse(test_failed)
 
 if __name__ == '__main__':
-    drv.run_tests(os.path.basename(__file__))
-    
+    if drv.testrunner == "xml":
+        unittest.main(testRunner=xmlrunner.XMLTestRunner(output="test-reports"))
+    elif drv.testrunner == "txt":
+        unittest.main(
+            testRunner=unittest.TextTestRunner(
+                resultclass=sunetnextcloud.NumbersTestResult
+            )
+        )
+    else:
+        unittest.main(
+            testRunner=HtmlTestRunner.HTMLTestRunner(
+                output="test-reports-html",
+                combine_reports=True,
+                report_name=f"nextcloud-{drv.expectedResults[drv.target]['status']['version']}-tests",
+                add_timestamp=False,
+            )
+        )
