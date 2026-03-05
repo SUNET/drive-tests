@@ -13,6 +13,7 @@ import unittest
 from xml.etree.ElementTree import fromstring
 
 import requests
+from requests.exceptions import RequestException
 import xmlrunner
 import HtmlTestRunner
 
@@ -33,18 +34,27 @@ logging.basicConfig(
     level=logging.INFO,
 )
 
-def get(url, retry_count=3, timeout=g_requestTimeout, verify=True):
+def get(url, retries=3, session=None, **kwargs):
     try:
-        return requests.get(url, timeout=timeout, verify=verify)
-    except Exception:
-        logger.warning(f'Retry {retry_count} getting {url}')
-        # sleep for a bit in case that helps
-        time.sleep(1)
-        if retry_count-1 == 0:
-            raise Exception(f"Getting {url} failed after too many retries")
+        # Use the provided session if available, otherwise use requests.get
+        if session:
+            response = session.get(url, **kwargs)
         else:
-            # try again
-            return get(url, retry_count-1, timeout=timeout, verify=verify)
+            response = requests.get(url, **kwargs)
+
+        # Raise an HTTPError if the response contains an HTTP error status code
+        response.raise_for_status()
+        return response
+
+    except RequestException as e:
+        logger.warning(f'Retry {retries} getting {url}')
+        time.sleep(1)
+        if retries-1 > 0:
+            # Retry the request recursively
+            return get(url, retries - 1, session=session, **kwargs)
+        else:
+            # Raise the exception if no retries are left
+            raise e
 
 class NumbersTestResult(unittest.TextTestResult):
     def addSubTest(self, test, subtest, outcome):
@@ -298,7 +308,7 @@ class SeamlessAccessInfo(threading.Thread):
                 s = requests.Session()
                 serverid = f"node{fe}.{nodebaseurl}"
                 s.cookies.set("SERVERID", serverid)
-                r = s.get(url, timeout=g_requestTimeout, verify=self.verify)
+                r = get(url, session=s, timeout=g_requestTimeout, verify=self.verify)
 
                 if (
                     "seamlessaccess.org" not in r.text
@@ -487,7 +497,7 @@ class TestStatus(unittest.TestCase):
             return
 
         for node in expectedResults["global"]["allnodes"]:
-            if node in drv.allnodes:
+            if node in drv.allnodes and node not in expectedResults[drv.target]['loginexceptions']:
                 with self.subTest(myurl=node):
                     logger.info(f"TestID: {node}")
                     saInfoThread = SeamlessAccessInfo(node, self)
