@@ -6,7 +6,7 @@ import unittest
 import tempfile
 import os
 from webdav3.client import Client
-from webdav3.exceptions import WebDavException
+from webdav3.exceptions import *
 import logging
 import threading
 import time
@@ -76,23 +76,19 @@ class WebDAVDneCheck(threading.Thread):
             try:
                 client.check(dneName)
             except WebDavException as error:
-                logger.info(f'Expected unauthorized code {self.name}: {error.code}')
-                self.TestWebDAV.assertEqual(error.code, 401)
+                if type(error) == ResponseErrorCode:
+                    logger.info(f'Check expected ResponseErrorCode {self.name}: {error.code}')
+                    self.TestWebDAV.assertEqual(error.code, 401)
+                else:
+                    logger.error(f'Unexpected webdav3 exception: {type(error)}')
+                    g_testPassed[fullnode] = False
+                    g_testThreadsRunning -= 1
+                    return
             except Exception as error:
                 logger.error(f'Error during client.check for {self.name}: {error}')
                 g_testPassed[fullnode] = False
                 g_testThreadsRunning -= 1
                 return
-
-            # if (checkResult):
-            #     logger.error(f'DNE check {i} for {dneName} should not return true')
-            # try:
-            #     self.TestWebDAV.assertFalse(checkResult)
-            # except Exception as error:
-            #     logger.error(f'Error in WebDAVDneCheck thread done for node {self.name}: {error}')
-            #     g_testPassed[fullnode] = False
-            #     g_testThreadsRunning -= 1
-            #     return
 
         logger.info(f'WebDAVDneCheck thread done for node {self.name}')
         g_testPassed[fullnode] = True
