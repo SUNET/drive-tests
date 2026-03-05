@@ -79,7 +79,7 @@ class WebDAVDneCheck(threading.Thread):
                 if type(error) == ResponseErrorCode:
                     logger.info(f'Check expected ResponseErrorCode {self.name}: {error.code}')
                     if error.code != 401:
-                        logger.error(f'Unexpected error code {error.code} - {tyhpe(error)}')
+                        logger.error(f'Unexpected error code {error.code} - {type(error)}')
                         g_testPassed[fullnode] = False
                         g_testThreadsRunning -= 1
                         return
