@@ -101,11 +101,11 @@ class TestTests(unittest.TestCase):
 
             for configurednode in self.common_metadata_prodnodes:
                 if configurednode not in drv.allnodes:
-                    logger.error(f'{configurednode} in common.yaml, but not tested!')
+                    logger.warning(f'{configurednode} in common.yaml, but not tested!')
 
             for testnode in drv.allnodes:
                 if testnode not in self.common_metadata_prodnodes:
-                    logger.error(f'{testnode} in tests, but not in common.yaml')
+                    logger.warning(f'{testnode} in tests, but not in common.yaml')
 
             for node in self.allnodes:
                 if node not in drv.nodestotest:
