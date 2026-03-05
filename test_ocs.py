@@ -467,9 +467,11 @@ class UserLifeCycle(threading.Thread):
             j = json.loads(r.text)
             logger.info(json.dumps(j, indent=4, sort_keys=True))
 
-            if j["ocs"]["meta"]["statuscode"] != 200:
+            if j["ocs"]["meta"]["statuscode"] == 102:
+                logger.info(f'User already exists, skip retry creating the user')
+            elif j["ocs"]["meta"]["statuscode"] != 200:
                 logger.info(
-                    f"Retry to create cli user {cliuser} after error {j['ocs']['meta']['statuscode']}"
+                    f"Retry once to create cli user {cliuser} after error {j['ocs']['meta']['statuscode']}"
                 )
                 r = session.post(url, headers=ocsheaders, data=data, verify=self.verify)
                 j = json.loads(r.text)
