@@ -78,7 +78,11 @@ class WebDAVDneCheck(threading.Thread):
             except WebDavException as error:
                 if type(error) == ResponseErrorCode:
                     logger.info(f'Check expected ResponseErrorCode {self.name}: {error.code}')
-                    self.TestWebDAV.assertEqual(error.code, 401)
+                    if error.code != 401:
+                        logger.error(f'Unexpected error code {error.code} - {tyhpe(error)}')
+                        g_testPassed[fullnode] = False
+                        g_testThreadsRunning -= 1
+                        return
                 else:
                     logger.error(f'Unexpected webdav3 exception: {type(error)}')
                     g_testPassed[fullnode] = False
