@@ -33,6 +33,18 @@ logging.basicConfig(
     level=logging.INFO,
 )
 
+def get(url, retry_count=3, timeout=g_requestTimeout, verify=True):
+    try:
+        return requests.get(url, timeout=timeout, verify=verify)
+    except Exception:
+        logger.warning(f'Retry {retry_count} getting {url}')
+        # sleep for a bit in case that helps
+        time.sleep(1)
+        if retry_count-1 == 0:
+            raise Exception(f"Getting {url} failed after too many retries")
+        else:
+            # try again
+            return get(url, retry_count-1, timeout=timeout, verify=verify)
 
 class NumbersTestResult(unittest.TextTestResult):
     def addSubTest(self, test, subtest, outcome):
@@ -66,7 +78,7 @@ class FrontendStatusInfo(threading.Thread):
         )
 
         try:
-            r = requests.get(self.url, timeout=g_requestTimeout, verify=self.verify)
+            r = get(self.url, timeout=g_requestTimeout, verify=self.verify)
         except Exception as error:
             logger.error(f"Error getting frontend status data from {self.url}: {error}")
             g_failedNodes.append(self.url)
@@ -134,7 +146,7 @@ class NodeStatusInfo(threading.Thread):
             url = drv.get_node_status_url(self.node, i)
             try:
                 logger.info(f"Getting status from: {url}")
-                r = requests.get(url, timeout=g_requestTimeout, verify=False)
+                r = get(url, timeout=g_requestTimeout, verify=False)
             except Exception as error:
                 logger.error(
                     f"Error getting node status data from {self.node}: {error}"
@@ -212,7 +224,8 @@ class StatusInfo(threading.Thread):
         url = drv.get_status_url(self.node)
         try:
             logger.info(f"Getting status from: {url}")
-            r = requests.get(url, timeout=g_requestTimeout, verify=self.verify)
+            r = get(url, timeout=g_requestTimeout, verify=self.verify)
+
         except Exception as error:
             logger.error(f"Error getting status info data from {self.node}: {error}")
             g_failedNodes.append(url)
@@ -330,7 +343,7 @@ class FrontentStatus(threading.Thread):
         logger.info(f"Status thread {testThreadsRunning} started for node {self.url}")
 
         try:
-            r = requests.get(self.url, timeout=g_requestTimeout, verify=self.verify)
+            r = get(self.url, timeout=g_requestTimeout, verify=self.verify)
             self.TestStatus.assertEqual(r.status_code, 200)
             logger.info(f"Status tested: {self.url}")
         except Exception as error:
@@ -513,7 +526,7 @@ class TestStatus(unittest.TestCase):
                     certMd5 = ""
                     logger.info(f"Verify metadata for {url}")
                     try:
-                        r = requests.get(url, timeout=g_requestTimeout)
+                        r = get(url, timeout=g_requestTimeout)
                     except Exception as error:
                         logger.error(f"Error getting {url}: {error}")
                         continue
@@ -559,7 +572,7 @@ class TestStatus(unittest.TestCase):
             with self.subTest(mynode=i):
                 url = drv.get_collabora_node_url(i)
                 logger.info(f"Testing Collabora Node: {url}")
-                r = requests.get(url, timeout=g_requestTimeout)
+                r = get(url, timeout=g_requestTimeout)
                 logger.info(f"Status: {r.text}")
                 self.assertEqual(
                     expectedResults[drv.target]["collabora"]["status"], r.text
