@@ -347,13 +347,12 @@ class NodeOcsUserPerformance(threading.Thread):
             g_testThreadsRunning -= 1
             return
 
-        g_testPassed[fullnode] = True
-        g_testThreadsRunning -= 1
         logger.info(
             f"NodeOcsUserPerformance thread done for node {self.name}, test passed: {g_testPassed[fullnode]}, remaining: {g_testThreadsRunning}"
         )
+        g_testPassed[fullnode] = True
+        g_testThreadsRunning -= 1
         return
-
 
 class TestPerformanceOcs(unittest.TestCase):
     def test_performance_ocs_userlist_samesession(self):
