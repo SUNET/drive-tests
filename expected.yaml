@@ -135,7 +135,7 @@ global:
       swamid,
       vinnova,
     ]
-  aliasnodes: [mdh, mdu, ju, hj, extern]
+  aliasnodes: [mdh, mdu, ju, hj, mchs, esh, extern]
   testBrowsers: [firefox, chrome]
 prod:
   loginexceptions: [kau, scilifelab, sp, sics]
