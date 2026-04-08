@@ -617,6 +617,16 @@ class TestTarget(object):
             + " --header 'X-User-Lock: 1'"
         )
 
+    def get_ocs_external_mounts_url(self, node):
+        return (
+            "https://$USERNAME$:$PASSWORD$@"
+            + self.getnodeprefix(node)
+            + self.targetprefix
+            + self.delimiter
+            + self.baseurl
+            + "/ocs/v2.php/apps/files_external/api/v1/mounts"
+        )
+
     def get_shares_url(self, node):
         return (
             "https://$USERNAME$:$PASSWORD$@"
