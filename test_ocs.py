@@ -98,9 +98,6 @@ class AppVersions(threading.Thread):
             url = rawurl.replace("$USERNAME$", nodeuser)
             url = url.replace("$PASSWORD$", nodepwd)
 
-            nodeuser = drv.get_ocsuser(fullnode)
-            nodepwd = drv.get_ocsuserpassword(fullnode)
-
             try:
                 r = session.get(url, headers=ocsheaders, verify=self.verify)
             except Exception as error:
@@ -140,9 +137,37 @@ class AppVersions(threading.Thread):
             g_testPassed[fullnode] = False
             g_testThreadsRunning -= 1
             return
+        else:
+            try:
+                rawurl = drv.get_app_url(fullnode, 'auto_groups')
+                url = rawurl.replace("$USERNAME$", nodeuser)
+                url = url.replace("$PASSWORD$", nodepwd)
+                r = session.post(url, headers=ocsheaders)
+            except Exception as error:
+                logger.error(f"Error ensuring auto_groups active on {fullnode}: {error}")
+                g_testPassed[fullnode] = False
+                g_testThreadsRunning -= 1
+                return
+
+        if "stepupauth" not in apps:
+            logger.error(f'stepupauth not found for {fullnode}')
+            g_testPassed[fullnode] = False
+            g_testThreadsRunning -= 1
+            return
+        else:
+            try:
+                rawurl = drv.get_app_url(fullnode, 'stepupauth')
+                url = rawurl.replace("$USERNAME$", nodeuser)
+                url = url.replace("$PASSWORD$", nodepwd)
+                r = session.post(url, headers=ocsheaders)
+            except Exception as error:
+                logger.error(f"Error ensuring stepupauth active on {fullnode}: {error}")
+                g_testPassed[fullnode] = False
+                g_testThreadsRunning -= 1
+                return
 
         # Summary and test
-        logger.info(f"Saml app found: {userSamlFound}")
+        # logger.info(f"Saml app found: {userSamlFound}")
 
         g_testPassed[fullnode] = True
         g_testThreadsRunning -= 1
