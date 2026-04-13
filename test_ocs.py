@@ -135,6 +135,12 @@ class AppVersions(threading.Thread):
                 g_testThreadsRunning -= 1
                 return
 
+        if "auto_groups" not in apps:
+            logger.error(f'Autogroups not found for {fullnode}')
+            g_testPassed[fullnode] = False
+            g_testThreadsRunning -= 1
+            return
+
         # Summary and test
         logger.info(f"Saml app found: {userSamlFound}")
 
