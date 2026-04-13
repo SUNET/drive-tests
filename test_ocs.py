@@ -166,9 +166,6 @@ class AppVersions(threading.Thread):
                 g_testThreadsRunning -= 1
                 return
 
-        # Summary and test
-        # logger.info(f"Saml app found: {userSamlFound}")
-
         g_testPassed[fullnode] = True
         g_testThreadsRunning -= 1
         logger.info(
