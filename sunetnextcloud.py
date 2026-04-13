@@ -393,6 +393,30 @@ class TestTarget(object):
             + app
         )
 
+    def get_app_config_keys_url(self, node, app):
+        return (
+            "https://$USERNAME$:$PASSWORD$@"
+            + self.getnodeprefix(node)
+            + self.targetprefix
+            + self.delimiter
+            + self.baseurl
+            + "/ocs/v2.php/apps/provisioning_api/api/v1/config/apps/"
+            + app
+        )
+
+    def get_app_config_value_url(self, node, app, key):
+        return (
+            "https://$USERNAME$:$PASSWORD$@"
+            + self.getnodeprefix(node)
+            + self.targetprefix
+            + self.delimiter
+            + self.baseurl
+            + "/ocs/v2.php/apps/provisioning_api/api/v1/config/apps/"
+            + app
+            + "/"
+            + key
+        )
+
     def get_users_url(self, node):
         return (
             "https://$USERNAME$:$PASSWORD$@"
