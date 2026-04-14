@@ -9,7 +9,7 @@ drv = sunetnextcloud.TestTarget()
 ocsheaders = drv.ocsheaders
 expectedResults = drv.expectedResults
 
-exclude_mfa4all = ['lnu', 'su']
+exclude_mfa4all = ['lnu', 'su', 'scilifelab', 'kau']
 
 logger = logging.getLogger("MFA4All-Logger")
 logging.basicConfig(
