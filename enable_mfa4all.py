@@ -85,32 +85,30 @@ for fullnode in drv.allnodes:
         logger.error(f"Error during configuration of  auto_groups on {fullnode}:{error}")
 
 
-    logger.info(f'Get app config value')
     try:
-        app = 'auto_groups'
-        key = 'auto_groups'
-        # app = 'stepupauth'
-        rawurl = drv.get_app_config_value_url(fullnode, app, key)
+        for key in j['ocs']['data']['data']:
+            logger.info(f'Get app config value for {key}')
+            app = 'auto_groups'
+            # key = 'auto_groups'
+            # app = 'stepupauth'
+            rawurl = drv.get_app_config_value_url(fullnode, app, key)
 
-        url = rawurl.replace("$USERNAME$", nodeuser)
-        url = url.replace("$PASSWORD$", nodepwd)
-        r = session.get(url, headers=ocsheaders)
-        j = json.loads(r.text)
-        logger.info(json.dumps(j, indent=4))
+            url = rawurl.replace("$USERNAME$", nodeuser)
+            url = url.replace("$PASSWORD$", nodepwd)
+            r = session.get(url, headers=ocsheaders)
+            j = json.loads(r.text)
+            logger.info(json.dumps(j, indent=4))
     except Exception as error:
         logger.error(f"Error getting configuration of  auto_groups on {fullnode}:{error}")
 
     if 'forcemfa' not in j['ocs']['data']['data'] and fullnode not in exclude_mfa4all:
         logger.info(f'Add forcemfa to {fullnode}')
-        logger.info(f'Set app config value')
-        # if drv.target == 'prod':
-        #     logger.warning(f'Not setting forcemfa for prod!')
-        #     sys.exit(0)
 
         try:
             app = 'auto_groups'
             key = 'auto_groups'
-            # app = 'stepupauth'
+            logger.info(f'Set app config value {key}')
+
             rawurl = drv.get_app_config_value_url(fullnode, app, key)
             url = rawurl.replace("$USERNAME$", nodeuser)
             url = url.replace("$PASSWORD$", nodepwd)
@@ -125,7 +123,7 @@ for fullnode in drv.allnodes:
             r = session.post(url, headers=headers, json=data)
 
             if r.status_code == 200:
-                logger.info(f'Auto_groups updated')
+                logger.info(f'Auto_groups {key} updated')
             else:
                 logger.error(f'Unable to update auto_groups: {r.status_code} - {r.text}')
 
@@ -133,6 +131,27 @@ for fullnode in drv.allnodes:
             r = session.get(url, headers=ocsheaders)
             j = json.loads(r.text)
             all_autogroups.append({fullnode:j['ocs']['data']['data']})
+
+            key = 'login_hook'
+            logger.info(f'Set app config value {key}')
+
+            rawurl = drv.get_app_config_value_url(fullnode, app, key)
+            url = rawurl.replace("$USERNAME$", nodeuser)
+            url = url.replace("$PASSWORD$", nodepwd)
+
+            headers = {
+                "OCS-APIRequest": "true",
+                "Content-Type": "application/json"
+            }
+
+            data = { "value": "true" }
+            # data = { "value": "[\"forcemfa\", \"sunet-gemensamt\"]"}
+            r = session.post(url, headers=headers, json=data)
+
+            if r.status_code == 200:
+                logger.info(f'Auto_groups {key} updated')
+            else:
+                logger.error(f'Unable to update auto_groups: {r.status_code} - {r.text}')
 
         except Exception as error:
             logger.error(f"Error during configuration of  auto_groups on {fullnode}:{error}")
