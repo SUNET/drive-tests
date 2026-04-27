@@ -14,8 +14,13 @@ args = parser.parse_args()
 config = vars(args)
 
 drv = sunetnextcloud.TestTarget(args.environment)
-nodetotpsecret = drv.get_seleniummfausertotpsecret(args.customer)
 
+nodetotpsecret = drv.get_seleniummfausertotpsecret(args.customer)
 totp = pyotp.TOTP(nodetotpsecret)
-print(f'OTP for user {drv.get_seleniummfauser(args.customer)} in {args.environment}')
+print(f'OTP for mfa user {drv.get_seleniummfauser(args.customer)} in {args.environment}')
+print(totp.now())
+
+nodetotpsecret = drv.get_seleniumusertotpsecret(args.customer)
+totp = pyotp.TOTP(nodetotpsecret)
+print(f'OTP for user {drv.get_seleniumuser(args.customer)} in {args.environment}')
 print(totp.now())
