@@ -32,7 +32,7 @@ expectedResultsFile = "expected.yaml"
 geckodriver_path = "/snap/bin/geckodriver"
 g_filename = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 g_driver_timeout = 20
-ocsheaders = {"OCS-APIRequest": "true"}
+ocsheaders = drv.ocsheaders
 
 use_driver_service = False
 if os.environ.get("SELENIUM_DRIVER_SERVICE") == "True":
