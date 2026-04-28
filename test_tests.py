@@ -45,10 +45,10 @@ class TestTests(unittest.TestCase):
                 self.common_singlenodes = data['singlenodes']
                 self.common_full_and_single_nodes = self.common_fullnodes + self.common_singlenodes
 
-                for entry in data[f'drive_metadata_files_prod']:
-                    self.common_metadata_prodnodes.append(entry.replace('_saml_prod', ''))
-                for entry in data[f'drive_metadata_files_test']:
-                    self.common_metadata_testnodes.append(entry.replace('_saml_test', ''))
+                # for entry in data[f'drive_metadata_files_prod']:
+                #     self.common_metadata_prodnodes.append(entry.replace('_saml_prod', ''))
+                # for entry in data[f'drive_metadata_files_test']:
+                #     self.common_metadata_testnodes.append(entry.replace('_saml_test', ''))
                 for entry in data['multinode_mapping']:
                     logger.info(f'Add {entry} to multinode mapping')
                     self.common_multinode_mapping_nodes.append(entry)
