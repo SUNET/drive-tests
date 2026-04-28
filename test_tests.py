@@ -45,10 +45,16 @@ class TestTests(unittest.TestCase):
                 self.common_singlenodes = data['singlenodes']
                 self.common_full_and_single_nodes = self.common_fullnodes + self.common_singlenodes
 
-                # for entry in data[f'drive_metadata_files_prod']:
-                #     self.common_metadata_prodnodes.append(entry.replace('_saml_prod', ''))
-                # for entry in data[f'drive_metadata_files_test']:
-                #     self.common_metadata_testnodes.append(entry.replace('_saml_test', ''))
+                prod_dir = os.fsencode(f'{opsbase}idpproxy-prod-common/overlay/etc/satosa/metadata/')
+                test_dir = os.fsencode(f'{opsbase}idpproxy-test-common/overlay/etc/satosa/metadata/')
+
+                for file in os.listdir(prod_dir):
+                    metadata_file = os.fsdecode(file)
+                    self.common_metadata_prodnodes.append(metadata_file.replace('_saml_prod.xml', ''))
+                for file in os.listdir(test_dir):
+                    metadata_file = os.fsdecode(file)
+                    self.common_metadata_testnodes.append(metadata_file.replace('_saml_test.xml', ''))
+
                 for entry in data['multinode_mapping']:
                     logger.info(f'Add {entry} to multinode mapping')
                     self.common_multinode_mapping_nodes.append(entry)
