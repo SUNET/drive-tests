@@ -54,7 +54,10 @@ else:
 use_driver_service = False
 if os.environ.get("SELENIUM_DRIVER_SERVICE") == "True":
     use_driver_service = True
-geckodriver_path = "/snap/bin/geckodriver"
+
+geckodriver_path = "/usr/bin/geckodriver"
+if not os.path.isfile(geckodriver_path):
+    geckodriver_path = "/snap/bin/geckodriver"
 
 opsbase = "sunet-drive-ops/"
 opsCommonFile = opsbase + "/global/overlay/etc/hiera/data/common.yaml"
