@@ -29,6 +29,12 @@ import os
 drv = sunetnextcloud.TestTarget()
 expectedResults = drv.expectedResults
 
+# Check for Collabora version > 25.04.9.x for save-button selector
+# Can be removed after upgrade of Collabora
+collabora_version = expectedResults[drv.target]['collabora']['capabilities']['productVersion']
+minimum_version = "25.04.9.0"
+try_css_selector = sunetnextcloud.Helper().is_version_greater_or_equal(collabora_version, minimum_version)
+
 g_filename=datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 g_isLoggedIn=False
 g_webdav_timeout = 30
@@ -505,7 +511,14 @@ class TestCollaboraSelenium(unittest.TestCase):
                             self.logger.info('Waiting for collabora frame')
                             wait.until(EC.frame_to_be_available_and_switch_to_it((By.CSS_SELECTOR, "iframe[id^='collaboraframe']")))
                             self.logger.info('Collabora loaded. Wait for the save button...')
-                            wait.until(EC.presence_of_element_located((By.ID, 'save-button')))
+
+                            if try_css_selector:
+                                self.logger.info(f'Looking for new css selector save-status from new Collabora version')
+                                wait.until(EC.visibility_of_element_located((By.CSS_SELECTOR,"[aria-describedby=save-status]")))
+                            else:
+                                self.logger.info(f'Looking for old save-button By.ID')
+                                wait.until(EC.presence_of_element_located((By.ID, 'save-button')))
+
                             self.logger.info('Save button found. Let\'s type some text')
                             ActionChains(self.driver).send_keys(f'Lorem Ipsum! {Keys.ENTER} {g_filename}').perform()
                             time.sleep(3)
@@ -688,7 +701,14 @@ class TestCollaboraSelenium(unittest.TestCase):
                     self.logger.info('Waiting for collabora frame')
                     wait.until(EC.frame_to_be_available_and_switch_to_it((By.CSS_SELECTOR, "iframe[id^='collaboraframe']")))
                     self.logger.info('Collabora loaded. Wait for the save button...')
-                    wait.until(EC.presence_of_element_located((By.ID, 'save-button')))
+
+                    if try_css_selector:
+                        self.logger.info(f'Looking for new css selector save-status from new Collabora version')
+                        wait.until(EC.visibility_of_element_located((By.CSS_SELECTOR,"[aria-describedby=save-status]")))
+                    else:
+                        self.logger.info(f'Looking for old save-button By.ID')
+                        wait.until(EC.presence_of_element_located((By.ID, 'save-button')))
+
                     self.logger.info('Save button found. Let\'s type some text')
                     ActionChains(self.driver).key_down(Keys.CONTROL).send_keys(Keys.UP).key_up(Keys.CONTROL).perform()
                     ActionChains(self.driver).key_down(Keys.CONTROL).send_keys(Keys.LEFT).key_up(Keys.CONTROL).perform()
@@ -871,7 +891,14 @@ class TestCollaboraSelenium(unittest.TestCase):
                     self.logger.info('Waiting for collabora frame')
                     wait.until(EC.frame_to_be_available_and_switch_to_it((By.CSS_SELECTOR, "iframe[id^='collaboraframe']")))
                     self.logger.info('Collabora loaded. Wait for the save button...')
-                    wait.until(EC.presence_of_element_located((By.ID, 'save-button')))
+
+                    if try_css_selector:
+                        self.logger.info(f'Looking for new css selector save-status from new Collabora version')
+                        wait.until(EC.visibility_of_element_located((By.CSS_SELECTOR,"[aria-describedby=save-status]")))
+                    else:
+                        self.logger.info(f'Looking for old save-button By.ID')
+                        wait.until(EC.presence_of_element_located((By.ID, 'save-button')))
+
                     self.logger.info('Save button found. Let\'s type some text')
                     ActionChains(self.driver).send_keys(f'Lorem ipsum! {Keys.ENTER}{g_filename}').perform()
                     time.sleep(1)

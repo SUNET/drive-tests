@@ -1357,7 +1357,6 @@ class TestTarget(object):
                 resultclass=NumbersTestResult,
             )
 
-
 class Helper:
     def get_random_string(self, length):
         # With combination of lower and upper case
@@ -1365,6 +1364,20 @@ class Helper:
         # print random string
         return result_str
 
+    def is_version_greater_or_equal(self, current_version: str, minimum_version: str) -> bool:
+        # Split the versions into parts and convert them to integers
+        current_parts = list(map(int, current_version.split('.')))
+        minimum_parts = list(map(int, minimum_version.split('.')))
+
+        # Compare each part of the version
+        for current, minimum in zip(current_parts, minimum_parts):
+            if current > minimum:
+                return True
+            elif current < minimum:
+                return False
+
+        # If all parts are equal up to the length of the minimum version, return True
+        return len(current_parts) >= len(minimum_parts)
 
 class SeleniumHelper:
     class UserType(Enum):
