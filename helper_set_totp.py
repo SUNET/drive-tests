@@ -33,9 +33,9 @@ try:
         for usertype in usertypes:
 
             logger.info(f'Config TOTP for {fullnode}')
-            if fullnode == 'nordunet' or fullnode == 'vinnova':
-                logger.info(f'Skipping {fullnode} for now')
-                continue # with next node
+            # if fullnode == 'nordunet' or fullnode == 'vinnova':
+            #     logger.info(f'Skipping {fullnode} for now')
+            #     continue # with next node
 
             if usertype == 'SELENIUM_MFA':
                 otpsecret = drv.get_seleniummfausertotpsecret(fullnode, False)
