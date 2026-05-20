@@ -23,7 +23,8 @@ htmlout='html-reports/archive'
 os.makedirs(xmlout, exist_ok=True)
 os.makedirs(htmlout, exist_ok=True)
 
-globalconfigfile = opsbase + "/global/overlay/etc/hiera/data/common.yaml"
+common_config_file = opsbase + "/global/overlay/etc/hiera/data/common.yaml"
+cosmos_rules_file = opsbase + "/cosmos-rules.yaml"
 drv = sunetnextcloud.TestTarget()
 
 logger = logging.getLogger(__name__)
@@ -31,10 +32,13 @@ logging.basicConfig(format = '%(asctime)s - %(module)s.%(funcName)s - %(levelnam
                 datefmt = '%Y-%m-%d %H:%M:%S', level = logging.INFO)
 
 class TestTests(unittest.TestCase):
+    global cosmos_rules
     def setUp(self):
-        if os.path.exists(globalconfigfile):
-            with open(globalconfigfile, "r") as stream:
+        if os.path.exists(common_config_file):
+            with open(common_config_file, "r") as stream:
                 data=yaml.safe_load(stream)
+                # self.fullnodes = data['fullnodes']
+                # self.singlenodes = data['singlenodes']
                 self.allnodes=data['fullnodes'] + data['singlenodes']
 
                 self.common_metadata_prodnodes = []
@@ -64,10 +68,54 @@ class TestTests(unittest.TestCase):
 
                 self.common_metadata_prodnodes = sorted(self.common_metadata_prodnodes)
                 self.common_metadata_testnodes = sorted(self.common_metadata_testnodes)
+        else:
+            logger.warning(f'Global config file not found at {common_config_file}')
+
+        if os.path.exists(cosmos_rules_file):
+            with open(cosmos_rules_file, "r") as stream:
+                self.cosmos_rules=yaml.safe_load(stream)
+
+
+                self.cosmos_fullnode_names = []
+                self.cosmos_multinode_names = []
+
+                # Extract full nodes and multinodes from cosmos rules
+                for key, value in self.cosmos_rules.items():
+                    if "node[" in key:
+                        node_name = key.split(".")[1].replace("\\","")
+                        if node_name not in self.cosmos_fullnode_names:
+                            self.cosmos_fullnode_names.append(node_name)
+
+                    if "multinode" in key:
+                        # logger.info(f'Check sites for {key}')
+
+                        if 'sunet::frontend::register_sites_array' in value.keys():
+                            sites = value['sunet::frontend::register_sites_array']['sites']
+                            for site in sites:
+                                # Convert keys into a list to get first entry and split to get node name
+                                node_name = list(site.keys())[0].split('.')[0]
+                                if node_name not in self.cosmos_multinode_names:
+                                    self.cosmos_multinode_names.append(node_name)
+
+            logger.info(f'Cosmos rules loaded')
+        else:
+            logger.warning(f'Cosmos rules file not found at {cosmos_rules_file}')
+
 
     def test_logger(self):
         logger.info(f'TestID: {self._testMethodName}')
         pass
+
+    def test_cosmos_mapping(self):
+        logger.info(f'TestID: {self._testMethodName}')
+        logger.info(f'Test cosmos rules mapping')
+
+        # Check if cosmos full nodes are mapped in common.yaml and expected.yaml
+        for cosmos_fullnode in self.cosmos_fullnode_names:
+            if cosmos_fullnode not in self.common_fullnodes:
+                logger.warning(f'{cosmos_fullnode} in cosmos_rules, but not in common.yaml')
+            if cosmos_fullnode not in drv.redundantnodes:
+                logger.warning(f'{cosmos_fullnode} in cosmos_rules, but not in expected.yaml')
 
     def test_common_mapping(self):
         logger.info(f'TestID: {self._testMethodName}')
@@ -102,7 +150,7 @@ class TestTests(unittest.TestCase):
             logger.info(f'We are only testing single nodes: {drv.nodestotest}')
             testMissing = False
 
-        if os.path.exists(globalconfigfile) and len(drv.nodestotest) != 1:
+        if os.path.exists(common_config_file) and len(drv.nodestotest) != 1:
             logger.info('Check if we are testing all nodes')
 
             for configurednode in self.common_metadata_prodnodes:

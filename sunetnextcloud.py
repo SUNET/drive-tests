@@ -105,6 +105,7 @@ class TestTarget(object):
     nodestotest = None
     allnodes = expectedResults["global"]["allnodes"]
     fullnodes = expectedResults["global"]["fullnodes"]
+    redundantnodes = expectedResults["global"]["redundantnodes"]
     multinodes = expectedResults["global"]["multinodes"]
     aliasnodes = expectedResults["global"]["aliasnodes"]
     browsers = expectedResults["global"]["testBrowsers"]
