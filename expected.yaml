@@ -89,7 +89,7 @@ global:
       vr,
     ]
   redundantnodes:
-    [extern, gih, hh, kau, lnu, ltu, mdu, scilifelab, su, sunet, vr]
+    [extern, gih, hh, hhs, kau, lnu, ltu, mdu, scilifelab, su, sunet, vr]
   multinodes:
     [
       ki,
