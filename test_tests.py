@@ -113,9 +113,15 @@ class TestTests(unittest.TestCase):
         # Check if cosmos full nodes are mapped in common.yaml and expected.yaml
         for cosmos_fullnode in self.cosmos_fullnode_names:
             if cosmos_fullnode not in self.common_fullnodes:
-                logger.warning(f'{cosmos_fullnode} in cosmos_rules, but not in common.yaml')
+                logger.warning(f'{cosmos_fullnode} full node in cosmos_rules, but not in common.yaml')
             if cosmos_fullnode not in drv.redundantnodes:
-                logger.warning(f'{cosmos_fullnode} in cosmos_rules, but not in expected.yaml')
+                logger.warning(f'{cosmos_fullnode} full node in cosmos_rules, but not in expected.yaml')
+
+        for cosmos_multinode in self.cosmos_multinode_names:
+            if cosmos_multinode not in self.common_multinode_mapping_nodes:
+                logger.warning(f'{cosmos_multinode} multinode in cosmos_rules, but not in common.yaml')
+            if cosmos_multinode not in drv.multinodes:
+                logger.warning(f'{cosmos_multinode} multinode in cosmos_rules, but not in expected.yaml')
 
     def test_common_mapping(self):
         logger.info(f'TestID: {self._testMethodName}')
