@@ -268,8 +268,8 @@ prod:
       hasTemplateSource: true
       hasZoteroSupport: true
       productName: "Collabora Online"
-      productVersion: "25.04.4.3"
-      productVersionHash: "997d8ce391"
+      productVersion: "25.04.9.5"
+      productVersionHash: "53f91c2564"
 test:
   loginexceptions: [kau, scilifelab, suni, sp, sics]
   defaultapps:
