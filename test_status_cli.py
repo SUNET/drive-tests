@@ -304,7 +304,7 @@ class SeamlessAccessInfo(threading.Thread):
             nodebaseurl = drv.get_node_base_url(self.node)
             failed = False
             for fe in range(1, 4):
-                logger.info(f"Getting node login url from: {url} node {fe}")
+                logger.info(f"Getting seamless access info from: {url} node {fe}")
                 s = requests.Session()
                 serverid = f"node{fe}.{nodebaseurl}"
                 s.cookies.set("SERVERID", serverid)
