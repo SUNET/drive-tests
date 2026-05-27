@@ -330,7 +330,7 @@ class SeamlessAccessInfo(threading.Thread):
             testThreadsRunning -= 1
             return
 
-        logger.info(f"SeamlessAccessInfo thread done for node {well_known_ocm_url}")
+        logger.info(f"SeamlessAccessInfo thread done for node {nodebaseurl}")
         testThreadsRunning -= 1
         logger.info(f"SeamlessAccessInfo threads remaining: {testThreadsRunning}")
         return
