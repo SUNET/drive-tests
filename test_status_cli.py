@@ -330,6 +330,11 @@ class SeamlessAccessInfo(threading.Thread):
             testThreadsRunning -= 1
             return
 
+        logger.info(f"SeamlessAccessInfo thread done for node {well_known_ocm_url}")
+        testThreadsRunning -= 1
+        logger.info(f"SeamlessAccessInfo threads remaining: {testThreadsRunning}")
+        return
+
 class OcmInfo(threading.Thread):
     def __init__(self, node, TestStatus, verify=True):
         threading.Thread.__init__(self)
@@ -406,7 +411,7 @@ class OcmInfo(threading.Thread):
         logger.info(f"OcmInfo thread done for node {well_known_ocm_url}")
         testThreadsRunning -= 1
         logger.info(f"OcmInfo threads remaining: {testThreadsRunning}")
-
+        return
 
 # Test frontend status for code 200, no content check
 class FrontentStatus(threading.Thread):
