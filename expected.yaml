@@ -272,6 +272,11 @@ prod:
       productName: "Collabora Online"
       productVersion: "25.04.9.5"
       productVersionHash: "53f91c2564"
+  ocm:
+    enabled: true
+    apiVersion: "1.0-proposal1"
+    version: "1.1.0"
+    endPoint: "/ocm"
 test:
   loginexceptions: [kau, scilifelab, suni, sp, sics]
   defaultapps:
@@ -405,6 +410,11 @@ test:
       productName: "Collabora Online"
       productVersion: "25.04.9.5"
       productVersionHash: "53f91c2564"
+  ocm:
+    enabled: true
+    apiVersion: "1.0-proposal1"
+    version: "1.1.0"
+    endPoint: "/ocm"
 storage:
   mainStorageLocation: "s3.sto4.safedc.net"
   backupStorageLocation: "s3.sto3.safedc.net"

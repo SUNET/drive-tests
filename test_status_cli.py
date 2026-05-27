@@ -322,7 +322,6 @@ class SeamlessAccessInfo(threading.Thread):
             if failed:
                 testThreadsRunning -= 1
                 return
-
         except Exception as error:
             logger.error(
                 f"Error getting seamless access info from {self.node} node {fe}: {error}"
@@ -331,9 +330,82 @@ class SeamlessAccessInfo(threading.Thread):
             testThreadsRunning -= 1
             return
 
-        logger.info(f"SeamlessAccessInfo thread done for node {url}")
+class OcmInfo(threading.Thread):
+    def __init__(self, node, TestStatus, verify=True):
+        threading.Thread.__init__(self)
+        self.node = node
+        self.TestStatus = TestStatus
+        self.verify = verify
+
+    def run(self):
+        global testThreadsRunning
+        global logger
+        global expectedResults
+        global g_failedNodes
+        testThreadsRunning += 1
+        drv = sunetnextcloud.TestTarget()
+        logger.info(
+            f"OcmInfo thread {testThreadsRunning} started for node {self.node}"
+        )
+
+        fe = None
+        try:
+            nodebaseurl = drv.get_node_base_url(self.node)
+            nodeurl = drv.get_node_url(self.node)
+            well_known_ocm_url = drv.get_well_known_ocm_url(self.node)
+            failed = False
+            for fe in range(1, 4):
+                logger.info(f"Getting ocm info from: {well_known_ocm_url} through node {fe}")
+                s = requests.Session()
+                serverid = f"node{fe}.{nodebaseurl}"
+                s.cookies.set("SERVERID", serverid)
+                r = get(well_known_ocm_url, session=s, timeout=g_requestTimeout, verify=self.verify)
+                j = json.loads(r.text)
+                # print(json.dumps(j, indent=4))
+
+                if j['enabled'] != expectedResults[drv.target]["ocm"]["enabled"]:
+                    failed = True
+                    logger.error(f'{j['enabled']} is not {expectedResults[drv.target]["ocm"]["enabled"]}')
+                if j['apiVersion'] != expectedResults[drv.target]["ocm"]["apiVersion"]:
+                    failed = True
+                    logger.error(f'{j['apiVersion']} is not {expectedResults[drv.target]["ocm"]["apiVersion"]}')
+                if j['version'] != expectedResults[drv.target]["ocm"]["version"]:
+                    failed = True
+                    logger.error(f'{j['version']} is not {expectedResults[drv.target]["ocm"]["version"]}')
+                if j['endPoint'] != f'{nodeurl}{expectedResults[drv.target]["ocm"]["endPoint"]}':
+                    failed = True
+                    logger.error(f'{j['endPoint']} is not {nodeurl}{expectedResults[drv.target]["ocm"]["endPoint"]}')
+
+                # print(j['apiVersion'])
+                # print(j['version'])
+                # print(j['endPoint'])
+
+                # if (
+                #     "seamlessaccess.org" not in r.text
+                #     and self.node not in expectedResults[drv.target]["loginexceptions"]
+                # ):
+                #     logger.error(
+                #         f"Error getting seamless access info from: {self.node}. Received text: {r.text}"
+                #     )
+                #     g_failedNodes.append(f"{url} - Node {fe}")
+                #     failed = True
+
+                if failed:
+                    g_failedNodes.append(f"{well_known_ocm_url} - Node {fe}")
+                    testThreadsRunning -= 1
+                    return
+
+        except Exception as error:
+            logger.error(
+                f"Error getting seamless access info from {self.node} node {fe}: {error}"
+            )
+            g_failedNodes.append(well_known_ocm_url)
+            testThreadsRunning -= 1
+            return
+
+        logger.info(f"OcmInfo thread done for node {well_known_ocm_url}")
         testThreadsRunning -= 1
-        logger.info(f"SeamlessAccessInfo threads remaining: {testThreadsRunning}")
+        logger.info(f"OcmInfo threads remaining: {testThreadsRunning}")
 
 
 # Test frontend status for code 200, no content check
@@ -509,6 +581,30 @@ class TestStatus(unittest.TestCase):
         if len(g_failedNodes) > 0:
             logger.error(
                 f"SeamlessAccessInfo test failed for {len(g_failedNodes)} of {len(drv.allnodes)} nodes:"
+            )
+            for node in g_failedNodes:
+                with self.subTest(mynode=node):
+                    logger.error(f"   {node}")
+                    self.assertTrue(False)
+            g_failedNodes = []
+
+    def test_ocminfo(self):
+        global g_failedNodes
+        drv = sunetnextcloud.TestTarget()
+
+        for node in expectedResults["global"]["allnodes"]:
+            if node in drv.allnodes and node not in expectedResults[drv.target]['loginexceptions']:
+                with self.subTest(myurl=node):
+                    logger.info(f"TestID: {node}")
+                    ocmInfoThread = OcmInfo(node, self)
+                    ocmInfoThread.start()
+
+        while testThreadsRunning > 0:
+            time.sleep(1)
+
+        if len(g_failedNodes) > 0:
+            logger.error(
+                f"OCM test failed for {len(g_failedNodes)} of {len(drv.allnodes)} nodes:"
             )
             for node in g_failedNodes:
                 with self.subTest(mynode=node):

@@ -844,6 +844,16 @@ class TestTarget(object):
             + "/status.php"
         )
 
+    def get_well_known_ocm_url(self, node):
+        return (
+            "https://"
+            + self.getnodeprefix(node)
+            + self.targetprefix
+            + self.delimiter
+            + self.baseurl
+            + "/.well-known/ocm"
+        )
+
     def get_webdav_root(self, username):
         return "/remote.php/dav/files/" + username + "/"
 
