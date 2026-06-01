@@ -53,7 +53,6 @@ class TestOcsConfigAll(unittest.TestCase):
             nodepwd = drv.get_ocsuserapppassword(node)
 
             rawurl = drv.get_all_apps_url(node)
-            logger.info(rawurl)
             url = rawurl.replace("$USERNAME$", nodeuser)
             url = url.replace("$PASSWORD$", nodepwd)
             session = requests.Session()
