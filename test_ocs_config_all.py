@@ -46,13 +46,13 @@ class TestOcsConfigAll(unittest.TestCase):
         node_configuration = {}
         for node in drv.allnodes:
             node_config_path = f'{g_localDirectory}/{node}.{drv.target}.json'
-
             node_config_file = Path(node_config_path)
             if node_config_file.is_file():
                 logger.info(f'Configuration file already exists, skipping {node}')
                 continue
                 # file exists
 
+            key = 'none'
             logger.info(f'Execute for {node}')
             nodeuser = drv.get_ocsuser(node)
             nodepwd = drv.get_ocsuserapppassword(node)
@@ -90,7 +90,6 @@ class TestOcsConfigAll(unittest.TestCase):
                     j = json.loads(r.text)
                     # logger.info(json.dumps(j, indent=4))
 
-                    key = 'none'
                     for key in j['ocs']['data']['data']:
                         logger.info(f'Get app config value for node: {node} - app: {app} - key: {key}')
                         # key = 'auto_groups'
@@ -142,7 +141,7 @@ class TestOcsConfigAll(unittest.TestCase):
                     node_reference_configuration = json.load(f)
                     f.close()
 
-
+            key = 'none'
             logger.info(f'Execute for {node}')
             nodeuser = drv.get_ocsuser(node)
             nodepwd = drv.get_ocsuserapppassword(node)
