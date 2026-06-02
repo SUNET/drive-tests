@@ -45,8 +45,13 @@ class TestOcsConfigAll(unittest.TestCase):
 
         node_configuration = {}
         for node in drv.allnodes:
-
             node_config_path = f'{g_localDirectory}/{node}.{drv.target}.json'
+
+            node_config_file = Path(node_config_path)
+            if node_config_file.is_file():
+                logger.info(f'Configuration file already exists, skipping {node}')
+                continue
+                # file exists
 
             logger.info(f'Execute for {node}')
             nodeuser = drv.get_ocsuser(node)
@@ -119,6 +124,84 @@ class TestOcsConfigAll(unittest.TestCase):
                 with open(node_config_path, 'w') as f:
                     logger.info(f'Save node configuration file to {node_config_path}')
                     json.dump(node_configuration, f, indent=4, sort_keys=True)
+
+    def test_check_configuration(self):
+        logger.info(f"TestID: {self._testMethodName}")
+
+        Path(g_localDirectory).mkdir(parents=True, exist_ok=True)
+
+        for node in drv.allnodes:
+            node_config_path = f'{g_localDirectory}/{node}.{drv.target}.json'
+            node_config_file = Path(node_config_path)
+            if not node_config_file.is_file():
+                logger.error(f'Configuration does not exists, please run get_configuration for {node}')
+                continue
+            else:
+                with open(node_config_path) as f:
+                    logger.info(f'Read reference configuration for {node} from {node_config_path}')
+                    node_reference_configuration = json.load(f)
+                    f.close()
+
+
+            logger.info(f'Execute for {node}')
+            nodeuser = drv.get_ocsuser(node)
+            nodepwd = drv.get_ocsuserapppassword(node)
+
+            rawurl = drv.get_all_apps_url(node)
+            url = rawurl.replace("$USERNAME$", nodeuser)
+            url = url.replace("$PASSWORD$", nodepwd)
+            session = requests.Session()
+            r = session.get(url, headers=ocsheaders)
+
+            try:
+                j = json.loads(r.text)
+                apps = j["ocs"]["data"]["apps"]
+            except Exception as error:
+                logger.error(f"No or invalid apps JSON reply received from {node}:{error}")
+                continue
+
+            for app in apps:
+                logger.info(f'Get configuration for {app}')
+
+                try:
+                    rawurl = drv.get_app_url(node, app)
+                    url = rawurl.replace("$USERNAME$", nodeuser)
+                    url = url.replace("$PASSWORD$", nodepwd)
+                    r = session.get(url, headers=ocsheaders)
+                    j = json.loads(r.text)
+                    # logger.info(json.dumps(j, indent=4))
+
+                    logger.info(f'Get configuration keys for {app}')
+
+                    rawurl = drv.get_app_config_keys_url(node, app)
+                    url = rawurl.replace("$USERNAME$", nodeuser)
+                    url = url.replace("$PASSWORD$", nodepwd)
+                    r = session.get(url, headers=ocsheaders)
+                    j = json.loads(r.text)
+                    # logger.info(json.dumps(j, indent=4))
+
+                    key = 'none'
+                    for key in j['ocs']['data']['data']:
+                        logger.info(f'Get app config value for node: {node} - app: {app} - key: {key}')
+                        # key = 'auto_groups'
+                        # app = 'stepupauth'
+                        rawurl = drv.get_app_config_value_url(node, app, key)
+
+                        url = rawurl.replace("$USERNAME$", nodeuser)
+                        url = url.replace("$PASSWORD$", nodepwd)
+                        r = session.get(url, headers=ocsheaders)
+                        j = json.loads(r.text)
+
+                        with self.subTest(keychecktest=f'{node}.{app}.{key}'):
+                            logger.info(f'Compare node configuration element: {node} - app: {app} - key: {key}')
+                            self.assertEqual(j['ocs']['data']['data'], node_reference_configuration[node][app][key])
+
+                except AssertionError:
+                    raise
+
+                except Exception as error:
+                    logger.error(f"No or invalid JSON reply received from node: {node} - app: {app} - {key}:{error}")
+                    continue
 
 if __name__ == "__main__":
     if drv.testrunner == "xml":
