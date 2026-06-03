@@ -690,13 +690,13 @@ apps:
     enabled: false
   user_saml:
     prod:
-      version: ["7.1.1", "7.1.4"]
+      version: ["7.1.1", "7.1.4", "8.0.0"]
       installed: true
       enabled: false
       exceptenabled:
         - scilifelab
     test:
-      version: ["7.1.1", "7.1.4"]
+      version: ["7.1.1", "7.1.4", "8.0.0"]
       installed: true
       enabled: false
       exceptenabled:
