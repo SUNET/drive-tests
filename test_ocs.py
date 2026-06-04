@@ -512,6 +512,26 @@ class UserLifeCycle(threading.Thread):
             g_testThreadsRunning -= 1
             return
 
+        logger.info(f"Get user info for {cliuser}")
+        userinfourl = drv.get_user_url(fullnode, cliuser)
+        userinfourl = userinfourl.replace("$USERNAME$", nodeuser)
+        userinfourl = userinfourl.replace("$PASSWORD$", nodepwd)
+        try:
+            r = session.get(userinfourl, headers=ocsheaders, verify=self.verify)
+            j = json.loads(r.text)
+            if 'forcemfa' not in j['ocs']['data']['groups']:
+                logger.warning(f'focemfa not in user groups (yet?), sleeping for a second')
+                time.sleep(1)
+        except Exception as error:
+            logger.error(f"No or invalid JSON reply received from {rawurl}: {error}")
+            if r is not None:
+                logger.error(f"Last response: {r.text}")
+            else:
+                logger.error(f"No last response received")
+            g_testPassed[fullnode] = False
+            g_testThreadsRunning -= 1
+            return
+
         # self.assertEqual(j["ocs"]["meta"]["status"], expectedResults[drv.target]['ocs_capabilities']['ocs_meta_status'])
         # self.assertEqual(j["ocs"]["meta"]["statuscode"], expectedResults[drv.target]['ocs_capabilities']['ocs_meta_statuscode'])
         # self.assertEqual(j["ocs"]["meta"]["message"], expectedResults[drv.target]['ocs_capabilities']['ocs_meta_message'])
