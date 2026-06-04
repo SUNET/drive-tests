@@ -22,6 +22,7 @@ offset = 0
 createusers = True
 deleteusers = True
 disableusers = True
+checkusers = True
 calls = 100
 
 g_testThreadsRunning = 0
@@ -77,6 +78,18 @@ class NodeOcsUserLifecycle(threading.Thread):
                         r = requests.post(url, headers=ocsheaders, data=data)
                         j = json.loads(r.text)
                         logger.info(j["ocs"]["meta"]["status"])
+
+                    if checkusers:
+                        logger.info(f"Check user info {cliuser}")
+                        userinfourl = drv.get_user_url(fullnode, cliuser)
+                        userinfourl = userinfourl.replace("$USERNAME$", nodeuser)
+                        userinfourl = userinfourl.replace("$PASSWORD$", nodepwd)
+                        r = requests.get(userinfourl, headers=ocsheaders)
+                        j = json.loads(r.text)
+                        logger.info(j["ocs"]["meta"]["status"])
+                        if 'forcemfa' not in j['ocs']['data']['groups']:
+                            logger.warning(f'focemfa not in user groups (yet?), sleeping for a second')
+                            time.sleep(1)
 
                     if disableusers:
                         logger.info("Disable cli user " + cliuser)
