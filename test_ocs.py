@@ -463,6 +463,7 @@ class UserLifeCycle(threading.Thread):
         fullnode = self.name
         g_testPassed[fullnode] = False
         logger.info(f"Setting passed for {fullnode} to {g_testPassed.get(fullnode)}")
+        r = None
 
         try:
             session = requests.Session()
@@ -578,8 +579,11 @@ class UserLifeCycle(threading.Thread):
                 expectedResults[drv.target]["ocs_capabilities"]["ocs_meta_message"],
             )
         except Exception as error:
-            logger.info(f"No or invalid JSON reply received from {rawurl}: {error}")
-            logger.info(r.text)
+            logger.error(f"No or invalid JSON reply received from {rawurl}: {error}")
+            if r is not None:
+                logger.error(f"Last response: {r.text}")
+            else:
+                logger.error(f"No last response received")
             g_testPassed[fullnode] = False
             g_testThreadsRunning -= 1
             return
