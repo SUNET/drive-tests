@@ -10,9 +10,9 @@ import time
 import unittest
 from urllib.parse import quote
 
+import HtmlTestRunner
 import requests
 import xmlrunner
-import HtmlTestRunner
 
 import sunetnextcloud
 
@@ -133,30 +133,32 @@ class AppVersions(threading.Thread):
                 return
 
         if "auto_groups" not in apps:
-            logger.error(f'Autogroups not found for {fullnode}')
+            logger.error(f"Autogroups not found for {fullnode}")
             g_testPassed[fullnode] = False
             g_testThreadsRunning -= 1
             return
         else:
             try:
-                rawurl = drv.get_app_url(fullnode, 'auto_groups')
+                rawurl = drv.get_app_url(fullnode, "auto_groups")
                 url = rawurl.replace("$USERNAME$", nodeuser)
                 url = url.replace("$PASSWORD$", nodepwd)
-                r = session.post(url, headers=ocsheaders)
+                # r = session.post(url, headers=ocsheaders)
             except Exception as error:
-                logger.error(f"Error ensuring auto_groups active on {fullnode}: {error}")
+                logger.error(
+                    f"Error ensuring auto_groups active on {fullnode}: {error}"
+                )
                 g_testPassed[fullnode] = False
                 g_testThreadsRunning -= 1
                 return
 
         if "stepupauth" not in apps:
-            logger.error(f'stepupauth not found for {fullnode}')
+            logger.error(f"stepupauth not found for {fullnode}")
             g_testPassed[fullnode] = False
             g_testThreadsRunning -= 1
             return
         else:
             try:
-                rawurl = drv.get_app_url(fullnode, 'stepupauth')
+                rawurl = drv.get_app_url(fullnode, "stepupauth")
                 url = rawurl.replace("$USERNAME$", nodeuser)
                 url = url.replace("$PASSWORD$", nodepwd)
                 r = session.post(url, headers=ocsheaders)
@@ -497,7 +499,7 @@ class UserLifeCycle(threading.Thread):
             logger.info(json.dumps(j, indent=4, sort_keys=True))
 
             if j["ocs"]["meta"]["statuscode"] == 102:
-                logger.info(f'User already exists, skip retry creating the user')
+                logger.info(f"User already exists, skip retry creating the user")
             elif j["ocs"]["meta"]["statuscode"] != 200:
                 logger.info(
                     f"Retry once to create cli user {cliuser} after error {j['ocs']['meta']['statuscode']}"
@@ -519,8 +521,10 @@ class UserLifeCycle(threading.Thread):
         try:
             r = session.get(userinfourl, headers=ocsheaders, verify=self.verify)
             j = json.loads(r.text)
-            if 'forcemfa' not in j['ocs']['data']['groups']:
-                logger.warning(f'focemfa not in user groups (yet?), sleeping for a second')
+            if "forcemfa" not in j["ocs"]["data"]["groups"]:
+                logger.warning(
+                    f"focemfa not in user groups (yet?), sleeping for a second"
+                )
                 time.sleep(1)
         except Exception as error:
             logger.error(f"No or invalid JSON reply received from {rawurl}: {error}")
