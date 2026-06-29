@@ -692,7 +692,7 @@ apps:
     enabled: false
   user_saml:
     prod:
-      version: ["7.1.1", "7.1.4", "8.0.0"]
+      version: ["7.1.1", "7.1.4", "8.0.0", "8.1.2"]
       installed: true
       enabled: false
       exceptenabled:
