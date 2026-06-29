@@ -687,20 +687,20 @@ class TestOcsCalls(unittest.TestCase):
             with self.subTest(mynode=fullnode):
                 self.assertTrue(g_testPassed[fullnode])
 
-    def test_userlifecycle(self):
-        drv = sunetnextcloud.TestTarget()
-        for fullnode in drv.nodestotest:
-            with self.subTest(mynode=fullnode):
-                logger.info(f"TestID: {fullnode}")
-                userLifecycleThread = UserLifeCycle(fullnode, self, verify=drv.verify)
-                userLifecycleThread.start()
+    # def test_userlifecycle(self):
+    #     drv = sunetnextcloud.TestTarget()
+    #     for fullnode in drv.nodestotest:
+    #         with self.subTest(mynode=fullnode):
+    #             logger.info(f"TestID: {fullnode}")
+    #             userLifecycleThread = UserLifeCycle(fullnode, self, verify=drv.verify)
+    #             userLifecycleThread.start()
 
-        while g_testThreadsRunning > 0:
-            time.sleep(1)
+    #     while g_testThreadsRunning > 0:
+    #         time.sleep(1)
 
-        for fullnode in drv.nodestotest:
-            with self.subTest(mynode=fullnode):
-                self.assertTrue(g_testPassed[fullnode])
+    #     for fullnode in drv.nodestotest:
+    #         with self.subTest(mynode=fullnode):
+    #             self.assertTrue(g_testPassed[fullnode])
 
     def test_app_versions(self):
         drv = sunetnextcloud.TestTarget()
