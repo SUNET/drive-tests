@@ -314,8 +314,8 @@ class NodeGroups(threading.Thread):
             logger.info(f"Found forcemfa on {fullnode}")
         else:
             logger.info(f"Group forcemfa does not exist on {fullnode}")
-            if fullnode == 'kau':
-                logger.warning('Excluding kau from test')
+            if fullnode == "kau":
+                logger.warning("Excluding kau from test")
                 g_testPassed[fullnode] = True
             else:
                 g_testPassed[fullnode] = False
@@ -470,15 +470,14 @@ class UserLifeCycle(threading.Thread):
         g_testPassed[fullnode] = False
         logger.info(f"Setting passed for {fullnode} to {g_testPassed.get(fullnode)}")
         r = None
+        session = requests.Session()
+
+        # Confirm app password for session
 
         try:
-            session = requests.Session()
-            rawurl = drv.get_users_url(fullnode)
-            logger.info(f"Add user through {rawurl}")
             nodeuser = drv.get_ocsuser(fullnode)
-            nodepwd = drv.get_ocsuserapppassword(fullnode)
-            url = rawurl.replace("$USERNAME$", nodeuser)
-            url = url.replace("$PASSWORD$", nodepwd)
+            nodeapppwd = drv.get_ocsuserapppassword(fullnode)
+            nodepwd = drv.get_ocsuserpassword(fullnode)
         except Exception as error:
             logger.error(f"Error getting credentials for {rawurl}:{error}")
             g_testThreadsRunning -= 1
@@ -487,10 +486,38 @@ class UserLifeCycle(threading.Thread):
         cliuser = "__cli_user_" + fullnode
         clipwd = sunetnextcloud.Helper().get_random_string(12)
 
-        data = {"userid": cliuser, "password": clipwd}
+        logger.info(f"Confirm app password for {nodeuser}")
+        try:
+            rawurl = drv.get_confirm_apppassword_url(fullnode)
+            logger.info(f"Confirm app password using {rawurl}")
+            url = rawurl.replace("$USERNAME$", nodeuser)
+            url = url.replace("$PASSWORD$", nodeapppwd)
+
+            data = {
+                "password": nodepwd  # Replace with the user's password
+            }
+
+            r = session.put(
+                url,
+                headers=ocsheaders,
+                json=data,
+                timeout=g_requestTimeout,
+                verify=True,
+            )
+            logger.info(r.text)
+        except Exception as error:
+            logger.error(f"Error confirming app password: {error}")
+            g_testPassed[fullnode] = False
+            g_testThreadsRunning -= 1
+            return
 
         logger.info(f"Create cli user {cliuser}")
+        data = {"userid": cliuser, "password": clipwd}
         try:
+            rawurl = drv.get_users_url(fullnode)
+            logger.info(f"Add user through {rawurl}")
+            url = rawurl.replace("$USERNAME$", nodeuser)
+            url = url.replace("$PASSWORD$", nodeapppwd)
             r = session.post(url, headers=ocsheaders, data=data, verify=self.verify)
             logger.info(f"cli user created with status {r.status_code} - {r.text}")
         except Exception as error:
@@ -521,7 +548,7 @@ class UserLifeCycle(threading.Thread):
         logger.info(f"Get user info for {cliuser}")
         userinfourl = drv.get_user_url(fullnode, cliuser)
         userinfourl = userinfourl.replace("$USERNAME$", nodeuser)
-        userinfourl = userinfourl.replace("$PASSWORD$", nodepwd)
+        userinfourl = userinfourl.replace("$PASSWORD$", nodeapppwd)
         try:
             r = session.get(userinfourl, headers=ocsheaders, verify=self.verify)
             j = json.loads(r.text)
@@ -547,7 +574,7 @@ class UserLifeCycle(threading.Thread):
         logger.info(f"Disable cli user {cliuser}")
         disableuserurl = drv.get_disable_user_url(fullnode, cliuser)
         disableuserurl = disableuserurl.replace("$USERNAME$", nodeuser)
-        disableuserurl = disableuserurl.replace("$PASSWORD$", nodepwd)
+        disableuserurl = disableuserurl.replace("$PASSWORD$", nodeapppwd)
         try:
             r = session.put(disableuserurl, headers=ocsheaders, verify=self.verify)
             j = json.loads(r.text)
@@ -579,7 +606,7 @@ class UserLifeCycle(threading.Thread):
             logger.info(f"Delete cli user {cliuser}")
             rawurl = drv.get_user_url(fullnode, cliuser)
             url = rawurl.replace("$USERNAME$", nodeuser)
-            url = url.replace("$PASSWORD$", nodepwd)
+            url = url.replace("$PASSWORD$", nodeapppwd)
             r = session.delete(url, headers=ocsheaders, verify=drv.verify)
             j = json.loads(r.text)
             logger.info(json.dumps(j, indent=4, sort_keys=True))
@@ -691,20 +718,20 @@ class TestOcsCalls(unittest.TestCase):
             with self.subTest(mynode=fullnode):
                 self.assertTrue(g_testPassed[fullnode])
 
-    # def test_userlifecycle(self):
-    #     drv = sunetnextcloud.TestTarget()
-    #     for fullnode in drv.nodestotest:
-    #         with self.subTest(mynode=fullnode):
-    #             logger.info(f"TestID: {fullnode}")
-    #             userLifecycleThread = UserLifeCycle(fullnode, self, verify=drv.verify)
-    #             userLifecycleThread.start()
+    def test_userlifecycle(self):
+        drv = sunetnextcloud.TestTarget()
+        for fullnode in drv.nodestotest:
+            with self.subTest(mynode=fullnode):
+                logger.info(f"TestID: {fullnode}")
+                userLifecycleThread = UserLifeCycle(fullnode, self, verify=drv.verify)
+                userLifecycleThread.start()
 
-    #     while g_testThreadsRunning > 0:
-    #         time.sleep(1)
+        while g_testThreadsRunning > 0:
+            time.sleep(1)
 
-    #     for fullnode in drv.nodestotest:
-    #         with self.subTest(mynode=fullnode):
-    #             self.assertTrue(g_testPassed[fullnode])
+        for fullnode in drv.nodestotest:
+            with self.subTest(mynode=fullnode):
+                self.assertTrue(g_testPassed[fullnode])
 
     def test_app_versions(self):
         drv = sunetnextcloud.TestTarget()
