@@ -10,9 +10,9 @@ import time
 import unittest
 from datetime import datetime
 
+import HtmlTestRunner
 import requests
 import xmlrunner
-import HtmlTestRunner
 
 import sunetnextcloud
 
@@ -28,6 +28,7 @@ calls = 100
 g_testThreadsRunning = 0
 g_ocsPerformanceResults = []
 g_testPassed = {}
+g_requestTimeout = 10
 
 drv = sunetnextcloud.TestTarget()
 expectedResults = drv.expectedResults
@@ -59,23 +60,56 @@ class NodeOcsUserLifecycle(threading.Thread):
         for nodeindex in range(1, nodes + 1):
             logger.info(f"Node: {str(nodeindex)}")
 
+            try:
+                nodeuser = drv.get_ocsuser(fullnode)
+                nodeapppwd = drv.get_ocsuserapppassword(fullnode)
+                nodepwd = drv.get_ocsuserpassword(fullnode)
+                session = requests.Session()
+            except Exception as error:
+                logger.error(f"Error getting credentials for {self.name}:{error}")
+                g_testThreadsRunning -= 1
+                return
+
+            logger.info(f"Confirm app password for {nodeuser}")
+            try:
+                rawurl = drv.get_confirm_apppassword_url(fullnode)
+                logger.info(f"Confirm app password using {rawurl}")
+                url = rawurl.replace("$USERNAME$", nodeuser)
+                url = url.replace("$PASSWORD$", nodeapppwd)
+
+                data = {
+                    "password": nodepwd  # Replace with the user's password
+                }
+
+                r = session.put(
+                    url,
+                    headers=ocsheaders,
+                    json=data,
+                    timeout=g_requestTimeout,
+                    verify=True,
+                )
+                logger.info(r.text)
+            except Exception as error:
+                logger.error(f"Error confirming app password: {error}")
+                g_testPassed[fullnode] = False
+                g_testThreadsRunning -= 1
+                return
+
             for userindex in range(offset, offset + users + 1):
                 try:
                     logger.info(f"{drv.target} - User: {str(userindex)}")
-                    nodeuser = drv.get_ocsuser(fullnode)
-                    nodepwd = drv.get_ocsuserapppassword(fullnode)
-
                     usersuffix = str(nodeindex) + "_" + str(userindex)
                     cliuser = "__performance_user_" + usersuffix + "_" + fullnode
 
                     if createusers:
-                        url = url.replace("$USERNAME$", nodeuser)
-                        url = url.replace("$PASSWORD$", nodepwd)
+                        rawurl = drv.get_users_url(fullnode)
+                        url = rawurl.replace("$USERNAME$", nodeuser)
+                        url = url.replace("$PASSWORD$", nodeapppwd)
                         clipwd = sunetnextcloud.Helper().get_random_string(12)
 
                         data = {"userid": cliuser, "password": clipwd}
 
-                        r = requests.post(url, headers=ocsheaders, data=data)
+                        r = session.post(url, headers=ocsheaders, data=data)
                         j = json.loads(r.text)
                         logger.info(j["ocs"]["meta"]["status"])
 
@@ -83,20 +117,24 @@ class NodeOcsUserLifecycle(threading.Thread):
                         logger.info(f"Check user info {cliuser}")
                         userinfourl = drv.get_user_url(fullnode, cliuser)
                         userinfourl = userinfourl.replace("$USERNAME$", nodeuser)
-                        userinfourl = userinfourl.replace("$PASSWORD$", nodepwd)
-                        r = requests.get(userinfourl, headers=ocsheaders)
+                        userinfourl = userinfourl.replace("$PASSWORD$", nodeapppwd)
+                        r = session.get(userinfourl, headers=ocsheaders)
                         j = json.loads(r.text)
                         logger.info(j["ocs"]["meta"]["status"])
-                        if 'forcemfa' not in j['ocs']['data']['groups']:
-                            logger.warning(f'focemfa not in user groups (yet?), sleeping for a second')
+                        if "forcemfa" not in j["ocs"]["data"]["groups"]:
+                            logger.warning(
+                                f"focemfa not in user groups (yet?), sleeping for a second"
+                            )
                             time.sleep(1)
 
                     if disableusers:
                         logger.info("Disable cli user " + cliuser)
                         disableuserurl = drv.get_disable_user_url(fullnode, cliuser)
                         disableuserurl = disableuserurl.replace("$USERNAME$", nodeuser)
-                        disableuserurl = disableuserurl.replace("$PASSWORD$", nodepwd)
-                        r = requests.put(disableuserurl, headers=ocsheaders)
+                        disableuserurl = disableuserurl.replace(
+                            "$PASSWORD$", nodeapppwd
+                        )
+                        r = session.put(disableuserurl, headers=ocsheaders)
                         j = json.loads(r.text)
                         logger.info(j["ocs"]["meta"]["status"])
 
@@ -104,8 +142,8 @@ class NodeOcsUserLifecycle(threading.Thread):
                         logger.info("Delete cli user " + cliuser)
                         userurl = drv.get_user_url(fullnode, cliuser)
                         userurl = userurl.replace("$USERNAME$", nodeuser)
-                        userurl = userurl.replace("$PASSWORD$", nodepwd)
-                        r = requests.delete(userurl, headers=ocsheaders)
+                        userurl = userurl.replace("$PASSWORD$", nodeapppwd)
+                        r = session.delete(userurl, headers=ocsheaders)
                         j = json.loads(r.text)
                         logger.info(j["ocs"]["meta"]["status"])
 
@@ -366,6 +404,7 @@ class NodeOcsUserPerformance(threading.Thread):
         g_testPassed[fullnode] = True
         g_testThreadsRunning -= 1
         return
+
 
 class TestPerformanceOcs(unittest.TestCase):
     def test_performance_ocs_userlist_samesession(self):
