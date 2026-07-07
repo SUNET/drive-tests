@@ -857,6 +857,56 @@ class TestTarget(object):
     def get_webdav_root(self, username):
         return "/remote.php/dav/files/" + username + "/"
 
+    def get_getapppassword_url(self, node):
+        return (
+            "https://$USERNAME$:$PASSWORD$@"
+            + self.getnodeprefix(node)
+            + self.targetprefix
+            + self.delimiter
+            + self.baseurl
+            + "/ocs/v2.php/core/getapppassword"
+        )
+
+    def get_apppassword_url(self, node):
+        return (
+            "https://$USERNAME$:$PASSWORD$@"
+            + self.getnodeprefix(node)
+            + self.targetprefix
+            + self.delimiter
+            + self.baseurl
+            + "/ocs/v2.php/core/apppassword"
+        )
+
+    def get_rotate_apppassword_url(self, node):
+        return (
+            "https://$USERNAME$:$PASSWORD$@"
+            + self.getnodeprefix(node)
+            + self.targetprefix
+            + self.delimiter
+            + self.baseurl
+            + "/ocs/v2.php/core/apppassword/rotate"
+        )
+
+    def get_confirm_apppassword_url(self, node):
+        return (
+            "https://$USERNAME$:$PASSWORD$@"
+            + self.getnodeprefix(node)
+            + self.targetprefix
+            + self.delimiter
+            + self.baseurl
+            + "/ocs/v2.php/core/apppassword/confirm"
+        )
+
+    def get_getapppassword_onetime_url(self, node):
+        return (
+            "https://$USERNAME$:$PASSWORD$@"
+            + self.getnodeprefix(node)
+            + self.targetprefix
+            + self.delimiter
+            + self.baseurl
+            + "/ocs/v2.php/core/getapppassword-onetime"
+        )
+
     def get_ocsuser(self, node, raiseException=True):
         if self.platform == "win32":
             usercmd = (
@@ -1368,6 +1418,7 @@ class TestTarget(object):
                 resultclass=NumbersTestResult,
             )
 
+
 class Helper:
     def get_random_string(self, length):
         # With combination of lower and upper case
@@ -1375,10 +1426,12 @@ class Helper:
         # print random string
         return result_str
 
-    def is_version_greater_or_equal(self, current_version: str, minimum_version: str) -> bool:
+    def is_version_greater_or_equal(
+        self, current_version: str, minimum_version: str
+    ) -> bool:
         # Split the versions into parts and convert them to integers
-        current_parts = list(map(int, current_version.split('.')))
-        minimum_parts = list(map(int, minimum_version.split('.')))
+        current_parts = list(map(int, current_version.split(".")))
+        minimum_parts = list(map(int, minimum_version.split(".")))
 
         # Compare each part of the version
         for current, minimum in zip(current_parts, minimum_parts):
@@ -1389,6 +1442,7 @@ class Helper:
 
         # If all parts are equal up to the length of the minimum version, return True
         return len(current_parts) >= len(minimum_parts)
+
 
 class SeleniumHelper:
     class UserType(Enum):
