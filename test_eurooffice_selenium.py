@@ -153,7 +153,7 @@ class TestEuroOfficeSelenium(unittest.TestCase):
         level=logging.INFO,
     )
 
-    testfolders = ["SeleniumCollaboraTest", "selenium-system", "selenium-personal"]
+    testfolders = ["SeleniumEuroOfficeTest", "selenium-system", "selenium-personal"]
 
     # Some class names of icons changed from Nextcloud 27 to 28
     version = expectedResults[drv.target]["status"]["version"]
@@ -296,13 +296,13 @@ class TestEuroOfficeSelenium(unittest.TestCase):
                 self.driver.find_element(By.XPATH, "//*[contains(text(), 'All files')]")
                 self.logger.info("All files found!")
 
-                self.logger.info("Looking for SeleniumCollaboraTest folder")
+                self.logger.info("Looking for SeleniumEuroOfficeTest folder")
                 folderExists = checkFolder(
-                    collaboranode, "SeleniumCollaboraTest", create=True
+                    collaboranode, "SeleniumEuroOfficeTest", create=True
                 )
                 self.assertTrue(folderExists)
 
-                folderurl = drv.get_folder_url(collaboranode, "SeleniumCollaboraTest")
+                folderurl = drv.get_folder_url(collaboranode, "SeleniumEuroOfficeTest")
                 self.driver.get(folderurl)
 
                 fileCreated = False
@@ -322,7 +322,7 @@ class TestEuroOfficeSelenium(unittest.TestCase):
                         break
 
                     # Check if the folder is empty
-                    if hasFiles(collaboranode, "SeleniumCollaboraTest") > 1:
+                    if hasFiles(collaboranode, "SeleniumEuroOfficeTest") > 1:
                         isEmpty = False
                     else:
                         isEmpty = True
@@ -382,7 +382,7 @@ class TestEuroOfficeSelenium(unittest.TestCase):
 
                     # Verify the file has been created
                     fileCreated = checkFile(
-                        collaboranode, "SeleniumCollaboraTest", g_filename + ".md"
+                        collaboranode, "SeleniumEuroOfficeTest", g_filename + ".md"
                     )
                     if not fileCreated:
                         self.logger.warning(
@@ -791,13 +791,13 @@ class TestEuroOfficeSelenium(unittest.TestCase):
                 self.driver.find_element(By.XPATH, "//*[contains(text(), 'All files')]")
                 self.logger.info("All files found!")
 
-                self.logger.info("Looking for SeleniumCollaboraTest folder")
+                self.logger.info("Looking for SeleniumEuroOfficeTest folder")
                 folderExists = checkFolder(
-                    collaboranode, "SeleniumCollaboraTest", create=True
+                    collaboranode, "SeleniumEuroOfficeTest", create=True
                 )
                 self.assertTrue(folderExists)
 
-                folderurl = drv.get_folder_url(collaboranode, "SeleniumCollaboraTest")
+                folderurl = drv.get_folder_url(collaboranode, "SeleniumEuroOfficeTest")
                 self.driver.get(folderurl)
 
                 fileCreated = False
@@ -816,7 +816,7 @@ class TestEuroOfficeSelenium(unittest.TestCase):
                         break
 
                     # Check if the folder is empty
-                    if hasFiles(collaboranode, "SeleniumCollaboraTest") > 1:
+                    if hasFiles(collaboranode, "SeleniumEuroOfficeTest") > 1:
                         isEmpty = False
                     else:
                         isEmpty = True
@@ -883,7 +883,7 @@ class TestEuroOfficeSelenium(unittest.TestCase):
 
                     # Verify the file has been created
                     fileCreated = checkFile(
-                        collaboranode, "SeleniumCollaboraTest", g_filename + ".xlsx"
+                        collaboranode, "SeleniumEuroOfficeTest", g_filename + ".xlsx"
                     )
                     if not fileCreated:
                         self.logger.warning(
@@ -1053,13 +1053,13 @@ class TestEuroOfficeSelenium(unittest.TestCase):
                 self.driver.find_element(By.XPATH, "//*[contains(text(), 'All files')]")
                 self.logger.info("All files found!")
 
-                self.logger.info("Looking for SeleniumCollaboraTest folder")
+                self.logger.info("Looking for SeleniumEuroOfficeTest folder")
                 folderExists = checkFolder(
-                    collaboranode, "SeleniumCollaboraTest", create=True
+                    collaboranode, "SeleniumEuroOfficeTest", create=True
                 )
                 self.assertTrue(folderExists)
 
-                folderurl = drv.get_folder_url(collaboranode, "SeleniumCollaboraTest")
+                folderurl = drv.get_folder_url(collaboranode, "SeleniumEuroOfficeTest")
                 self.driver.get(folderurl)
 
                 fileCreated = False
@@ -1079,7 +1079,7 @@ class TestEuroOfficeSelenium(unittest.TestCase):
                         break
 
                     # Check if the folder is empty
-                    if hasFiles(collaboranode, "SeleniumCollaboraTest") > 1:
+                    if hasFiles(collaboranode, "SeleniumEuroOfficeTest") > 1:
                         isEmpty = False
                     else:
                         isEmpty = True
@@ -1146,7 +1146,7 @@ class TestEuroOfficeSelenium(unittest.TestCase):
 
                     # Verify the file has been created
                     fileCreated = checkFile(
-                        collaboranode, "SeleniumCollaboraTest", g_filename + ".pptx"
+                        collaboranode, "SeleniumEuroOfficeTest", g_filename + ".pptx"
                     )
                     if not fileCreated:
                         self.logger.warning(
