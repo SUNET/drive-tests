@@ -58,6 +58,10 @@ class NodeOcsUserLifecycle(threading.Thread):
         time.sleep(start_delay)
         drv = sunetnextcloud.TestTarget()
         fullnode = self.name
+        if drv.is_multinode(fullnode):
+            testid = f'{fullnode} - {drv.get_multinode(fullnode)}'
+        else:
+            testid = fullnode
 
         url = drv.get_users_url(fullnode)
         # logger.info(self._testMethodName, url)
@@ -96,7 +100,7 @@ class NodeOcsUserLifecycle(threading.Thread):
                 logger.info(r.text)
             except Exception as error:
                 logger.error(f"Error confirming app password: {error}")
-                g_testPassed[fullnode] = False
+                g_testPassed[testid] = False
                 g_testThreadsRunning -= 1
                 return
 
@@ -161,7 +165,7 @@ class NodeOcsUserLifecycle(threading.Thread):
                         logger.error(
                             f"Unable to test user lifecycle for {fullnode}: {error}"
                         )
-                    g_testPassed[fullnode] = False
+                    g_testPassed[testid] = False
                     g_testThreadsRunning -= 1
                     return
         totalTime = (datetime.now() - startTime).total_seconds()
@@ -169,10 +173,10 @@ class NodeOcsUserLifecycle(threading.Thread):
             f"{fullnode:<15} - Handling {nodes * users} users took {totalTime:<3.1f}s"
         )
 
-        g_testPassed[fullnode] = True
+        g_testPassed[testid] = True
         g_testThreadsRunning -= 1
         logger.info(
-            f"NodeOcsUserLifecycle thread done for node {self.name}, test passed: {g_testPassed[fullnode]}, remaining: {g_testThreadsRunning}"
+            f"NodeOcsUserLifecycle thread done for node {self.name}, test passed: {g_testPassed[testid]}, remaining: {g_testThreadsRunning}"
         )
         return
 
@@ -197,11 +201,16 @@ class NodeOcsUserPerformance(threading.Thread):
             drv = sunetnextcloud.TestTarget()
             fullnode = self.name
             isMultinode = drv.is_multinode(fullnode)
+            if drv.is_multinode(fullnode):
+                testid = f'{fullnode} - {drv.get_multinode(fullnode)}'
+            else:
+                testid = fullnode
+
             nodeuser = drv.get_ocsuser(fullnode)
             nodepwd = drv.get_ocsuserapppassword(fullnode)
-            g_testPassed[fullnode] = False
+            g_testPassed[testid] = False
             logger.info(
-                f"Setting passed for {fullnode} to {g_testPassed.get(fullnode)}"
+                f"Setting passed for {fullnode} to {g_testPassed.get(testid)}"
             )
 
             url = drv.get_status_url(fullnode)
@@ -403,14 +412,14 @@ class NodeOcsUserPerformance(threading.Thread):
             g_ocsPerformanceResults.append(message)
         except Exception as error:
             logger.error(f"Problem in NodeOcsUserPerformance for {self.name}: {error}")
-            g_testPassed[fullnode] = False
+            g_testPassed[testid] = False
             g_testThreadsRunning -= 1
             return
 
         logger.info(
-            f"NodeOcsUserPerformance thread done for node {self.name}, test passed: {g_testPassed[fullnode]}, remaining: {g_testThreadsRunning}"
+            f"NodeOcsUserPerformance thread done for node {self.name}, test passed: {g_testPassed[testid]}, remaining: {g_testThreadsRunning}"
         )
-        g_testPassed[fullnode] = True
+        g_testPassed[testid] = True
         g_testThreadsRunning -= 1
         return
 
