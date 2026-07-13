@@ -13,6 +13,7 @@ from urllib.parse import quote
 import HtmlTestRunner
 import requests
 import xmlrunner
+import random
 
 import sunetnextcloud
 
@@ -23,6 +24,7 @@ expectedResults = drv.expectedResults
 g_testPassed = {}
 g_testThreadsRunning = 0
 g_requestTimeout = 10
+g_maxRandSleep = 60
 
 logger = logging.getLogger("TestLogger")
 logging.basicConfig(
@@ -464,7 +466,11 @@ class UserLifeCycle(threading.Thread):
         global g_testThreadsRunning
         global expectedResults
         g_testThreadsRunning += 1
-        logger.info(f"User lifecycle thread started for node {self.name}")
+
+        start_delay = random.randint(0,g_maxRandSleep)
+        logger.info(f"UserLifeCycle thread for node {self.name} starting in {start_delay} seconds")
+        time.sleep(start_delay)
+
         drv = sunetnextcloud.TestTarget()
         fullnode = self.name
         g_testPassed[fullnode] = False
