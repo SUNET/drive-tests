@@ -423,8 +423,13 @@ class TestPerformanceOcs(unittest.TestCase):
         )
         drv = sunetnextcloud.TestTarget()
         for fullnode in drv.nodestotest:
-            with self.subTest(mynode=fullnode):
-                logger.info(f"TestID: {fullnode}")
+            if drv.is_multinode(fullnode):
+                testid = fullnode
+            else:
+                testid = f'{fullnode} - {drv.get_multinode(fullnode)}'
+
+            with self.subTest(mynode=testid):
+                logger.info(f"TestID: {testid}")
                 nodeUsersThread = NodeOcsUserPerformance(
                     fullnode, self, newSession=False, verify=drv.verify
                 )
@@ -434,8 +439,13 @@ class TestPerformanceOcs(unittest.TestCase):
             time.sleep(1)
 
         for fullnode in drv.nodestotest:
-            with self.subTest(mynode=fullnode):
-                self.assertTrue(g_testPassed[fullnode])
+            if drv.is_multinode(fullnode):
+                testid = fullnode
+            else:
+                testid = f'{fullnode} - {drv.get_multinode(fullnode)}'
+
+            with self.subTest(mynode=testid):
+                self.assertTrue(g_testPassed[testid])
 
         logger.info("Result of test_performance_ocs_userlist_samesession")
         for message in g_ocsPerformanceResults:
@@ -448,8 +458,13 @@ class TestPerformanceOcs(unittest.TestCase):
         )
         drv = sunetnextcloud.TestTarget()
         for fullnode in drv.nodestotest:
-            with self.subTest(mynode=fullnode):
-                logger.info(f"TestID: {fullnode}")
+            if drv.is_multinode(fullnode):
+                testid = fullnode
+            else:
+                testid = f'{fullnode} - {drv.get_multinode(fullnode)}'
+
+            with self.subTest(mynode=testid):
+                logger.info(f"TestID: {testid}")
                 nodeUsersThread = NodeOcsUserPerformance(
                     fullnode, self, newSession=True, verify=drv.verify
                 )
@@ -459,8 +474,14 @@ class TestPerformanceOcs(unittest.TestCase):
             time.sleep(1)
 
         for fullnode in drv.nodestotest:
-            with self.subTest(mynode=fullnode):
-                self.assertTrue(g_testPassed[fullnode])
+            if drv.is_multinode(fullnode):
+                testid = fullnode
+            else:
+                testid = f'{fullnode} - {drv.get_multinode(fullnode)}'
+
+            with self.subTest(mynode=testid):
+                logger.info(f"TestID: {testid}")
+                self.assertTrue(g_testPassed[testid])
 
         logger.info("Result of test_performance_ocs_userlist_newsession")
         for message in g_ocsPerformanceResults:
@@ -471,8 +492,13 @@ class TestPerformanceOcs(unittest.TestCase):
         g_ocsPerformanceResults.append("Result of test_performance_ocs_userlifecycle")
         drv = sunetnextcloud.TestTarget()
         for fullnode in drv.nodestotest:
-            with self.subTest(mynode=fullnode):
-                logger.info(f"TestID: {fullnode}")
+            if drv.is_multinode(fullnode):
+                testid = fullnode
+            else:
+                testid = f'{fullnode} - {drv.get_multinode(fullnode)}'
+
+            with self.subTest(mynode=testid):
+                logger.info(f"TestID: {testid}")
                 userLifecycleThread = NodeOcsUserLifecycle(fullnode)
                 userLifecycleThread.start()
 
@@ -480,8 +506,13 @@ class TestPerformanceOcs(unittest.TestCase):
             time.sleep(1)
 
         for fullnode in drv.nodestotest:
-            with self.subTest(mynode=fullnode):
-                self.assertTrue(g_testPassed[fullnode])
+            if drv.is_multinode(fullnode):
+                testid = fullnode
+            else:
+                testid = f'{fullnode} - {drv.get_multinode(fullnode)}'
+
+            with self.subTest(mynode=testid):
+                self.assertTrue(g_testPassed[testid])
 
         logger.info("Result of test_performance_ocs_userlifecycle")
         for message in g_ocsPerformanceResults:
