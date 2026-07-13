@@ -13,6 +13,7 @@ from datetime import datetime
 import HtmlTestRunner
 import requests
 import xmlrunner
+import random
 
 import sunetnextcloud
 
@@ -29,6 +30,7 @@ g_testThreadsRunning = 0
 g_ocsPerformanceResults = []
 g_testPassed = {}
 g_requestTimeout = 10
+g_maxRandSleep = 60
 
 drv = sunetnextcloud.TestTarget()
 expectedResults = drv.expectedResults
@@ -48,9 +50,12 @@ class NodeOcsUserLifecycle(threading.Thread):
         self.name = name
 
     def run(self):
-        global logger, g_testPassed, g_testThreadsRunning, g_ocsPerformanceResults
+        global logger, g_testPassed, g_testThreadsRunning, g_ocsPerformanceResults, g_maxRandSleep
         g_testThreadsRunning += 1
-        logger.info(f"NodeOcsUserLifecycle thread started for node {self.name}")
+
+        start_delay = random.randint(0,g_maxRandSleep)
+        logger.info(f"NodeOcsUserLifecycle thread for node {self.name} starting in {start_delay} seconds")
+        time.sleep(start_delay)
         drv = sunetnextcloud.TestTarget()
         fullnode = self.name
 
