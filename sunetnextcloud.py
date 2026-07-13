@@ -242,9 +242,9 @@ class TestTarget(object):
     def is_multinode(self, node):
         try:
             self.opsCommonConfig["multinode_mapping"][node]["server"]
-            return False
-        except Exception:
             return True
+        except Exception:
+            return False
 
     def get_multinode(self, node):
         return self.opsCommonConfig["multinode_mapping"][node]["server"]

@@ -424,9 +424,9 @@ class TestPerformanceOcs(unittest.TestCase):
         drv = sunetnextcloud.TestTarget()
         for fullnode in drv.nodestotest:
             if drv.is_multinode(fullnode):
-                testid = fullnode
-            else:
                 testid = f'{fullnode} - {drv.get_multinode(fullnode)}'
+            else:
+                testid = fullnode
 
             with self.subTest(mynode=testid):
                 logger.info(f"TestID: {testid}")
@@ -440,9 +440,9 @@ class TestPerformanceOcs(unittest.TestCase):
 
         for fullnode in drv.nodestotest:
             if drv.is_multinode(fullnode):
-                testid = fullnode
-            else:
                 testid = f'{fullnode} - {drv.get_multinode(fullnode)}'
+            else:
+                testid = fullnode
 
             with self.subTest(mynode=testid):
                 self.assertTrue(g_testPassed[testid])
@@ -459,9 +459,9 @@ class TestPerformanceOcs(unittest.TestCase):
         drv = sunetnextcloud.TestTarget()
         for fullnode in drv.nodestotest:
             if drv.is_multinode(fullnode):
-                testid = fullnode
-            else:
                 testid = f'{fullnode} - {drv.get_multinode(fullnode)}'
+            else:
+                testid = fullnode
 
             with self.subTest(mynode=testid):
                 logger.info(f"TestID: {testid}")
@@ -475,9 +475,9 @@ class TestPerformanceOcs(unittest.TestCase):
 
         for fullnode in drv.nodestotest:
             if drv.is_multinode(fullnode):
-                testid = fullnode
-            else:
                 testid = f'{fullnode} - {drv.get_multinode(fullnode)}'
+            else:
+                testid = fullnode
 
             with self.subTest(mynode=testid):
                 logger.info(f"TestID: {testid}")
@@ -493,9 +493,9 @@ class TestPerformanceOcs(unittest.TestCase):
         drv = sunetnextcloud.TestTarget()
         for fullnode in drv.nodestotest:
             if drv.is_multinode(fullnode):
-                testid = fullnode
-            else:
                 testid = f'{fullnode} - {drv.get_multinode(fullnode)}'
+            else:
+                testid = fullnode
 
             with self.subTest(mynode=testid):
                 logger.info(f"TestID: {testid}")
@@ -507,9 +507,9 @@ class TestPerformanceOcs(unittest.TestCase):
 
         for fullnode in drv.nodestotest:
             if drv.is_multinode(fullnode):
-                testid = fullnode
-            else:
                 testid = f'{fullnode} - {drv.get_multinode(fullnode)}'
+            else:
+                testid = fullnode
 
             with self.subTest(mynode=testid):
                 self.assertTrue(g_testPassed[testid])
