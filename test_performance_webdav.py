@@ -91,9 +91,20 @@ class TestWebDavPerformance(unittest.TestCase):
         global logger, g_testThreadsRunning, g_davPerformanceResults
         g_davPerformanceResults.clear()
 
-        numFiles = 100
-        maxUploads = 2
-        maxDeletes = 4
+        numFiles = os.environ.get("NextcloudWebdavNumFiles")
+        maxUploads = os.environ.get("NextcloudWebdavMaxUploads")
+        maxDeletes = os.environ.get("NextcloudWebdavMaxDeletes")
+
+        if numFiles is None:
+            numFiles = 100
+        if maxUploads is None:
+            maxUploads = 2
+        if maxDeletes is None:
+            maxDeletes = 4
+
+        logger.info(f'Testing with {numFiles} - {maxUploads} max uploads - {maxDeletes} max deletes')
+        time.sleep(900)
+
         for fullnode in drv.nodestotest:
             with self.subTest(mynode=fullnode):
                 for fe in range(1,4):
