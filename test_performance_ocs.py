@@ -188,7 +188,11 @@ class NodeOcsUserPerformance(threading.Thread):
     def run(self):
         global logger, g_testPassed, g_testThreadsRunning, g_ocsPerformanceResults
         g_testThreadsRunning += 1
-        logger.info(f"NodeOcsUserPerformance thread started for node {self.name}")
+
+        start_delay = random.randint(0,g_maxRandSleep)
+        logger.info(f"NodeOcsUserPerformance thread for node {self.name} starting in {start_delay} seconds")
+        time.sleep(start_delay)
+
         try:
             drv = sunetnextcloud.TestTarget()
             fullnode = self.name
