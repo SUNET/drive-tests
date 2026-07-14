@@ -38,13 +38,12 @@ class CleanWebDAV(threading.Thread):
         nodeuser = drv.get_seleniumuser(fullnode)
         # nodepwd = drv.get_seleniumuserpassword(fullnode)
         nodepwd = drv.get_seleniumuserapppassword(fullnode)
-        nodepwd 
         url = drv.get_webdav_url(fullnode, nodeuser)
         self.logger.info(url)
         options = {
         'webdav_hostname': url,
         'webdav_login' : nodeuser,
-        'webdav_password' : nodepwd 
+        'webdav_password' : nodepwd
         }
 
         try:
@@ -115,7 +114,7 @@ class TestCleanAllWebDAV(unittest.TestCase):
 
         for message in g_davPerformanceResults:
             self.logger.info(f'{message}')
-        
+
         self.logger.info('Done...')
 
 if __name__ == '__main__':
