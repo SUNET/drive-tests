@@ -30,7 +30,7 @@ g_testThreadsRunning = 0
 g_ocsPerformanceResults = []
 g_testPassed = {}
 g_requestTimeout = 10
-
+g_userCooldown = 3      # Seconds to cool down between create, deactivate, delete
 g_maxRandSleep = os.environ.get("NextcloudRandSleep")
 if g_maxRandSleep is None:
     g_maxRandSleep = 60
@@ -73,6 +73,8 @@ class NodeOcsUserLifecycle(threading.Thread):
         url = drv.get_users_url(fullnode)
         # logger.info(self._testMethodName, url)
         startTime = datetime.now()
+        coolDownTime = 0
+
         for nodeindex in range(1, nodes + 1):
             logger.info(f"Node: {str(nodeindex)}")
 
@@ -128,6 +130,8 @@ class NodeOcsUserLifecycle(threading.Thread):
                         r = session.post(url, headers=ocsheaders, data=data)
                         j = json.loads(r.text)
                         logger.info(j["ocs"]["meta"]["status"])
+                        time.sleep(g_userCooldown)
+                        coolDownTime += g_userCooldown
 
                     if checkusers:
                         logger.info(f"Check user info {cliuser}")
@@ -142,6 +146,8 @@ class NodeOcsUserLifecycle(threading.Thread):
                                 f"focemfa not in user groups (yet?), sleeping for a second"
                             )
                             time.sleep(1)
+                        time.sleep(g_userCooldown)
+                        coolDownTime += g_userCooldown
 
                     if disableusers:
                         logger.info("Disable cli user " + cliuser)
@@ -153,8 +159,14 @@ class NodeOcsUserLifecycle(threading.Thread):
                         r = session.put(disableuserurl, headers=ocsheaders)
                         j = json.loads(r.text)
                         logger.info(j["ocs"]["meta"]["status"])
+                        time.sleep(g_userCooldown)
+                        coolDownTime += g_userCooldown
 
                     if deleteusers:
+                        # For deleting users, we cool down before any action
+                        time.sleep(g_userCooldown)
+                        coolDownTime += g_userCooldown
+
                         logger.info("Delete cli user " + cliuser)
                         userurl = drv.get_user_url(fullnode, cliuser)
                         userurl = userurl.replace("$USERNAME$", nodeuser)
@@ -175,7 +187,7 @@ class NodeOcsUserLifecycle(threading.Thread):
                     g_testPassed[testid] = False
                     g_testThreadsRunning -= 1
                     return
-        totalTime = (datetime.now() - startTime).total_seconds()
+        totalTime = (datetime.now() - startTime).total_seconds() - coolDownTime
         g_ocsPerformanceResults.append(
             f"{fullnode:<15} - Handling {nodes * users} users took {totalTime:<3.1f}s"
         )
