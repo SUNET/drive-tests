@@ -31,10 +31,12 @@ g_ocsPerformanceResults = []
 g_testPassed = {}
 g_requestTimeout = 10
 
-g_maxRandSleep = int(os.environ.get("NextcloudRandSleep"))
+g_maxRandSleep = os.environ.get("NextcloudRandSleep")
 if g_maxRandSleep is None:
     g_maxRandSleep = 60
 
+# print(g_maxRandSleep)
+# time.sleep(900)
 drv = sunetnextcloud.TestTarget()
 expectedResults = drv.expectedResults
 ocsheaders = drv.ocsheaders
