@@ -35,6 +35,8 @@ g_maxRandSleep = os.environ.get("NextcloudRandSleep")
 if g_maxRandSleep is None:
     g_maxRandSleep = 60
 
+g_userprefix=datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
+
 # print(g_maxRandSleep)
 # time.sleep(900)
 drv = sunetnextcloud.TestTarget()
@@ -112,7 +114,7 @@ class NodeOcsUserLifecycle(threading.Thread):
             for userindex in range(offset, offset + users + 1):
                 try:
                     logger.info(f"{drv.target} - User: {str(userindex)}")
-                    usersuffix = str(nodeindex) + "_" + str(userindex)
+                    usersuffix = g_userprefix + "_" + str(nodeindex) + "_" + str(userindex)
                     cliuser = "__performance_user_" + usersuffix + "_" + fullnode
 
                     if createusers:
