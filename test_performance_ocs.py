@@ -29,8 +29,13 @@ calls = 100
 g_testThreadsRunning = 0
 g_ocsPerformanceResults = []
 g_testPassed = {}
-g_requestTimeout = 10
+
+g_requestTimeout = os.environ.get("NextcloudRequestTimeout")
+if g_requestTimeout is None:
+    g_requestTimeout = 30
+
 g_userCooldown = 3      # Seconds to cool down between create, deactivate, delete
+
 g_maxRandSleep = os.environ.get("NextcloudRandSleep")
 if g_maxRandSleep is None:
     g_maxRandSleep = 60
