@@ -3,7 +3,15 @@ import asyncio
 import os
 import random
 from datetime import datetime
+import logging
 import sunetnextcloud
+
+logger = logging.getLogger("TestLogger")
+logging.basicConfig(
+    format="%(asctime)s - %(module)s.%(funcName)s - %(levelname)s: %(message)s",
+    datefmt="%Y-%m-%d %H:%M:%S",
+    level=logging.INFO,
+)
 
 drv = sunetnextcloud.TestTarget()
 
@@ -53,7 +61,7 @@ for fullnode in drv.nodestotest:
     nodepwd = drv.get_ocsuserapppassword(fullnode)
     nodebaseurl = drv.get_node_base_url(fullnode)
     url = drv.get_users_url(fullnode)
-    print(f'Testing {url} with {g_loadtestcalls} calls on fe{g_min_frontendserver} to fe{g_max_frontendserver}')
+    logger.info(f'Testing {url} with {g_loadtestcalls} calls on fe{g_min_frontendserver} to fe{g_max_frontendserver}')
     url = url.replace("$USERNAME$", nodeuser)
     url = url.replace("$PASSWORD$", nodepwd)
     message += f"{g_loadtestcalls} calls to {nodebaseurl:<30}"
@@ -61,4 +69,4 @@ for fullnode in drv.nodestotest:
     totalTime = asyncio.run(run_concurrent_calls(g_loadtestcalls, url, drv.ocsheaders, nodebaseurl))
     message += f"Total: {totalTime:<3.1f}s - Per call: {totalTime/g_loadtestcalls:<3.1f}s \n"
 
-print(f'{message}')
+logger.info(f'{message}')
