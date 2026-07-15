@@ -7,6 +7,7 @@ import logging
 import os
 import threading
 import time
+from datetime import datetime
 import unittest
 from urllib.parse import quote
 
@@ -25,6 +26,8 @@ g_testPassed = {}
 g_testThreadsRunning = 0
 g_requestTimeout = 10
 g_maxRandSleep = 60
+g_userprefix=datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
+g_userCooldown = 3      # Seconds to cool down between create, deactivate, delete
 
 logger = logging.getLogger("TestLogger")
 logging.basicConfig(
@@ -489,7 +492,7 @@ class UserLifeCycle(threading.Thread):
             g_testThreadsRunning -= 1
             return
 
-        cliuser = "__cli_user_" + fullnode
+        cliuser = "__cli_user_" + g_userprefix + "_" + fullnode
         clipwd = sunetnextcloud.Helper().get_random_string(12)
 
         logger.info(f"Confirm app password for {nodeuser}")
@@ -526,11 +529,13 @@ class UserLifeCycle(threading.Thread):
             url = url.replace("$PASSWORD$", nodeapppwd)
             r = session.post(url, headers=ocsheaders, data=data, verify=self.verify)
             logger.info(f"cli user created with status {r.status_code} - {r.text}")
+            time.sleep(g_userCooldown)
         except Exception as error:
             logger.error(f"Error posting to create cli user: {error}")
             g_testPassed[fullnode] = False
             g_testThreadsRunning -= 1
             return
+
         try:
             j = json.loads(r.text)
             logger.info(json.dumps(j, indent=4, sort_keys=True))
@@ -544,6 +549,7 @@ class UserLifeCycle(threading.Thread):
                 r = session.post(url, headers=ocsheaders, data=data, verify=self.verify)
                 j = json.loads(r.text)
                 logger.info(json.dumps(j, indent=4, sort_keys=True))
+                time.sleep(g_userCooldown)
         except Exception as error:
             logger.info(f"No JSON reply received from {fullnode}: {error}")
             logger.info(r.text)
@@ -563,6 +569,7 @@ class UserLifeCycle(threading.Thread):
                     f"focemfa not in user groups (yet?), sleeping for a second"
                 )
                 time.sleep(1)
+            time.sleep(g_userCooldown)
         except Exception as error:
             logger.error(f"No or invalid JSON reply received from {rawurl}: {error}")
             if r is not None:
@@ -585,6 +592,7 @@ class UserLifeCycle(threading.Thread):
             r = session.put(disableuserurl, headers=ocsheaders, verify=self.verify)
             j = json.loads(r.text)
             logger.info(json.dumps(j, indent=4, sort_keys=True))
+            time.sleep(g_userCooldown)
 
             if j["ocs"]["meta"]["statuscode"] != 200:
                 logger.info(
@@ -593,6 +601,7 @@ class UserLifeCycle(threading.Thread):
                 r = session.put(disableuserurl, headers=ocsheaders, verify=self.verify)
                 j = json.loads(r.text)
                 logger.info(json.dumps(j, indent=4, sort_keys=True))
+                time.sleep(g_userCooldown)
 
             self.TestOcsCalls.assertEqual(
                 j["ocs"]["meta"]["status"],
@@ -616,6 +625,7 @@ class UserLifeCycle(threading.Thread):
             r = session.delete(url, headers=ocsheaders, verify=drv.verify)
             j = json.loads(r.text)
             logger.info(json.dumps(j, indent=4, sort_keys=True))
+            time.sleep(g_userCooldown)
 
             if j["ocs"]["meta"]["statuscode"] != 200:
                 logger.info(
@@ -624,6 +634,7 @@ class UserLifeCycle(threading.Thread):
                 r = session.delete(url, headers=ocsheaders, verify=self.verify)
                 j = json.loads(r.text)
                 logger.info(json.dumps(j, indent=4, sort_keys=True))
+                time.sleep(g_userCooldown)
 
             self.TestOcsCalls.assertEqual(
                 j["ocs"]["meta"]["status"],
