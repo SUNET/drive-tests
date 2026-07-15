@@ -13,6 +13,9 @@ from urllib.parse import quote
 
 import HtmlTestRunner
 import requests
+from requests.adapters import HTTPAdapter
+from requests.packages.urllib3.util.retry import Retry
+
 import xmlrunner
 import random
 
@@ -25,7 +28,10 @@ expectedResults = drv.expectedResults
 g_testPassed = {}
 g_testThreadsRunning = 0
 g_requestTimeout = 10
-g_maxRandSleep = 60
+g_maxRandSleep = int(os.environ.get("NextcloudRandSleep"))
+if g_maxRandSleep is None:
+    g_maxRandSleep = 60
+
 g_userprefix=datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
 g_userCooldown = 3      # Seconds to cool down between create, deactivate, delete
 
@@ -480,6 +486,9 @@ class UserLifeCycle(threading.Thread):
         logger.info(f"Setting passed for {fullnode} to {g_testPassed.get(fullnode)}")
         r = None
         session = requests.Session()
+        retries = Retry(total=5, backoff_factor=0.1, status_forcelist=[500, 502, 503, 504])
+        session.mount('http://', HTTPAdapter(max_retries=retries))
+        session.mount('https://', HTTPAdapter(max_retries=retries))
 
         # Confirm app password for session
 
