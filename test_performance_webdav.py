@@ -97,10 +97,16 @@ class TestWebDavPerformance(unittest.TestCase):
 
         if numFiles is None:
             numFiles = 100
+        else:
+            numFiles = int(numFiles)
         if maxUploads is None:
             maxUploads = 2
+        else:
+            maxUploads = int(maxUploads)
         if maxDeletes is None:
             maxDeletes = 4
+        else:
+            maxDeletes = int(maxDeletes)
 
         logger.info(f'Testing with {numFiles} - {maxUploads} max uploads - {maxDeletes} max deletes')
         time.sleep(900)
