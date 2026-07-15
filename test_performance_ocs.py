@@ -12,6 +12,9 @@ from datetime import datetime
 
 import HtmlTestRunner
 import requests
+from requests.adapters import HTTPAdapter
+from requests.packages.urllib3.util.retry import Retry
+
 import xmlrunner
 import random
 
@@ -33,12 +36,16 @@ g_testPassed = {}
 g_requestTimeout = os.environ.get("NextcloudRequestTimeout")
 if g_requestTimeout is None:
     g_requestTimeout = 30
+else:
+    g_requestTimeout = int(g_requestTimeout)
 
 g_userCooldown = 3      # Seconds to cool down between create, deactivate, delete
 
 g_maxRandSleep = os.environ.get("NextcloudRandSleep")
 if g_maxRandSleep is None:
     g_maxRandSleep = 60
+else:
+    g_maxRandSleep = int(g_maxRandSleep)
 
 g_userprefix=datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
 
@@ -88,6 +95,10 @@ class NodeOcsUserLifecycle(threading.Thread):
                 nodeapppwd = drv.get_ocsuserapppassword(fullnode)
                 nodepwd = drv.get_ocsuserpassword(fullnode)
                 session = requests.Session()
+                retries = Retry(total=5, backoff_factor=0.1, status_forcelist=[500, 502, 503, 504])
+                session.mount('http://', HTTPAdapter(max_retries=retries))
+                session.mount('https://', HTTPAdapter(max_retries=retries))
+
             except Exception as error:
                 logger.error(f"Error getting credentials for {self.name}:{error}")
                 g_testThreadsRunning -= 1
@@ -249,6 +260,9 @@ class NodeOcsUserPerformance(threading.Thread):
                 totalTime = 0.0
                 for call in range(0, calls):
                     s = requests.Session()
+                    retries = Retry(total=5, backoff_factor=0.1, status_forcelist=[500, 502, 503, 504])
+                    s.mount('http://', HTTPAdapter(max_retries=retries))
+                    s.mount('https://', HTTPAdapter(max_retries=retries))
                     s.headers.update(ocsheaders)
                     startTime = datetime.now()
                     s.get(url, headers=ocsheaders)
@@ -264,6 +278,9 @@ class NodeOcsUserPerformance(threading.Thread):
                 totalTime = 0.0
                 s = requests.Session()
                 s.headers.update(ocsheaders)
+                retries = Retry(total=5, backoff_factor=0.1, status_forcelist=[500, 502, 503, 504])
+                s.mount('http://', HTTPAdapter(max_retries=retries))
+                s.mount('https://', HTTPAdapter(max_retries=retries))
                 lastServerId = ""
                 for call in range(0, calls):
                     startTime = datetime.now()
@@ -293,6 +310,9 @@ class NodeOcsUserPerformance(threading.Thread):
                         s = requests.Session()
                         s.headers.update(ocsheaders)
                         s.cookies.set("SERVERID", serverid)
+                        retries = Retry(total=5, backoff_factor=0.1, status_forcelist=[500, 502, 503, 504])
+                        s.mount('http://', HTTPAdapter(max_retries=retries))
+                        s.mount('https://', HTTPAdapter(max_retries=retries))
                         startTime = datetime.now()
                         s.get(url, headers=ocsheaders)
                         totalTime += (datetime.now() - startTime).total_seconds()
@@ -308,6 +328,9 @@ class NodeOcsUserPerformance(threading.Thread):
                             s.headers.update(ocsheaders)
                             serverid = f"node{fe}.{nodebaseurl}"
                             s.cookies.set("SERVERID", serverid)
+                            retries = Retry(total=5, backoff_factor=0.1, status_forcelist=[500, 502, 503, 504])
+                            s.mount('http://', HTTPAdapter(max_retries=retries))
+                            s.mount('https://', HTTPAdapter(max_retries=retries))
                             startTime = datetime.now()
                             s.get(url, headers=ocsheaders)
                             totalTime += (datetime.now() - startTime).total_seconds()
@@ -324,6 +347,9 @@ class NodeOcsUserPerformance(threading.Thread):
                     s = requests.Session()
                     s.headers.update(ocsheaders)
                     s.cookies.set("SERVERID", serverid)
+                    retries = Retry(total=5, backoff_factor=0.1, status_forcelist=[500, 502, 503, 504])
+                    s.mount('http://', HTTPAdapter(max_retries=retries))
+                    s.mount('https://', HTTPAdapter(max_retries=retries))
                     for call in range(0, calls):
                         startTime = datetime.now()
                         s.get(url, headers=ocsheaders)
@@ -337,6 +363,9 @@ class NodeOcsUserPerformance(threading.Thread):
                         totalTime = 0.0
                         s = requests.Session()
                         s.headers.update(ocsheaders)
+                        retries = Retry(total=5, backoff_factor=0.1, status_forcelist=[500, 502, 503, 504])
+                        s.mount('http://', HTTPAdapter(max_retries=retries))
+                        s.mount('https://', HTTPAdapter(max_retries=retries))
                         for call in range(0, calls):
                             serverid = f"node{fe}.{nodebaseurl}"
                             s.cookies.set("SERVERID", serverid)
@@ -362,6 +391,9 @@ class NodeOcsUserPerformance(threading.Thread):
                     for call in range(0, calls):
                         s = requests.Session()
                         s.headers.update(ocsheaders)
+                        retries = Retry(total=5, backoff_factor=0.1, status_forcelist=[500, 502, 503, 504])
+                        s.mount('http://', HTTPAdapter(max_retries=retries))
+                        s.mount('https://', HTTPAdapter(max_retries=retries))
                         startTime = datetime.now()
                         s.get(url, headers=ocsheaders, verify=False)
                         totalTime += (datetime.now() - startTime).total_seconds()
@@ -383,6 +415,9 @@ class NodeOcsUserPerformance(threading.Thread):
                         for call in range(0, calls):
                             s = requests.Session()
                             s.headers.update(ocsheaders)
+                            retries = Retry(total=5, backoff_factor=0.1, status_forcelist=[500, 502, 503, 504])
+                            s.mount('http://', HTTPAdapter(max_retries=retries))
+                            s.mount('https://', HTTPAdapter(max_retries=retries))
                             startTime = datetime.now()
                             s.get(url, headers=ocsheaders, verify=False)
                             totalTime += (datetime.now() - startTime).total_seconds()
@@ -398,6 +433,9 @@ class NodeOcsUserPerformance(threading.Thread):
                     totalTime = 0.0
                     s = requests.Session()
                     s.headers.update(ocsheaders)
+                    retries = Retry(total=5, backoff_factor=0.1, status_forcelist=[500, 502, 503, 504])
+                    s.mount('http://', HTTPAdapter(max_retries=retries))
+                    s.mount('https://', HTTPAdapter(max_retries=retries))
                     url = drv.get_add_user_multinode_url(fullnode)
                     logger.info(f"Test direct call to {fullnode} - {url}")
 
@@ -446,7 +484,6 @@ class NodeOcsUserPerformance(threading.Thread):
         g_testPassed[testid] = True
         g_testThreadsRunning -= 1
         return
-
 
 class TestPerformanceOcs(unittest.TestCase):
     def test_performance_ocs_userlist_samesession(self):

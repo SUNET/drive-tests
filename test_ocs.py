@@ -28,9 +28,11 @@ expectedResults = drv.expectedResults
 g_testPassed = {}
 g_testThreadsRunning = 0
 g_requestTimeout = 10
-g_maxRandSleep = int(os.environ.get("NextcloudRandSleep"))
+g_maxRandSleep = os.environ.get("NextcloudRandSleep")
 if g_maxRandSleep is None:
     g_maxRandSleep = 60
+else:
+    g_maxRandSleep = int(g_maxRandSleep)
 
 g_userprefix=datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
 g_userCooldown = 3      # Seconds to cool down between create, deactivate, delete
