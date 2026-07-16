@@ -55,7 +55,7 @@ async def run_concurrent_calls(calls, url, ocsheaders, nodebaseurl):
 
     return totalTime
 
-message = ""
+message = "\n"
 for fullnode in drv.nodestotest:
     nodeuser = drv.get_ocsuser(fullnode)
     nodepwd = drv.get_ocsuserapppassword(fullnode)
