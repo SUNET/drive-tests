@@ -1,3 +1,4 @@
+aiohttp>=3.14.1
 PyAutoGUI==0.9.54
 pyotp>=2.9.0
 PyYAML>=6.0.1
