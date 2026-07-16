@@ -34,11 +34,16 @@ else:
     g_max_frontendserver = int(g_max_frontendserver)
 
 async def make_request(session, url, serverid, ocsheaders):
-    session.cookie_jar.update_cookies({"SERVERID": serverid})
-    startTime = datetime.now()
-    async with session.get(url, headers=ocsheaders) as response:
-        await response.text()
-    return(datetime.now() - startTime).total_seconds()
+    try:
+        session.cookie_jar.update_cookies({"SERVERID": serverid})
+        startTime = datetime.now()
+        async with session.get(url, headers=ocsheaders) as response:
+            response_text = await response.text()
+        elapsed_time = (datetime.now() - startTime).total_seconds()
+        return elapsed_time, response_text
+    except Exception as e:
+        logger.error(f'Exception for {serverid}: {e}')
+        return 0, None
 
 async def run_concurrent_calls(calls, url, ocsheaders, nodebaseurl):
     totalTime = 0
@@ -51,7 +56,10 @@ async def run_concurrent_calls(calls, url, ocsheaders, nodebaseurl):
             tasks.append(task)
 
         results = await asyncio.gather(*tasks)
-        totalTime = sum(results)
+        for elapsed_time, response_text in results:
+            totalTime += elapsed_time
+            # json response
+            # logger.info(response_text)
 
     return totalTime
 
