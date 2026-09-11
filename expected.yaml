@@ -282,7 +282,7 @@ prod:
     endPoint: "/ocm"
 test:
   loginexceptions: [kau, scilifelab, suni, sp, sics]
-  euroofficenodes: [sunet]
+  euroofficenodes: []
   defaultapps:
     [
       dashboard,
