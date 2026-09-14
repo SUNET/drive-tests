@@ -7,10 +7,10 @@ If you want to see something quick, you can create a python virtual environment,
     $ make testall
 
 During the process, a number of unittests will be executed: acceptance tests, login tests and Collabora tests. This includes tests based on Selenium which means a few automated browser windows will open and execute the tests. Once the tests are finished, the html unit test results will be opened in the browser. If you want to further explore the deployment, the following (local) pages are a good start:
-* Nextcloud: https://localhost:8443 or http://localhost:8880 (admin/adminpassword or you change it in the [Makefile](https://github.com/SUNET/drive-tests/blob/82e696b7b191cac2880fe87841331248ec5889e6/nextcloud-docker/Makefile#L91))
+* Nextcloud: https://localhost:8443 or http://localhost:8880 (admin/adminpassword by default -- see `NEXTCLOUD_ADMIN_PASSWORD` in [.env.example](.env.example))
 * Jupyterhub: https://localhost:9444
 * RDS NG: https://localhost:9445/ or http://localhost:8000
-* MinIO: http://localhost:9000 (minioadmin/minioadmin or you change it in the [Makefile](https://github.com/SUNET/drive-tests/blob/82e696b7b191cac2880fe87841331248ec5889e6/nextcloud-docker/Makefile#L169))
+* MinIO: http://localhost:9000 (minioadmin/minioadmin by default -- see `MINIO_ROOT_USER`/`MINIO_ROOT_PASSWORD` in [.env.example](.env.example))
 * Mock OAuth: https://localhost:9446 or http://localhost:8080
 
 
@@ -30,11 +30,36 @@ This is just a convenience wrapper for overwrite.cli.url, overwritehost, and ove
 	$ ./occ_docker config:system:set overwritehost --value="$(LOCALIP):8080"
 	$ ./occ_docker config:system:set overwriteprotocol --value="http"
 
-## Restarting docker deployment
-The local docker deployment currently requires to run within a project called rds. To stop/start everything, you can run:
+## Configuration
+Deployment config (database/MinIO/Collabora/whiteboard credentials, the Nextcloud
+image tag to deploy, test runner settings) lives in `.env`, which is created
+automatically from [`.env.example`](.env.example) the first time you run any
+`make` target -- see the comments in that file for what each variable does and
+which file it belongs in. `.env` is created once and persists across
+`make clean`; only `make cleanall` removes it. App passwords that can only be
+generated against a running instance are written separately to `.runtime.env`
+by `make apppasswords` (itself run automatically as the last step of
+`make bootstrap`).
 
-    $ docker compose -p rds down
-    $ docker compose -p rds up -d
+To deploy against a different Nextcloud version, set `NEXTCLOUD_IMAGE_TAG` in
+`.env` (e.g. `34`, or a specific patch like `34.0.9`) before running
+`make bootstrap`. The exact version actually deployed is recorded afterwards
+in `../expected_localhost.yaml` by `make expected`, since a floating major-version
+tag like `34` can resolve to a different patch release over time.
+
+## Restarting docker deployment
+To bring the whole stack up from scratch (stop old containers, start the
+configured Nextcloud version, wait for it to come up, configure it, install
+and enable apps, and generate test-user app passwords), run:
+
+    $ make bootstrap
+
+To just stop/start the existing containers without reconfiguring anything,
+run this from the `nextcloud-docker` directory (so it picks up the same
+project as `make bootstrap`):
+
+    $ docker compose down
+    $ docker compose up -d
 
 ## Configure OAuth for RDS-NG and JupyterHub
 Unfortunately, Nextcloud does not currently allow scripted/automated OAuth configuration. If you think, this is a good idea, please upvote the the issue [here](https://github.com/nextcloud/server/issues/40645). Until then:
@@ -49,7 +74,7 @@ Unfortunately, Nextcloud does not currently allow scripted/automated OAuth confi
 1. Add RDS_AUTHORIZATION_OAUTH2_CLIENT_ID to nextcloud-docker/rds-ng/deployment/env/dev.frontend.env
 1. Add RDS_AUTHORIZATION_OAUTH2_SECRETS_HOST to nextcloud-docker/rds-ng/deployment/env/dev.server.env
 1. (Jupyterhub config is tbd)
-1. Restart deployment: `docker compose -p rds down && docker compose -p rds up -d`
+1. Restart deployment: `docker compose down && docker compose up -d`
 
 ## Docker compose and Makefile
 With this local Nextcloud environment, you can execute most, if not all, automated tests that Sunet uses to test their Sunet Drive environment. The local deployment uses a (single-node) architecture that is as close to the Sunet Drive deployment as possible. The majority of the configuration is done in a `docker-compose.yaml` and a `Makefile`. The compose file contains configurations for:

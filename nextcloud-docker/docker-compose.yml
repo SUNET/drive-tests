@@ -19,7 +19,7 @@ x-minio-common: &minio-common
     - "9000"
     - "9001"
   environment:
-    - MINIO_ROOT_USER=minioadmin
+    - MINIO_ROOT_USER=${MINIO_ROOT_USER}
   env_file:
     - ./.env
 
@@ -43,14 +43,16 @@ services:
 
   nextcloud-app:
     container_name: nextcloud-local
-    image: nextcloud:31
+    image: nextcloud:${NEXTCLOUD_IMAGE_TAG}
     restart: always
     ports:
       - 8443:443
       - 8080:80
-    links:
-      - db1
-      - collabora-server
+    depends_on:
+      db1:
+        condition: service_healthy
+      collabora-server:
+        condition: service_started
     volumes:
       - nextcloud:/var/www/html
 
@@ -64,9 +66,9 @@ services:
         source: /tmp/localhost.pem
         target: /etc/ssl/private/localhost.pem
     environment:
-      - MYSQL_PASSWORD=userpass
-      - MYSQL_DATABASE=nextcloud
-      - MYSQL_USER=nextcloud
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
+      - MYSQL_USER=${MYSQL_USER}
       - MYSQL_HOST=db
     networks:
       - sciencemesh-federation
@@ -79,10 +81,15 @@ services:
     volumes:
       - db:/var/lib/mysql
     environment:
-      - MYSQL_ROOT_PASSWORD=rootpass
-      - MYSQL_PASSWORD=userpass
-      - MYSQL_DATABASE=nextcloud
-      - MYSQL_USER=nextcloud
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
+      - MYSQL_USER=${MYSQL_USER}
+    healthcheck:
+      test: ["CMD", "mariadb-admin", "ping", "-h", "localhost", "-uroot", "-p${MYSQL_ROOT_PASSWORD}"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
     networks:
       - sciencemesh-federation
 
@@ -104,8 +111,8 @@ services:
       - VIRTUAL_PORT=9980
       - VIRTUAL_HOST=collabora
       - extra_params=--o:ssl.enable=false --o:ssl.termination=true --o:user_interface.mode=compact --o:net.proto=IPv4 --o:hexify_embedded_urls=true --o:logging.level=warning
-      - username=admin
-      - password=adminpassword
+      - username=${COLLABORA_ADMIN_USER}
+      - password=${COLLABORA_ADMIN_PASSWORD}
     networks:
       - sciencemesh-federation
 
@@ -116,7 +123,7 @@ services:
       - 3002:3002
     environment:
       - NEXTCLOUD_URL=https://localhost
-      - JWT_SECRET_KEY=some-random-key
+      - JWT_SECRET_KEY=${WHITEBOARD_JWT_SECRET_KEY}
     networks:
       - sciencemesh-federation
 
