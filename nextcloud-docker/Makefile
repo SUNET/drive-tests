@@ -166,15 +166,15 @@ bootstrap: docker_kill certificates
 	# -docker exec -u www-data nextcloud-local /bin/bash -c "env NC_PASS=notimportant /var/www/html/occ user:auth-tokens:add --password-from-env _selenium_localhost"
 	# -docker exec -u www-data nextcloud-local /bin/bash -c "env NC_PASS=notimportant /var/www/html/occ user:auth-tokens:add --password-from-env _selenium_localhost_mfa"
 
-	# docker exec nextcloud-local-minio1 mc config host add myminio http://nextcloud-local-minio:9000 minioadmin
-	docker exec nextcloud-local-minio1 mc alias set myminio http://nextcloud-local-minio:9000 $(MINIO_ROOT_USER) $(MINIO_ROOT_PASSWORD)
-	-docker exec nextcloud-local-minio1 mc mb myminio/project-bucket
-	-docker exec nextcloud-local-minio1 mc mb myminio/selenium-system
-	-docker exec nextcloud-local-minio1 mc mb myminio/selenium-personal
+	# rustfs/rustfs doesn't bundle the mc client, so run it from the
+	# standalone mc image instead (Docker Hub pulled minio/* on 2026-09-11;
+	# quay.io/minio/* still serves the same images/tags) -- one container so
+	# the alias it sets is still there for the mc mb calls that follow.
+	docker run --rm --network sciencemesh-federation --entrypoint sh quay.io/minio/mc -c "mc alias set myrustfs http://nextcloud-local-rustfs:9000 '$(RUSTFS_ACCESS_KEY)' '$(RUSTFS_SECRET_KEY)' && (mc mb myrustfs/project-bucket; mc mb myrustfs/selenium-system; mc mb myrustfs/selenium-personal; true)"
 
 	# Copy bucket configuration file to container and import mounts, with
-	# MinIO credentials substituted in from .env
-	sed -e "s|__MINIO_ROOT_USER__|$(MINIO_ROOT_USER)|g" -e "s|__MINIO_ROOT_PASSWORD__|$(MINIO_ROOT_PASSWORD)|g" files_external.json > /tmp/files_external.json
+	# RustFS credentials substituted in from .env
+	sed -e "s|__RUSTFS_ACCESS_KEY__|$(RUSTFS_ACCESS_KEY)|g" -e "s|__RUSTFS_SECRET_KEY__|$(RUSTFS_SECRET_KEY)|g" files_external.json > /tmp/files_external.json
 	docker cp /tmp/files_external.json nextcloud-local:/var/www/html/files_external.json
 	-./occ_docker files_external:import files_external.json
 
@@ -327,7 +327,7 @@ bootstrappasswords: .env
 		-e "s|^export NEXTCLOUD_SELENIUM_MFA_PASSWORD_LOCALHOST_LOCALHOST=.*|export NEXTCLOUD_SELENIUM_MFA_PASSWORD_LOCALHOST_LOCALHOST=$(GENPASS)|" \
 		-e "s|^export MYSQL_ROOT_PASSWORD=.*|export MYSQL_ROOT_PASSWORD=$(GENPASS)|" \
 		-e "s|^export MYSQL_PASSWORD=.*|export MYSQL_PASSWORD=$(GENPASS)|" \
-		-e "s|^export MINIO_ROOT_PASSWORD=.*|export MINIO_ROOT_PASSWORD=$(GENPASS)|" \
+		-e "s|^export RUSTFS_SECRET_KEY=.*|export RUSTFS_SECRET_KEY=$(GENPASS)|" \
 		-e "s|^export COLLABORA_ADMIN_PASSWORD=.*|export COLLABORA_ADMIN_PASSWORD=$(GENPASS)|" \
 		-e "s|^export WHITEBOARD_JWT_SECRET_KEY=.*|export WHITEBOARD_JWT_SECRET_KEY=$(GENPASS)|" \
 		.env

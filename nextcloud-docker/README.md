@@ -10,7 +10,7 @@ During the process, a number of unittests will be executed: acceptance tests, lo
 * Nextcloud: https://localhost:8443 or http://localhost:8880 (admin/adminpassword by default -- see `NEXTCLOUD_ADMIN_PASSWORD` in [.env.example](.env.example))
 * Jupyterhub: https://localhost:9444
 * RDS NG: https://localhost:9445/ or http://localhost:8000
-* MinIO: http://localhost:9000 (minioadmin/minioadmin by default -- see `MINIO_ROOT_USER`/`MINIO_ROOT_PASSWORD` in [.env.example](.env.example))
+* RustFS: http://localhost:9000, console at http://localhost:9001 (rustfsadmin/rustfsadmin by default -- see `RUSTFS_ACCESS_KEY`/`RUSTFS_SECRET_KEY` in [.env.example](.env.example))
 * Mock OAuth: https://localhost:9446 or http://localhost:8080
 
 
@@ -31,7 +31,7 @@ This is just a convenience wrapper for overwrite.cli.url, overwritehost, and ove
 	$ ./occ_docker config:system:set overwriteprotocol --value="http"
 
 ## Configuration
-Deployment config (database/MinIO/Collabora/whiteboard credentials, the Nextcloud
+Deployment config (database/RustFS/Collabora/whiteboard credentials, the Nextcloud
 image tag to deploy, test runner settings) lives in `.env`, which is created
 automatically from [`.env.example`](.env.example) the first time you run any
 `make` target -- see the comments in that file for what each variable does and
@@ -80,7 +80,7 @@ Unfortunately, Nextcloud does not currently allow scripted/automated OAuth confi
 With this local Nextcloud environment, you can execute most, if not all, automated tests that Sunet uses to test their Sunet Drive environment. The local deployment uses a (single-node) architecture that is as close to the Sunet Drive deployment as possible. The majority of the configuration is done in a `docker-compose.yaml` and a `Makefile`. The compose file contains configurations for:
 * Nextcloud - [nextcloud:latest](https://hub.docker.com/_/nextcloud/) with a self-signed certificate
 * MariaDB - [mariadb:latest](https://hub.docker.com/_/mariadb)
-* MinIO - [minio:latest](https://quay.io/repository/minio/minio) with a configuration inspired by their [docker-compose example](https://github.com/minio/minio/blob/master/docs/orchestration/docker-compose/docker-compose.yaml)
+* RustFS - [rustfs/rustfs:latest](https://hub.docker.com/r/rustfs/rustfs), an S3-compatible object store, with a configuration inspired by their [docker-compose example](https://github.com/rustfs/rustfs/blob/main/docker-compose.yml)
 * Whiteboard - []
 * JupyterHub (WIP) - A locally built JupyterHub
 * Mock OAuth Server (WIP) [mock-oauth2-server:2.1.1](https://ghcr.io/navikt/mock-oauth2-server)
