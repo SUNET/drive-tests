@@ -8,12 +8,12 @@ import os
 import threading
 import time
 import unittest
-from urllib.parse import quote
 from pathlib import Path
+from urllib.parse import quote
 
+import HtmlTestRunner
 import requests
 import xmlrunner
-import HtmlTestRunner
 
 import sunetnextcloud
 
@@ -22,7 +22,6 @@ ocsheaders = drv.ocsheaders
 expectedResults = drv.expectedResults
 
 g_testPassed = {}
-g_testThreadsRunning = 0
 g_requestTimeout = 10
 g_localDirectory = "./provisioning_config"
 
@@ -33,96 +32,249 @@ logging.basicConfig(
     level=logging.INFO,
 )
 
+
+class GetConfiguration(threading.Thread):
+    def __init__(self, name):
+        threading.Thread.__init__(self)
+        self.name = name
+
+    def run(self):
+        global logger
+        global g_testPassed
+        node = self.name
+
+        g_testPassed[node] = False
+        logger.info(f"Setting passed for {node} to {g_testPassed.get(node)}")
+
+        node_configuration = {}
+
+        node_config_path = f"{g_localDirectory}/{node}.{drv.target}.json"
+        node_config_file = Path(node_config_path)
+        if node_config_file.is_file():
+            logger.info(
+                f"Done: {node} - configuration file already exists"
+            )
+            g_testPassed[node] = True
+            return
+            # file exists
+
+        key = "none"
+        logger.info(f"Execute for {node}")
+        nodeuser = drv.get_ocsuser(node)
+        nodepwd = drv.get_ocsuserapppassword(node)
+
+        try:
+            rawurl = drv.get_all_apps_url(node)
+            url = rawurl.replace("$USERNAME$", nodeuser)
+            url = url.replace("$PASSWORD$", nodepwd)
+            session = requests.Session()
+            r = session.get(url, headers=ocsheaders, timeout=g_requestTimeout)
+        except Exception as error:
+            logger.error(f"Unable to get the app list from {node}: {error}")
+            return
+
+        # 503 usually means that the node is in maintenance mode
+        if r.status_code != 200:
+            logger.error(
+                f"Unable to get the app list from {node}: HTTP {r.status_code} - {r.text[:200]}"
+            )
+            return
+
+        try:
+            j = json.loads(r.text)
+            apps = j["ocs"]["data"]["apps"]
+        except Exception as error:
+            logger.error(f"No or invalid apps JSON reply received from {node}:{error}")
+            return
+
+        failedApps = []
+        for app in apps:
+            logger.info(f"Get configuration for {app}")
+
+            try:
+                rawurl = drv.get_app_url(node, app)
+                url = rawurl.replace("$USERNAME$", nodeuser)
+                url = url.replace("$PASSWORD$", nodepwd)
+                r = session.get(url, headers=ocsheaders, timeout=g_requestTimeout)
+                j = json.loads(r.text)
+                # logger.info(json.dumps(j, indent=4))
+
+                logger.info(f"Get configuration keys for {app}")
+
+                rawurl = drv.get_app_config_keys_url(node, app)
+                url = rawurl.replace("$USERNAME$", nodeuser)
+                url = url.replace("$PASSWORD$", nodepwd)
+                r = session.get(url, headers=ocsheaders, timeout=g_requestTimeout)
+                j = json.loads(r.text)
+                # logger.info(json.dumps(j, indent=4))
+
+                for key in j["ocs"]["data"]["data"]:
+                    logger.info(
+                        f"Get app config value for node: {node} - app: {app} - key: {key}"
+                    )
+                    # key = 'auto_groups'
+                    # app = 'stepupauth'
+                    rawurl = drv.get_app_config_value_url(node, app, key)
+
+                    url = rawurl.replace("$USERNAME$", nodeuser)
+                    url = url.replace("$PASSWORD$", nodepwd)
+                    r = session.get(url, headers=ocsheaders, timeout=g_requestTimeout)
+                    j = json.loads(r.text)
+
+                    # logger.info(f'Append node configuration ')
+                    node_configuration.setdefault(node, {}).setdefault(app, {})[key] = (
+                        j["ocs"]["data"]["data"]
+                    )
+
+                # r = session.post(url, headers=ocsheaders)
+                # j = json.loads(r.text)
+                # logger.info(json.dumps(j, indent=4))
+            except Exception as error:
+                logger.error(
+                    f"No or invalid JSON reply received from node: {node} - app: {app} - {key}:{error}"
+                )
+                failedApps.append(app)
+                continue
+
+        # An incomplete configuration would be skipped by later runs, so do not save it
+        if failedApps:
+            logger.error(
+                f"Done: {node} - configuration not saved, failed apps: {failedApps}"
+            )
+            return
+
+        # logger.info(f'Full node configuration: {json.dumps(node_configuration, indent=4)}')
+
+        # Check if the file exists and write configuration into it
+        node_config_file = Path(node_config_path)
+        if node_config_file.is_file():
+            logger.info(f"Do not overwrite existing configuration file")
+            # file exists
+        else:
+            with open(node_config_path, "w") as f:
+                logger.info(f"Save node configuration file to {node_config_path}")
+                json.dump(node_configuration, f, indent=4, sort_keys=True)
+
+        logger.info(f"Done: {node}")
+        g_testPassed[node] = True
+        return
+
+
 class TestOcsConfigAll(unittest.TestCase):
     def test_logger(self):
         logger.info(f"TestID: {self._testMethodName}")
         pass
 
+    def test_compare_default_configuration(self):
+        logger.info(f"TestID: {self._testMethodName}")
+
     def test_get_configuration(self):
         logger.info(f"TestID: {self._testMethodName}")
 
-        Path(g_localDirectory).mkdir(parents=True, exist_ok=True)
-
-        node_configuration = {}
+        threads = []
         for node in drv.allnodes:
-            node_config_path = f'{g_localDirectory}/{node}.{drv.target}.json'
-            node_config_file = Path(node_config_path)
-            if node_config_file.is_file():
-                logger.info(f'Configuration file already exists, skipping {node}')
-                continue
-                # file exists
+            with self.subTest(mynode=node):
+                logger.info(f"TestID: {node}")
+                getConfigurationThread = GetConfiguration(node)
+                getConfigurationThread.start()
+                threads.append(getConfigurationThread)
 
-            key = 'none'
-            logger.info(f'Execute for {node}')
-            nodeuser = drv.get_ocsuser(node)
-            nodepwd = drv.get_ocsuserapppassword(node)
+        # Wait until every thread has finished, however it exited
+        for thread in threads:
+            thread.join()
 
-            rawurl = drv.get_all_apps_url(node)
-            url = rawurl.replace("$USERNAME$", nodeuser)
-            url = url.replace("$PASSWORD$", nodepwd)
-            session = requests.Session()
-            r = session.get(url, headers=ocsheaders)
+        for node in drv.allnodes:
+            with self.subTest(mynode=node):
+                self.assertTrue(g_testPassed.get(node, False))
 
-            try:
-                j = json.loads(r.text)
-                apps = j["ocs"]["data"]["apps"]
-            except Exception as error:
-                logger.error(f"No or invalid apps JSON reply received from {node}:{error}")
-                continue
+        # Path(g_localDirectory).mkdir(parents=True, exist_ok=True)
+        # node_configuration = {}
+        # for node in drv.allnodes:
+        #     node_config_path = f"{g_localDirectory}/{node}.{drv.target}.json"
+        #     node_config_file = Path(node_config_path)
+        #     if node_config_file.is_file():
+        #         logger.info(f"Configuration file already exists, skipping {node}")
+        #         continue
+        #         # file exists
 
-            for app in apps:
-                logger.info(f'Get configuration for {app}')
+        #     key = "none"
+        #     logger.info(f"Execute for {node}")
+        #     nodeuser = drv.get_ocsuser(node)
+        #     nodepwd = drv.get_ocsuserapppassword(node)
 
-                try:
-                    rawurl = drv.get_app_url(node, app)
-                    url = rawurl.replace("$USERNAME$", nodeuser)
-                    url = url.replace("$PASSWORD$", nodepwd)
-                    r = session.get(url, headers=ocsheaders)
-                    j = json.loads(r.text)
-                    # logger.info(json.dumps(j, indent=4))
+        #     rawurl = drv.get_all_apps_url(node)
+        #     url = rawurl.replace("$USERNAME$", nodeuser)
+        #     url = url.replace("$PASSWORD$", nodepwd)
+        #     session = requests.Session()
+        #     r = session.get(url, headers=ocsheaders)
 
-                    logger.info(f'Get configuration keys for {app}')
+        #     try:
+        #         j = json.loads(r.text)
+        #         apps = j["ocs"]["data"]["apps"]
+        #     except Exception as error:
+        #         logger.error(
+        #             f"No or invalid apps JSON reply received from {node}:{error}"
+        #         )
+        #         continue
 
-                    rawurl = drv.get_app_config_keys_url(node, app)
-                    url = rawurl.replace("$USERNAME$", nodeuser)
-                    url = url.replace("$PASSWORD$", nodepwd)
-                    r = session.get(url, headers=ocsheaders)
-                    j = json.loads(r.text)
-                    # logger.info(json.dumps(j, indent=4))
+        #     for app in apps:
+        #         logger.info(f"Get configuration for {app}")
 
-                    for key in j['ocs']['data']['data']:
-                        logger.info(f'Get app config value for node: {node} - app: {app} - key: {key}')
-                        # key = 'auto_groups'
-                        # app = 'stepupauth'
-                        rawurl = drv.get_app_config_value_url(node, app, key)
+        #         try:
+        #             rawurl = drv.get_app_url(node, app)
+        #             url = rawurl.replace("$USERNAME$", nodeuser)
+        #             url = url.replace("$PASSWORD$", nodepwd)
+        #             r = session.get(url, headers=ocsheaders)
+        #             j = json.loads(r.text)
+        #             # logger.info(json.dumps(j, indent=4))
 
-                        url = rawurl.replace("$USERNAME$", nodeuser)
-                        url = url.replace("$PASSWORD$", nodepwd)
-                        r = session.get(url, headers=ocsheaders)
-                        j = json.loads(r.text)
+        #             logger.info(f"Get configuration keys for {app}")
 
-                        # logger.info(f'Append node configuration ')
-                        node_configuration.setdefault(node, {}).setdefault(app, {})[key] = j['ocs']['data']['data']
+        #             rawurl = drv.get_app_config_keys_url(node, app)
+        #             url = rawurl.replace("$USERNAME$", nodeuser)
+        #             url = url.replace("$PASSWORD$", nodepwd)
+        #             r = session.get(url, headers=ocsheaders)
+        #             j = json.loads(r.text)
+        #             # logger.info(json.dumps(j, indent=4))
 
-                    # r = session.post(url, headers=ocsheaders)
-                    # j = json.loads(r.text)
-                    # logger.info(json.dumps(j, indent=4))
-                except Exception as error:
-                    logger.error(f"No or invalid JSON reply received from node: {node} - app: {app} - {key}:{error}")
-                    continue
+        #             for key in j["ocs"]["data"]["data"]:
+        #                 logger.info(
+        #                     f"Get app config value for node: {node} - app: {app} - key: {key}"
+        #                 )
+        #                 # key = 'auto_groups'
+        #                 # app = 'stepupauth'
+        #                 rawurl = drv.get_app_config_value_url(node, app, key)
 
+        #                 url = rawurl.replace("$USERNAME$", nodeuser)
+        #                 url = url.replace("$PASSWORD$", nodepwd)
+        #                 r = session.get(url, headers=ocsheaders)
+        #                 j = json.loads(r.text)
 
-            # logger.info(f'Full node configuration: {json.dumps(node_configuration, indent=4)}')
+        #                 # logger.info(f'Append node configuration ')
+        #                 node_configuration.setdefault(node, {}).setdefault(app, {})[
+        #                     key
+        #                 ] = j["ocs"]["data"]["data"]
 
-            # Check if the file exists and write configuration into it
-            node_config_file = Path(node_config_path)
-            if node_config_file.is_file():
-                logger.info(f'Do not overwrite existing configuration file')
-                # file exists
-            else:
-                with open(node_config_path, 'w') as f:
-                    logger.info(f'Save node configuration file to {node_config_path}')
-                    json.dump(node_configuration, f, indent=4, sort_keys=True)
+        #             # r = session.post(url, headers=ocsheaders)
+        #             # j = json.loads(r.text)
+        #             # logger.info(json.dumps(j, indent=4))
+        #         except Exception as error:
+        #             logger.error(
+        #                 f"No or invalid JSON reply received from node: {node} - app: {app} - {key}:{error}"
+        #             )
+        #             continue
+
+        #     # logger.info(f'Full node configuration: {json.dumps(node_configuration, indent=4)}')
+
+        #     # Check if the file exists and write configuration into it
+        #     node_config_file = Path(node_config_path)
+        #     if node_config_file.is_file():
+        #         logger.info(f"Do not overwrite existing configuration file")
+        #         # file exists
+        #     else:
+        #         with open(node_config_path, "w") as f:
+        #             logger.info(f"Save node configuration file to {node_config_path}")
+        #             json.dump(node_configuration, f, indent=4, sort_keys=True)
 
     def test_check_configuration(self):
         logger.info(f"TestID: {self._testMethodName}")
@@ -130,19 +282,23 @@ class TestOcsConfigAll(unittest.TestCase):
         Path(g_localDirectory).mkdir(parents=True, exist_ok=True)
 
         for node in drv.allnodes:
-            node_config_path = f'{g_localDirectory}/{node}.{drv.target}.json'
+            node_config_path = f"{g_localDirectory}/{node}.{drv.target}.json"
             node_config_file = Path(node_config_path)
             if not node_config_file.is_file():
-                logger.error(f'Configuration does not exists, please run get_configuration for {node}')
+                logger.error(
+                    f"Configuration does not exists, please run get_configuration for {node}"
+                )
                 continue
             else:
                 with open(node_config_path) as f:
-                    logger.info(f'Read reference configuration for {node} from {node_config_path}')
+                    logger.info(
+                        f"Read reference configuration for {node} from {node_config_path}"
+                    )
                     node_reference_configuration = json.load(f)
                     f.close()
 
-            key = 'none'
-            logger.info(f'Execute for {node}')
+            key = "none"
+            logger.info(f"Execute for {node}")
             nodeuser = drv.get_ocsuser(node)
             nodepwd = drv.get_ocsuserapppassword(node)
 
@@ -150,57 +306,69 @@ class TestOcsConfigAll(unittest.TestCase):
             url = rawurl.replace("$USERNAME$", nodeuser)
             url = url.replace("$PASSWORD$", nodepwd)
             session = requests.Session()
-            r = session.get(url, headers=ocsheaders)
+            r = session.get(url, headers=ocsheaders, timeout=g_requestTimeout)
 
             try:
                 j = json.loads(r.text)
                 apps = j["ocs"]["data"]["apps"]
             except Exception as error:
-                logger.error(f"No or invalid apps JSON reply received from {node}:{error}")
+                logger.error(
+                    f"No or invalid apps JSON reply received from {node}:{error}"
+                )
                 continue
 
             for app in apps:
-                logger.info(f'Get configuration for {app}')
+                logger.info(f"Get configuration for {app}")
 
                 try:
                     rawurl = drv.get_app_url(node, app)
                     url = rawurl.replace("$USERNAME$", nodeuser)
                     url = url.replace("$PASSWORD$", nodepwd)
-                    r = session.get(url, headers=ocsheaders)
+                    r = session.get(url, headers=ocsheaders, timeout=g_requestTimeout)
                     j = json.loads(r.text)
                     # logger.info(json.dumps(j, indent=4))
 
-                    logger.info(f'Get configuration keys for {app}')
+                    logger.info(f"Get configuration keys for {app}")
 
                     rawurl = drv.get_app_config_keys_url(node, app)
                     url = rawurl.replace("$USERNAME$", nodeuser)
                     url = url.replace("$PASSWORD$", nodepwd)
-                    r = session.get(url, headers=ocsheaders)
+                    r = session.get(url, headers=ocsheaders, timeout=g_requestTimeout)
                     j = json.loads(r.text)
                     # logger.info(json.dumps(j, indent=4))
 
-                    key = 'none'
-                    for key in j['ocs']['data']['data']:
-                        logger.info(f'Get app config value for node: {node} - app: {app} - key: {key}')
+                    key = "none"
+                    for key in j["ocs"]["data"]["data"]:
+                        logger.info(
+                            f"Get app config value for node: {node} - app: {app} - key: {key}"
+                        )
                         # key = 'auto_groups'
                         # app = 'stepupauth'
                         rawurl = drv.get_app_config_value_url(node, app, key)
 
                         url = rawurl.replace("$USERNAME$", nodeuser)
                         url = url.replace("$PASSWORD$", nodepwd)
-                        r = session.get(url, headers=ocsheaders)
+                        r = session.get(url, headers=ocsheaders, timeout=g_requestTimeout)
                         j = json.loads(r.text)
 
-                        with self.subTest(keychecktest=f'{node}.{app}.{key}'):
-                            logger.info(f'Compare node configuration element: {node} - app: {app} - key: {key}')
-                            self.assertEqual(j['ocs']['data']['data'], node_reference_configuration[node][app][key])
+                        with self.subTest(keychecktest=f"{node}.{app}.{key}"):
+                            logger.info(
+                                f"Compare node configuration element: {node} - app: {app} - key: {key}"
+                            )
+                            self.assertEqual(
+                                j["ocs"]["data"]["data"],
+                                node_reference_configuration[node][app][key],
+                            )
 
                 except AssertionError:
                     raise
 
                 except Exception as error:
-                    logger.error(f"No or invalid JSON reply received from node: {node} - app: {app} - {key}:{error}")
+                    logger.error(
+                        f"No or invalid JSON reply received from node: {node} - app: {app} - {key}:{error}"
+                    )
                     continue
+
 
 if __name__ == "__main__":
     if drv.testrunner == "xml":
