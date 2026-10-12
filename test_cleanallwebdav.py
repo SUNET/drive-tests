@@ -47,6 +47,8 @@ g_excludeList = [
     "sunet-test-resharing/",
     "su-test-data-005/",
     "dco-su-test-001/",
+    "performancetest/",
+    "nextcloudtesting/",
 ]
 # Items must not have been modified for this long
 g_minAge = timedelta(hours=1)
