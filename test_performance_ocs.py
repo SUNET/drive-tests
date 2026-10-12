@@ -29,7 +29,6 @@ disableusers = True
 checkusers = True
 calls = 100
 
-g_testThreadsRunning = 0
 g_ocsPerformanceResults = []
 g_testPassed = {}
 
@@ -64,28 +63,30 @@ logging.basicConfig(
 
 
 class NodeOcsUserLifecycle(threading.Thread):
-    def __init__(self, name):
+    def __init__(self, name, testid):
         threading.Thread.__init__(self)
         self.name = name
+        self.testid = testid
 
     def run(self):
-        global logger, g_testPassed, g_testThreadsRunning, g_ocsPerformanceResults, g_maxRandSleep
-        g_testThreadsRunning += 1
+        global logger, g_testPassed, g_ocsPerformanceResults, g_maxRandSleep
+        testid = self.testid
+        g_testPassed[testid] = False
 
         start_delay = random.randint(0,g_maxRandSleep)
         logger.info(f"NodeOcsUserLifecycle thread for node {self.name} starting in {start_delay} seconds")
         time.sleep(start_delay)
-        drv = sunetnextcloud.TestTarget()
         fullnode = self.name
-        if drv.is_multinode(fullnode):
-            testid = f'{fullnode} - {drv.get_multinode(fullnode)}'
-        else:
-            testid = fullnode
+        try:
+            drv = sunetnextcloud.TestTarget()
+        except Exception as error:
+            logger.error(f"Error setting up the test target for {self.name}: {error}")
+            return
 
-        url = drv.get_users_url(fullnode)
         # logger.info(self._testMethodName, url)
         startTime = datetime.now()
         coolDownTime = 0
+        r = None
 
         for nodeindex in range(1, nodes + 1):
             logger.info(f"Node: {str(nodeindex)}")
@@ -101,7 +102,6 @@ class NodeOcsUserLifecycle(threading.Thread):
 
             except Exception as error:
                 logger.error(f"Error getting credentials for {self.name}:{error}")
-                g_testThreadsRunning -= 1
                 return
 
             logger.info(f"Confirm app password for {nodeuser}")
@@ -126,7 +126,6 @@ class NodeOcsUserLifecycle(threading.Thread):
             except Exception as error:
                 logger.error(f"Error confirming app password: {error}")
                 g_testPassed[testid] = False
-                g_testThreadsRunning -= 1
                 return
 
             for userindex in range(offset, offset + users + 1):
@@ -143,7 +142,7 @@ class NodeOcsUserLifecycle(threading.Thread):
 
                         data = {"userid": cliuser, "password": clipwd}
 
-                        r = session.post(url, headers=ocsheaders, data=data)
+                        r = session.post(url, headers=ocsheaders, data=data, timeout=g_requestTimeout)
                         j = json.loads(r.text)
                         logger.info(j["ocs"]["meta"]["status"])
                         time.sleep(g_userCooldown)
@@ -154,7 +153,7 @@ class NodeOcsUserLifecycle(threading.Thread):
                         userinfourl = drv.get_user_url(fullnode, cliuser)
                         userinfourl = userinfourl.replace("$USERNAME$", nodeuser)
                         userinfourl = userinfourl.replace("$PASSWORD$", nodeapppwd)
-                        r = session.get(userinfourl, headers=ocsheaders)
+                        r = session.get(userinfourl, headers=ocsheaders, timeout=g_requestTimeout)
                         j = json.loads(r.text)
                         logger.info(j["ocs"]["meta"]["status"])
                         if "forcemfa" not in j["ocs"]["data"]["groups"]:
@@ -172,7 +171,7 @@ class NodeOcsUserLifecycle(threading.Thread):
                         disableuserurl = disableuserurl.replace(
                             "$PASSWORD$", nodeapppwd
                         )
-                        r = session.put(disableuserurl, headers=ocsheaders)
+                        r = session.put(disableuserurl, headers=ocsheaders, timeout=g_requestTimeout)
                         j = json.loads(r.text)
                         logger.info(j["ocs"]["meta"]["status"])
                         time.sleep(g_userCooldown)
@@ -187,7 +186,7 @@ class NodeOcsUserLifecycle(threading.Thread):
                         userurl = drv.get_user_url(fullnode, cliuser)
                         userurl = userurl.replace("$USERNAME$", nodeuser)
                         userurl = userurl.replace("$PASSWORD$", nodeapppwd)
-                        r = session.delete(userurl, headers=ocsheaders)
+                        r = session.delete(userurl, headers=ocsheaders, timeout=g_requestTimeout)
                         j = json.loads(r.text)
                         logger.info(j["ocs"]["meta"]["status"])
 
@@ -201,7 +200,6 @@ class NodeOcsUserLifecycle(threading.Thread):
                             f"Unable to test user lifecycle for {fullnode}: {error}"
                         )
                     g_testPassed[testid] = False
-                    g_testThreadsRunning -= 1
                     return
         totalTime = (datetime.now() - startTime).total_seconds() - coolDownTime
         g_ocsPerformanceResults.append(
@@ -209,24 +207,25 @@ class NodeOcsUserLifecycle(threading.Thread):
         )
 
         g_testPassed[testid] = True
-        g_testThreadsRunning -= 1
         logger.info(
-            f"NodeOcsUserLifecycle thread done for node {self.name}, test passed: {g_testPassed[testid]}, remaining: {g_testThreadsRunning}"
+            f"NodeOcsUserLifecycle thread done for node {self.name}, test passed: {g_testPassed[testid]}"
         )
         return
 
 
 class NodeOcsUserPerformance(threading.Thread):
-    def __init__(self, name, TestOcsCalls, newSession, verify=True):
+    def __init__(self, name, testid, TestOcsCalls, newSession, verify=True):
         threading.Thread.__init__(self)
         self.name = name
+        self.testid = testid
         self.TestOcsCalls = TestOcsCalls
         self.verify = verify
         self.newSession = newSession
 
     def run(self):
-        global logger, g_testPassed, g_testThreadsRunning, g_ocsPerformanceResults
-        g_testThreadsRunning += 1
+        global logger, g_testPassed, g_ocsPerformanceResults
+        testid = self.testid
+        g_testPassed[testid] = False
 
         start_delay = random.randint(0,g_maxRandSleep)
         logger.info(f"NodeOcsUserPerformance thread for node {self.name} starting in {start_delay} seconds")
@@ -236,17 +235,9 @@ class NodeOcsUserPerformance(threading.Thread):
             drv = sunetnextcloud.TestTarget()
             fullnode = self.name
             isMultinode = drv.is_multinode(fullnode)
-            if drv.is_multinode(fullnode):
-                testid = f'{fullnode} - {drv.get_multinode(fullnode)}'
-            else:
-                testid = fullnode
 
             nodeuser = drv.get_ocsuser(fullnode)
             nodepwd = drv.get_ocsuserapppassword(fullnode)
-            g_testPassed[testid] = False
-            logger.info(
-                f"Setting passed for {fullnode} to {g_testPassed.get(testid)}"
-            )
 
             url = drv.get_status_url(fullnode)
             nodebaseurl = drv.get_node_base_url(fullnode)
@@ -265,7 +256,7 @@ class NodeOcsUserPerformance(threading.Thread):
                     s.mount('https://', HTTPAdapter(max_retries=retries))
                     s.headers.update(ocsheaders)
                     startTime = datetime.now()
-                    s.get(url, headers=ocsheaders)
+                    s.get(url, headers=ocsheaders, timeout=g_requestTimeout)
                     totalTime += (datetime.now() - startTime).total_seconds()
                     # logger.info(f'SERVERID cookie: {s.cookies.get_dict()["SERVERID"]}')
 
@@ -284,7 +275,7 @@ class NodeOcsUserPerformance(threading.Thread):
                 lastServerId = ""
                 for call in range(0, calls):
                     startTime = datetime.now()
-                    s.get(url, headers=ocsheaders)
+                    s.get(url, headers=ocsheaders, timeout=g_requestTimeout)
                     totalTime += (datetime.now() - startTime).total_seconds()
                     logger.info(f"List all cookies {s.cookies.get_dict()}")
                     if call == 0:
@@ -314,7 +305,7 @@ class NodeOcsUserPerformance(threading.Thread):
                         s.mount('http://', HTTPAdapter(max_retries=retries))
                         s.mount('https://', HTTPAdapter(max_retries=retries))
                         startTime = datetime.now()
-                        s.get(url, headers=ocsheaders)
+                        s.get(url, headers=ocsheaders, timeout=g_requestTimeout)
                         totalTime += (datetime.now() - startTime).total_seconds()
                     message += f" - {totalTime:<3.1f}s"
                     logger.info(
@@ -332,7 +323,7 @@ class NodeOcsUserPerformance(threading.Thread):
                             s.mount('http://', HTTPAdapter(max_retries=retries))
                             s.mount('https://', HTTPAdapter(max_retries=retries))
                             startTime = datetime.now()
-                            s.get(url, headers=ocsheaders)
+                            s.get(url, headers=ocsheaders, timeout=g_requestTimeout)
                             totalTime += (datetime.now() - startTime).total_seconds()
                         message += f" - {totalTime:<3.1f}s"
                         logger.info(
@@ -352,7 +343,7 @@ class NodeOcsUserPerformance(threading.Thread):
                     s.mount('https://', HTTPAdapter(max_retries=retries))
                     for call in range(0, calls):
                         startTime = datetime.now()
-                        s.get(url, headers=ocsheaders)
+                        s.get(url, headers=ocsheaders, timeout=g_requestTimeout)
                         totalTime += (datetime.now() - startTime).total_seconds()
                     message += f" - {totalTime:<3.1f}s"
                     logger.info(
@@ -370,7 +361,7 @@ class NodeOcsUserPerformance(threading.Thread):
                             serverid = f"node{fe}.{nodebaseurl}"
                             s.cookies.set("SERVERID", serverid)
                             startTime = datetime.now()
-                            s.get(url, headers=ocsheaders)
+                            s.get(url, headers=ocsheaders, timeout=g_requestTimeout)
                             totalTime += (datetime.now() - startTime).total_seconds()
                         message += f" - {totalTime:<3.1f}s"
                         logger.info(
@@ -395,7 +386,7 @@ class NodeOcsUserPerformance(threading.Thread):
                         s.mount('http://', HTTPAdapter(max_retries=retries))
                         s.mount('https://', HTTPAdapter(max_retries=retries))
                         startTime = datetime.now()
-                        s.get(url, headers=ocsheaders, verify=False)
+                        s.get(url, headers=ocsheaders, verify=False, timeout=g_requestTimeout)
                         totalTime += (datetime.now() - startTime).total_seconds()
                     message += f" - {totalTime:<3.1f}s"
                     logger.info(
@@ -419,7 +410,7 @@ class NodeOcsUserPerformance(threading.Thread):
                             s.mount('http://', HTTPAdapter(max_retries=retries))
                             s.mount('https://', HTTPAdapter(max_retries=retries))
                             startTime = datetime.now()
-                            s.get(url, headers=ocsheaders, verify=False)
+                            s.get(url, headers=ocsheaders, verify=False, timeout=g_requestTimeout)
                             totalTime += (datetime.now() - startTime).total_seconds()
                         message += f" - {totalTime:<3.1f}s"
                         logger.info(
@@ -444,7 +435,7 @@ class NodeOcsUserPerformance(threading.Thread):
 
                     for call in range(0, calls):
                         startTime = datetime.now()
-                        s.get(url, headers=ocsheaders, verify=False)
+                        s.get(url, headers=ocsheaders, verify=False, timeout=g_requestTimeout)
                         totalTime += (datetime.now() - startTime).total_seconds()
                     message += f" - {totalTime:<3.1f}s"
                     logger.info(
@@ -464,7 +455,7 @@ class NodeOcsUserPerformance(threading.Thread):
 
                         for call in range(0, calls):
                             startTime = datetime.now()
-                            s.get(url, headers=ocsheaders, verify=False)
+                            s.get(url, headers=ocsheaders, verify=False, timeout=g_requestTimeout)
                             totalTime += (datetime.now() - startTime).total_seconds()
                         message += f" - {totalTime:<3.1f}s"
                         logger.info(
@@ -475,14 +466,12 @@ class NodeOcsUserPerformance(threading.Thread):
         except Exception as error:
             logger.error(f"Problem in NodeOcsUserPerformance for {self.name}: {error}")
             g_testPassed[testid] = False
-            g_testThreadsRunning -= 1
             return
 
-        logger.info(
-            f"NodeOcsUserPerformance thread done for node {self.name}, test passed: {g_testPassed[testid]}, remaining: {g_testThreadsRunning}"
-        )
         g_testPassed[testid] = True
-        g_testThreadsRunning -= 1
+        logger.info(
+            f"NodeOcsUserPerformance thread done for node {self.name}, test passed: {g_testPassed[testid]}"
+        )
         return
 
 class TestPerformanceOcs(unittest.TestCase):
@@ -492,6 +481,7 @@ class TestPerformanceOcs(unittest.TestCase):
             "Result of test_performance_ocs_userlist_samesession"
         )
         drv = sunetnextcloud.TestTarget()
+        threads = []
         for fullnode in drv.nodestotest:
             if drv.is_multinode(fullnode):
                 testid = f'{fullnode} - {drv.get_multinode(fullnode)}'
@@ -501,12 +491,14 @@ class TestPerformanceOcs(unittest.TestCase):
             with self.subTest(mynode=testid):
                 logger.info(f"TestID: {testid}")
                 nodeUsersThread = NodeOcsUserPerformance(
-                    fullnode, self, newSession=False, verify=drv.verify
+                    fullnode, testid, self, newSession=False, verify=drv.verify
                 )
                 nodeUsersThread.start()
+                threads.append(nodeUsersThread)
 
-        while g_testThreadsRunning > 0:
-            time.sleep(1)
+        # Wait until every thread has finished, however it exited
+        for thread in threads:
+            thread.join()
 
         for fullnode in drv.nodestotest:
             if drv.is_multinode(fullnode):
@@ -527,6 +519,7 @@ class TestPerformanceOcs(unittest.TestCase):
             "Result of test_performance_ocs_userlist_newsession"
         )
         drv = sunetnextcloud.TestTarget()
+        threads = []
         for fullnode in drv.nodestotest:
             if drv.is_multinode(fullnode):
                 testid = f'{fullnode} - {drv.get_multinode(fullnode)}'
@@ -536,12 +529,14 @@ class TestPerformanceOcs(unittest.TestCase):
             with self.subTest(mynode=testid):
                 logger.info(f"TestID: {testid}")
                 nodeUsersThread = NodeOcsUserPerformance(
-                    fullnode, self, newSession=True, verify=drv.verify
+                    fullnode, testid, self, newSession=True, verify=drv.verify
                 )
                 nodeUsersThread.start()
+                threads.append(nodeUsersThread)
 
-        while g_testThreadsRunning > 0:
-            time.sleep(1)
+        # Wait until every thread has finished, however it exited
+        for thread in threads:
+            thread.join()
 
         for fullnode in drv.nodestotest:
             if drv.is_multinode(fullnode):
@@ -561,6 +556,7 @@ class TestPerformanceOcs(unittest.TestCase):
         global g_ocsPerformanceResults
         g_ocsPerformanceResults.append("Result of test_performance_ocs_userlifecycle")
         drv = sunetnextcloud.TestTarget()
+        threads = []
         for fullnode in drv.nodestotest:
             if drv.is_multinode(fullnode):
                 testid = f'{fullnode} - {drv.get_multinode(fullnode)}'
@@ -569,11 +565,13 @@ class TestPerformanceOcs(unittest.TestCase):
 
             with self.subTest(mynode=testid):
                 logger.info(f"TestID: {testid}")
-                userLifecycleThread = NodeOcsUserLifecycle(fullnode)
+                userLifecycleThread = NodeOcsUserLifecycle(fullnode, testid)
                 userLifecycleThread.start()
+                threads.append(userLifecycleThread)
 
-        while g_testThreadsRunning > 0:
-            time.sleep(1)
+        # Wait until every thread has finished, however it exited
+        for thread in threads:
+            thread.join()
 
         for fullnode in drv.nodestotest:
             if drv.is_multinode(fullnode):

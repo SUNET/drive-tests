@@ -1,0 +1,546 @@
+"""Load test create, disable, delete user
+Author: Richard Freitag <freitag@sunet.se>
+"""
+
+import json
+import logging
+import os
+import threading
+import time
+import unittest
+from datetime import datetime
+
+import HtmlTestRunner
+import requests
+import xmlrunner
+import random
+
+import sunetnextcloud
+
+nodes = 1
+users = 10
+offset = 0
+createusers = True
+deleteusers = True
+disableusers = True
+checkusers = True
+calls = 100
+
+g_ocsPerformanceResults = []
+g_testPassed = {}
+g_requestTimeout = 10
+g_maxRandSleep = 60
+
+drv = sunetnextcloud.TestTarget()
+expectedResults = drv.expectedResults
+ocsheaders = drv.ocsheaders
+
+logger = logging.getLogger("TestLogger")
+logging.basicConfig(
+    format="%(asctime)s - %(module)s.%(funcName)s - %(levelname)s: %(message)s",
+    datefmt="%Y-%m-%d %H:%M:%S",
+    level=logging.INFO,
+)
+
+
+class NodeOcsUserLifecycle(threading.Thread):
+    def __init__(self, name, testid):
+        threading.Thread.__init__(self)
+        self.name = name
+        self.testid = testid
+
+    def run(self):
+        global logger, g_testPassed, g_ocsPerformanceResults, g_maxRandSleep
+        testid = self.testid
+        g_testPassed[testid] = False
+
+        start_delay = random.randint(0,g_maxRandSleep)
+        logger.info(f"NodeOcsUserLifecycle thread for node {self.name} starting in {start_delay} seconds")
+        time.sleep(start_delay)
+        fullnode = self.name
+        try:
+            drv = sunetnextcloud.TestTarget()
+        except Exception as error:
+            logger.error(f"Error setting up the test target for {self.name}: {error}")
+            return
+
+        # logger.info(self._testMethodName, url)
+        startTime = datetime.now()
+        r = None
+        for nodeindex in range(1, nodes + 1):
+            logger.info(f"Node: {str(nodeindex)}")
+
+            try:
+                nodeuser = drv.get_ocsuser(fullnode)
+                nodeapppwd = drv.get_ocsuserapppassword(fullnode)
+                nodepwd = drv.get_ocsuserpassword(fullnode)
+                session = requests.Session()
+            except Exception as error:
+                logger.error(f"Error getting credentials for {self.name}:{error}")
+                return
+
+            logger.info(f"Confirm app password for {nodeuser}")
+            try:
+                rawurl = drv.get_confirm_apppassword_url(fullnode)
+                logger.info(f"Confirm app password using {rawurl}")
+                url = rawurl.replace("$USERNAME$", nodeuser)
+                url = url.replace("$PASSWORD$", nodeapppwd)
+
+                data = {
+                    "password": nodepwd  # Replace with the user's password
+                }
+
+                r = session.put(
+                    url,
+                    headers=ocsheaders,
+                    json=data,
+                    timeout=g_requestTimeout,
+                    verify=True,
+                )
+                logger.info(r.text)
+            except Exception as error:
+                logger.error(f"Error confirming app password: {error}")
+                g_testPassed[testid] = False
+                return
+
+            for userindex in range(offset, offset + users + 1):
+                try:
+                    logger.info(f"{drv.target} - User: {str(userindex)}")
+                    usersuffix = str(nodeindex) + "_" + str(userindex)
+                    cliuser = "__performance_user_" + usersuffix + "_" + fullnode
+
+                    if createusers:
+                        rawurl = drv.get_users_url(fullnode)
+                        url = rawurl.replace("$USERNAME$", nodeuser)
+                        url = url.replace("$PASSWORD$", nodeapppwd)
+                        clipwd = sunetnextcloud.Helper().get_random_string(12)
+
+                        data = {"userid": cliuser, "password": clipwd}
+
+                        r = session.post(url, headers=ocsheaders, data=data, timeout=g_requestTimeout)
+                        j = json.loads(r.text)
+                        logger.info(j["ocs"]["meta"]["status"])
+
+                    if checkusers:
+                        logger.info(f"Check user info {cliuser}")
+                        userinfourl = drv.get_user_url(fullnode, cliuser)
+                        userinfourl = userinfourl.replace("$USERNAME$", nodeuser)
+                        userinfourl = userinfourl.replace("$PASSWORD$", nodeapppwd)
+                        r = session.get(userinfourl, headers=ocsheaders, timeout=g_requestTimeout)
+                        j = json.loads(r.text)
+                        logger.info(j["ocs"]["meta"]["status"])
+                        if "forcemfa" not in j["ocs"]["data"]["groups"]:
+                            logger.warning(
+                                f"focemfa not in user groups (yet?), sleeping for a second"
+                            )
+                            time.sleep(1)
+
+                    if disableusers:
+                        logger.info("Disable cli user " + cliuser)
+                        disableuserurl = drv.get_disable_user_url(fullnode, cliuser)
+                        disableuserurl = disableuserurl.replace("$USERNAME$", nodeuser)
+                        disableuserurl = disableuserurl.replace(
+                            "$PASSWORD$", nodeapppwd
+                        )
+                        r = session.put(disableuserurl, headers=ocsheaders, timeout=g_requestTimeout)
+                        j = json.loads(r.text)
+                        logger.info(j["ocs"]["meta"]["status"])
+
+                    if deleteusers:
+                        logger.info("Delete cli user " + cliuser)
+                        userurl = drv.get_user_url(fullnode, cliuser)
+                        userurl = userurl.replace("$USERNAME$", nodeuser)
+                        userurl = userurl.replace("$PASSWORD$", nodeapppwd)
+                        r = session.delete(userurl, headers=ocsheaders, timeout=g_requestTimeout)
+                        j = json.loads(r.text)
+                        logger.info(j["ocs"]["meta"]["status"])
+
+                except Exception as error:
+                    if r is not None:
+                        logger.error(
+                            f"Unable to test user lifecycle for {fullnode}: {error} \n {r.text}"
+                        )
+                    else:
+                        logger.error(
+                            f"Unable to test user lifecycle for {fullnode}: {error}"
+                        )
+                    g_testPassed[testid] = False
+                    return
+        totalTime = (datetime.now() - startTime).total_seconds()
+        g_ocsPerformanceResults.append(
+            f"{fullnode:<15} - Handling {nodes * users} users took {totalTime:<3.1f}s"
+        )
+
+        g_testPassed[testid] = True
+        logger.info(
+            f"NodeOcsUserLifecycle thread done for node {self.name}, test passed: {g_testPassed[testid]}"
+        )
+        return
+
+
+class NodeOcsUserPerformance(threading.Thread):
+    def __init__(self, name, testid, TestOcsCalls, newSession, verify=True):
+        threading.Thread.__init__(self)
+        self.name = name
+        self.testid = testid
+        self.TestOcsCalls = TestOcsCalls
+        self.verify = verify
+        self.newSession = newSession
+
+    def run(self):
+        global logger, g_testPassed, g_ocsPerformanceResults
+        testid = self.testid
+        g_testPassed[testid] = False
+
+        start_delay = random.randint(0,g_maxRandSleep)
+        logger.info(f"NodeOcsUserPerformance thread for node {self.name} starting in {start_delay} seconds")
+        time.sleep(start_delay)
+
+        try:
+            drv = sunetnextcloud.TestTarget()
+            fullnode = self.name
+            isMultinode = drv.is_multinode(fullnode)
+
+            nodeuser = drv.get_ocsuser(fullnode)
+            nodepwd = drv.get_ocsuserapppassword(fullnode)
+
+            url = drv.get_status_url(fullnode)
+            nodebaseurl = drv.get_node_base_url(fullnode)
+            url = drv.get_users_url(fullnode)
+            url = url.replace("$USERNAME$", nodeuser)
+            url = url.replace("$PASSWORD$", nodepwd)
+            message = f"{calls} calls to {nodebaseurl:<30}"
+
+            if self.newSession:
+                info = "Main URL without cookie, new session"
+                totalTime = 0.0
+                for call in range(0, calls):
+                    s = requests.Session()
+                    s.headers.update(ocsheaders)
+                    startTime = datetime.now()
+                    s.get(url, headers=ocsheaders, timeout=g_requestTimeout)
+                    totalTime += (datetime.now() - startTime).total_seconds()
+                    # logger.info(f'SERVERID cookie: {s.cookies.get_dict()["SERVERID"]}')
+
+                message += f" - {totalTime:<3.1f}s"
+                logger.info(
+                    f"{calls} requests to {nodebaseurl} took {totalTime:<3.1f}s - {info}"
+                )
+            else:
+                info = "Main URL without cookie, same session"
+                totalTime = 0.0
+                s = requests.Session()
+                s.headers.update(ocsheaders)
+                lastServerId = ""
+                for call in range(0, calls):
+                    startTime = datetime.now()
+                    s.get(url, headers=ocsheaders, timeout=g_requestTimeout)
+                    totalTime += (datetime.now() - startTime).total_seconds()
+                    logger.info(f"List all cookies {s.cookies.get_dict()}")
+                    if call == 0:
+                        lastServerId = s.cookies.get_dict()["SERVERID"]
+                    newServerId = s.cookies.get_dict()["SERVERID"]
+                    if lastServerId != newServerId:
+                        logger.warning(
+                            f"SERVERID for the session has changed! {lastServerId} != {newServerId}"
+                        )
+                    lastServerId = newServerId
+
+                message += f" - {totalTime:<3.1f}s"
+                logger.info(
+                    f"{calls} requests to {nodebaseurl} took {totalTime:<3.1f}s - {info}"
+                )
+
+            if self.newSession:
+                info = "Main URL with cookie, new session"
+                if isMultinode:
+                    totalTime = 0.0
+                    serverid = f"{drv.get_multinode(fullnode)}.{drv.get_base_url()}"
+                    for call in range(0, calls):
+                        s = requests.Session()
+                        s.headers.update(ocsheaders)
+                        s.cookies.set("SERVERID", serverid)
+                        startTime = datetime.now()
+                        s.get(url, headers=ocsheaders, timeout=g_requestTimeout)
+                        totalTime += (datetime.now() - startTime).total_seconds()
+                    message += f" - {totalTime:<3.1f}s"
+                    logger.info(
+                        f"{calls} requests to {serverid} took {totalTime:<3.1f}s - {info}"
+                    )
+                else:
+                    for fe in range(1, 4):
+                        totalTime = 0.0
+                        for call in range(0, calls):
+                            s = requests.Session()
+                            s.headers.update(ocsheaders)
+                            serverid = f"node{fe}.{nodebaseurl}"
+                            s.cookies.set("SERVERID", serverid)
+                            startTime = datetime.now()
+                            s.get(url, headers=ocsheaders, timeout=g_requestTimeout)
+                            totalTime += (datetime.now() - startTime).total_seconds()
+                        message += f" - {totalTime:<3.1f}s"
+                        logger.info(
+                            f"{calls} requests to {serverid} took {totalTime:<3.1f}s - {info}"
+                        )
+            else:
+                info = "Main URL with cookie, same session"
+                if isMultinode:
+                    serverid = f"{drv.get_multinode(fullnode)}.{drv.get_base_url()}"
+                    logger.info(f"Test multinode {fullnode} on {serverid}")
+                    totalTime = 0.0
+                    s = requests.Session()
+                    s.headers.update(ocsheaders)
+                    s.cookies.set("SERVERID", serverid)
+                    for call in range(0, calls):
+                        startTime = datetime.now()
+                        s.get(url, headers=ocsheaders, timeout=g_requestTimeout)
+                        totalTime += (datetime.now() - startTime).total_seconds()
+                    message += f" - {totalTime:<3.1f}s"
+                    logger.info(
+                        f"{calls} requests to {serverid} took {totalTime:<3.1f}s - {info}"
+                    )
+                else:
+                    for fe in range(1, 4):
+                        totalTime = 0.0
+                        s = requests.Session()
+                        s.headers.update(ocsheaders)
+                        for call in range(0, calls):
+                            serverid = f"node{fe}.{nodebaseurl}"
+                            s.cookies.set("SERVERID", serverid)
+                            startTime = datetime.now()
+                            s.get(url, headers=ocsheaders, timeout=g_requestTimeout)
+                            totalTime += (datetime.now() - startTime).total_seconds()
+                        message += f" - {totalTime:<3.1f}s"
+                        logger.info(
+                            f"{calls} requests to {serverid} took {totalTime:<3.1f}s - {info}"
+                        )
+
+            if self.newSession:
+                logger.info("Direct url(s), new session")
+                if isMultinode:
+                    info = "Multinode url, new session"
+                    totalTime = 0.0
+                    url = drv.get_add_user_multinode_url(fullnode)
+                    logger.info(f"Test direct call to {fullnode} - {url}")
+
+                    url = url.replace("$USERNAME$", nodeuser)
+                    url = url.replace("$PASSWORD$", nodepwd)
+
+                    for call in range(0, calls):
+                        s = requests.Session()
+                        s.headers.update(ocsheaders)
+                        startTime = datetime.now()
+                        s.get(url, headers=ocsheaders, verify=False, timeout=g_requestTimeout)
+                        totalTime += (datetime.now() - startTime).total_seconds()
+                    message += f" - {totalTime:<3.1f}s"
+                    logger.info(
+                        f"{calls} requests to {serverid} took {totalTime:<3.1f}s - {info}"
+                    )
+
+                else:
+                    info = "Full node fe urls, new session"
+                    for fe in range(1, 4):
+                        totalTime = 0.0
+                        url = drv.get_add_user_fe_url(fullnode, fe)
+                        logger.info(f"Test direct call to {fullnode} FE{fe} - {url}")
+
+                        url = url.replace("$USERNAME$", nodeuser)
+                        url = url.replace("$PASSWORD$", nodepwd)
+
+                        for call in range(0, calls):
+                            s = requests.Session()
+                            s.headers.update(ocsheaders)
+                            startTime = datetime.now()
+                            s.get(url, headers=ocsheaders, verify=False, timeout=g_requestTimeout)
+                            totalTime += (datetime.now() - startTime).total_seconds()
+                        message += f" - {totalTime:<3.1f}s"
+                        logger.info(
+                            f"{calls} requests to {serverid} took {totalTime:<3.1f}s - {info}"
+                        )
+
+            else:  # Same session
+                logger.info("Direct url(s), same session")
+                if isMultinode:
+                    info = "Multinode url, same session"
+                    totalTime = 0.0
+                    s = requests.Session()
+                    s.headers.update(ocsheaders)
+                    url = drv.get_add_user_multinode_url(fullnode)
+                    logger.info(f"Test direct call to {fullnode} - {url}")
+
+                    url = url.replace("$USERNAME$", nodeuser)
+                    url = url.replace("$PASSWORD$", nodepwd)
+
+                    for call in range(0, calls):
+                        startTime = datetime.now()
+                        s.get(url, headers=ocsheaders, verify=False, timeout=g_requestTimeout)
+                        totalTime += (datetime.now() - startTime).total_seconds()
+                    message += f" - {totalTime:<3.1f}s"
+                    logger.info(
+                        f"{calls} requests to {serverid} took {totalTime:<3.1f}s - {info}"
+                    )
+                else:
+                    info = "Full node fe urls, same session"
+                    for fe in range(1, 4):
+                        totalTime = 0.0
+                        s = requests.Session()
+                        s.headers.update(ocsheaders)
+                        url = drv.get_add_user_fe_url(fullnode, fe)
+                        logger.info(f"Test direct call to {fullnode} FE{fe} - {url}")
+
+                        url = url.replace("$USERNAME$", nodeuser)
+                        url = url.replace("$PASSWORD$", nodepwd)
+
+                        for call in range(0, calls):
+                            startTime = datetime.now()
+                            s.get(url, headers=ocsheaders, verify=False, timeout=g_requestTimeout)
+                            totalTime += (datetime.now() - startTime).total_seconds()
+                        message += f" - {totalTime:<3.1f}s"
+                        logger.info(
+                            f"{calls} requests to {serverid} took {totalTime:<3.1f}s - {info}"
+                        )
+
+            g_ocsPerformanceResults.append(message)
+        except Exception as error:
+            logger.error(f"Problem in NodeOcsUserPerformance for {self.name}: {error}")
+            g_testPassed[testid] = False
+            return
+
+        g_testPassed[testid] = True
+        logger.info(
+            f"NodeOcsUserPerformance thread done for node {self.name}, test passed: {g_testPassed[testid]}"
+        )
+        return
+
+
+class TestPerformanceOcs(unittest.TestCase):
+    def test_performance_ocs_userlist_samesession(self):
+        global g_ocsPerformanceResults
+        g_ocsPerformanceResults.append(
+            "Result of test_performance_ocs_userlist_samesession"
+        )
+        drv = sunetnextcloud.TestTarget()
+        threads = []
+        for fullnode in drv.nodestotest:
+            if drv.is_multinode(fullnode):
+                testid = f'{fullnode} - {drv.get_multinode(fullnode)}'
+            else:
+                testid = fullnode
+
+            with self.subTest(mynode=testid):
+                logger.info(f"TestID: {testid}")
+                nodeUsersThread = NodeOcsUserPerformance(
+                    fullnode, testid, self, newSession=False, verify=drv.verify
+                )
+                nodeUsersThread.start()
+                threads.append(nodeUsersThread)
+
+        # Wait until every thread has finished, however it exited
+        for thread in threads:
+            thread.join()
+
+        for fullnode in drv.nodestotest:
+            if drv.is_multinode(fullnode):
+                testid = f'{fullnode} - {drv.get_multinode(fullnode)}'
+            else:
+                testid = fullnode
+
+            with self.subTest(mynode=testid):
+                self.assertTrue(g_testPassed[testid])
+
+        logger.info("Result of test_performance_ocs_userlist_samesession")
+        for message in g_ocsPerformanceResults:
+            logger.info(f"{message}")
+
+    def test_performance_ocs_userlist_newsession(self):
+        global g_ocsPerformanceResults
+        g_ocsPerformanceResults.append(
+            "Result of test_performance_ocs_userlist_newsession"
+        )
+        drv = sunetnextcloud.TestTarget()
+        threads = []
+        for fullnode in drv.nodestotest:
+            if drv.is_multinode(fullnode):
+                testid = f'{fullnode} - {drv.get_multinode(fullnode)}'
+            else:
+                testid = fullnode
+
+            with self.subTest(mynode=testid):
+                logger.info(f"TestID: {testid}")
+                nodeUsersThread = NodeOcsUserPerformance(
+                    fullnode, testid, self, newSession=True, verify=drv.verify
+                )
+                nodeUsersThread.start()
+                threads.append(nodeUsersThread)
+
+        # Wait until every thread has finished, however it exited
+        for thread in threads:
+            thread.join()
+
+        for fullnode in drv.nodestotest:
+            if drv.is_multinode(fullnode):
+                testid = f'{fullnode} - {drv.get_multinode(fullnode)}'
+            else:
+                testid = fullnode
+
+            with self.subTest(mynode=testid):
+                logger.info(f"TestID: {testid}")
+                self.assertTrue(g_testPassed[testid])
+
+        logger.info("Result of test_performance_ocs_userlist_newsession")
+        for message in g_ocsPerformanceResults:
+            logger.info(f"{message}")
+
+    def test_performance_ocs_userlifecycle(self):
+        global g_ocsPerformanceResults
+        g_ocsPerformanceResults.append("Result of test_performance_ocs_userlifecycle")
+        drv = sunetnextcloud.TestTarget()
+        threads = []
+        for fullnode in drv.nodestotest:
+            if drv.is_multinode(fullnode):
+                testid = f'{fullnode} - {drv.get_multinode(fullnode)}'
+            else:
+                testid = fullnode
+
+            with self.subTest(mynode=testid):
+                logger.info(f"TestID: {testid}")
+                userLifecycleThread = NodeOcsUserLifecycle(fullnode, testid)
+                userLifecycleThread.start()
+                threads.append(userLifecycleThread)
+
+        # Wait until every thread has finished, however it exited
+        for thread in threads:
+            thread.join()
+
+        for fullnode in drv.nodestotest:
+            if drv.is_multinode(fullnode):
+                testid = f'{fullnode} - {drv.get_multinode(fullnode)}'
+            else:
+                testid = fullnode
+
+            with self.subTest(mynode=testid):
+                self.assertTrue(g_testPassed[testid])
+
+        logger.info("Result of test_performance_ocs_userlifecycle")
+        for message in g_ocsPerformanceResults:
+            logger.info(f"{message}")
+
+
+if __name__ == "__main__":
+    if drv.testrunner == "xml":
+        unittest.main(testRunner=xmlrunner.XMLTestRunner(output="test-reports"))
+    elif drv.testrunner == "txt":
+        unittest.main(
+            testRunner=unittest.TextTestRunner(
+                resultclass=sunetnextcloud.NumbersTestResult
+            )
+        )
+    else:
+        unittest.main(
+            testRunner=HtmlTestRunner.HTMLTestRunner(
+                output="test-reports-html",
+                combine_reports=True,
+                report_name=f"nextcloud-{drv.target}-{drv.expectedResults[drv.target]['status']['version'][-1]}-{os.path.basename(__file__)}",
+                add_timestamp=False,
+            )
+        )
