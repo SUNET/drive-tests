@@ -24,6 +24,7 @@ Environment variables:
 import json
 import logging
 import os
+import sys
 import threading
 import unittest
 
@@ -40,6 +41,8 @@ g_requestTimeout = 30
 # Listing the members of a broken group is slow; give up after this many seconds
 g_memberTimeout = 60
 g_results = {}
+# Per node: users, group members, listed members (None if unknown) and status, for the overview table
+g_table = {}
 g_testPassed = {}
 
 logger = logging.getLogger(__name__)
@@ -82,12 +85,14 @@ class CheckGroupMembers(threading.Thread):
             )["groups"]
         except Exception as error:
             g_results[node] = f"error reading users or groups: {error}"
+            g_table[node] = (None, None, None, "error reading users or groups")
             logger.error(f"{node}: {g_results[node]}")
             return
 
         group = next((g for g in groups if g["id"] == g_group), None)
         if group is None:
             g_results[node] = f"no group {g_group}"
+            g_table[node] = (users, None, None, f"no group {g_group}")
             logger.info(f"{node}: {g_results[node]}")
             g_testPassed[node] = True
             return
@@ -101,6 +106,7 @@ class CheckGroupMembers(threading.Thread):
             members = None
         except Exception as error:
             g_results[node] = f"{users} users, {count} {g_group} members, error listing members: {error}"
+            g_table[node] = (users, count, None, "error listing members")
             logger.error(f"{node}: {g_results[node]}")
             return
 
@@ -115,6 +121,7 @@ class CheckGroupMembers(threading.Thread):
             if count > members:
                 problems.append("orphaned members")
 
+        g_table[node] = (users, count, members, ", ".join(problems) if problems else "ok")
         if problems:
             g_results[node] = f"{result} - {', '.join(problems)}"
             logger.warning(f"{node}: {g_results[node]}")
@@ -122,6 +129,30 @@ class CheckGroupMembers(threading.Thread):
             g_results[node] = result
             logger.info(f"{node}: {g_results[node]}")
             g_testPassed[node] = True
+
+
+def print_overview():
+    """Print a table of all checked nodes, sorted by node name."""
+    def cell(value):
+        return "-" if value is None else str(value)
+
+    rows = []
+    for node in sorted(drv.nodestotest):
+        users, count, members, status = g_table.get(node, (None, None, None, "no result"))
+        orphaned = count - members if count is not None and members is not None else None
+        listed = "timeout" if count is not None and members is None and "timed out" in status else cell(members)
+        rows.append((node, cell(users), cell(count), listed, cell(orphaned), status))
+
+    header = ("Node", "Users", "Members", "Listed", "Orphaned", "Status")
+    widths = [max(len(row[i]) for row in rows + [header]) for i in range(len(header))]
+    # Text columns left-aligned, numbers right-aligned
+    align = ["<", ">", ">", ">", ">", "<"]
+    line = lambda row: "  ".join(f"{value:{a}{w}}" for value, a, w in zip(row, align, widths))
+    # Printed to stderr like the test runner output, so it ends up below it
+    print(file=sys.stderr)
+    print(f"{g_group} overview for {drv.target}:", file=sys.stderr)
+    for row in [header, ["-" * w for w in widths]] + rows:
+        print(line(row).rstrip(), file=sys.stderr)
 
 
 class TestForcemfaMembers(unittest.TestCase):
@@ -144,8 +175,6 @@ class TestForcemfaMembers(unittest.TestCase):
             thread.join()
 
         flagged = [node for node in drv.nodestotest if not g_testPassed.get(node, False)]
-        for node in drv.nodestotest:
-            logger.info(f"{node}: {g_results.get(node, 'no result')}")
         logger.info(f"Nodes with {g_group} problems: {flagged if flagged else 'none'}")
 
         for node in drv.nodestotest:
@@ -155,15 +184,17 @@ class TestForcemfaMembers(unittest.TestCase):
 
 if __name__ == "__main__":
     if drv.testrunner == "xml":
-        unittest.main(testRunner=xmlrunner.XMLTestRunner(output="test-reports"))
+        program = unittest.main(exit=False, testRunner=xmlrunner.XMLTestRunner(output="test-reports"))
     elif drv.testrunner == "txt":
-        unittest.main(
+        program = unittest.main(
+            exit=False,
             testRunner=unittest.TextTestRunner(
                 resultclass=sunetnextcloud.NumbersTestResult
             )
         )
     else:
-        unittest.main(
+        program = unittest.main(
+            exit=False,
             testRunner=HtmlTestRunner.HTMLTestRunner(
                 output="test-reports-html",
                 combine_reports=True,
@@ -171,3 +202,8 @@ if __name__ == "__main__":
                 add_timestamp=False,
             )
         )
+
+    # After the runner's summary, so that the table is the last output
+    if g_table:
+        print_overview()
+    sys.exit(not program.result.wasSuccessful())
