@@ -36,7 +36,6 @@ geckodriver_path = "/snap/bin/geckodriver"
 g_filename=datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 g_driver_timeout = 20
 g_failedNodes = []
-g_testThreadsRunning = 0
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(format = '%(asctime)s - %(module)s.%(funcName)s - %(levelname)s: %(message)s',
@@ -57,47 +56,47 @@ class WebDAVList(threading.Thread):
 
     def __init__(self, name, TestMfa4All):
         threading.Thread.__init__(self)
-        # Count the thread on creation, so the test waits for it even before it starts
-        global g_testThreadsRunning
-        g_testThreadsRunning += 1
         self.name = name
         self.TestMfa4All = TestMfa4All
 
     def run(self):
         global logger
         global g_failedNodes
-        global g_testThreadsRunning
 
         fullnode = self.name
         logger.info(f'WebDAVDneCheck thread started for node {self.name}')
 
-        nodeuser = drv.get_seleniumuser(fullnode)
-        logger.info(f'Username: {nodeuser}')
-        nodepwd = drv.get_seleniumuserpassword(fullnode)
-        nodeapppwd = drv.get_seleniumuserapppassword(fullnode)
+        try:
+            nodeuser = drv.get_seleniumuser(fullnode)
+            logger.info(f'Username: {nodeuser}')
+            nodepwd = drv.get_seleniumuserpassword(fullnode)
+            nodeapppwd = drv.get_seleniumuserapppassword(fullnode)
 
-        # Webdav client with the regular user password
-        url = drv.get_webdav_url(fullnode, nodeuser)
-        passwordOptions = {
-        'webdav_hostname': url,
-        'webdav_login' : nodeuser,
-        'webdav_password' : nodepwd
-        }
-        passwordClient = Client(passwordOptions)
-        passwordClient.verify = drv.verify
+            # Webdav client with the regular user password
+            url = drv.get_webdav_url(fullnode, nodeuser)
+            passwordOptions = {
+            'webdav_hostname': url,
+            'webdav_login' : nodeuser,
+            'webdav_password' : nodepwd
+            }
+            passwordClient = Client(passwordOptions)
+            passwordClient.verify = drv.verify
 
-        appPasswordOptions = {
-        'webdav_hostname': url,
-        'webdav_login' : nodeuser,
-        'webdav_password' : nodeapppwd
-        }
-        appPasswordClient = Client(appPasswordOptions)
-        appPasswordClient.verify = drv.verify
+            appPasswordOptions = {
+            'webdav_hostname': url,
+            'webdav_login' : nodeuser,
+            'webdav_password' : nodeapppwd
+            }
+            appPasswordClient = Client(appPasswordOptions)
+            appPasswordClient.verify = drv.verify
+        except Exception as error:
+            logger.error(f'Error setting up WebDAV clients for {fullnode}: {error}')
+            g_failedNodes.append(fullnode)
+            return
 
         try:
             logger.error(f'Client list should not be possible for {fullnode} - {passwordClient.list()}')
             g_failedNodes.append(fullnode)
-            g_testThreadsRunning -= 1
             return
         except Exception as error:
             if hasattr(error, 'code'):
@@ -106,12 +105,10 @@ class WebDAVList(threading.Thread):
                 else:
                     logger.error(f'Unknown error code: {error.code}')
                     g_failedNodes.append(fullnode)
-                    g_testThreadsRunning -= 1
                     return
             else:
                 logger.error(f'Unknown exception: {error}')
                 g_failedNodes.append(fullnode)
-                g_testThreadsRunning -= 1
                 return
 
         # The app password must still work after the password login is rejected
@@ -122,7 +119,6 @@ class WebDAVList(threading.Thread):
             logger.error(f'Client list with app password failed for {fullnode}: {error}')
             g_failedNodes.append(fullnode)
 
-        g_testThreadsRunning -= 1
 
 class TestMfa4All(unittest.TestCase):
     """MFA4ALL checks for all nodes under test."""
@@ -151,14 +147,17 @@ class TestMfa4All(unittest.TestCase):
         version = drv.expectedResults[drv.target]['status']['version']
         logger.info(f'Expected Nextcloud version: {version}')
 
+        threads = []
         for fullnode in drv.nodestotest:
             with self.subTest(mynode=fullnode):
                 logger.info(f'TestID: {fullnode}')
                 WebDAVListThread = WebDAVList(name=fullnode, TestMfa4All=self)
                 WebDAVListThread.start()
+                threads.append(WebDAVListThread)
 
-        while(g_testThreadsRunning > 0):
-            time.sleep(1)
+        # Wait until every thread has finished, however it exited
+        for thread in threads:
+            thread.join()
 
         if len(g_failedNodes) > 0:
             logger.error(f'Webdav mfa4all list failed for {len(g_failedNodes)} of {len(drv.allnodes)} nodes:')

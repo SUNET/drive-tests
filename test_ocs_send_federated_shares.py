@@ -26,7 +26,6 @@ ocsheaders = {
 }
 
 g_testPassed = {}
-g_testThreadsRunning = 0
 g_requestTimeout = 10
 g_webdav_timeout = 30
 g_sharedTestFolder = "SharedFolder"
@@ -51,10 +50,8 @@ class OcsMakeFederatedShare(threading.Thread):
     def run(self):
         global logger
         global g_testPassed
-        global g_testThreadsRunning
         fullnode = self.name
         g_testPassed[fullnode] = False
-        g_testThreadsRunning += 1
         logger.info(f"{self.name} - OcsMakeFederatedShare thread started")
         drv = sunetnextcloud.TestTarget()
 
@@ -86,7 +83,6 @@ class OcsMakeFederatedShare(threading.Thread):
                 f"{self.name} - Error making folder {g_sharedTestFolder} on {self.name}: {error}"
             )
             g_testPassed[fullnode] = False
-            g_testThreadsRunning -= 1
             return
 
         filename = fullnode + "_" + g_filename
@@ -96,7 +92,6 @@ class OcsMakeFederatedShare(threading.Thread):
         except Exception as error:
             logger.error(f"{self.name} - Getting temp dir for {fullnode}: {error}")
             g_testPassed[fullnode] = False
-            g_testThreadsRunning -= 1
             return
 
         with open(tmpfilename, "w") as f:
@@ -113,7 +108,6 @@ class OcsMakeFederatedShare(threading.Thread):
             logger.error(
                 f"{self.name} - Error preparing webdav client for {fullnode}: {error}"
             )
-            g_testThreadsRunning -= 1
             return
 
         try:
@@ -122,10 +116,10 @@ class OcsMakeFederatedShare(threading.Thread):
         except Exception as error:
             logger.error(f"{self.name} - Error uploading file to {fullnode}: {error}")
             g_testPassed[fullnode] = False
-            g_testThreadsRunning -= 1
             return
 
         logger.info(f"{self.name} - Get all shares for {fullnode}")
+        r = None
         clean_url = drv.get_share_url(fullnode)
         url = clean_url.replace("$USERNAME$", nodeuser)
         url = url.replace("$PASSWORD$", nodepwd)
@@ -142,13 +136,12 @@ class OcsMakeFederatedShare(threading.Thread):
                 logger.info(f"{self.name} - Delete share: {share['id']} - {clean_url}")
                 url = clean_url.replace("$USERNAME$", nodeuser)
                 url = url.replace("$PASSWORD$", nodepwd)
-                r = requests.delete(url, headers=ocsheaders, verify=self.verify)
+                r = requests.delete(url, headers=ocsheaders, verify=self.verify, timeout=g_requestTimeout)
                 logger.info(f"{self.name} - Share deleted: {r.text}")
         except Exception as error:
             logger.error(f"{self.name} - Error getting {clean_url}: {error}")
             if r is not None:
                 logger.error(r.text)
-            g_testThreadsRunning -= 1
             return
 
         for shareNode in drv.allnodes:
@@ -177,10 +170,11 @@ class OcsMakeFederatedShare(threading.Thread):
             }
             logger.info(f"{self.name} - Payload: {payload}")
 
+            j = None
             try:
                 # logger.info(f'Share to {url}')
                 r = session.post(
-                    url, headers=ocsheaders, data=payload, verify=self.verify
+                    url, headers=ocsheaders, data=payload, timeout=g_requestTimeout, verify=self.verify
                 )
 
                 j = json.loads(r.text)
@@ -207,12 +201,10 @@ class OcsMakeFederatedShare(threading.Thread):
                 )
                 logger.warning(f"{self.name} - {j}")
                 g_testPassed[fullnode] = False
-                g_testThreadsRunning -= 1
                 return
 
         logger.info(f"{self.name} - OcsMakeFederatedShare thread done")
         g_testPassed[fullnode] = True
-        g_testThreadsRunning -= 1
 
 
 class TestOcsFederatedShares(unittest.TestCase):
@@ -228,6 +220,7 @@ class TestOcsFederatedShares(unittest.TestCase):
             nodestotest = drv.nodestotest
         logger.info(f"Testing node(s) {nodestotest}")
 
+        threads = []
         for fullnode in nodestotest:
             with self.subTest(mynode=fullnode):
                 logger.info(f"TestID: {fullnode}")
@@ -235,13 +228,15 @@ class TestOcsFederatedShares(unittest.TestCase):
                     name=fullnode, TestOcsFederatedShares=self, basicAuth=False
                 )
                 OcsMakeFederatedShareThread.start()
+                threads.append(OcsMakeFederatedShareThread)
 
-        while g_testThreadsRunning > 0:
-            time.sleep(1)
+        # Wait until every thread has finished, however it exited
+        for thread in threads:
+            thread.join()
 
         for fullnode in nodestotest:
             with self.subTest(mynode=fullnode):
-                self.assertTrue(g_testPassed[fullnode])
+                self.assertTrue(g_testPassed.get(fullnode, False))
 
 
 if __name__ == "__main__":

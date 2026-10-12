@@ -27,7 +27,6 @@ g_systemBucket = 'selenium-system'
 g_filename=datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 g_davPerformanceResults = []
 g_testPassed = {}
-g_testThreadsRunning = 0
 ocsheaders = { "OCS-APIRequest" : "true" }
 drv = sunetnextcloud.TestTarget()
 
@@ -37,41 +36,31 @@ logging.basicConfig(format = '%(asctime)s - %(module)s.%(funcName)s - %(levelnam
 
 def excepthook(args):
     logger.error(f'Threading exception: {args}')
-    decreaseUploadCount()
-    sys.excepthook(*sys.exc_info())
+    threading.__excepthook__(args)
 
 threading.excepthook = excepthook
 
-def decreaseUploadCount():
-    global g_testThreadsRunning
-    g_testThreadsRunning -= 1
-
 def webdavUpload(client, local_path, remote_path):
-    global logger, g_testThreadsRunning
+    global logger
     logger.info(f'Upload {local_path}')
     if client is None:
         logger.error('No client provided')
-        decreaseUploadCount()
         return
     if local_path is None:
         logger.error('No filename provided')
-        decreaseUploadCount()
         return
     if remote_path is None:
         logger.error('No target filename provided')
-        decreaseUploadCount()
         return
     try:
         client.upload_sync(remote_path=remote_path,local_path=local_path)
     except Exception as error:
         logger.error(f'Error uploading {remote_path}:{error}')
-        decreaseUploadCount()
         return
 
-    decreaseUploadCount()
 
 def webdavClean(client, filename):
-    global logger, g_testThreadsRunning
+    global logger
     if client is None:
         logger.error('No client provided')
         return
@@ -88,7 +77,7 @@ class TestWebDavPerformance(unittest.TestCase):
         pass
 
     def test_basic_performance(self):
-        global logger, g_testThreadsRunning, g_davPerformanceResults
+        global logger, g_davPerformanceResults
         g_davPerformanceResults.clear()
 
         numFiles = os.environ.get("NextcloudWebdavNumFiles")
@@ -152,15 +141,13 @@ class TestWebDavPerformance(unittest.TestCase):
                         for i in range(0,numFiles,maxUploads):
                             x = i
                             logger.info(f'Batch upload node{fe} {files[x:x+maxUploads]}')
+                            uploads = []
                             for file in files[x:x+maxUploads]:
-                                try:
-                                    g_testThreadsRunning += 1
-                                    client.upload_async(remote_path=f'performance/{file}',local_path=f'{tempfile.gettempdir()}/{file}', callback=decreaseUploadCount)
-                                except WebDavException as exception:
-                                    logger.info(f'Error uploading {filename}: {exception}')
-                                    g_testThreadsRunning -= 1
-                            while g_testThreadsRunning > 0:
-                                time.sleep(0.01)
+                                t = threading.Thread(target=webdavUpload, args=(client, f'{tempfile.gettempdir()}/{file}', f'performance/{file}'))
+                                t.start()
+                                uploads.append(t)
+                            for t in uploads:
+                                t.join()
                         endTime = datetime.now()
                     except Exception as error:
                         logger.error(f'Error during async upload: {error}')
@@ -182,11 +169,13 @@ class TestWebDavPerformance(unittest.TestCase):
                     for i in range(0,len(davElements),maxDeletes):
                         x = i
                         logger.info(f'Batch delete {davElements[x:x+maxDeletes]}')
+                        deletes = []
                         for element in davElements[x:x+maxDeletes]:
                             t = threading.Thread(target=client.clean, args=['performance/' + element])
                             t.start()
-                        while threading.active_count() > 1:
-                            time.sleep(0.01)
+                            deletes.append(t)
+                        for t in deletes:
+                            t.join()
 
                     # This works for single threaded delete
                     # for element in davElements:
@@ -215,7 +204,7 @@ class TestWebDavPerformance(unittest.TestCase):
         pass
 
     def test_file_sizes(self):
-        global logger, g_testThreadsRunning, g_davPerformanceResults
+        global logger, g_davPerformanceResults
         numFiles = 1
         maxUploads = 1
         maxDeletes = 1
@@ -276,15 +265,7 @@ class TestWebDavPerformance(unittest.TestCase):
                         startTime = datetime.now()
                         logger.info(f'Async upload of {file} to node{fe}')
                         try:
-                            try:
-                                g_testThreadsRunning += 1
-                                client.upload_async(remote_path=f'{targetDir}/{file}',local_path=f'{tempfile.gettempdir()}/{file}', callback=decreaseUploadCount)
-                                # client.upload_sync(remote_path=f'{targetDir}/{file}',local_path=f'{tempfile.gettempdir()}/{file}', callback=decreaseUploadCount)
-                            except WebDavException as exception:
-                                logger.error(f'Error uploading {filename}: {exception}')
-                                g_testThreadsRunning -= 1
-                            while g_testThreadsRunning > 0:
-                                time.sleep(0.01)
+                            webdavUpload(client, f'{tempfile.gettempdir()}/{file}', f'{targetDir}/{file}')
 
 
 

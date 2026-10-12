@@ -37,7 +37,6 @@ ocsheaders = drv.ocsheaders
 expectedResults = drv.expectedResults
 
 g_testPassed = {}
-g_testThreadsRunning = 0
 g_requestTimeout = 10
 g_maxRandSleep = os.environ.get("NextcloudRandSleep")
 if g_maxRandSleep is None:
@@ -65,9 +64,6 @@ class AppVersions(threading.Thread):
     """
     def __init__(self, name, TestOcsCalls, verify=True):
         threading.Thread.__init__(self)
-        # Count the thread on creation, so the test waits for it even before it starts
-        global g_testThreadsRunning
-        g_testThreadsRunning += 1
         self.name = name
         self.TestOcsCalls = TestOcsCalls
         self.verify = verify
@@ -76,13 +72,13 @@ class AppVersions(threading.Thread):
         global logger
         global expectedResults
         global g_testPassed
-        global g_testThreadsRunning
         logger.info(f"AppVersion thread started for node {self.name}")
         drv = sunetnextcloud.TestTarget()
         fullnode = self.name
         g_testPassed[fullnode] = False
         logger.info(f"Setting passed for {fullnode} to {g_testPassed.get(fullnode)}")
 
+        rawurl = None
         try:
             userSamlFound = False
             session = requests.Session()
@@ -95,14 +91,12 @@ class AppVersions(threading.Thread):
             url = url.replace("$PASSWORD$", nodepwd)
         except Exception as error:
             logger.error(f"Error getting credentials for {rawurl}:{error}")
-            g_testThreadsRunning -= 1
             return
 
         try:
-            r = session.get(url, headers=ocsheaders, verify=self.verify)
+            r = session.get(url, headers=ocsheaders, verify=self.verify, timeout=g_requestTimeout)
         except Exception as error:
             logger.error(f"Error getting apps for {fullnode}:{error}")
-            g_testThreadsRunning -= 1
             return
         # nodeApps = []   # TODO: Check for apps installed on node
         apps = []
@@ -114,7 +108,6 @@ class AppVersions(threading.Thread):
             logger.error(f"No or invalid JSON reply received from {fullnode}:{error}")
             logger.error(r.text)
             g_testPassed[fullnode] = False
-            g_testThreadsRunning -= 1
             return
 
         if "user_saml" in apps:
@@ -131,11 +124,10 @@ class AppVersions(threading.Thread):
             url = url.replace("$PASSWORD$", nodepwd)
 
             try:
-                r = session.get(url, headers=ocsheaders, verify=self.verify)
+                r = session.get(url, headers=ocsheaders, verify=self.verify, timeout=g_requestTimeout)
             except Exception as error:
                 logger.error(f"Error getting {rawurl}:{error}")
                 g_testPassed[fullnode] = False
-                g_testThreadsRunning -= 1
                 return
 
             try:
@@ -148,7 +140,6 @@ class AppVersions(threading.Thread):
                 logger.info(f"No JSON reply received from {fullnode}:{error}")
                 logger.info(r.text)
                 g_testPassed[fullnode] = False
-                g_testThreadsRunning -= 1
                 return
 
             try:
@@ -161,13 +152,11 @@ class AppVersions(threading.Thread):
             except Exception as error:
                 logger.error(f"{error}")
                 g_testPassed[fullnode] = False
-                g_testThreadsRunning -= 1
                 return
 
         if "auto_groups" not in apps:
             logger.error(f"Autogroups not found for {fullnode}")
             g_testPassed[fullnode] = False
-            g_testThreadsRunning -= 1
             return
         else:
             try:
@@ -180,28 +169,24 @@ class AppVersions(threading.Thread):
                     f"Error ensuring auto_groups active on {fullnode}: {error}"
                 )
                 g_testPassed[fullnode] = False
-                g_testThreadsRunning -= 1
                 return
 
         if "stepupauth" not in apps:
             logger.error(f"stepupauth not found for {fullnode}")
             g_testPassed[fullnode] = False
-            g_testThreadsRunning -= 1
             return
         else:
             try:
                 rawurl = drv.get_app_url(fullnode, "stepupauth")
                 url = rawurl.replace("$USERNAME$", nodeuser)
                 url = url.replace("$PASSWORD$", nodepwd)
-                r = session.post(url, headers=ocsheaders)
+                r = session.post(url, headers=ocsheaders, timeout=g_requestTimeout)
             except Exception as error:
                 logger.error(f"Error ensuring stepupauth active on {fullnode}: {error}")
                 g_testPassed[fullnode] = False
-                g_testThreadsRunning -= 1
                 return
 
         g_testPassed[fullnode] = True
-        g_testThreadsRunning -= 1
         logger.info(
             f"AppVersion thread done for node {self.name}, test passed: {g_testPassed[fullnode]}"
         )
@@ -212,9 +197,6 @@ class NodeUsers(threading.Thread):
     """Thread that lists the users of a node. Passes if the reply contains a user list."""
     def __init__(self, name, TestOcsCalls, verify=True):
         threading.Thread.__init__(self)
-        # Count the thread on creation, so the test waits for it even before it starts
-        global g_testThreadsRunning
-        g_testThreadsRunning += 1
         self.name = name
         self.TestOcsCalls = TestOcsCalls
         self.verify = verify
@@ -222,13 +204,13 @@ class NodeUsers(threading.Thread):
     def run(self):
         global logger
         global g_testPassed
-        global g_testThreadsRunning
         logger.info(f"NodeUsers thread started for node {self.name}")
         drv = sunetnextcloud.TestTarget()
         fullnode = self.name
         g_testPassed[fullnode] = False
         logger.info(f"Setting passed for {fullnode} to {g_testPassed.get(fullnode)}")
 
+        rawurl = None
         try:
             rawurl = drv.get_users_url(fullnode)
             nodeuser = drv.get_ocsuser(fullnode)
@@ -238,7 +220,6 @@ class NodeUsers(threading.Thread):
             url = url.replace("$PASSWORD$", nodepwd)
         except Exception as error:
             logger.error(f"Error getting credentials for {rawurl}:{error}")
-            g_testThreadsRunning -= 1
             return
 
         try:
@@ -247,7 +228,6 @@ class NodeUsers(threading.Thread):
             )
         except Exception as error:
             logger.error(f"Error getting {rawurl}:{error}")
-            g_testThreadsRunning -= 1
             return
         try:
             j = json.loads(r.text)
@@ -266,11 +246,9 @@ class NodeUsers(threading.Thread):
             logger.info(f"No JSON reply received from {fullnode}:{error}")
             logger.info(r.text)
             g_testPassed[fullnode] = False
-            g_testThreadsRunning -= 1
             return
 
         g_testPassed[fullnode] = True
-        g_testThreadsRunning -= 1
         logger.info(
             f"NodeUsers thread done for node {self.name}, test passed: {g_testPassed[fullnode]}"
         )
@@ -284,9 +262,6 @@ class NodeGroups(threading.Thread):
     """
     def __init__(self, name, TestOcsCalls, verify=True):
         threading.Thread.__init__(self)
-        # Count the thread on creation, so the test waits for it even before it starts
-        global g_testThreadsRunning
-        g_testThreadsRunning += 1
         self.name = name
         self.TestOcsCalls = TestOcsCalls
         self.verify = verify
@@ -294,13 +269,13 @@ class NodeGroups(threading.Thread):
     def run(self):
         global logger
         global g_testPassed
-        global g_testThreadsRunning
         logger.info(f"NodeGroups thread started for node {self.name}")
         drv = sunetnextcloud.TestTarget()
         fullnode = self.name
         g_testPassed[fullnode] = False
         logger.info(f"Setting passed for {fullnode} to {g_testPassed.get(fullnode)}")
 
+        rawurl = None
         try:
             # rawurl = drv.get_groups_url(fullnode)
             rawurl = drv.get_groups_details_url(fullnode)
@@ -311,7 +286,6 @@ class NodeGroups(threading.Thread):
             url = url.replace("$PASSWORD$", nodepwd)
         except Exception as error:
             logger.error(f"Error getting credentials for {rawurl}:{error}")
-            g_testThreadsRunning -= 1
             return
 
         try:
@@ -320,7 +294,6 @@ class NodeGroups(threading.Thread):
             )
         except Exception as error:
             logger.error(f"Error getting {rawurl}:{error}")
-            g_testThreadsRunning -= 1
             return
         try:
             j = json.loads(r.text)
@@ -341,7 +314,6 @@ class NodeGroups(threading.Thread):
             logger.info(f"No JSON reply received from {fullnode}:{error}")
             logger.info(r.text)
             g_testPassed[fullnode] = False
-            g_testThreadsRunning -= 1
             return
 
         # Test for forcemfa group
@@ -361,11 +333,9 @@ class NodeGroups(threading.Thread):
             else:
                 g_testPassed[fullnode] = False
                 logger.info(r.text)
-            g_testThreadsRunning -= 1
             return
 
         g_testPassed[fullnode] = True
-        g_testThreadsRunning -= 1
         logger.info(
             f"NodeUsers thread done for node {self.name}, test passed: {g_testPassed[fullnode]}"
         )
@@ -380,16 +350,12 @@ class CapabilitiesNoUser(threading.Thread):
     """
     def __init__(self, name, TestOcsCalls, verify=True):
         threading.Thread.__init__(self)
-        # Count the thread on creation, so the test waits for it even before it starts
-        global g_testThreadsRunning
-        g_testThreadsRunning += 1
         self.name = name
         self.TestOcsCalls = TestOcsCalls
         self.verify = verify
 
     def run(self):
         global g_testPassed
-        global g_testThreadsRunning
         global logger
         global expectedResults
         logger.info(f"Capabilities no user thread started for node {self.name}")
@@ -406,7 +372,6 @@ class CapabilitiesNoUser(threading.Thread):
             )
         except Exception as error:
             logger.error(f"Error getting {rawurl}: {error}")
-            g_testThreadsRunning -= 1
             return
         try:
             j = json.loads(r.text)
@@ -414,7 +379,6 @@ class CapabilitiesNoUser(threading.Thread):
             logger.info(f"No JSON reply received from {fullnode}: {error}")
             logger.info(r.text)
             g_testPassed[fullnode] = False
-            g_testThreadsRunning -= 1
             return
 
         try:
@@ -441,11 +405,9 @@ class CapabilitiesNoUser(threading.Thread):
         except Exception as error:
             logger.error(f"Error with OCS capabilities assertion: {error} - {j}")
             g_testPassed[fullnode] = False
-            g_testThreadsRunning -= 1
             return
 
         g_testPassed[fullnode] = True
-        g_testThreadsRunning -= 1
         logger.info(
             f"Capabilities no user thread done for node {self.name}, test passed: {g_testPassed[fullnode]}"
         )
@@ -456,16 +418,12 @@ class Capabilities(threading.Thread):
     """Thread that fetches and logs the OCS capabilities of a node. Passes if the reply is valid JSON."""
     def __init__(self, name, TestOcsCalls, verify=True):
         threading.Thread.__init__(self)
-        # Count the thread on creation, so the test waits for it even before it starts
-        global g_testThreadsRunning
-        g_testThreadsRunning += 1
         self.name = name
         self.TestOcsCalls = TestOcsCalls
         self.verify = verify
 
     def run(self):
         global g_testPassed
-        global g_testThreadsRunning
         global logger
         logger.info(f"Capabilities thread started for node {self.name}")
         drv = sunetnextcloud.TestTarget()
@@ -482,7 +440,6 @@ class Capabilities(threading.Thread):
             )
         except Exception as error:
             logger.error(f"Error getting {rawurl}: {error}")
-            g_testThreadsRunning -= 1
             return
         try:
             j = json.loads(r.text)
@@ -492,11 +449,9 @@ class Capabilities(threading.Thread):
             logger.info(f"No JSON reply received from {fullnode}: {error}")
             logger.info(r.text)
             g_testPassed[fullnode] = False
-            g_testThreadsRunning -= 1
             return
 
         g_testPassed[fullnode] = True
-        g_testThreadsRunning -= 1
         logger.info(
             f"Capabilities thread done for node {self.name}, test passed: {g_testPassed[fullnode]}"
         )
@@ -514,16 +469,12 @@ class UserLifeCycle(threading.Thread):
     """
     def __init__(self, name, TestOcsCalls, verify=True):
         threading.Thread.__init__(self)
-        # Count the thread on creation, so the test waits for it even before it starts
-        global g_testThreadsRunning
-        g_testThreadsRunning += 1
         self.name = name
         self.TestOcsCalls = TestOcsCalls
         self.verify = verify
 
     def run(self):
         global g_testPassed
-        global g_testThreadsRunning
         global expectedResults
 
         start_delay = random.randint(0,g_maxRandSleep)
@@ -547,8 +498,7 @@ class UserLifeCycle(threading.Thread):
             nodeapppwd = drv.get_ocsuserapppassword(fullnode)
             nodepwd = drv.get_ocsuserpassword(fullnode)
         except Exception as error:
-            logger.error(f"Error getting credentials for {rawurl}:{error}")
-            g_testThreadsRunning -= 1
+            logger.error(f"Error getting credentials for {fullnode}:{error}")
             return
 
         cliuser = "__cli_user_" + g_userprefix + "_" + fullnode
@@ -576,7 +526,6 @@ class UserLifeCycle(threading.Thread):
         except Exception as error:
             logger.error(f"Error confirming app password: {error}")
             g_testPassed[fullnode] = False
-            g_testThreadsRunning -= 1
             return
 
         logger.info(f"Create cli user {cliuser}")
@@ -586,13 +535,12 @@ class UserLifeCycle(threading.Thread):
             logger.info(f"Add user through {rawurl}")
             url = rawurl.replace("$USERNAME$", nodeuser)
             url = url.replace("$PASSWORD$", nodeapppwd)
-            r = session.post(url, headers=ocsheaders, data=data, verify=self.verify)
+            r = session.post(url, headers=ocsheaders, data=data, verify=self.verify, timeout=g_requestTimeout)
             logger.info(f"cli user created with status {r.status_code} - {r.text}")
             time.sleep(g_userCooldown)
         except Exception as error:
             logger.error(f"Error posting to create cli user: {error}")
             g_testPassed[fullnode] = False
-            g_testThreadsRunning -= 1
             return
 
         try:
@@ -605,7 +553,7 @@ class UserLifeCycle(threading.Thread):
                 logger.info(
                     f"Retry once to create cli user {cliuser} after error {j['ocs']['meta']['statuscode']}"
                 )
-                r = session.post(url, headers=ocsheaders, data=data, verify=self.verify)
+                r = session.post(url, headers=ocsheaders, data=data, verify=self.verify, timeout=g_requestTimeout)
                 j = json.loads(r.text)
                 logger.info(json.dumps(j, indent=4, sort_keys=True))
                 time.sleep(g_userCooldown)
@@ -613,7 +561,6 @@ class UserLifeCycle(threading.Thread):
             logger.info(f"No JSON reply received from {fullnode}: {error}")
             logger.info(r.text)
             g_testPassed[fullnode] = False
-            g_testThreadsRunning -= 1
             return
 
         logger.info(f"Get user info for {cliuser}")
@@ -621,7 +568,7 @@ class UserLifeCycle(threading.Thread):
         userinfourl = userinfourl.replace("$USERNAME$", nodeuser)
         userinfourl = userinfourl.replace("$PASSWORD$", nodeapppwd)
         try:
-            r = session.get(userinfourl, headers=ocsheaders, verify=self.verify)
+            r = session.get(userinfourl, headers=ocsheaders, verify=self.verify, timeout=g_requestTimeout)
             j = json.loads(r.text)
             if "forcemfa" not in j["ocs"]["data"]["groups"]:
                 logger.warning(
@@ -636,7 +583,6 @@ class UserLifeCycle(threading.Thread):
             else:
                 logger.error(f"No last response received")
             g_testPassed[fullnode] = False
-            g_testThreadsRunning -= 1
             return
 
         # self.assertEqual(j["ocs"]["meta"]["status"], expectedResults[drv.target]['ocs_capabilities']['ocs_meta_status'])
@@ -648,7 +594,7 @@ class UserLifeCycle(threading.Thread):
         disableuserurl = disableuserurl.replace("$USERNAME$", nodeuser)
         disableuserurl = disableuserurl.replace("$PASSWORD$", nodeapppwd)
         try:
-            r = session.put(disableuserurl, headers=ocsheaders, verify=self.verify)
+            r = session.put(disableuserurl, headers=ocsheaders, verify=self.verify, timeout=g_requestTimeout)
             j = json.loads(r.text)
             logger.info(json.dumps(j, indent=4, sort_keys=True))
             time.sleep(g_userCooldown)
@@ -657,7 +603,7 @@ class UserLifeCycle(threading.Thread):
                 logger.info(
                     f"Retry to disable cli user {cliuser} after error {j['ocs']['meta']['statuscode']}"
                 )
-                r = session.put(disableuserurl, headers=ocsheaders, verify=self.verify)
+                r = session.put(disableuserurl, headers=ocsheaders, verify=self.verify, timeout=g_requestTimeout)
                 j = json.loads(r.text)
                 logger.info(json.dumps(j, indent=4, sort_keys=True))
                 time.sleep(g_userCooldown)
@@ -681,7 +627,7 @@ class UserLifeCycle(threading.Thread):
             rawurl = drv.get_user_url(fullnode, cliuser)
             url = rawurl.replace("$USERNAME$", nodeuser)
             url = url.replace("$PASSWORD$", nodeapppwd)
-            r = session.delete(url, headers=ocsheaders, verify=drv.verify)
+            r = session.delete(url, headers=ocsheaders, verify=drv.verify, timeout=g_requestTimeout)
             j = json.loads(r.text)
             logger.info(json.dumps(j, indent=4, sort_keys=True))
             time.sleep(g_userCooldown)
@@ -690,7 +636,7 @@ class UserLifeCycle(threading.Thread):
                 logger.info(
                     f"Retry to delete cli user after {cliuser} after error {j['ocs']['meta']['statuscode']}"
                 )
-                r = session.delete(url, headers=ocsheaders, verify=self.verify)
+                r = session.delete(url, headers=ocsheaders, verify=self.verify, timeout=g_requestTimeout)
                 j = json.loads(r.text)
                 logger.info(json.dumps(j, indent=4, sort_keys=True))
                 time.sleep(g_userCooldown)
@@ -716,14 +662,12 @@ class UserLifeCycle(threading.Thread):
             else:
                 logger.error(f"No last response received")
             g_testPassed[fullnode] = False
-            g_testThreadsRunning -= 1
             return
 
         g_testPassed[fullnode] = True
         logger.info(
             f"User lifecycle thread done for node {self.name}, test passed: {g_testPassed[fullnode]}"
         )
-        g_testThreadsRunning -= 1
         return
 
 
@@ -737,6 +681,7 @@ class TestOcsCalls(unittest.TestCase):
     def test_capabilities_nouser(self):
         """Check the OCS capabilities of all nodes without logging in."""
         drv = sunetnextcloud.TestTarget()
+        threads = []
         for fullnode in drv.nodestotest:
             with self.subTest(mynode=fullnode):
                 logger.info(f"TestID: {fullnode}")
@@ -744,93 +689,110 @@ class TestOcsCalls(unittest.TestCase):
                     fullnode, self, verify=drv.verify
                 )
                 capabilitiesNoUserThread.start()
+                threads.append(capabilitiesNoUserThread)
 
-        while g_testThreadsRunning > 0:
-            time.sleep(1)
+        # Wait until every thread has finished, however it exited
+        for thread in threads:
+            thread.join()
 
         for fullnode in drv.nodestotest:
             with self.subTest(mynode=fullnode):
-                self.assertTrue(g_testPassed[fullnode])
+                self.assertTrue(g_testPassed.get(fullnode, False))
 
     def test_capabilities(self):
         """Check that all nodes return their OCS capabilities as valid JSON."""
         drv = sunetnextcloud.TestTarget()
+        threads = []
         for fullnode in drv.nodestotest:
             with self.subTest(mynode=fullnode):
                 logger.info(f"TestID: {fullnode}")
                 capabilitiesThread = Capabilities(fullnode, self, verify=drv.verify)
                 capabilitiesThread.start()
+                threads.append(capabilitiesThread)
 
-        while g_testThreadsRunning > 0:
-            time.sleep(1)
+        # Wait until every thread has finished, however it exited
+        for thread in threads:
+            thread.join()
 
         for fullnode in drv.nodestotest:
             with self.subTest(mynode=fullnode):
-                self.assertTrue(g_testPassed[fullnode])
+                self.assertTrue(g_testPassed.get(fullnode, False))
 
     def test_nodeusers(self):
         """Check that the users of all nodes can be listed."""
         drv = sunetnextcloud.TestTarget()
+        threads = []
         for fullnode in drv.nodestotest:
             with self.subTest(mynode=fullnode):
                 logger.info(f"TestID: {fullnode}")
                 nodeUsersThread = NodeUsers(fullnode, self, verify=drv.verify)
                 nodeUsersThread.start()
+                threads.append(nodeUsersThread)
 
-        while g_testThreadsRunning > 0:
-            time.sleep(1)
+        # Wait until every thread has finished, however it exited
+        for thread in threads:
+            thread.join()
 
         for fullnode in drv.nodestotest:
             with self.subTest(mynode=fullnode):
-                self.assertTrue(g_testPassed[fullnode])
+                self.assertTrue(g_testPassed.get(fullnode, False))
 
     def test_nodegroups(self):
         """Check that the forcemfa group exists on all nodes."""
         drv = sunetnextcloud.TestTarget()
+        threads = []
         for fullnode in drv.nodestotest:
             with self.subTest(mynode=fullnode):
                 logger.info(f"TestID: {fullnode}")
                 nodeGroupsThread = NodeGroups(fullnode, self, verify=drv.verify)
                 nodeGroupsThread.start()
+                threads.append(nodeGroupsThread)
 
-        while g_testThreadsRunning > 0:
-            time.sleep(1)
+        # Wait until every thread has finished, however it exited
+        for thread in threads:
+            thread.join()
 
         for fullnode in drv.nodestotest:
             with self.subTest(mynode=fullnode):
-                self.assertTrue(g_testPassed[fullnode])
+                self.assertTrue(g_testPassed.get(fullnode, False))
 
     def test_userlifecycle(self):
         """Create, disable and delete a temporary user on all nodes."""
         drv = sunetnextcloud.TestTarget()
+        threads = []
         for fullnode in drv.nodestotest:
             with self.subTest(mynode=fullnode):
                 logger.info(f"TestID: {fullnode}")
                 userLifecycleThread = UserLifeCycle(fullnode, self, verify=drv.verify)
                 userLifecycleThread.start()
+                threads.append(userLifecycleThread)
 
-        while g_testThreadsRunning > 0:
-            time.sleep(1)
+        # Wait until every thread has finished, however it exited
+        for thread in threads:
+            thread.join()
 
         for fullnode in drv.nodestotest:
             with self.subTest(mynode=fullnode):
-                self.assertTrue(g_testPassed[fullnode])
+                self.assertTrue(g_testPassed.get(fullnode, False))
 
     def test_app_versions(self):
         """Check the user_saml version and that auto_groups and stepupauth are installed on all nodes."""
         drv = sunetnextcloud.TestTarget()
+        threads = []
         for fullnode in drv.nodestotest:
             with self.subTest(mynode=fullnode):
                 logger.info(f"TestID: {fullnode}")
                 appVersionsThread = AppVersions(fullnode, self, verify=drv.verify)
                 appVersionsThread.start()
+                threads.append(appVersionsThread)
 
-        while g_testThreadsRunning > 0:
-            time.sleep(1)
+        # Wait until every thread has finished, however it exited
+        for thread in threads:
+            thread.join()
 
         for fullnode in drv.nodestotest:
             with self.subTest(mynode=fullnode):
-                self.assertTrue(g_testPassed[fullnode])
+                self.assertTrue(g_testPassed.get(fullnode, False))
 
 
 # if __name__ == "__main__":

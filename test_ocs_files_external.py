@@ -20,7 +20,6 @@ ocsheaders = drv.ocsheaders
 expectedResults = drv.expectedResults
 
 g_testPassed = {}
-g_testThreadsRunning = 0
 g_requestTimeout = 10
 
 logger = logging.getLogger("TestLogger")
@@ -41,14 +40,13 @@ class ExternalMounts(threading.Thread):
         global logger
         global expectedResults
         global g_testPassed
-        global g_testThreadsRunning
-        g_testThreadsRunning += 1
         logger.info(f"External mounts thread started for node {self.name}")
         drv = sunetnextcloud.TestTarget()
         fullnode = self.name
         g_testPassed[fullnode] = False
         logger.info(f"Setting passed for {fullnode} to {g_testPassed.get(fullnode)}")
 
+        rawurl = None
         try:
             rawurl = drv.get_ocs_external_mounts_url(fullnode)
             logger.info(f"{self.TestOcsFilesExternal._testMethodName} {rawurl}")
@@ -59,7 +57,6 @@ class ExternalMounts(threading.Thread):
             url = url.replace("$PASSWORD$", nodepwd)
         except Exception as error:
             logger.error(f"Error getting credentials for {rawurl}:{error}")
-            g_testThreadsRunning -= 1
             return
 
         try:
@@ -68,7 +65,6 @@ class ExternalMounts(threading.Thread):
             )
         except Exception as error:
             logger.error(f"Error getting {rawurl}: {error}")
-            g_testThreadsRunning -= 1
             return
         try:
             j = json.loads(r.text)
@@ -78,12 +74,10 @@ class ExternalMounts(threading.Thread):
             logger.info(f"No JSON reply received from {fullnode}: {error}")
             logger.info(r.text)
             g_testPassed[fullnode] = False
-            g_testThreadsRunning -= 1
             return
 
 
         g_testPassed[fullnode] = True
-        g_testThreadsRunning -= 1
 
 class TestOcsFilesExternal(unittest.TestCase):
     def test_logger(self):
@@ -92,18 +86,21 @@ class TestOcsFilesExternal(unittest.TestCase):
 
     def test_external_mounts(self):
         drv = sunetnextcloud.TestTarget()
+        threads = []
         for fullnode in drv.nodestotest:
             with self.subTest(mynode=fullnode):
                 logger.info(f"TestID: {fullnode}")
                 externalMountsThread = ExternalMounts(fullnode, self, verify=drv.verify)
                 externalMountsThread.start()
+                threads.append(externalMountsThread)
 
-        while g_testThreadsRunning > 0:
-            time.sleep(1)
+        # Wait until every thread has finished, however it exited
+        for thread in threads:
+            thread.join()
 
         for fullnode in drv.nodestotest:
             with self.subTest(mynode=fullnode):
-                self.assertTrue(g_testPassed[fullnode])
+                self.assertTrue(g_testPassed.get(fullnode, False))
 
 if __name__ == "__main__":
     if drv.testrunner == "xml":

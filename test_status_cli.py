@@ -34,7 +34,6 @@ import sunetnextcloud
 drv = sunetnextcloud.TestTarget()
 expectedResults = drv.expectedResults
 
-testThreadsRunning = 0
 g_failedNodes = []
 g_requestTimeout = 3
 logger = logging.getLogger(__name__)
@@ -92,9 +91,6 @@ class FrontendStatusInfo(threading.Thread):
     """
     def __init__(self, url, TestStatus, verify=True, useHttps=True):
         threading.Thread.__init__(self)
-        # Count the thread on creation, so the test waits for it even before it starts
-        global testThreadsRunning
-        testThreadsRunning += 1
         if useHttps:
             self.url = url
         else:
@@ -105,13 +101,12 @@ class FrontendStatusInfo(threading.Thread):
         self.useHttps = useHttps
 
     def run(self):
-        global testThreadsRunning
         global logger
         global expectedResults
         global g_failedNodes
         drv = sunetnextcloud.TestTarget()
         logger.info(
-            f"FrontendStatusInfo thread {testThreadsRunning} started for node {self.url}"
+            f"FrontendStatusInfo thread started for node {self.url}"
         )
 
         try:
@@ -119,7 +114,6 @@ class FrontendStatusInfo(threading.Thread):
         except Exception as error:
             logger.error(f"Error getting frontend status data from {self.url}: {error}")
             g_failedNodes.append(self.url)
-            testThreadsRunning -= 1
             return
 
         try:
@@ -150,14 +144,11 @@ class FrontendStatusInfo(threading.Thread):
         except Exception as error:
             g_failedNodes.append(self.url)
             logger.info(f"No valid JSON reply received for {self.url}: {error}")
-            testThreadsRunning -= 1
             logger.info(r.text)
             self.TestStatus.assertTrue(False)
             return
 
         logger.info(f"Status thread done for node {self.url}")
-        testThreadsRunning -= 1
-        logger.info(f"FrontendStatusInfo threads remaining: {testThreadsRunning}")
 
 
 class NodeStatusInfo(threading.Thread):
@@ -169,21 +160,17 @@ class NodeStatusInfo(threading.Thread):
     """
     def __init__(self, node, TestStatus, verify=True):
         threading.Thread.__init__(self)
-        # Count the thread on creation, so the test waits for it even before it starts
-        global testThreadsRunning
-        testThreadsRunning += 1
         self.node = node
         self.TestStatus = TestStatus
         self.verify = verify
 
     def run(self):
-        global testThreadsRunning
         global logger
         global expectedResults
         global g_failedNodes
         drv = sunetnextcloud.TestTarget()
         logger.info(
-            f"NodeStatusInfo thread {testThreadsRunning} started for node {self.node}"
+            f"NodeStatusInfo thread started for node {self.node}"
         )
 
         x = range(1, 4)
@@ -197,7 +184,6 @@ class NodeStatusInfo(threading.Thread):
                     f"Error getting node status data from {self.node}: {error}"
                 )
                 g_failedNodes.append(url)
-                testThreadsRunning -= 1
                 return
 
             try:
@@ -205,7 +191,6 @@ class NodeStatusInfo(threading.Thread):
             except Exception as error:
                 g_failedNodes.append(url)
                 logger.info(f"No valid JSON reply received for {url}: {error}")
-                testThreadsRunning -= 1
                 logger.info(r.text)
                 self.TestStatus.assertTrue(False)
                 return
@@ -238,14 +223,11 @@ class NodeStatusInfo(threading.Thread):
             except Exception as error:
                 g_failedNodes.append(url)
                 logger.info(f"Assertion error for {url}: {error}")
-                testThreadsRunning -= 1
                 logger.info(r.text)
                 self.TestStatus.assertTrue(False)
                 return
 
         logger.info(f"Status thread done for node {url}")
-        testThreadsRunning -= 1
-        logger.info(f"NodeStatusInfo threads remaining: {testThreadsRunning}")
 
 
 class StatusInfo(threading.Thread):
@@ -255,21 +237,17 @@ class StatusInfo(threading.Thread):
     """
     def __init__(self, node, TestStatus, verify=True):
         threading.Thread.__init__(self)
-        # Count the thread on creation, so the test waits for it even before it starts
-        global testThreadsRunning
-        testThreadsRunning += 1
         self.node = node
         self.TestStatus = TestStatus
         self.verify = verify
 
     def run(self):
-        global testThreadsRunning
         global logger
         global expectedResults
         global g_failedNodes
         drv = sunetnextcloud.TestTarget()
         logger.info(
-            f"StatusInfo thread {testThreadsRunning} started for node {self.node}"
+            f"StatusInfo thread started for node {self.node}"
         )
 
         url = drv.get_status_url(self.node)
@@ -280,7 +258,6 @@ class StatusInfo(threading.Thread):
         except Exception as error:
             logger.error(f"Error getting status info data from {self.node}: {error}")
             g_failedNodes.append(url)
-            testThreadsRunning -= 1
             return
 
         try:
@@ -311,14 +288,11 @@ class StatusInfo(threading.Thread):
         except Exception as error:
             g_failedNodes.append(url)
             logger.info(f"No valid JSON reply received for {url}: {error}")
-            testThreadsRunning -= 1
             logger.info(r.text)
             self.TestStatus.assertTrue(False)
             return
 
         logger.info(f"Status thread done for node {url}")
-        testThreadsRunning -= 1
-        logger.info(f"NodeStatusInfo threads remaining: {testThreadsRunning}")
 
 
 class SeamlessAccessInfo(threading.Thread):
@@ -330,21 +304,17 @@ class SeamlessAccessInfo(threading.Thread):
     """
     def __init__(self, node, TestStatus, verify=True):
         threading.Thread.__init__(self)
-        # Count the thread on creation, so the test waits for it even before it starts
-        global testThreadsRunning
-        testThreadsRunning += 1
         self.node = node
         self.TestStatus = TestStatus
         self.verify = verify
 
     def run(self):
-        global testThreadsRunning
         global logger
         global expectedResults
         global g_failedNodes
         drv = sunetnextcloud.TestTarget()
         logger.info(
-            f"SeamlessAccessInfo thread {testThreadsRunning} started for node {self.node}"
+            f"SeamlessAccessInfo thread started for node {self.node}"
         )
 
         url = drv.get_node_login_url(self.node, direct=False)
@@ -369,19 +339,15 @@ class SeamlessAccessInfo(threading.Thread):
                     g_failedNodes.append(f"{url} - Node {fe}")
                     failed = True
             if failed:
-                testThreadsRunning -= 1
                 return
         except Exception as error:
             logger.error(
                 f"Error getting seamless access info from {self.node} node {fe}: {error}"
             )
             g_failedNodes.append(url)
-            testThreadsRunning -= 1
             return
 
         logger.info(f"SeamlessAccessInfo thread done for node {nodebaseurl}")
-        testThreadsRunning -= 1
-        logger.info(f"SeamlessAccessInfo threads remaining: {testThreadsRunning}")
         return
 
 class OcmInfo(threading.Thread):
@@ -393,24 +359,22 @@ class OcmInfo(threading.Thread):
     """
     def __init__(self, node, TestStatus, verify=True):
         threading.Thread.__init__(self)
-        # Count the thread on creation, so the test waits for it even before it starts
-        global testThreadsRunning
-        testThreadsRunning += 1
         self.node = node
         self.TestStatus = TestStatus
         self.verify = verify
 
     def run(self):
-        global testThreadsRunning
         global logger
         global expectedResults
         global g_failedNodes
         drv = sunetnextcloud.TestTarget()
         logger.info(
-            f"OcmInfo thread {testThreadsRunning} started for node {self.node}"
+            f"OcmInfo thread started for node {self.node}"
         )
 
         fe = None
+        serverid = None
+        well_known_ocm_url = None
         try:
             nodebaseurl = drv.get_node_base_url(self.node)
             nodeurl = drv.get_node_url(self.node)
@@ -454,7 +418,6 @@ class OcmInfo(threading.Thread):
 
                 if failed:
                     g_failedNodes.append(f"{well_known_ocm_url} - Node {fe}")
-                    testThreadsRunning -= 1
                     return
 
         except Exception as error:
@@ -462,31 +425,24 @@ class OcmInfo(threading.Thread):
                 f"Error getting seamless access info from {self.node} node {fe}: {error}"
             )
             g_failedNodes.append(well_known_ocm_url)
-            testThreadsRunning -= 1
             return
 
         logger.info(f"OcmInfo thread done for node {well_known_ocm_url}")
-        testThreadsRunning -= 1
-        logger.info(f"OcmInfo threads remaining: {testThreadsRunning}")
         return
 
 class FrontentStatus(threading.Thread):
     """Thread that checks that a status URL answers with HTTP 200, without checking the content."""
     def __init__(self, url, TestStatus, verify=True):
         threading.Thread.__init__(self)
-        # Count the thread on creation, so the test waits for it even before it starts
-        global testThreadsRunning
-        testThreadsRunning += 1
         self.url = url
         self.verify = verify
         self.TestStatus = TestStatus
 
     def run(self):
-        global testThreadsRunning
         global logger
         global expectedResults
         global g_failedNodes
-        logger.info(f"Status thread {testThreadsRunning} started for node {self.url}")
+        logger.info(f"Status thread started for node {self.url}")
 
         try:
             r = get(self.url, timeout=g_requestTimeout, verify=self.verify)
@@ -496,13 +452,11 @@ class FrontentStatus(threading.Thread):
             logger.error(f"An error occurred for {self.url}: {error}")
             g_failedNodes.append(self.url)
             logger.info("Status test failed")
-            testThreadsRunning -= 1
             # logger.info(r.text)
             self.TestStatus.assertTrue(False)
             return
 
         logger.info(f"Status thread done for node {self.url}")
-        testThreadsRunning -= 1
 
 
 class TestStatus(unittest.TestCase):
@@ -517,14 +471,17 @@ class TestStatus(unittest.TestCase):
         """Check that status.php answers with HTTP 200 on all nodes."""
         global g_failedNodes
         drv = sunetnextcloud.TestTarget()
+        threads = []
         for url in drv.get_allnode_status_urls():
             with self.subTest(myurl=url):
                 logger.info(f"TestID: {url}")
                 statusThread = FrontentStatus(url, self, verify=drv.verify)
                 statusThread.start()
+                threads.append(statusThread)
 
-        while testThreadsRunning > 0:
-            time.sleep(1)
+        # Wait until every thread has finished, however it exited
+        for thread in threads:
+            thread.join()
 
         if len(g_failedNodes) > 0:
             logger.error(
@@ -540,14 +497,17 @@ class TestStatus(unittest.TestCase):
         """Check the status.php content of all nodes against expected.yaml."""
         global g_failedNodes
         drv = sunetnextcloud.TestTarget()
+        threads = []
         for url in drv.get_allnode_status_urls():
             with self.subTest(myurl=url):
                 logger.info(f"TestID: {url}")
                 statusInfoThread = FrontendStatusInfo(url, self, verify=drv.verify)
                 statusInfoThread.start()
+                threads.append(statusInfoThread)
 
-        while testThreadsRunning > 0:
-            time.sleep(1)
+        # Wait until every thread has finished, however it exited
+        for thread in threads:
+            thread.join()
 
         if len(g_failedNodes) > 0:
             logger.error(
@@ -587,15 +547,18 @@ class TestStatus(unittest.TestCase):
         """
         global g_failedNodes
         drv = sunetnextcloud.TestTarget()
+        threads = []
         for node in expectedResults["global"]["redundantnodes"]:
             if node in drv.allnodes:
                 with self.subTest(myurl=node):
                     logger.info(f"TestID: {node}")
                     statusInfoThread = NodeStatusInfo(node, self, verify=drv.verify)
                     statusInfoThread.start()
+                    threads.append(statusInfoThread)
 
-        while testThreadsRunning > 0:
-            time.sleep(1)
+        # Wait until every thread has finished, however it exited
+        for thread in threads:
+            thread.join()
 
         if len(g_failedNodes) > 0:
             logger.error(
@@ -611,15 +574,18 @@ class TestStatus(unittest.TestCase):
         """Check the status.php content of all tested nodes listed in allnodes in expected.yaml."""
         global g_failedNodes
         drv = sunetnextcloud.TestTarget()
+        threads = []
         for node in expectedResults["global"]["allnodes"]:
             if node in drv.allnodes:
                 with self.subTest(myurl=node):
                     logger.info(f"TestID: {node}")
                     statusInfoThread = StatusInfo(node, self, verify=drv.verify)
                     statusInfoThread.start()
+                    threads.append(statusInfoThread)
 
-        while testThreadsRunning > 0:
-            time.sleep(1)
+        # Wait until every thread has finished, however it exited
+        for thread in threads:
+            thread.join()
 
         if len(g_failedNodes) > 0:
             logger.error(
@@ -643,15 +609,18 @@ class TestStatus(unittest.TestCase):
             logger.warning("We are not testing SeamlessAccess for localhost")
             return
 
+        threads = []
         for node in expectedResults["global"]["allnodes"]:
             if node in drv.allnodes and node not in expectedResults[drv.target]['loginexceptions']:
                 with self.subTest(myurl=node):
                     logger.info(f"TestID: {node}")
                     saInfoThread = SeamlessAccessInfo(node, self)
                     saInfoThread.start()
+                    threads.append(saInfoThread)
 
-        while testThreadsRunning > 0:
-            time.sleep(1)
+        # Wait until every thread has finished, however it exited
+        for thread in threads:
+            thread.join()
 
         if len(g_failedNodes) > 0:
             logger.error(
@@ -671,15 +640,18 @@ class TestStatus(unittest.TestCase):
         global g_failedNodes
         drv = sunetnextcloud.TestTarget()
 
+        threads = []
         for node in expectedResults["global"]["allnodes"]:
             if node in drv.allnodes and node not in expectedResults[drv.target]['loginexceptions']:
                 with self.subTest(myurl=node):
                     logger.info(f"TestID: {node}")
                     ocmInfoThread = OcmInfo(node, self)
                     ocmInfoThread.start()
+                    threads.append(ocmInfoThread)
 
-        while testThreadsRunning > 0:
-            time.sleep(1)
+        # Wait until every thread has finished, however it exited
+        for thread in threads:
+            thread.join()
 
         if len(g_failedNodes) > 0:
             logger.error(

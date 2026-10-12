@@ -30,7 +30,6 @@ g_systemBucket = "selenium-system"
 g_filename = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 g_davPerformanceResults = []
 g_testPassed = {}
-g_testThreadsRunning = 0
 ocsheaders = {"OCS-APIRequest": "true"}
 logger = logging.getLogger(__name__)
 logging.basicConfig(
@@ -58,9 +57,8 @@ for size in fileSizes:
 def threading_exception(args):
     global threadingException
     logger.error(f"Threading exception: {args}")
-    decreaseUploadCount()
     threadingException = True
-    sys.excepthook(*sys.exc_info())
+    threading.__excepthook__(args)
 
 
 threading.excepthook = threading_exception
@@ -138,17 +136,11 @@ def generateTestData():
         os.system(cmd)
 
 
-def decreaseUploadCount():
-    global g_testThreadsRunning
-    g_testThreadsRunning -= 1
-
-
 def webdavMakeDirectories(client, remote_path):
-    global logger, g_testThreadsRunning
+    global logger
     logger.info(f"Make remote directory: {remote_path}")
     if client is None:
         logger.error("No client provided")
-        decreaseUploadCount()
         return
     if remote_path is None:
         logger.error("No target filename provided")
@@ -171,32 +163,26 @@ def webdavMakeDirectories(client, remote_path):
 
 
 def webdavUpload(client, local_path, remote_path):
-    global logger, g_testThreadsRunning
+    global logger
     logger.info(f"Upload {local_path}")
     if client is None:
         logger.error("No client provided")
-        decreaseUploadCount()
         return
     if local_path is None:
         logger.error("No filename provided")
-        decreaseUploadCount()
         return
     if remote_path is None:
         logger.error("No target filename provided")
-        decreaseUploadCount()
         return
     try:
         client.upload_sync(remote_path=remote_path, local_path=local_path)
     except Exception as error:
         logger.error(f"Error uploading {remote_path}:{error}")
-        decreaseUploadCount()
         return
-
-    decreaseUploadCount()
 
 
 def webdavClean(client, filename):
-    global logger, g_testThreadsRunning
+    global logger
     if client is None:
         logger.error("No client provided")
         return
@@ -558,7 +544,7 @@ class TestLargeFilePerformance(unittest.TestCase):
         # Command to run for a basic sync
         # rm /tmp/largefiles/.sync_*
         # nextcloudcmd --non-interactive --silent --path selenium-home/nextcloudcmd -u ${NEXTCLOUD_SELENIUM_USER_SUNET_TEST} -p ${NEXTCLOUD_SELENIUM_APP_PASSWORD_SUNET_TEST} /tmp/largefiles https://sunet.drive.test.sunet.se
-        global logger, g_testThreadsRunning, g_davPerformanceResults
+        global logger, g_davPerformanceResults
         g_davPerformanceResults.clear()
 
         if not checkTestData():
@@ -598,14 +584,16 @@ class TestLargeFilePerformance(unittest.TestCase):
                 for i in range(0, len(davElements), maxDeletes):
                     x = i
                     logger.info(f"Batch delete {davElements[x : x + maxDeletes]}")
+                    deletes = []
                     for element in davElements[x : x + maxDeletes]:
                         t = threading.Thread(
                             target=client.clean,
                             args=[f"{serverTargetFolder}/" + element],
                         )
                         t.start()
-                    while threading.active_count() > 1:
-                        time.sleep(0.01)
+                        deletes.append(t)
+                    for t in deletes:
+                        t.join()
 
                 logger.info(
                     f"Deleting local temp files in {targetDirectory} before sync"
@@ -694,14 +682,16 @@ class TestLargeFilePerformance(unittest.TestCase):
                 for i in range(0, len(davElements), maxDeletes):
                     x = i
                     logger.info(f"Batch delete {davElements[x : x + maxDeletes]}")
+                    deletes = []
                     for element in davElements[x : x + maxDeletes]:
                         t = threading.Thread(
                             target=client.clean,
                             args=[f"{serverTargetFolder}/" + element],
                         )
                         t.start()
-                    while threading.active_count() > 1:
-                        time.sleep(0.01)
+                        deletes.append(t)
+                    for t in deletes:
+                        t.join()
 
                 logger.info("Done")
 
@@ -711,7 +701,7 @@ class TestLargeFilePerformance(unittest.TestCase):
         # Command to run for a basic sync
         # rm /tmp/largefiles/.sync_*
         # nextcloudcmd --non-interactive --silent --path selenium-home/nextcloudcmd -u ${NEXTCLOUD_SELENIUM_USER_SUNET_TEST} -p ${NEXTCLOUD_SELENIUM_APP_PASSWORD_SUNET_TEST} /tmp/largefiles https://sunet.drive.test.sunet.se
-        global logger, g_testThreadsRunning, g_davPerformanceResults
+        global logger, g_davPerformanceResults
         g_davPerformanceResults.clear()
 
         if not checkTestData():
@@ -751,14 +741,16 @@ class TestLargeFilePerformance(unittest.TestCase):
                 for i in range(0, len(davElements), maxDeletes):
                     x = i
                     logger.info(f"Batch delete {davElements[x : x + maxDeletes]}")
+                    deletes = []
                     for element in davElements[x : x + maxDeletes]:
                         t = threading.Thread(
                             target=client.clean,
                             args=[f"{serverTargetFolder}/" + element],
                         )
                         t.start()
-                    while threading.active_count() > 1:
-                        time.sleep(0.01)
+                        deletes.append(t)
+                    for t in deletes:
+                        t.join()
 
                 logger.info(
                     f"Deleting local temp files in {targetDirectory} before sync"
@@ -847,14 +839,16 @@ class TestLargeFilePerformance(unittest.TestCase):
                 for i in range(0, len(davElements), maxDeletes):
                     x = i
                     logger.info(f"Batch delete {davElements[x : x + maxDeletes]}")
+                    deletes = []
                     for element in davElements[x : x + maxDeletes]:
                         t = threading.Thread(
                             target=client.clean,
                             args=[f"{serverTargetFolder}/" + element],
                         )
                         t.start()
-                    while threading.active_count() > 1:
-                        time.sleep(0.01)
+                        deletes.append(t)
+                    for t in deletes:
+                        t.join()
 
                 logger.info("Done")
 
@@ -864,7 +858,7 @@ class TestLargeFilePerformance(unittest.TestCase):
         # Command to run for a basic sync
         # rm /tmp/largefiles/.sync_*
         # nextcloudcmd --non-interactive --silent --path selenium-home/nextcloudcmd -u ${NEXTCLOUD_SELENIUM_USER_SUNET_TEST} -p ${NEXTCLOUD_SELENIUM_APP_PASSWORD_SUNET_TEST} /tmp/largefiles https://sunet.drive.test.sunet.se
-        global logger, g_testThreadsRunning, g_davPerformanceResults
+        global logger, g_davPerformanceResults
         g_davPerformanceResults.clear()
 
         if not checkTestData():
@@ -904,14 +898,16 @@ class TestLargeFilePerformance(unittest.TestCase):
                 for i in range(0, len(davElements), maxDeletes):
                     x = i
                     logger.info(f"Batch delete {davElements[x : x + maxDeletes]}")
+                    deletes = []
                     for element in davElements[x : x + maxDeletes]:
                         t = threading.Thread(
                             target=client.clean,
                             args=[f"{serverTargetFolder}/" + element],
                         )
                         t.start()
-                    while threading.active_count() > 1:
-                        time.sleep(0.01)
+                        deletes.append(t)
+                    for t in deletes:
+                        t.join()
 
                 logger.info(
                     f"Deleting local temp files in {targetDirectory} before sync"
@@ -1000,14 +996,16 @@ class TestLargeFilePerformance(unittest.TestCase):
                 for i in range(0, len(davElements), maxDeletes):
                     x = i
                     logger.info(f"Batch delete {davElements[x : x + maxDeletes]}")
+                    deletes = []
                     for element in davElements[x : x + maxDeletes]:
                         t = threading.Thread(
                             target=client.clean,
                             args=[f"{serverTargetFolder}/" + element],
                         )
                         t.start()
-                    while threading.active_count() > 1:
-                        time.sleep(0.01)
+                        deletes.append(t)
+                    for t in deletes:
+                        t.join()
 
                 logger.info("Done")
 

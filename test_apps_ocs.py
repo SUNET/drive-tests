@@ -25,9 +25,9 @@ import yaml
 import sunetnextcloud
 
 expectedResultsFile = "expected.yaml"
-g_testThreadsRunning = 0
 testThreadRunning = False
 g_testPassed = {}
+g_requestTimeout = 10
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(
@@ -51,13 +51,10 @@ class ConfiguredAppsInstalled(threading.Thread):
     """
     def __init__(self, name):
         threading.Thread.__init__(self)
-        # Count the thread on creation, so the test waits for it even before it starts
-        global g_testThreadsRunning
-        g_testThreadsRunning += 1
         self.name = name
 
     def run(self):
-        global testThreadRunning, logger, g_testPassed, g_testThreadsRunning
+        global testThreadRunning, logger, g_testPassed
         logger.info(f"ConfiguredAppsInstalled thread started for node {self.name}")
         drv = sunetnextcloud.TestTarget()
         fullnode = self.name
@@ -77,14 +74,12 @@ class ConfiguredAppsInstalled(threading.Thread):
             nodepwd = drv.get_ocsuserpassword(fullnode)
         except Exception:
             logger.error(f"Credentials error for {self.name}")
-            g_testThreadsRunning -= 1
             return
 
         try:
-            r = session.get(url, headers=ocsheaders)
+            r = session.get(url, headers=ocsheaders, timeout=g_requestTimeout)
         except Exception:
             logger.error(f"Error getting {url}")
-            g_testThreadsRunning -= 1
             return
         nodeApps = []
         try:
@@ -94,7 +89,6 @@ class ConfiguredAppsInstalled(threading.Thread):
         except Exception:
             logger.warning(f"No JSON reply received on node {fullnode}")
             # self.logger.warning(r.text)
-            g_testThreadsRunning -= 1
             return
 
         logger.info(
@@ -112,7 +106,6 @@ class ConfiguredAppsInstalled(threading.Thread):
                 logger.warning(f"App {expectedApp} NOT found on {fullnode}")
 
         logger.info(f"ConfiguredAppsInstalled thread done for node {self.name}")
-        g_testThreadsRunning -= 1
 
 
 class InstalledAppsCompatibility(threading.Thread):
@@ -124,13 +117,10 @@ class InstalledAppsCompatibility(threading.Thread):
     """
     def __init__(self, name):
         threading.Thread.__init__(self)
-        # Count the thread on creation, so the test waits for it even before it starts
-        global g_testThreadsRunning
-        g_testThreadsRunning += 1
         self.name = name
 
     def run(self):
-        global testThreadRunning, logger, g_testPassed, g_testThreadsRunning
+        global testThreadRunning, logger, g_testPassed
         logger.info(f"InstalledAppsCompatibility thread started for node {self.name}")
         drv = sunetnextcloud.TestTarget()
         fullnode = self.name
@@ -147,14 +137,14 @@ class InstalledAppsCompatibility(threading.Thread):
             url = url.replace("$PASSWORD$", nodepwd)
         except Exception:
             logger.error(f"Credentials error for {self.name}")
-            g_testThreadsRunning -= 1
+            g_testPassed[fullnode] = False
             return
 
         try:
-            r = session.get(url, headers=ocsheaders)
+            r = session.get(url, headers=ocsheaders, timeout=g_requestTimeout)
         except Exception:
             logger.error(f"Error getting {url}")
-            g_testThreadsRunning -= 1
+            g_testPassed[fullnode] = False
             return
         nodeApps = []
         try:
@@ -168,7 +158,6 @@ class InstalledAppsCompatibility(threading.Thread):
             logger.warning(f"No JSON reply received on {fullnode}")
             # self.logger.warning(r.text)
             g_testPassed[fullnode] = False
-            g_testThreadsRunning -= 1
             return
 
         # We check against this manual exception list until the deployment is clean
@@ -184,10 +173,9 @@ class InstalledAppsCompatibility(threading.Thread):
                 secret_url = secret_url.replace("$PASSWORD$", nodepwd)
 
                 try:
-                    r = session.get(secret_url, headers=ocsheaders)
+                    r = session.get(secret_url, headers=ocsheaders, timeout=g_requestTimeout)
                 except Exception:
                     logger.error(f"Error getting {clean_url}")
-                    g_testThreadsRunning -= 1
                     g_testPassed[fullnode] = False
                     return
 
@@ -214,7 +202,6 @@ class InstalledAppsCompatibility(threading.Thread):
                     logger.warning(f"No JSON reply received on {fullnode}: {error}")
                     # self.logger.warning(r.text)
                     g_testPassed[fullnode] = False
-                    g_testThreadsRunning -= 1
                     return
             except Exception:
                 logger.warning(f"{nodeApp} NOT found on {fullnode}")
@@ -224,7 +211,6 @@ class InstalledAppsCompatibility(threading.Thread):
             g_testPassed[fullnode] = False
 
         logger.info(f"InstalledAppsCompatibility thread done for node {self.name}")
-        g_testThreadsRunning -= 1
 
 
 class InstalledAppsConfigured(threading.Thread):
@@ -236,15 +222,12 @@ class InstalledAppsConfigured(threading.Thread):
     """
     def __init__(self, name, app="all", checkEnabled=False):
         threading.Thread.__init__(self)
-        # Count the thread on creation, so the test waits for it even before it starts
-        global g_testThreadsRunning
-        g_testThreadsRunning += 1
         self.name = name
         self.app = app
         self.checkEnabled = checkEnabled
 
     def run(self):
-        global testThreadRunning, logger, g_testPassed, g_testThreadsRunning
+        global testThreadRunning, logger, g_testPassed
         logger.info(f"InstalledAppsConfigured thread started for node {self.name}")
         drv = sunetnextcloud.TestTarget()
         fullnode = self.name
@@ -261,14 +244,12 @@ class InstalledAppsConfigured(threading.Thread):
             url = url.replace("$PASSWORD$", nodepwd)
         except Exception:
             logger.error(f"Credentials error for {self.name}")
-            g_testThreadsRunning -= 1
             return
 
         try:
-            r = session.get(url, headers=ocsheaders)
+            r = session.get(url, headers=ocsheaders, timeout=g_requestTimeout)
         except Exception:
             logger.error(f"Error getting {url}")
-            g_testThreadsRunning -= 1
             return
         nodeApps = []
         try:
@@ -281,7 +262,6 @@ class InstalledAppsConfigured(threading.Thread):
         except Exception:
             logger.warning(f"No JSON reply received on {fullnode}")
             # self.logger.warning(r.text)
-            g_testThreadsRunning -= 1
             return
 
         if self.app == "all":
@@ -304,11 +284,9 @@ class InstalledAppsConfigured(threading.Thread):
             except Exception:
                 logger.error(f"{self.app} NOT found on {fullnode}")
                 logger.info(f"Apps found are: {nodeApps}")
-                g_testThreadsRunning -= 1
                 return
 
         logger.info(f"InstalledAppsConfigured thread done for node {self.name}")
-        g_testThreadsRunning -= 1
 
 
 class NumberOfAppsOnNodes(threading.Thread):
@@ -320,13 +298,10 @@ class NumberOfAppsOnNodes(threading.Thread):
     """
     def __init__(self, name):
         threading.Thread.__init__(self)
-        # Count the thread on creation, so the test waits for it even before it starts
-        global g_testThreadsRunning
-        g_testThreadsRunning += 1
         self.name = name
 
     def run(self):
-        global testThreadRunning, logger, g_testPassed, g_testThreadsRunning
+        global testThreadRunning, logger, g_testPassed
         logger.info(f"NumberOfAppsOnNode thread started for node {self.name}")
         drv = sunetnextcloud.TestTarget()
         fullnode = self.name
@@ -346,7 +321,6 @@ class NumberOfAppsOnNodes(threading.Thread):
             nodepwd = drv.get_ocsuserpassword(fullnode)
         except Exception:
             logger.error(f"Credentials error for {self.name}")
-            g_testThreadsRunning -= 1
             return
 
         for fe in range(1, 4):
@@ -355,10 +329,9 @@ class NumberOfAppsOnNodes(threading.Thread):
             session.cookies.set("SERVERID", serverid)
 
             try:
-                r = session.get(url, headers=ocsheaders)
+                r = session.get(url, headers=ocsheaders, timeout=g_requestTimeout)
             except Exception:
                 logger.error(f"Error getting {url}")
-                g_testThreadsRunning -= 1
                 return
             nodeApps = []
             try:
@@ -369,7 +342,6 @@ class NumberOfAppsOnNodes(threading.Thread):
             except Exception:
                 logger.warning(f"No JSON reply received on {fullnode}")
                 logger.warning(r.text)
-                g_testThreadsRunning -= 1
                 return
 
             try:
@@ -394,7 +366,6 @@ class NumberOfAppsOnNodes(threading.Thread):
                 g_testPassed[f"node{fe}.{fullnode}"] = True
 
         logger.info(f"Test number of apps done for node {self.name}")
-        g_testThreadsRunning -= 1
 
 
 class TestAppsOcs(unittest.TestCase):
@@ -409,79 +380,92 @@ class TestAppsOcs(unittest.TestCase):
         """Compare the number of installed apps on each frontend server with expected.yaml."""
         drv = sunetnextcloud.TestTarget()
 
+        threads = []
         for fullnode in drv.nodestotest:
             with self.subTest(mynode=fullnode):
                 logger.info(f"TestID: {fullnode}")
                 numberOfAppsOnNodeThread = NumberOfAppsOnNodes(fullnode)
                 numberOfAppsOnNodeThread.start()
+                threads.append(numberOfAppsOnNodeThread)
 
-        while g_testThreadsRunning > 0:
-            time.sleep(1)
+        # Wait until every thread has finished, however it exited
+        for thread in threads:
+            thread.join()
 
         for fullnode in drv.nodestotest:
             with self.subTest(mynode=fullnode):
                 for fe in range(1, 4):
-                    self.assertTrue(g_testPassed[f"node{fe}.{fullnode}"])
+                    self.assertTrue(g_testPassed.get(f"node{fe}.{fullnode}", False))
 
     def test_installed_apps_configured(self):
         """Check that the installed apps of all nodes can be listed."""
         drv = sunetnextcloud.TestTarget()
 
+        threads = []
         for fullnode in drv.nodestotest:
             with self.subTest(mynode=fullnode):
                 logger.info(f"TestID: {fullnode}")
                 InstalledAppsConfiguredThread = InstalledAppsConfigured(fullnode)
                 InstalledAppsConfiguredThread.start()
+                threads.append(InstalledAppsConfiguredThread)
 
-        while g_testThreadsRunning > 0:
-            time.sleep(1)
+        # Wait until every thread has finished, however it exited
+        for thread in threads:
+            thread.join()
 
         for fullnode in drv.nodestotest:
             with self.subTest(mynode=fullnode):
-                self.assertTrue(g_testPassed[fullnode])
+                self.assertTrue(g_testPassed.get(fullnode, False))
 
     def test_configured_apps_installed(self):
         """Check that the apps listed in expected.yaml are installed on all nodes."""
         drv = sunetnextcloud.TestTarget()
 
+        threads = []
         for fullnode in drv.nodestotest:
             with self.subTest(mynode=fullnode):
                 logger.info(f"TestID: {fullnode}")
                 ConfiguredAppsInstalledThread = ConfiguredAppsInstalled(fullnode)
                 ConfiguredAppsInstalledThread.start()
+                threads.append(ConfiguredAppsInstalledThread)
 
-        while g_testThreadsRunning > 0:
-            time.sleep(1)
+        # Wait until every thread has finished, however it exited
+        for thread in threads:
+            thread.join()
 
         for fullnode in drv.nodestotest:
             with self.subTest(mynode=fullnode):
-                self.assertTrue(g_testPassed[fullnode])
+                self.assertTrue(g_testPassed.get(fullnode, False))
 
     def test_apps_compatibility(self):
         """Check that the installed apps on all nodes support the expected Nextcloud major version."""
         drv = sunetnextcloud.TestTarget()
 
+        threads = []
         for fullnode in drv.nodestotest:
             with self.subTest(mynode=fullnode):
                 logger.info(f"TestID: {fullnode}")
                 InstalledAppsConfiguredThread = InstalledAppsCompatibility(fullnode)
                 InstalledAppsConfiguredThread.start()
+                threads.append(InstalledAppsConfiguredThread)
 
-        while g_testThreadsRunning > 0:
-            time.sleep(1)
+        # Wait until every thread has finished, however it exited
+        for thread in threads:
+            thread.join()
 
         for fullnode in drv.nodestotest:
             with self.subTest(mynode=fullnode):
-                if g_testPassed[fullnode]:
-                    logger.info(f"Passed: {g_testPassed[fullnode]} for {fullnode}")
+                if g_testPassed.get(fullnode, False):
+                    logger.info(f"Passed: {g_testPassed.get(fullnode, False)} for {fullnode}")
                 else:
-                    logger.error(f"Failed: {g_testPassed[fullnode]} for {fullnode}")
-                self.assertTrue(g_testPassed[fullnode])
+                    logger.error(f"Failed: {g_testPassed.get(fullnode, False)} for {fullnode}")
+                self.assertTrue(g_testPassed.get(fullnode, False))
 
     def test_app_announcementcenter(self):
         """Check that announcementcenter is installed on all nodes."""
         drv = sunetnextcloud.TestTarget()
 
+        threads = []
         for fullnode in drv.nodestotest:
             with self.subTest(mynode=fullnode):
                 logger.info(f"TestID: {fullnode}")
@@ -489,19 +473,22 @@ class TestAppsOcs(unittest.TestCase):
                     fullnode, app="announcementcenter", checkEnabled=True
                 )
                 InstalledAppsConfiguredThread.start()
+                threads.append(InstalledAppsConfiguredThread)
 
-        while g_testThreadsRunning > 0:
-            time.sleep(1)
+        # Wait until every thread has finished, however it exited
+        for thread in threads:
+            thread.join()
 
         for fullnode in drv.nodestotest:
             with self.subTest(mynode=fullnode):
-                logger.info(f"Passed: {g_testPassed[fullnode]} for {fullnode}")
-                self.assertTrue(g_testPassed[fullnode])
+                logger.info(f"Passed: {g_testPassed.get(fullnode, False)} for {fullnode}")
+                self.assertTrue(g_testPassed.get(fullnode, False))
 
     def test_app_security_guard(self):
         """Check that security_guard is installed on all nodes."""
         drv = sunetnextcloud.TestTarget()
 
+        threads = []
         for fullnode in drv.nodestotest:
             with self.subTest(mynode=fullnode):
                 logger.info(f"TestID: {fullnode}")
@@ -509,19 +496,22 @@ class TestAppsOcs(unittest.TestCase):
                     fullnode, app="security_guard", checkEnabled=True
                 )
                 InstalledAppsConfiguredThread.start()
+                threads.append(InstalledAppsConfiguredThread)
 
-        while g_testThreadsRunning > 0:
-            time.sleep(1)
+        # Wait until every thread has finished, however it exited
+        for thread in threads:
+            thread.join()
 
         for fullnode in drv.nodestotest:
             with self.subTest(mynode=fullnode):
-                logger.info(f"Passed: {g_testPassed[fullnode]} for {fullnode}")
-                self.assertTrue(g_testPassed[fullnode])
+                logger.info(f"Passed: {g_testPassed.get(fullnode, False)} for {fullnode}")
+                self.assertTrue(g_testPassed.get(fullnode, False))
 
     def test_app_stepupauth(self):
         """Check that stepupauth is installed on all nodes."""
         drv = sunetnextcloud.TestTarget()
 
+        threads = []
         for fullnode in drv.nodestotest:
             with self.subTest(mynode=fullnode):
                 logger.info(f"TestID: {fullnode}")
@@ -529,14 +519,16 @@ class TestAppsOcs(unittest.TestCase):
                     fullnode, app="stepupauth", checkEnabled=True
                 )
                 InstalledAppsConfiguredThread.start()
+                threads.append(InstalledAppsConfiguredThread)
 
-        while g_testThreadsRunning > 0:
-            time.sleep(1)
+        # Wait until every thread has finished, however it exited
+        for thread in threads:
+            thread.join()
 
         for fullnode in drv.nodestotest:
             with self.subTest(mynode=fullnode):
-                logger.info(f"Passed: {g_testPassed[fullnode]} for {fullnode}")
-                self.assertTrue(g_testPassed[fullnode])
+                logger.info(f"Passed: {g_testPassed.get(fullnode, False)} for {fullnode}")
+                self.assertTrue(g_testPassed.get(fullnode, False))
 
 
 if __name__ == "__main__":

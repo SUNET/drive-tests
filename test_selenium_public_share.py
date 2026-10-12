@@ -25,7 +25,6 @@ g_personalBucket = 'selenium-personal/PersonalS3FileRequestFolder'
 g_systemBucket = 'selenium-system/SystemS3FileRequestFolder'
 g_filename = 'public_share.txt'
 g_testPassed = {}
-g_testThreadsRunning = 0
 
 logger = logging.getLogger('TestLogger')
 logging.basicConfig(format = '%(asctime)s - %(module)s.%(funcName)s - %(levelname)s: %(message)s',
@@ -45,10 +44,8 @@ class OcsMakePublicShare(threading.Thread):
     def run(self):
         global logger
         global g_testPassed
-        global g_testThreadsRunning
         fullnode = self.name
         g_testPassed[fullnode] = False
-        g_testThreadsRunning += 1
         logger.info(f'OcsMakePublicShare thread started for node {self.name}')
         drv = sunetnextcloud.TestTarget()
 
@@ -78,7 +75,6 @@ class OcsMakePublicShare(threading.Thread):
         except Exception as error:
             logger.error(f'Error making folder {g_sharedTestFolder} on {self.name}: {error}')
             g_testPassed[fullnode] = False
-            g_testThreadsRunning -= 1
             return
 
         filename = fullnode + '_' + g_filename
@@ -88,7 +84,6 @@ class OcsMakePublicShare(threading.Thread):
         except Exception as error:
             logger.error(f'Getting temp dir for {fullnode}: {error}')
             g_testPassed[fullnode] = False
-            g_testThreadsRunning -= 1
             return
         
         with open(tmpfilename, 'w') as f:
@@ -104,7 +99,6 @@ class OcsMakePublicShare(threading.Thread):
             # deleteoriginal=False # TODO: Implement delete original file
         except Exception as error:
             logger.error(f'Error preparing webdav client for {fullnode}: {error}')
-            g_testThreadsRunning -= 1
             return
         
         deleteShares = True
@@ -124,11 +118,10 @@ class OcsMakePublicShare(threading.Thread):
                     logger.info(f"Delete share: {share['id']} - {url}")
                     url = url.replace("$USERNAME$", nodeuser)
                     url = url.replace("$PASSWORD$", nodepwd)
-                    r = requests.delete(url, headers=ocsheaders, verify=self.verify)
+                    r = requests.delete(url, headers=ocsheaders, verify=self.verify, timeout=g_requestTimeout)
                     logger.info(f'Share deleted: {r.text}')
             except Exception as error:
                 logger.error(f'Error getting {url}: {error}')
-                g_testThreadsRunning -= 1
                 return      
 
         logger.info(f'Create public share for {self.name}')
@@ -141,7 +134,7 @@ class OcsMakePublicShare(threading.Thread):
 
         try:
             # logger.info(f'Share to {url}')
-            r = session.post(url, headers=ocsheaders, data=data, verify=self.verify)
+            r = session.post(url, headers=ocsheaders, data=data, verify=self.verify, timeout=g_requestTimeout)
             j = json.loads(r.text)
             # logger.info(f'Result of sharing: {json.dumps(j, indent=4, sort_keys=True)}')
             logger.info(f'Share url: {j["ocs"]["data"]["url"]}')
@@ -152,7 +145,6 @@ class OcsMakePublicShare(threading.Thread):
             # logger.info(f'Result of sharing: {j["ocs"]["meta"]["status"]} - {j["ocs"]["meta"]["statuscode"]}')
         except Exception as error:
             logger.warning(f'Failed to share {targetfolder}: {error}')
-            g_testThreadsRunning -= 1
             return
 
         try:
@@ -160,12 +152,10 @@ class OcsMakePublicShare(threading.Thread):
             self.TestOcsPublicShares.assertEqual(j["ocs"]["meta"]["statuscode"], 100)
         except Exception as error:
             logger.warning(f'Sharing result not okay {targetfolder}:{error}')
-            g_testThreadsRunning -= 1
             return 
         
         logger.info(f'OcsMakePublicShare thread done for node {self.name}')
         g_testPassed[fullnode] = True
-        g_testThreadsRunning -= 1
 
 
 class TestSeleniumPublicShares(unittest.TestCase):
@@ -182,18 +172,21 @@ class TestSeleniumPublicShares(unittest.TestCase):
             with self.subTest(mynode=fullnode):
                 logger.info(f'TestID: {fullnode}')
 
+        threads = []
         for fullnode in nodestotest:
             with self.subTest(mynode=fullnode):
                 logger.info(f'TestID: {fullnode}')
                 OcsMakePublicShareThread = OcsMakePublicShare(name=fullnode, TestOcsPublicShares=self, basicAuth=False)
                 OcsMakePublicShareThread.start()
+                threads.append(OcsMakePublicShareThread)
 
-        while(g_testThreadsRunning > 0):
-            time.sleep(1)
+        # Wait until every thread has finished, however it exited
+        for thread in threads:
+            thread.join()
     
         for fullnode in nodestotest:
             with self.subTest(mynode=fullnode):
-                self.assertTrue(g_testPassed[fullnode])
+                self.assertTrue(g_testPassed.get(fullnode, False))
 
 if __name__ == '__main__':
     if drv.testrunner == 'xml':

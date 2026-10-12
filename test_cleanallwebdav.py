@@ -18,7 +18,6 @@ g_davPerformanceResults = []
 
 # os.environ.set()
 ocsheaders = { "OCS-APIRequest" : "true" }
-davThreadRunning = 0
 
 class CleanWebDAV(threading.Thread):
     logger = logging.getLogger('ThreadLogger')
@@ -29,10 +28,9 @@ class CleanWebDAV(threading.Thread):
         self.name = name
 
     def run(self):
-        global davThreadRunning, g_davPerformanceResults
+        global g_davPerformanceResults
         self.logger.info(f'DAV cleaning thread started: {self.name}')
         drv = sunetnextcloud.TestTarget(g_testtarget)
-        davThreadRunning += 1
         fullnode = self.name
 
         nodeuser = drv.get_seleniumuser(fullnode)
@@ -86,10 +84,8 @@ class CleanWebDAV(threading.Thread):
                 self.logger.info(f'DAV cleaning thread done: {message}')
         except Exception as e:
             self.logger.error(f'Unable to delete files for {fullnode}: {e}')
-            davThreadRunning -= 1
             return
 
-        davThreadRunning -= 1
 
 class TestCleanAllWebDAV(unittest.TestCase):
     logger = logging.getLogger(__name__)
@@ -104,13 +100,16 @@ class TestCleanAllWebDAV(unittest.TestCase):
         global g_davPerformanceResults
         self.logger.info(f'Target: {g_testtarget}')
         drv = sunetnextcloud.TestTarget(g_testtarget)
+        threads = []
         for fullnode in drv.nodestotest:
             with self.subTest(mynode=fullnode):
                 davCleanThread = CleanWebDAV(fullnode)
                 davCleanThread.start()
+                threads.append(davCleanThread)
 
-        while (davThreadRunning > 0):
-            time.sleep(1)
+        # Wait until every thread has finished, however it exited
+        for thread in threads:
+            thread.join()
 
         for message in g_davPerformanceResults:
             self.logger.info(f'{message}')
