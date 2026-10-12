@@ -517,16 +517,6 @@ class TestTarget(object):
             + id
         )
 
-    def get_remote_shares_url(self, node):
-        return (
-            "https://$USERNAME$:$PASSWORD$@"
-            + self.getnodeprefix(node)
-            + self.targetprefix
-            + self.delimiter
-            + self.baseurl
-            + "/ocs/v2.php/apps/files_sharing/api/v1/remote_shares"
-        )
-
     def get_add_user_multinode_url(self, node):
         server = self.opsCommonConfig["multinode_mapping"][node]["server"]
         port = self.opsCommonConfig["multinode_mapping"][node]["port"]
@@ -704,6 +694,17 @@ class TestTarget(object):
             + self.baseurl
             + "/ocs/v2.php/apps/files_sharing/api/v1/remote_shares/pending/"
             + str(id)
+        )
+
+    def get_files_lock_url(self, node, fileid):
+        return (
+            "https://$USERNAME$:$PASSWORD$@"
+            + self.getnodeprefix(node)
+            + self.targetprefix
+            + self.delimiter
+            + self.baseurl
+            + "/ocs/v2.php/apps/files_lock/lock/"
+            + str(fileid)
         )
 
     def get_delete_share_url(self, node, id):

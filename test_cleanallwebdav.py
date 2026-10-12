@@ -4,7 +4,10 @@ Author: Richard Freitag <freitag@sunet.se>
 First removes all federated shares the Selenium test user has received
 (accepted and pending) through the OCS remote shares API; they cannot be
 deleted over WebDAV. Then deletes everything in the user's home folder,
-except the mounts in g_excludeList, whose contents are deleted instead. Only items
+except the mounts in g_excludeList, whose contents are deleted instead.
+Items that are locked (HTTP 423) are unlocked through the files_lock
+OCS API and deleted again; this works for locks the Selenium user owns,
+not for locks held by another user or an app. Only items
 that have not been modified for g_minAge are deleted, so files and
 folders that a running test is using are left alone. Nextcloud updates
 a folder's modification time when something inside it changes, so a
@@ -29,6 +32,7 @@ from urllib.parse import unquote, urlsplit
 
 import requests
 from webdav3.client import Client
+from webdav3.exceptions import ResourceLocked
 
 import sunetnextcloud
 
@@ -103,6 +107,30 @@ def remove_remote_shares(drv, node, nodeuser, nodepwd):
                 logger.error(f"Removing federated share {name} on {node} failed - Code: {meta['statuscode']} - Message: {meta['message']}")
                 failed += 1
     return removed, failed
+
+
+def unlock_file(client, drv, node, nodeuser, nodepwd, path):
+    """Remove the files_lock lock on a WebDAV item through the OCS API.
+
+    Returns True if the lock was removed. Logs the server reply otherwise.
+    """
+    fileid = client.get_property(path, {"namespace": "http://owncloud.org/ns", "name": "fileid"})
+    if not fileid:
+        logger.error(f"Cannot unlock {path} on {node}: no file id")
+        return False
+    url = drv.get_files_lock_url(node, fileid).replace("$USERNAME$", nodeuser).replace("$PASSWORD$", nodepwd)
+    r = requests.delete(url, headers=drv.ocsheaders, timeout=g_requestTimeout, verify=drv.verify)
+    try:
+        meta = json.loads(r.text)["ocs"]["meta"]
+    except Exception:
+        logger.error(f"Unlocking {path} (file id {fileid}) on {node} failed with HTTP {r.status_code}: {r.text[:500]}")
+        return False
+    # OCS v2 reports success as 200, v1 as 100
+    if meta["statuscode"] in (100, 200):
+        logger.info(f"Unlocked {path} (file id {fileid}) on {node}")
+        return True
+    logger.error(f"Unlocking {path} (file id {fileid}) on {node} failed - Code: {meta['statuscode']} - Message: {meta['message']}")
+    return False
 
 
 def list_folder(client, basepath, folder=""):
@@ -187,7 +215,7 @@ class CleanWebDAV(threading.Thread):
                 candidates.append((path, modified))
 
         now = datetime.now(timezone.utc)
-        deleted = skipped = 0
+        deleted = skipped = unlocked = 0
         startTime = datetime.now()
         for path, modified in candidates:
             if modified is None:
@@ -202,12 +230,24 @@ class CleanWebDAV(threading.Thread):
             try:
                 client.clean(path)
                 deleted += 1
+            except ResourceLocked:
+                logger.warning(f"{path} on {node} is locked, trying to unlock it")
+                try:
+                    if unlock_file(client, drv, node, nodeuser, nodepwd, path):
+                        client.clean(path)
+                        deleted += 1
+                        unlocked += 1
+                    else:
+                        failed += 1
+                except Exception as error:
+                    logger.error(f"Could not unlock and delete {node} - {drv.target} - {path}: {error}")
+                    failed += 1
             except Exception as error:
                 logger.error(f"Could not delete {node} - {drv.target} - {path}: {error}")
                 failed += 1
 
         totalTime = (datetime.now() - startTime).total_seconds()
-        message = f"{node} - {deleted} deleted, {sharesRemoved} federated shares removed, {failed} failed, {skipped} skipped"
+        message = f"{node} - {deleted} deleted ({unlocked} after unlocking), {sharesRemoved} federated shares removed, {failed} failed, {skipped} skipped"
         if deleted > 0:
             message += f" - {totalTime:.1f}s at {totalTime / deleted:.2f} s/element"
         g_cleaningResults.append(message)
