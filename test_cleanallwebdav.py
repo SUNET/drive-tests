@@ -1,21 +1,24 @@
 """Clean up the Selenium user's WebDAV files on Sunet Drive
 Author: Richard Freitag <freitag@sunet.se>
 
-Deletes everything in the Selenium test user's home folder, except the
-mounts in g_excludeList, whose contents are deleted instead. Only items
+First removes all federated shares the Selenium test user has received
+(accepted and pending) through the OCS remote shares API; they cannot be
+deleted over WebDAV. Then deletes everything in the user's home folder,
+except the mounts in g_excludeList, whose contents are deleted instead. Only items
 that have not been modified for g_minAge are deleted, so files and
 folders that a running test is using are left alone. Nextcloud updates
 a folder's modification time when something inside it changes, so a
 folder in use counts as recently modified. Items without a readable
 modification time are skipped.
 
-A node fails if its home folder cannot be listed or if a listing or
-deletion fails.
+A node fails if its home folder cannot be listed or if a listing,
+deletion or federated share removal fails.
 
 Environment variables:
 - NextcloudTestTarget: test target passed to sunetnextcloud.TestTarget
 """
 
+import json
 import logging
 import os
 import threading
@@ -24,16 +27,27 @@ from datetime import datetime, timedelta, timezone
 from email.utils import parsedate_to_datetime
 from urllib.parse import unquote, urlsplit
 
+import requests
 from webdav3.client import Client
 
 import sunetnextcloud
 
 g_testtarget = os.environ.get("NextcloudTestTarget")
 # Mounts that are kept; only their contents are deleted
-g_excludeList = ["selenium-system/", "selenium-personal/", "projectbucket/"]
+g_excludeList = [
+    "selenium-system/",
+    "selenium-personal/",
+    "projectbucket/",
+    "dco-sunet-test-001/",
+    "sunet-test-data-001/",
+    "sunet-test-resharing/",
+    "su-test-data-005/",
+    "dco-su-test-001/",
+]
 # Items must not have been modified for this long
 g_minAge = timedelta(hours=1)
 g_webdav_timeout = 30
+g_requestTimeout = 30
 g_cleaningResults = []
 g_testPassed = {}
 
@@ -51,6 +65,44 @@ def modification_time(info):
         return parsedate_to_datetime(info["modified"])
     except (KeyError, TypeError, ValueError):
         return None
+
+
+def remove_remote_shares(drv, node, nodeuser, nodepwd):
+    """Remove all federated shares the user has received on a node.
+
+    Accepted shares are unshared, pending shares are declined.
+    Returns (removed, failed).
+    """
+    baseurl = drv.get_remote_shares_url(node).replace("$USERNAME$", nodeuser).replace("$PASSWORD$", nodepwd)
+    session = requests.Session()
+    session.headers.update(drv.ocsheaders)
+    removed = failed = 0
+    for kind, listurl in (("accepted", baseurl), ("pending", f"{baseurl}/pending")):
+        try:
+            r = session.get(listurl, timeout=g_requestTimeout, verify=drv.verify)
+            shares = json.loads(r.text)["ocs"]["data"]
+        except Exception as error:
+            logger.error(f"Unable to list {kind} federated shares on {node}: {error}")
+            failed += 1
+            continue
+
+        for share in shares:
+            name = share.get("mountpoint") or share.get("name") or share["id"]
+            logger.info(f"Removing {kind} federated share {name} from {share.get('owner')}@{share.get('remote')} on {node}")
+            try:
+                r = session.delete(f"{listurl}/{share['id']}", timeout=g_requestTimeout, verify=drv.verify)
+                meta = json.loads(r.text)["ocs"]["meta"]
+            except Exception as error:
+                logger.error(f"Error removing federated share {name} on {node}: {error}")
+                failed += 1
+                continue
+            # OCS v2 reports success as 200, v1 as 100
+            if meta["statuscode"] in (100, 200):
+                removed += 1
+            else:
+                logger.error(f"Removing federated share {name} on {node} failed - Code: {meta['statuscode']} - Message: {meta['message']}")
+                failed += 1
+    return removed, failed
 
 
 def list_folder(client, basepath, folder=""):
@@ -77,9 +129,10 @@ def list_folder(client, basepath, folder=""):
 class CleanWebDAV(threading.Thread):
     """Thread that deletes the Selenium user's old WebDAV files and folders on a node.
 
-    Deletes old items in the home folder, and old items inside the
-    mounts in g_excludeList. Recently modified items are skipped. The
-    node passes if all listings and deletions succeed.
+    Removes the federated shares the user has received, then deletes
+    old items in the home folder and old items inside the mounts in
+    g_excludeList. Recently modified items are skipped. The node passes
+    if all listings, deletions and share removals succeed.
     """
 
     def __init__(self, name):
@@ -111,6 +164,9 @@ class CleanWebDAV(threading.Thread):
             logger.error(f"Error setting up the WebDAV client for {node}: {error}")
             return
 
+        # Received federated shares cannot be deleted over WebDAV, so remove them first
+        sharesRemoved, failed = remove_remote_shares(drv, node, nodeuser, nodepwd)
+
         try:
             rootItems = list_folder(client, basepath)
         except Exception as error:
@@ -120,7 +176,6 @@ class CleanWebDAV(threading.Thread):
 
         # Mounts are kept; their contents are cleaned like the home folder
         candidates = []
-        failed = 0
         for path, modified in rootItems:
             if path in g_excludeList:
                 try:
@@ -152,7 +207,7 @@ class CleanWebDAV(threading.Thread):
                 failed += 1
 
         totalTime = (datetime.now() - startTime).total_seconds()
-        message = f"{node} - {deleted} deleted, {failed} failed, {skipped} skipped"
+        message = f"{node} - {deleted} deleted, {sharesRemoved} federated shares removed, {failed} failed, {skipped} skipped"
         if deleted > 0:
             message += f" - {totalTime:.1f}s at {totalTime / deleted:.2f} s/element"
         g_cleaningResults.append(message)
