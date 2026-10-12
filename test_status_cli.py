@@ -1,6 +1,16 @@
-"""Command line unit tests for Sunet Drive, testing status pages and information
+"""Status page and public endpoint tests for Sunet Drive
 Author: Richard Freitag <freitag@sunet.se>
-Simple test for retrieving all status.php pages from Sunet Drive nodes and comparing the output to the expected result.
+
+Unauthenticated HTTP checks against every node under test:
+- status.php, through the load balancer and on each frontend server
+  (node1-3), compared with the expected values in expected.yaml
+- the login page uses the SeamlessAccess discovery service
+- /.well-known/ocm returns the expected Open Cloud Mesh configuration
+- the SAML SP metadata has the expected entity ID and certificate
+- the Collabora servers return the expected status
+
+Each node is checked in its own thread. The test method waits for all
+threads and reports each failed node as a subtest.
 """
 
 import hashlib
@@ -35,6 +45,13 @@ logging.basicConfig(
 )
 
 def get(url, retries=3, session=None, **kwargs):
+    """GET a URL, retrying on errors.
+
+    Retries up to `retries` times, one second apart, on connection errors
+    and HTTP error status codes. Uses `session` if given, otherwise
+    requests.get. Extra keyword arguments are passed to the request.
+    Raises the last exception when all retries fail.
+    """
     try:
         # Use the provided session if available, otherwise use requests.get
         if session:
@@ -57,7 +74,9 @@ def get(url, retries=3, session=None, **kwargs):
             raise e
 
 class NumbersTestResult(unittest.TextTestResult):
+    """Text test result that counts every subtest as a test run."""
     def addSubTest(self, test, subtest, outcome):
+        """Record the subtest outcome and count it as a test run."""
         # handle failures calling base class
         super(NumbersTestResult, self).addSubTest(test, subtest, outcome)
         # add to total number of tests run
@@ -65,8 +84,17 @@ class NumbersTestResult(unittest.TextTestResult):
 
 
 class FrontendStatusInfo(threading.Thread):
+    """Thread that checks the content of a status.php URL.
+
+    Compares maintenance, needsDbUpgrade, version, versionstring, edition
+    and extendedSupport with expected.yaml. With useHttps=False the URL is
+    requested over plain HTTP. Failed URLs are added to g_failedNodes.
+    """
     def __init__(self, url, TestStatus, verify=True, useHttps=True):
         threading.Thread.__init__(self)
+        # Count the thread on creation, so the test waits for it even before it starts
+        global testThreadsRunning
+        testThreadsRunning += 1
         if useHttps:
             self.url = url
         else:
@@ -81,7 +109,6 @@ class FrontendStatusInfo(threading.Thread):
         global logger
         global expectedResults
         global g_failedNodes
-        testThreadsRunning += 1
         drv = sunetnextcloud.TestTarget()
         logger.info(
             f"FrontendStatusInfo thread {testThreadsRunning} started for node {self.url}"
@@ -134,8 +161,17 @@ class FrontendStatusInfo(threading.Thread):
 
 
 class NodeStatusInfo(threading.Thread):
+    """Thread that checks status.php on each frontend server (node1-3) of a node.
+
+    Runs the same checks as FrontendStatusInfo directly against
+    node<N>.<node URL>, bypassing the load balancer. TLS certificates are
+    not verified for these requests.
+    """
     def __init__(self, node, TestStatus, verify=True):
         threading.Thread.__init__(self)
+        # Count the thread on creation, so the test waits for it even before it starts
+        global testThreadsRunning
+        testThreadsRunning += 1
         self.node = node
         self.TestStatus = TestStatus
         self.verify = verify
@@ -145,7 +181,6 @@ class NodeStatusInfo(threading.Thread):
         global logger
         global expectedResults
         global g_failedNodes
-        testThreadsRunning += 1
         drv = sunetnextcloud.TestTarget()
         logger.info(
             f"NodeStatusInfo thread {testThreadsRunning} started for node {self.node}"
@@ -214,8 +249,15 @@ class NodeStatusInfo(threading.Thread):
 
 
 class StatusInfo(threading.Thread):
+    """Thread that checks the content of status.php for a node.
+
+    Same checks as FrontendStatusInfo, with the URL looked up by node name.
+    """
     def __init__(self, node, TestStatus, verify=True):
         threading.Thread.__init__(self)
+        # Count the thread on creation, so the test waits for it even before it starts
+        global testThreadsRunning
+        testThreadsRunning += 1
         self.node = node
         self.TestStatus = TestStatus
         self.verify = verify
@@ -225,7 +267,6 @@ class StatusInfo(threading.Thread):
         global logger
         global expectedResults
         global g_failedNodes
-        testThreadsRunning += 1
         drv = sunetnextcloud.TestTarget()
         logger.info(
             f"StatusInfo thread {testThreadsRunning} started for node {self.node}"
@@ -281,8 +322,17 @@ class StatusInfo(threading.Thread):
 
 
 class SeamlessAccessInfo(threading.Thread):
+    """Thread that checks that the login page of a node uses SeamlessAccess.
+
+    Loads the login page through each frontend server (node1-3, selected
+    with the SERVERID cookie) and checks that it references
+    seamlessaccess.org. Nodes in loginexceptions are allowed to omit it.
+    """
     def __init__(self, node, TestStatus, verify=True):
         threading.Thread.__init__(self)
+        # Count the thread on creation, so the test waits for it even before it starts
+        global testThreadsRunning
+        testThreadsRunning += 1
         self.node = node
         self.TestStatus = TestStatus
         self.verify = verify
@@ -292,7 +342,6 @@ class SeamlessAccessInfo(threading.Thread):
         global logger
         global expectedResults
         global g_failedNodes
-        testThreadsRunning += 1
         drv = sunetnextcloud.TestTarget()
         logger.info(
             f"SeamlessAccessInfo thread {testThreadsRunning} started for node {self.node}"
@@ -336,8 +385,17 @@ class SeamlessAccessInfo(threading.Thread):
         return
 
 class OcmInfo(threading.Thread):
+    """Thread that checks the Open Cloud Mesh discovery endpoint of a node.
+
+    Fetches /.well-known/ocm through each frontend server (node1-3,
+    selected with the SERVERID cookie) and compares enabled, apiVersion,
+    version and endPoint with the ocm section of expected.yaml.
+    """
     def __init__(self, node, TestStatus, verify=True):
         threading.Thread.__init__(self)
+        # Count the thread on creation, so the test waits for it even before it starts
+        global testThreadsRunning
+        testThreadsRunning += 1
         self.node = node
         self.TestStatus = TestStatus
         self.verify = verify
@@ -347,7 +405,6 @@ class OcmInfo(threading.Thread):
         global logger
         global expectedResults
         global g_failedNodes
-        testThreadsRunning += 1
         drv = sunetnextcloud.TestTarget()
         logger.info(
             f"OcmInfo thread {testThreadsRunning} started for node {self.node}"
@@ -413,10 +470,13 @@ class OcmInfo(threading.Thread):
         logger.info(f"OcmInfo threads remaining: {testThreadsRunning}")
         return
 
-# Test frontend status for code 200, no content check
 class FrontentStatus(threading.Thread):
+    """Thread that checks that a status URL answers with HTTP 200, without checking the content."""
     def __init__(self, url, TestStatus, verify=True):
         threading.Thread.__init__(self)
+        # Count the thread on creation, so the test waits for it even before it starts
+        global testThreadsRunning
+        testThreadsRunning += 1
         self.url = url
         self.verify = verify
         self.TestStatus = TestStatus
@@ -426,7 +486,6 @@ class FrontentStatus(threading.Thread):
         global logger
         global expectedResults
         global g_failedNodes
-        testThreadsRunning += 1
         logger.info(f"Status thread {testThreadsRunning} started for node {self.url}")
 
         try:
@@ -447,12 +506,15 @@ class FrontentStatus(threading.Thread):
 
 
 class TestStatus(unittest.TestCase):
+    """Status page and public endpoint checks for all nodes under test."""
     def test_logger(self):
+        """Log the test ID to check that the test runner and logging work."""
         global logger
         logger.info(f"TestID: {self._testMethodName}")
         pass
 
     def test_frontend_status(self):
+        """Check that status.php answers with HTTP 200 on all nodes."""
         global g_failedNodes
         drv = sunetnextcloud.TestTarget()
         for url in drv.get_allnode_status_urls():
@@ -475,6 +537,7 @@ class TestStatus(unittest.TestCase):
             g_failedNodes = []
 
     def test_frontend_statusinfo(self):
+        """Check the status.php content of all nodes against expected.yaml."""
         global g_failedNodes
         drv = sunetnextcloud.TestTarget()
         for url in drv.get_allnode_status_urls():
@@ -517,8 +580,11 @@ class TestStatus(unittest.TestCase):
     #         g_failedNodes = []
     #         self.assertTrue(False)
 
-    # Test status infor content for all individual loadbalanced nodes
     def test_node_statusinfo(self):
+        """Check status.php on each frontend server (node1-3) of the redundant nodes.
+
+        Only nodes listed in redundantnodes in expected.yaml are tested.
+        """
         global g_failedNodes
         drv = sunetnextcloud.TestTarget()
         for node in expectedResults["global"]["redundantnodes"]:
@@ -541,8 +607,8 @@ class TestStatus(unittest.TestCase):
                     self.assertTrue(False)
             g_failedNodes = []
 
-    # Test status.php for all nodes
     def test_statusinfo(self):
+        """Check the status.php content of all tested nodes listed in allnodes in expected.yaml."""
         global g_failedNodes
         drv = sunetnextcloud.TestTarget()
         for node in expectedResults["global"]["allnodes"]:
@@ -566,6 +632,10 @@ class TestStatus(unittest.TestCase):
             g_failedNodes = []
 
     def test_seamlessaccessinfo(self):
+        """Check that the login page on every frontend server uses SeamlessAccess.
+
+        Skipped for localhost and for nodes in loginexceptions.
+        """
         global g_failedNodes
         drv = sunetnextcloud.TestTarget()
 
@@ -594,6 +664,10 @@ class TestStatus(unittest.TestCase):
             g_failedNodes = []
 
     def test_ocminfo(self):
+        """Check /.well-known/ocm on every frontend server against expected.yaml.
+
+        Nodes in loginexceptions are skipped.
+        """
         global g_failedNodes
         drv = sunetnextcloud.TestTarget()
 
@@ -618,6 +692,13 @@ class TestStatus(unittest.TestCase):
             g_failedNodes = []
 
     def test_saml_metadata(self):
+        """Check the SAML SP metadata of each node.
+
+        The entity ID must match the node, and the MD5 of the certificate must
+        match cert_md5 in expected.yaml. Skipped for localhost, custom and nodes
+        in loginexceptions. Nodes whose metadata cannot be fetched or parsed
+        are logged as errors and skipped.
+        """
         global logger
         global expectedResults
         logger.info(f"TestID: {self._testMethodName}")
@@ -668,6 +749,11 @@ class TestStatus(unittest.TestCase):
         logger.info("Saml metadata test done")
 
     def test_collabora_nodes(self):
+        """Check that each Collabora server returns the expected status text.
+
+        The number of servers is taken from collabora.nodes in expected.yaml.
+        Skipped for localhost.
+        """
         global logger
         global expectedResults
         logger.info(f"TestID: {self._testMethodName}")

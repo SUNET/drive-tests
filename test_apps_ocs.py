@@ -1,3 +1,15 @@
+"""App tests for Sunet Drive via the OCS API
+Author: Richard Freitag <freitag@sunet.se>
+
+Checks the Nextcloud apps on every node under test against
+expected.yaml: the number of apps on each frontend server, that the
+configured apps are installed, that the installed apps support the
+running Nextcloud major version, and that the required apps
+announcementcenter, security_guard and stepupauth are installed.
+
+Each node is tested in its own thread.
+"""
+
 import json
 import logging
 import os
@@ -32,13 +44,20 @@ with open(expectedResultsFile, "r") as stream:
 
 
 class ConfiguredAppsInstalled(threading.Thread):
+    """Thread that checks that the apps listed in expected.yaml are installed on a node.
+
+    Missing apps are logged as warnings. The node passes as soon as one of
+    the configured apps is found.
+    """
     def __init__(self, name):
         threading.Thread.__init__(self)
+        # Count the thread on creation, so the test waits for it even before it starts
+        global g_testThreadsRunning
+        g_testThreadsRunning += 1
         self.name = name
 
     def run(self):
         global testThreadRunning, logger, g_testPassed, g_testThreadsRunning
-        g_testThreadsRunning += 1
         logger.info(f"ConfiguredAppsInstalled thread started for node {self.name}")
         drv = sunetnextcloud.TestTarget()
         fullnode = self.name
@@ -97,13 +116,21 @@ class ConfiguredAppsInstalled(threading.Thread):
 
 
 class InstalledAppsCompatibility(threading.Thread):
+    """Thread that checks that the installed apps support the expected Nextcloud version.
+
+    Compares each app's Nextcloud max-version with status.major_version in
+    expected.yaml. Incompatible apps fail the node, except apps in
+    ocsapps.excluded_apps, which are only logged as warnings.
+    """
     def __init__(self, name):
         threading.Thread.__init__(self)
+        # Count the thread on creation, so the test waits for it even before it starts
+        global g_testThreadsRunning
+        g_testThreadsRunning += 1
         self.name = name
 
     def run(self):
         global testThreadRunning, logger, g_testPassed, g_testThreadsRunning
-        g_testThreadsRunning += 1
         logger.info(f"InstalledAppsCompatibility thread started for node {self.name}")
         drv = sunetnextcloud.TestTarget()
         fullnode = self.name
@@ -147,8 +174,8 @@ class InstalledAppsCompatibility(threading.Thread):
         # We check against this manual exception list until the deployment is clean
         excludeList = expectedResults[drv.target]["ocsapps"]["excluded_apps"]
         expectedVersion = expectedResults[drv.target]["status"]["major_version"]
+        allPassed = True
         for nodeApp in nodeApps:
-            allPassed = True
             try:
                 # appInfo = expectedResults['apps'][nodeApp]
                 clean_url = drv.get_app_url(fullnode, nodeApp)
@@ -201,15 +228,23 @@ class InstalledAppsCompatibility(threading.Thread):
 
 
 class InstalledAppsConfigured(threading.Thread):
+    """Thread that checks the installed apps of a node.
+
+    With app="all", the installed apps are only listed; comparing them with
+    expected.yaml is not implemented yet. With an app name, the node passes
+    if that app is installed. checkEnabled is currently not used.
+    """
     def __init__(self, name, app="all", checkEnabled=False):
         threading.Thread.__init__(self)
+        # Count the thread on creation, so the test waits for it even before it starts
+        global g_testThreadsRunning
+        g_testThreadsRunning += 1
         self.name = name
         self.app = app
         self.checkEnabled = checkEnabled
 
     def run(self):
         global testThreadRunning, logger, g_testPassed, g_testThreadsRunning
-        g_testThreadsRunning += 1
         logger.info(f"InstalledAppsConfigured thread started for node {self.name}")
         drv = sunetnextcloud.TestTarget()
         fullnode = self.name
@@ -277,13 +312,21 @@ class InstalledAppsConfigured(threading.Thread):
 
 
 class NumberOfAppsOnNodes(threading.Thread):
+    """Thread that counts the installed apps on each frontend server (node1-3) of a node.
+
+    Compares the count with ocsapps in expected.yaml (per node, or the
+    default). A different count is logged as a warning and does not fail
+    the test.
+    """
     def __init__(self, name):
         threading.Thread.__init__(self)
+        # Count the thread on creation, so the test waits for it even before it starts
+        global g_testThreadsRunning
+        g_testThreadsRunning += 1
         self.name = name
 
     def run(self):
         global testThreadRunning, logger, g_testPassed, g_testThreadsRunning
-        g_testThreadsRunning += 1
         logger.info(f"NumberOfAppsOnNode thread started for node {self.name}")
         drv = sunetnextcloud.TestTarget()
         fullnode = self.name
@@ -355,12 +398,15 @@ class NumberOfAppsOnNodes(threading.Thread):
 
 
 class TestAppsOcs(unittest.TestCase):
+    """App checks for all nodes under test."""
     def test_logger(self):
+        """Log the test ID to check that the test runner and logging work."""
         global logger
         logger.info(f"TestID: {self._testMethodName}")
         pass
 
     def test_number_of_apps_on_nodes(self):
+        """Compare the number of installed apps on each frontend server with expected.yaml."""
         drv = sunetnextcloud.TestTarget()
 
         for fullnode in drv.nodestotest:
@@ -377,8 +423,8 @@ class TestAppsOcs(unittest.TestCase):
                 for fe in range(1, 4):
                     self.assertTrue(g_testPassed[f"node{fe}.{fullnode}"])
 
-    # Test if the apps installed on the node are found in the configuration file
     def test_installed_apps_configured(self):
+        """Check that the installed apps of all nodes can be listed."""
         drv = sunetnextcloud.TestTarget()
 
         for fullnode in drv.nodestotest:
@@ -394,8 +440,8 @@ class TestAppsOcs(unittest.TestCase):
             with self.subTest(mynode=fullnode):
                 self.assertTrue(g_testPassed[fullnode])
 
-    # Test if all configured/expected apps are installed on the node
     def test_configured_apps_installed(self):
+        """Check that the apps listed in expected.yaml are installed on all nodes."""
         drv = sunetnextcloud.TestTarget()
 
         for fullnode in drv.nodestotest:
@@ -411,8 +457,8 @@ class TestAppsOcs(unittest.TestCase):
             with self.subTest(mynode=fullnode):
                 self.assertTrue(g_testPassed[fullnode])
 
-    # Test if configured apps are compatible with the installed Nextcloud version
     def test_apps_compatibility(self):
+        """Check that the installed apps on all nodes support the expected Nextcloud major version."""
         drv = sunetnextcloud.TestTarget()
 
         for fullnode in drv.nodestotest:
@@ -426,14 +472,14 @@ class TestAppsOcs(unittest.TestCase):
 
         for fullnode in drv.nodestotest:
             with self.subTest(mynode=fullnode):
-                if {g_testPassed[fullnode]}:
+                if g_testPassed[fullnode]:
                     logger.info(f"Passed: {g_testPassed[fullnode]} for {fullnode}")
                 else:
                     logger.error(f"Failed: {g_testPassed[fullnode]} for {fullnode}")
                 self.assertTrue(g_testPassed[fullnode])
 
-    # Test if the apps installed on the node are found in the configuration file
     def test_app_announcementcenter(self):
+        """Check that announcementcenter is installed on all nodes."""
         drv = sunetnextcloud.TestTarget()
 
         for fullnode in drv.nodestotest:
@@ -453,6 +499,7 @@ class TestAppsOcs(unittest.TestCase):
                 self.assertTrue(g_testPassed[fullnode])
 
     def test_app_security_guard(self):
+        """Check that security_guard is installed on all nodes."""
         drv = sunetnextcloud.TestTarget()
 
         for fullnode in drv.nodestotest:
@@ -472,6 +519,7 @@ class TestAppsOcs(unittest.TestCase):
                 self.assertTrue(g_testPassed[fullnode])
 
     def test_app_stepupauth(self):
+        """Check that stepupauth is installed on all nodes."""
         drv = sunetnextcloud.TestTarget()
 
         for fullnode in drv.nodestotest:

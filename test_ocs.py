@@ -1,5 +1,16 @@
-"""Testing OCS functions for Sunet Drive
+"""OCS API tests for Sunet Drive
 Author: Richard Freitag <freitag@sunet.se>
+
+Tests the Nextcloud OCS API on every node under test, mostly as the
+OCS admin user with its app password: capabilities, user and group
+listing, the required apps (user_saml, auto_groups, stepupauth) and the
+lifecycle of a temporary user (create, disable, delete).
+
+Each node is tested in its own thread.
+
+Environment variables:
+- NextcloudRandSleep: maximum random start delay in seconds for the
+  user lifecycle test, to spread the load over time (default: 60)
 """
 
 import json
@@ -46,8 +57,17 @@ logging.basicConfig(
 
 
 class AppVersions(threading.Thread):
+    """Thread that checks the required apps on a node.
+
+    If user_saml is installed, its version must be listed in expected.yaml.
+    auto_groups and stepupauth must be installed; stepupauth is enabled
+    with a POST to its app endpoint.
+    """
     def __init__(self, name, TestOcsCalls, verify=True):
         threading.Thread.__init__(self)
+        # Count the thread on creation, so the test waits for it even before it starts
+        global g_testThreadsRunning
+        g_testThreadsRunning += 1
         self.name = name
         self.TestOcsCalls = TestOcsCalls
         self.verify = verify
@@ -57,7 +77,6 @@ class AppVersions(threading.Thread):
         global expectedResults
         global g_testPassed
         global g_testThreadsRunning
-        g_testThreadsRunning += 1
         logger.info(f"AppVersion thread started for node {self.name}")
         drv = sunetnextcloud.TestTarget()
         fullnode = self.name
@@ -190,8 +209,12 @@ class AppVersions(threading.Thread):
 
 
 class NodeUsers(threading.Thread):
+    """Thread that lists the users of a node. Passes if the reply contains a user list."""
     def __init__(self, name, TestOcsCalls, verify=True):
         threading.Thread.__init__(self)
+        # Count the thread on creation, so the test waits for it even before it starts
+        global g_testThreadsRunning
+        g_testThreadsRunning += 1
         self.name = name
         self.TestOcsCalls = TestOcsCalls
         self.verify = verify
@@ -200,7 +223,6 @@ class NodeUsers(threading.Thread):
         global logger
         global g_testPassed
         global g_testThreadsRunning
-        g_testThreadsRunning += 1
         logger.info(f"NodeUsers thread started for node {self.name}")
         drv = sunetnextcloud.TestTarget()
         fullnode = self.name
@@ -256,8 +278,15 @@ class NodeUsers(threading.Thread):
 
 
 class NodeGroups(threading.Thread):
+    """Thread that checks that the forcemfa group exists on a node.
+
+    Lists the groups with their details. kau is excluded from the check.
+    """
     def __init__(self, name, TestOcsCalls, verify=True):
         threading.Thread.__init__(self)
+        # Count the thread on creation, so the test waits for it even before it starts
+        global g_testThreadsRunning
+        g_testThreadsRunning += 1
         self.name = name
         self.TestOcsCalls = TestOcsCalls
         self.verify = verify
@@ -266,7 +295,6 @@ class NodeGroups(threading.Thread):
         global logger
         global g_testPassed
         global g_testThreadsRunning
-        g_testThreadsRunning += 1
         logger.info(f"NodeGroups thread started for node {self.name}")
         drv = sunetnextcloud.TestTarget()
         fullnode = self.name
@@ -345,8 +373,16 @@ class NodeGroups(threading.Thread):
 
 
 class CapabilitiesNoUser(threading.Thread):
+    """Thread that checks the OCS capabilities of a node without logging in.
+
+    Compares the OCS status, status code, message and Nextcloud version
+    string with expected.yaml.
+    """
     def __init__(self, name, TestOcsCalls, verify=True):
         threading.Thread.__init__(self)
+        # Count the thread on creation, so the test waits for it even before it starts
+        global g_testThreadsRunning
+        g_testThreadsRunning += 1
         self.name = name
         self.TestOcsCalls = TestOcsCalls
         self.verify = verify
@@ -356,7 +392,6 @@ class CapabilitiesNoUser(threading.Thread):
         global g_testThreadsRunning
         global logger
         global expectedResults
-        g_testThreadsRunning += 1
         logger.info(f"Capabilities no user thread started for node {self.name}")
         drv = sunetnextcloud.TestTarget()
         fullnode = self.name
@@ -418,8 +453,12 @@ class CapabilitiesNoUser(threading.Thread):
 
 
 class Capabilities(threading.Thread):
+    """Thread that fetches and logs the OCS capabilities of a node. Passes if the reply is valid JSON."""
     def __init__(self, name, TestOcsCalls, verify=True):
         threading.Thread.__init__(self)
+        # Count the thread on creation, so the test waits for it even before it starts
+        global g_testThreadsRunning
+        g_testThreadsRunning += 1
         self.name = name
         self.TestOcsCalls = TestOcsCalls
         self.verify = verify
@@ -428,7 +467,6 @@ class Capabilities(threading.Thread):
         global g_testPassed
         global g_testThreadsRunning
         global logger
-        g_testThreadsRunning += 1
         logger.info(f"Capabilities thread started for node {self.name}")
         drv = sunetnextcloud.TestTarget()
         fullnode = self.name
@@ -466,8 +504,19 @@ class Capabilities(threading.Thread):
 
 
 class UserLifeCycle(threading.Thread):
+    """Thread that creates, disables and deletes a temporary user on a node.
+
+    After a random start delay, the OCS admin user confirms its app
+    password and creates the user __cli_user_<timestamp>_<node>. It then
+    checks the user's groups (warns if forcemfa is missing), disables the
+    user and deletes it. Each step is retried once on an OCS error, and the
+    replies of disable and delete are compared with expected.yaml.
+    """
     def __init__(self, name, TestOcsCalls, verify=True):
         threading.Thread.__init__(self)
+        # Count the thread on creation, so the test waits for it even before it starts
+        global g_testThreadsRunning
+        g_testThreadsRunning += 1
         self.name = name
         self.TestOcsCalls = TestOcsCalls
         self.verify = verify
@@ -476,7 +525,6 @@ class UserLifeCycle(threading.Thread):
         global g_testPassed
         global g_testThreadsRunning
         global expectedResults
-        g_testThreadsRunning += 1
 
         start_delay = random.randint(0,g_maxRandSleep)
         logger.info(f"UserLifeCycle thread for node {self.name} starting in {start_delay} seconds")
@@ -680,11 +728,14 @@ class UserLifeCycle(threading.Thread):
 
 
 class TestOcsCalls(unittest.TestCase):
+    """OCS API tests for all nodes under test."""
     def test_logger(self):
+        """Log the test ID to check that the test runner and logging work."""
         logger.info(f"TestID: {self._testMethodName}")
         pass
 
     def test_capabilities_nouser(self):
+        """Check the OCS capabilities of all nodes without logging in."""
         drv = sunetnextcloud.TestTarget()
         for fullnode in drv.nodestotest:
             with self.subTest(mynode=fullnode):
@@ -702,6 +753,7 @@ class TestOcsCalls(unittest.TestCase):
                 self.assertTrue(g_testPassed[fullnode])
 
     def test_capabilities(self):
+        """Check that all nodes return their OCS capabilities as valid JSON."""
         drv = sunetnextcloud.TestTarget()
         for fullnode in drv.nodestotest:
             with self.subTest(mynode=fullnode):
@@ -717,6 +769,7 @@ class TestOcsCalls(unittest.TestCase):
                 self.assertTrue(g_testPassed[fullnode])
 
     def test_nodeusers(self):
+        """Check that the users of all nodes can be listed."""
         drv = sunetnextcloud.TestTarget()
         for fullnode in drv.nodestotest:
             with self.subTest(mynode=fullnode):
@@ -732,6 +785,7 @@ class TestOcsCalls(unittest.TestCase):
                 self.assertTrue(g_testPassed[fullnode])
 
     def test_nodegroups(self):
+        """Check that the forcemfa group exists on all nodes."""
         drv = sunetnextcloud.TestTarget()
         for fullnode in drv.nodestotest:
             with self.subTest(mynode=fullnode):
@@ -747,6 +801,7 @@ class TestOcsCalls(unittest.TestCase):
                 self.assertTrue(g_testPassed[fullnode])
 
     def test_userlifecycle(self):
+        """Create, disable and delete a temporary user on all nodes."""
         drv = sunetnextcloud.TestTarget()
         for fullnode in drv.nodestotest:
             with self.subTest(mynode=fullnode):
@@ -762,6 +817,7 @@ class TestOcsCalls(unittest.TestCase):
                 self.assertTrue(g_testPassed[fullnode])
 
     def test_app_versions(self):
+        """Check the user_saml version and that auto_groups and stepupauth are installed on all nodes."""
         drv = sunetnextcloud.TestTarget()
         for fullnode in drv.nodestotest:
             with self.subTest(mynode=fullnode):

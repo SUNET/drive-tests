@@ -1,5 +1,15 @@
-""" Testing WebDAV functions for Sunet Drive
+"""WebDAV tests for Sunet Drive
 Author: Richard Freitag <freitag@sunet.se>
+
+File operations over WebDAV on every node under test, mostly as the
+Selenium test user with its app password: listing, checking a folder
+that does not exist, creating folders in the home folder and in the
+personal (selenium-personal) and system (selenium-system) buckets,
+uploading, moving and deleting a file, and cleaning up the test folders
+and the trash bin.
+
+Each node is tested in its own thread. The thread classes take
+basicAuth: True uses the user's password, False its app password.
 """
 
 import unittest
@@ -35,8 +45,16 @@ logging.basicConfig(format = '%(asctime)s - %(module)s.%(funcName)s - %(levelnam
 drv = sunetnextcloud.TestTarget()
 
 class WebDAVDneCheck(threading.Thread):
+    """Thread that checks a folder that does not exist on a node.
+
+    Runs client.check on THISFOLDERDOESNOTEXIST several times. An HTTP 401
+    is tolerated; any other error fails the node.
+    """
     def __init__(self, name, basicAuth, TestWebDAV):
         threading.Thread.__init__(self)
+        # Count the thread on creation, so the test waits for it even before it starts
+        global g_testThreadsRunning
+        g_testThreadsRunning += 1
         self.name = name
         self.TestWebDAV = TestWebDAV
         self.basicAuth = basicAuth
@@ -47,7 +65,6 @@ class WebDAVDneCheck(threading.Thread):
         global g_testThreadsRunning
         fullnode = self.name
         g_testPassed[fullnode] = False
-        g_testThreadsRunning += 1
         logger.info(f'WebDAVDneCheck thread started for node {self.name}')
         logger.info(f'Setting passed for {fullnode} to {g_testPassed.get(fullnode)}')
 
@@ -100,8 +117,16 @@ class WebDAVDneCheck(threading.Thread):
         g_testThreadsRunning -= 1
 
 class WebDAVList(threading.Thread):
+    """Thread that lists the home folders of the test users on a node.
+
+    Lists the folders of the OCS user, the Selenium user and the Selenium
+    MFA user. Fails if any listing raises an error.
+    """
     def __init__(self, name, basicAuth, TestWebDAV):
         threading.Thread.__init__(self)
+        # Count the thread on creation, so the test waits for it even before it starts
+        global g_testThreadsRunning
+        g_testThreadsRunning += 1
         self.name = name
         self.TestWebDAV = TestWebDAV
         self.basicAuth = basicAuth
@@ -112,7 +137,6 @@ class WebDAVList(threading.Thread):
         global g_testThreadsRunning
         fullnode = self.name
         g_testPassed[fullnode] = False
-        g_testThreadsRunning += 1
         logger.info(f'WebDAVList thread started for node {self.name}')
         drv = sunetnextcloud.TestTarget()
 
@@ -165,8 +189,16 @@ class WebDAVList(threading.Thread):
         g_testThreadsRunning -= 1
 
 class WebDAVMultiCheckAndRemove(threading.Thread):
+    """Thread that removes the WebDAVTest folder of the Selenium user.
+
+    Retries the removal up to g_maxCheck times and checks that the folder
+    is gone.
+    """
     def __init__(self, name, basicAuth, TestWebDAV):
         threading.Thread.__init__(self)
+        # Count the thread on creation, so the test waits for it even before it starts
+        global g_testThreadsRunning
+        g_testThreadsRunning += 1
         self.name = name
         self.TestWebDAV = TestWebDAV
         self.basicAuth = basicAuth
@@ -177,7 +209,6 @@ class WebDAVMultiCheckAndRemove(threading.Thread):
         global g_testThreadsRunning
         fullnode = self.name
         g_testPassed[fullnode] = False
-        g_testThreadsRunning += 1
         logger.info(f'WebDAVMultiCheckAndRemove thread started for node {self.name}')
         drv = sunetnextcloud.TestTarget()
 
@@ -232,8 +263,12 @@ class WebDAVMultiCheckAndRemove(threading.Thread):
         g_testThreadsRunning -= 1
 
 class WebDAVCleanSeleniumFolders(threading.Thread):
+    """Thread that removes the WebDAVTest and WebDAVStressTest folders of the Selenium user."""
     def __init__(self, name, basicAuth, TestWebDAV):
         threading.Thread.__init__(self)
+        # Count the thread on creation, so the test waits for it even before it starts
+        global g_testThreadsRunning
+        g_testThreadsRunning += 1
         self.name = name
         self.TestWebDAV = TestWebDAV
         self.basicAuth = basicAuth
@@ -244,7 +279,6 @@ class WebDAVCleanSeleniumFolders(threading.Thread):
         global g_testThreadsRunning
         fullnode = self.name
         g_testPassed[fullnode] = False
-        g_testThreadsRunning += 1
         logger.info(f'WebDAVCleanSeleniumFolders thread started for node {self.name}')
         drv = sunetnextcloud.TestTarget()
 
@@ -291,8 +325,16 @@ class WebDAVCleanSeleniumFolders(threading.Thread):
         g_testThreadsRunning -= 1
 
 class WebDAVCleanTrashbin(threading.Thread):
+    """Thread that empties the Selenium user's trash bin.
+
+    Items that cannot be deleted are logged as warnings and do not fail
+    the node.
+    """
     def __init__(self, name, basicAuth, TestWebDAV):
         threading.Thread.__init__(self)
+        # Count the thread on creation, so the test waits for it even before it starts
+        global g_testThreadsRunning
+        g_testThreadsRunning += 1
         self.name = name
         self.TestWebDAV = TestWebDAV
         self.basicAuth = basicAuth
@@ -303,7 +345,6 @@ class WebDAVCleanTrashbin(threading.Thread):
         global g_testThreadsRunning
         fullnode = self.name
         g_testPassed[fullnode] = False
-        g_testThreadsRunning += 1
         logger.info(f'WebDAVCleanTrashbin thread started for node {self.name}')
         drv = sunetnextcloud.TestTarget()
 
@@ -346,8 +387,12 @@ class WebDAVCleanTrashbin(threading.Thread):
         g_testThreadsRunning -= 1
 
 class WebDAVMakeSharingFolder(threading.Thread):
+    """Thread that creates SharedFolder in the Selenium user's home folder and checks that it exists."""
     def __init__(self, name, basicAuth, TestWebDAV):
         threading.Thread.__init__(self)
+        # Count the thread on creation, so the test waits for it even before it starts
+        global g_testThreadsRunning
+        g_testThreadsRunning += 1
         self.name = name
         self.TestWebDAV = TestWebDAV
         self.basicAuth = basicAuth
@@ -358,7 +403,6 @@ class WebDAVMakeSharingFolder(threading.Thread):
         global g_testThreadsRunning
         fullnode = self.name
         g_testPassed[fullnode] = False
-        g_testThreadsRunning += 1
         logger.info(f'WebDAVMakeSharingFolder thread started for node {self.name}')
         drv = sunetnextcloud.TestTarget()
 
@@ -404,8 +448,16 @@ class WebDAVMakeSharingFolder(threading.Thread):
         g_testThreadsRunning -= 1
 
 class WebDAVPersonalBucketFolders(threading.Thread):
+    """Thread that checks folder handling in the personal bucket.
+
+    Checks that selenium-personal is mounted, then creates and removes a
+    test_webdav folder in it.
+    """
     def __init__(self, name, basicAuth, TestWebDAV):
         threading.Thread.__init__(self)
+        # Count the thread on creation, so the test waits for it even before it starts
+        global g_testThreadsRunning
+        g_testThreadsRunning += 1
         self.name = name
         self.TestWebDAV = TestWebDAV
         self.basicAuth = basicAuth
@@ -416,7 +468,6 @@ class WebDAVPersonalBucketFolders(threading.Thread):
         global g_testThreadsRunning
         fullnode = self.name
         g_testPassed[fullnode] = False
-        g_testThreadsRunning += 1
         logger.info(f'WebDAVPersonalBucketFolders thread started for node {self.name}')
         drv = sunetnextcloud.TestTarget()
 
@@ -465,8 +516,16 @@ class WebDAVPersonalBucketFolders(threading.Thread):
         g_testThreadsRunning -= 1
 
 class WebDAVSystemBucketFolders(threading.Thread):
+    """Thread that checks folder handling in the system bucket.
+
+    Checks that selenium-system is mounted, then creates and removes a
+    test_webdav folder in it.
+    """
     def __init__(self, name, basicAuth, TestWebDAV):
         threading.Thread.__init__(self)
+        # Count the thread on creation, so the test waits for it even before it starts
+        global g_testThreadsRunning
+        g_testThreadsRunning += 1
         self.name = name
         self.TestWebDAV = TestWebDAV
         self.basicAuth = basicAuth
@@ -477,7 +536,6 @@ class WebDAVSystemBucketFolders(threading.Thread):
         global g_testThreadsRunning
         fullnode = self.name
         g_testPassed[fullnode] = False
-        g_testThreadsRunning += 1
         logger.info(f'WebDAVSystemBucketFolders thread started for node {self.name}')
         drv = sunetnextcloud.TestTarget()
 
@@ -513,7 +571,7 @@ class WebDAVSystemBucketFolders(threading.Thread):
             self.TestWebDAV.assertEqual(client.list(g_systemBucket).count(f'{folder}/'), 1)
             logger.info(f'Cleaning path: {path}')
             client.clean(path)
-            folders = client.list(g_personalBucket)
+            folders = client.list(g_systemBucket)
             cnt = folders.count(f'{folder}/')
             self.TestWebDAV.assertEqual(cnt, 0)
             # print(client.list(g_personalBucket))
@@ -529,8 +587,17 @@ class WebDAVSystemBucketFolders(threading.Thread):
         g_testThreadsRunning -= 1
 
 class WebDAVCreateMoveDelete(threading.Thread):
+    """Thread that uploads, moves and deletes a file in a target folder.
+
+    Creates the target folder, uploads a small text file, renames it with
+    an mv_ prefix and deletes it. Move and delete are retried up to three
+    times. The local temporary file is removed afterwards.
+    """
     def __init__(self, name, basicAuth, target, TestWebDAV):
         threading.Thread.__init__(self)
+        # Count the thread on creation, so the test waits for it even before it starts
+        global g_testThreadsRunning
+        g_testThreadsRunning += 1
         self.name = name
         self.target = target
         self.TestWebDAV = TestWebDAV
@@ -542,7 +609,6 @@ class WebDAVCreateMoveDelete(threading.Thread):
         global g_testThreadsRunning
         fullnode = self.name
         g_testPassed[fullnode] = False
-        g_testThreadsRunning += 1
         logger.info(f'WebDAVCreateMoveDelete thread started for node {self.name}')
         drv = sunetnextcloud.TestTarget()
 
@@ -654,12 +720,15 @@ class WebDAVCreateMoveDelete(threading.Thread):
         g_testThreadsRunning -= 1
 
 class TestWebDAV(unittest.TestCase):
+    """WebDAV checks for all nodes under test."""
     def test_logger(self):
+        """Log the test ID to check that the test runner and logging work."""
         global logger
         logger.info(f'TestID: {self._testMethodName}')
         pass
 
     def test_webdav_dne_check_basic_auth(self):
+        """Check a folder that does not exist on all nodes, using the user's password."""
         global logger
         global g_testThreadsRunning
         logger.info('test_webdav_dne_check')
@@ -678,6 +747,7 @@ class TestWebDAV(unittest.TestCase):
                 self.assertTrue(g_testPassed[fullnode])
 
     def test_webdav_dne_check_app_token(self):
+        """Check a folder that does not exist on all nodes, using the app password."""
         global logger
         global g_testThreadsRunning
         logger.info('test_webdav_dne_check')
@@ -696,6 +766,7 @@ class TestWebDAV(unittest.TestCase):
                 self.assertTrue(g_testPassed[fullnode])
 
     def test_webdav_list(self):
+        """List the home folders of the OCS, Selenium and Selenium MFA users on all nodes."""
         global logger
         logger.info('test_webdav_list')
         drv = sunetnextcloud.TestTarget()
@@ -713,6 +784,7 @@ class TestWebDAV(unittest.TestCase):
                 self.assertTrue(g_testPassed[fullnode])
 
     def test_webdav_multicheckandremove(self):
+        """Remove the WebDAVTest folder of the Selenium user on all nodes."""
         global logger
         global g_testPassed
         logger.info('test_webdav_multicheckandremove')
@@ -732,6 +804,7 @@ class TestWebDAV(unittest.TestCase):
                 self.assertTrue(g_testPassed[fullnode])
 
     def test_clean_seleniumuserfolders(self):
+        """Remove the Selenium user's test folders on all nodes."""
         global logger
         logger.info('test_clean_seleniumuserfolders')
         drv = sunetnextcloud.TestTarget()
@@ -749,6 +822,7 @@ class TestWebDAV(unittest.TestCase):
                 self.assertTrue(g_testPassed[fullnode])
 
     def test_sharing_folders(self):
+        """Create SharedFolder in the Selenium user's home folder on all nodes."""
         global logger
         logger.info('test_sharing_folders')
         drv = sunetnextcloud.TestTarget()
@@ -766,6 +840,7 @@ class TestWebDAV(unittest.TestCase):
                 self.assertTrue(g_testPassed[fullnode])
 
     def test_personal_bucket_folders(self):
+        """Create and remove a folder in the personal bucket on all nodes."""
         global logger
         logger.info('test_personal_bucket_folders')
         drv = sunetnextcloud.TestTarget()
@@ -783,6 +858,7 @@ class TestWebDAV(unittest.TestCase):
                 self.assertTrue(g_testPassed[fullnode])
 
     def test_system_bucket_folders(self):
+        """Create and remove a folder in the system bucket on all nodes."""
         global logger
         logger.info('test_system_bucket_folders')
         drv = sunetnextcloud.TestTarget()
@@ -800,6 +876,7 @@ class TestWebDAV(unittest.TestCase):
                 self.assertTrue(g_testPassed[fullnode])
 
     def test_cmd_in_home_folder(self):
+        """Upload, move and delete a file in selenium-home on all nodes."""
         global logger
         logger.info('test_cmd_in_home_folder')
         drv = sunetnextcloud.TestTarget()
@@ -817,6 +894,7 @@ class TestWebDAV(unittest.TestCase):
                 self.assertTrue(g_testPassed[fullnode])
 
     def test_cmd_in_personal_bucket(self):
+        """Upload, move and delete a file in the personal bucket on all nodes."""
         global logger
         logger.info('test_cmd_in_personal_bucket')
         drv = sunetnextcloud.TestTarget()
@@ -834,6 +912,7 @@ class TestWebDAV(unittest.TestCase):
                 self.assertTrue(g_testPassed[fullnode])
 
     def test_cmd_in_system_bucket(self):
+        """Upload, move and delete a file in the system bucket on all nodes."""
         global logger
         logger.info('test_cmd_in_system_bucket')
         drv = sunetnextcloud.TestTarget()
@@ -851,6 +930,7 @@ class TestWebDAV(unittest.TestCase):
                 self.assertTrue(g_testPassed[fullnode])
 
     def test_empty_trashbin(self):
+        """Empty the Selenium user's trash bin on all nodes."""
         global logger
         logger.info('test_empty_trashbin')
         drv = sunetnextcloud.TestTarget()

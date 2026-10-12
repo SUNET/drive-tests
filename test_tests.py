@@ -1,5 +1,15 @@
-""" Unit tests to make ensure some prerequisites for testing
+"""Prerequisite checks for the Sunet Drive test suite
 Author: Richard Freitag <freitag@sunet.se>
+
+Checks that the test configuration matches the deployed infrastructure
+before the other tests run. The node lists of the test target and
+expected.yaml are compared with the sunet-drive-ops repository
+(common.yaml, cosmos-rules.yaml and the SAML metadata of the IdP
+proxies), and the credentials needed by the other tests are checked
+for every node.
+
+Most mismatches are only logged as warnings or errors. Only missing
+user credentials make a test fail.
 """
 
 import unittest
@@ -32,8 +42,15 @@ logging.basicConfig(format = '%(asctime)s - %(module)s.%(funcName)s - %(levelnam
                 datefmt = '%Y-%m-%d %H:%M:%S', level = logging.INFO)
 
 class TestTests(unittest.TestCase):
+    """Consistency checks between the test configuration and sunet-drive-ops."""
     global cosmos_rules
     def setUp(self):
+        """Load the node lists from sunet-drive-ops.
+
+        Reads common.yaml (full, single, multinode and project mapping nodes),
+        the prod and test IdP proxy metadata directories and cosmos-rules.yaml
+        (full node and multinode names). Missing files are logged as warnings.
+        """
         if os.path.exists(common_config_file):
             with open(common_config_file, "r") as stream:
                 data=yaml.safe_load(stream)
@@ -103,11 +120,19 @@ class TestTests(unittest.TestCase):
 
 
     def test_logger(self):
+        """Log the test ID to check that the test runner and logging work."""
         logger.info(f'TestID: {self._testMethodName}')
         pass
 
     def test_cosmos_mapping(self):
+        """Warn about cosmos-rules.yaml nodes missing from common.yaml or expected.yaml.
+
+        Checks both full nodes and multinodes. Only logs warnings; never fails.
+        Skipped if common.yaml or cosmos-rules.yaml is not found.
+        """
         logger.info(f'TestID: {self._testMethodName}')
+        if not os.path.exists(common_config_file) or not os.path.exists(cosmos_rules_file):
+            self.skipTest(f'{common_config_file} or {cosmos_rules_file} not found')
         logger.info(f'Test cosmos rules mapping')
 
         # Check if cosmos full nodes are mapped in common.yaml and expected.yaml
@@ -124,7 +149,17 @@ class TestTests(unittest.TestCase):
                 logger.warning(f'{cosmos_multinode} multinode in cosmos_rules, but not in expected.yaml')
 
     def test_common_mapping(self):
+        """Check the node mappings in common.yaml against the IdP proxy metadata.
+
+        Warns about nodes with SAML metadata in only prod or only test. Logs an
+        error for metadata nodes that are neither in the multinode mapping nor
+        a full/single node, and for project mapping entries without metadata
+        (except common, kau, scilifelab, sp and sics). Only logs; never fails.
+        Skipped if common.yaml is not found.
+        """
         logger.info(f'TestID: {self._testMethodName}')
+        if not os.path.exists(common_config_file):
+            self.skipTest(f'{common_config_file} not found')
         logger.info(f'Check if metadata nodes contain unusual nodes')
 
         if self.common_metadata_prodnodes != self.common_metadata_testnodes:
@@ -149,6 +184,12 @@ class TestTests(unittest.TestCase):
                     logger.error(f'{entry} configured in project mapping, but not as metadata node')
 
     def test_allnodes_tested(self):
+        """Warn about differences between the configured and the tested nodes.
+
+        Compares common.yaml with the nodes of the test target in both
+        directions. Skipped when only one node is tested. Only logs warnings;
+        never fails.
+        """
         logger.info(f'TestID: {self._testMethodName}')
         testMissing = False
 
@@ -179,8 +220,13 @@ class TestTests(unittest.TestCase):
 
         self.assertFalse(testMissing)
 
-    # Ensure user credentials to execute tests are available
     def test_required_usercredentials(self):
+        """Check that all test user credentials are available for every node.
+
+        Fails if the Selenium user, the Selenium MFA user or the OCS user is
+        missing a username, password or app password, or if a Selenium user is
+        missing its TOTP secret.
+        """
         logger.info(f'{self._testMethodName}')
         drv = sunetnextcloud.TestTarget()
         test_failed = False

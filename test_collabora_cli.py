@@ -1,5 +1,10 @@
-""" Command line unit tests for the Sunet Drive Collabora servers
+"""Collabora capabilities tests for Sunet Drive
 Author: Richard Freitag <freitag@sunet.se>
+
+Fetches /hosting/capabilities from each Collabora server of the test
+target and compares the product name, version, version hash and
+feature flags with expected.yaml. The number of servers is taken from
+collabora.nodes in expected.yaml.
 """
 
 import unittest
@@ -25,12 +30,15 @@ with open(expectedResultsFile, "r") as stream:
 drv = sunetnextcloud.TestTarget()
 
 class TestCollabora(unittest.TestCase):
+    """Checks of the Collabora Online servers."""
     def test_logger(self):
+        """Log the test ID to check that the test runner and logging work."""
         global logger
         logger.info(f'TestID: {self._testMethodName}')
         pass
 
     def test_collabora_capabilities(self):
+        """Compare the capabilities of each Collabora server with expected.yaml."""
         global logger
         logger.info(f'TestID: {self._testMethodName}')
         drv = sunetnextcloud.TestTarget()
