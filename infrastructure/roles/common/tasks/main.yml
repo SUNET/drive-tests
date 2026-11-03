@@ -1,0 +1,167 @@
+- name: Check the OS is Debian
+  ansible.builtin.assert:
+    that: ansible_facts['distribution'] == 'Debian'
+    fail_msg: "The common role targets Debian; this host runs {{ ansible_facts['distribution'] }}."
+
+- name: Update apt cache
+  ansible.builtin.apt:
+    update_cache: true
+    cache_valid_time: 3600
+
+- name: Upgrade all packages
+  ansible.builtin.apt:
+    upgrade: dist
+    autoremove: true
+  when: common_upgrade | bool
+  tags: [upgrade]
+
+- name: Install base packages
+  ansible.builtin.apt:
+    name: "{{ common_packages }}"
+    state: present
+
+- name: Enable unattended upgrades
+  ansible.builtin.copy:
+    dest: /etc/apt/apt.conf.d/20auto-upgrades
+    content: |
+      APT::Periodic::Update-Package-Lists "1";
+      APT::Periodic::Unattended-Upgrade "1";
+    mode: "0644"
+
+# --- SSH ---------------------------------------------------------------------
+- name: Harden sshd
+  ansible.builtin.template:
+    src: sshd-hardening.conf.j2
+    dest: /etc/ssh/sshd_config.d/10-hardening.conf
+    mode: "0644"
+    validate: /usr/sbin/sshd -t -f %s
+  register: sshd_hardening
+  notify: Restart sshd
+
+- name: Test the complete sshd configuration before any restart
+  ansible.builtin.command: /usr/sbin/sshd -t
+  changed_when: false
+  when: sshd_hardening is changed
+
+# --- fail2ban ----------------------------------------------------------------
+- name: Configure fail2ban for sshd
+  ansible.builtin.copy:
+    dest: /etc/fail2ban/jail.d/sshd.local
+    content: |
+      [DEFAULT]
+      banaction = nftables
+      banaction_allports = nftables[type=allports]
+
+      [sshd]
+      enabled = true
+      backend = systemd
+      journalmatch = _SYSTEMD_UNIT=ssh.service + _COMM=sshd
+    mode: "0644"
+  notify: Restart fail2ban
+
+- name: Enable fail2ban
+  ansible.builtin.service:
+    name: fail2ban
+    enabled: true
+    state: started
+
+# --- firewall ----------------------------------------------------------------
+- name: Write nftables ruleset
+  ansible.builtin.template:
+    src: nftables.conf.j2
+    dest: /etc/nftables.conf
+    mode: "0644"
+    validate: nft -c -f %s
+  notify: Reload nftables
+
+- name: Enable nftables
+  ansible.builtin.service:
+    name: nftables
+    enabled: true
+    state: started
+
+# --- system ------------------------------------------------------------------
+- name: Create journald drop-in directory
+  ansible.builtin.file:
+    path: /etc/systemd/journald.conf.d
+    state: directory
+    mode: "0755"
+
+- name: Cap journald size
+  ansible.builtin.copy:
+    dest: /etc/systemd/journald.conf.d/size.conf
+    content: |
+      [Journal]
+      SystemMaxUse={{ common_journald_max_use }}
+    mode: "0644"
+  notify: Restart journald
+
+- name: Create resolved drop-in directory
+  ansible.builtin.file:
+    path: /etc/systemd/resolved.conf.d
+    state: directory
+    mode: "0755"
+
+- name: Disable LLMNR and mDNS in systemd-resolved
+  ansible.builtin.copy:
+    dest: /etc/systemd/resolved.conf.d/no-llmnr.conf
+    content: |
+      [Resolve]
+      LLMNR=no
+      MulticastDNS=no
+    mode: "0644"
+  notify: Restart resolved
+
+- name: Kernel/network sysctl baseline
+  ansible.builtin.copy:
+    dest: /etc/sysctl.d/90-hardening.conf
+    content: |
+      kernel.unprivileged_bpf_disabled = 1
+      kernel.kptr_restrict = 2
+      kernel.dmesg_restrict = 1
+      net.ipv4.conf.all.accept_redirects = 0
+      net.ipv4.conf.default.accept_redirects = 0
+      net.ipv6.conf.all.accept_redirects = 0
+      net.ipv6.conf.default.accept_redirects = 0
+      net.ipv4.conf.all.send_redirects = 0
+      net.ipv4.conf.all.accept_source_route = 0
+      net.ipv4.tcp_syncookies = 1
+    mode: "0644"
+  notify: Apply sysctl
+
+- name: Swapfile
+  when: common_swapfile_mb | int > 0
+  block:
+    - name: Create swapfile
+      ansible.builtin.command: "fallocate -l {{ common_swapfile_mb }}M /swapfile"
+      args:
+        creates: /swapfile
+      register: swapfile_created
+
+    - name: Swapfile permissions
+      ansible.builtin.file:
+        path: /swapfile
+        mode: "0600"
+
+    - name: Format and enable swapfile
+      ansible.builtin.shell: mkswap /swapfile && swapon /swapfile
+      when: swapfile_created is changed
+      changed_when: true
+
+    - name: Swapfile in fstab
+      ansible.posix.mount:
+        path: none
+        src: /swapfile
+        fstype: swap
+        opts: sw
+        state: present
+
+- name: Check whether a reboot is required
+  ansible.builtin.stat:
+    path: /var/run/reboot-required
+  register: reboot_required
+
+- name: Report pending reboot
+  ansible.builtin.debug:
+    msg: "A reboot is required on {{ inventory_hostname }} (kernel or libc update)."
+  when: reboot_required.stat.exists

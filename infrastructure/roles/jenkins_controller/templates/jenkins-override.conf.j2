@@ -1,0 +1,7 @@
+# {{ ansible_managed }}
+[Service]
+Environment="JENKINS_HOME={{ jenkins_home }}"
+Environment="JENKINS_LISTEN_ADDRESS=127.0.0.1"
+Environment="JENKINS_PORT={{ jenkins_http_port }}"
+Environment="JAVA_OPTS=-Djava.awt.headless=true -Djdk.lang.Process.launchMechanism=vfork -Xmx{{ jenkins_heap }} -XX:+UseG1GC"
+TimeoutStartSec={{ jenkins_start_timeout }}

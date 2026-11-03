@@ -1,0 +1,34 @@
+# Baseline for all Debian hosts.
+
+# Run a full dist-upgrade on each play (set false for routine config runs).
+common_upgrade: true
+
+common_packages:
+  - curl
+  - git
+  - htop
+  - jq
+  - nftables
+  - fail2ban
+  - python3-systemd
+  - rsync
+  - tmux
+  - unattended-upgrades
+  - apt-listchanges
+  - needrestart
+  - vim
+
+# Users allowed to log in over SSH.
+common_ssh_allow_users: [debian]
+
+# Journald disk cap.
+common_journald_max_use: 500M
+
+# Optional swapfile (MB); 0 disables.
+common_swapfile_mb: 0
+
+# Firewall. Each rule: {port: <int>, proto: tcp|udp, sources: [cidr, ...]}.
+# An empty or missing sources list means "from anywhere".
+# SSH is always allowed (from common_ssh_sources) so a run cannot lock you out.
+common_ssh_sources: []
+common_firewall_rules: []

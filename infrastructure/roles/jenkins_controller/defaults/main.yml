@@ -1,0 +1,28 @@
+# Public name of the controller (nginx server_name, certificate). Required.
+jenkins_server_name: ""
+
+# Jenkins package. "weekly" -> pkg.jenkins.io/debian, "stable" (LTS) -> debian-stable.
+# Pin the version so a migrated JENKINS_HOME never meets an older core.
+jenkins_release_line: weekly
+jenkins_version: "2.588"
+jenkins_hold_package: true
+jenkins_repo_key_url: https://pkg.jenkins.io/debian/jenkins.io-2026.key
+jenkins_repo_key_fingerprint: 5E386EADB55F01504CAE8BCF7198F4B714ABFC68
+
+jenkins_java_package: openjdk-21-jre-headless
+jenkins_home: /var/lib/jenkins
+jenkins_http_port: 8080
+jenkins_heap: 6g
+jenkins_start_timeout: 900
+
+# Keep false until JENKINS_HOME has been migrated; a fresh start would create
+# an empty instance with a setup wizard.
+jenkins_service_enabled: false
+
+# TLS: "selfsigned" (snakeoil, until DNS points here) or "letsencrypt".
+jenkins_tls_mode: selfsigned
+jenkins_letsencrypt_email: ""
+
+# Nightly backup of the configuration (no build history).
+jenkins_backup_dir: /var/backups/jenkins
+jenkins_backup_keep_days: 14

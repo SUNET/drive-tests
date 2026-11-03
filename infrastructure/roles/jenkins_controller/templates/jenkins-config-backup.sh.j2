@@ -1,0 +1,28 @@
+#!/bin/bash
+# {{ ansible_managed }}
+# Back up the Jenkins configuration without build history.
+# Build directories are pruned with -prune so millions of builds are never walked.
+set -euo pipefail
+HOME_DIR={{ jenkins_home }}
+OUT={{ jenkins_backup_dir }}
+KEEP_DAYS={{ jenkins_backup_keep_days }}
+
+install -d -m 700 "$OUT"
+[ -f "$HOME_DIR/config.xml" ] || { echo "No Jenkins config in $HOME_DIR, nothing to back up"; exit 0; }
+
+LIST=$(mktemp)
+trap 'rm -f "$LIST"' EXIT
+cd "$HOME_DIR"
+{
+  find jobs -name builds -prune -o \( -name config.xml -o -name nextBuildNumber \) -print 2>/dev/null || true
+  find . -maxdepth 1 -mindepth 1 \
+       ! -name jobs ! -name workspace ! -name caches ! -name .cache \
+       ! -name logs ! -name war ! -name '*.tar.gz' -printf '%P\n'
+} > "$LIST"
+
+TARGET="$OUT/jenkins-config-$(date +%F).tar.gz"
+tar czf "$TARGET.tmp" -T "$LIST"
+mv "$TARGET.tmp" "$TARGET"
+chmod 600 "$TARGET"
+find "$OUT" -name 'jenkins-config-*.tar.gz' -mtime +"$KEEP_DAYS" -delete
+echo "Wrote $TARGET ($(du -h "$TARGET" | cut -f1))"

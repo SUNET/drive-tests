@@ -1,0 +1,12 @@
+# Jenkins controller.
+#   cd infrastructure
+#   ansible-playbook playbooks/controller.yml --check --diff
+#   ansible-playbook playbooks/controller.yml
+# Defaults to the jenkins_controller_new group so that it does not run against
+# the old (Ubuntu) controller by accident. Override with -e target=<group>.
+- name: Jenkins controller
+  hosts: "{{ target | default('jenkins_controller_new') }}"
+  become: true
+  roles:
+    - common
+    - jenkins_controller

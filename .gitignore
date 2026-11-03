@@ -2,3 +2,6 @@ __pycache__/
 test-reports/
 *.env
 expected_localhost.yaml
+# Local-only infrastructure data (hosts, IPs, findings) - never commit
+infrastructure/inventory/
+infrastructure/todo/

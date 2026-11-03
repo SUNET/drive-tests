@@ -1,0 +1,291 @@
+- name: Check required variables
+  ansible.builtin.assert:
+    that:
+      - jenkins_server_name | length > 0
+      - jenkins_tls_mode in ['selfsigned', 'letsencrypt']
+      - jenkins_release_line in ['weekly', 'stable']
+
+- name: Install Java, nginx and certbot
+  ansible.builtin.apt:
+    name:
+      - "{{ jenkins_java_package }}"
+      - fontconfig
+      - gnupg
+      - nginx
+      - ssl-cert
+      - certbot
+    state: present
+
+# --- Jenkins apt repository --------------------------------------------------
+- name: Create apt keyring directory
+  ansible.builtin.file:
+    path: /etc/apt/keyrings
+    state: directory
+    mode: "0755"
+
+- name: Download Jenkins repository key
+  ansible.builtin.get_url:
+    url: "{{ jenkins_repo_key_url }}"
+    dest: /etc/apt/keyrings/jenkins.asc
+    mode: "0644"
+
+- name: Read the repository key fingerprint
+  ansible.builtin.shell: >-
+    set -o pipefail;
+    gpg --show-keys --with-colons /etc/apt/keyrings/jenkins.asc | awk -F: '/^fpr/ {print $10; exit}'
+  args:
+    executable: /bin/bash
+  register: jenkins_key_fpr
+  changed_when: false
+
+- name: Verify the repository key fingerprint
+  ansible.builtin.assert:
+    that: jenkins_key_fpr.stdout == jenkins_repo_key_fingerprint
+    fail_msg: "Unexpected Jenkins repo key {{ jenkins_key_fpr.stdout }}"
+
+- name: Add Jenkins repository
+  ansible.builtin.copy:
+    dest: /etc/apt/sources.list.d/jenkins.sources
+    content: |
+      Types: deb
+      URIs: https://pkg.jenkins.io/{{ 'debian' if jenkins_release_line == 'weekly' else 'debian-stable' }}
+      Suites: binary/
+      Signed-By: /etc/apt/keyrings/jenkins.asc
+    mode: "0644"
+  register: jenkins_repo
+
+- name: Refresh apt cache after adding the repository
+  ansible.builtin.apt:
+    update_cache: true
+  when: jenkins_repo is changed
+
+# --- systemd override, written before the package so the first start is safe --
+- name: Create Jenkins systemd drop-in directory
+  ansible.builtin.file:
+    path: /etc/systemd/system/jenkins.service.d
+    state: directory
+    mode: "0755"
+
+- name: Jenkins systemd override
+  ansible.builtin.template:
+    src: jenkins-override.conf.j2
+    dest: /etc/systemd/system/jenkins.service.d/override.conf
+    mode: "0644"
+  notify:
+    - Reload systemd
+    - Restart jenkins if running
+
+# --- Jenkins package ---------------------------------------------------------
+- name: Check whether Jenkins is installed
+  ansible.builtin.command: dpkg-query -W -f=${Version} jenkins
+  register: jenkins_installed
+  changed_when: false
+  failed_when: false
+
+- name: Unhold Jenkins for a version change
+  ansible.builtin.dpkg_selections:
+    name: jenkins
+    selection: install
+  when: jenkins_installed.rc == 0 and jenkins_installed.stdout != jenkins_version
+
+- name: Install Jenkins without starting it
+  when: jenkins_installed.rc != 0 or jenkins_installed.stdout != jenkins_version
+  block:
+    - name: Block service starts during package installation
+      ansible.builtin.copy:
+        dest: /usr/sbin/policy-rc.d
+        content: "#!/bin/sh\nexit 101\n"
+        mode: "0755"
+
+    - name: Install Jenkins {{ jenkins_version }}
+      ansible.builtin.apt:
+        name: "jenkins={{ jenkins_version }}"
+        state: present
+        allow_downgrade: false
+  always:
+    - name: Remove the service-start block
+      ansible.builtin.file:
+        path: /usr/sbin/policy-rc.d
+        state: absent
+
+- name: Hold the Jenkins package version
+  ansible.builtin.dpkg_selections:
+    name: jenkins
+    selection: hold
+  when: jenkins_hold_package | bool
+
+- name: Restrict JENKINS_HOME permissions
+  ansible.builtin.file:
+    path: "{{ jenkins_home }}"
+    state: directory
+    owner: jenkins
+    group: jenkins
+    mode: "0750"
+
+- name: Restrict Jenkins secret files
+  ansible.builtin.file:
+    path: "{{ jenkins_home }}/{{ item }}"
+    owner: jenkins
+    group: jenkins
+    mode: "0600"
+  loop: [secret.key, secret.key.not-so-secret, credentials.xml]
+  failed_when: false
+
+- name: Restrict the Jenkins secrets directory
+  ansible.builtin.file:
+    path: "{{ jenkins_home }}/secrets"
+    state: directory
+    owner: jenkins
+    group: jenkins
+    mode: "0700"
+
+- name: Jenkins service state
+  ansible.builtin.systemd_service:
+    name: jenkins
+    enabled: "{{ jenkins_service_enabled | bool }}"
+    state: "{{ 'started' if jenkins_service_enabled | bool else 'stopped' }}"
+    daemon_reload: true
+
+# --- nginx -------------------------------------------------------------------
+- name: Create ACME webroot
+  ansible.builtin.file:
+    path: /var/www/letsencrypt
+    state: directory
+    mode: "0755"
+
+- name: Remove the default nginx site
+  ansible.builtin.file:
+    path: /etc/nginx/sites-enabled/default
+    state: absent
+  notify: Reload nginx
+
+- name: Hide nginx version
+  ansible.builtin.lineinfile:
+    path: /etc/nginx/nginx.conf
+    regexp: '^\s*#?\s*server_tokens\s'
+    line: "\tserver_tokens off;"
+  notify: Reload nginx
+
+- name: Remove obsolete hardening snippet
+  ansible.builtin.file:
+    path: /etc/nginx/conf.d/hardening.conf
+    state: absent
+
+- name: Check for an existing Let's Encrypt certificate
+  ansible.builtin.stat:
+    path: "/etc/letsencrypt/live/{{ jenkins_server_name }}/fullchain.pem"
+  register: jenkins_le_cert
+
+# Serve with the self-signed cert until a Let's Encrypt cert exists, so the
+# first certbot run can answer the HTTP-01 challenge through this vhost.
+- name: Jenkins nginx site
+  ansible.builtin.template:
+    src: nginx-jenkins.conf.j2
+    dest: /etc/nginx/sites-available/jenkins.conf
+    mode: "0644"
+  vars:
+    use_le_cert: "{{ jenkins_tls_mode == 'letsencrypt' and jenkins_le_cert.stat.exists }}"
+  notify: Reload nginx
+
+- name: Enable the Jenkins nginx site
+  ansible.builtin.file:
+    src: /etc/nginx/sites-available/jenkins.conf
+    dest: /etc/nginx/sites-enabled/jenkins.conf
+    state: link
+  notify: Reload nginx
+
+- name: Test nginx configuration
+  ansible.builtin.command: nginx -t
+  changed_when: false
+
+- name: Enable nginx
+  ansible.builtin.service:
+    name: nginx
+    enabled: true
+    state: started
+
+- name: Apply nginx changes now
+  ansible.builtin.meta: flush_handlers
+
+# --- Let's Encrypt (only once DNS points at this host) -------------------------
+- name: Let's Encrypt certificate
+  when: jenkins_tls_mode == 'letsencrypt'
+  block:
+    - name: Reload nginx after certificate renewal
+      ansible.builtin.copy:
+        dest: /etc/letsencrypt/renewal-hooks/deploy/reload-nginx
+        content: "#!/bin/sh\nsystemctl reload nginx\n"
+        mode: "0755"
+
+    - name: Require a contact email before requesting a new certificate
+      ansible.builtin.assert:
+        that: jenkins_letsencrypt_email | length > 0
+        fail_msg: "Set jenkins_letsencrypt_email to request a new certificate."
+      when: not jenkins_le_cert.stat.exists
+
+    - name: Request certificate
+      ansible.builtin.command: >-
+        certbot certonly --webroot -w /var/www/letsencrypt
+        -d {{ jenkins_server_name }} --email {{ jenkins_letsencrypt_email }}
+        --agree-tos --no-eff-email --non-interactive --keep-until-expiring
+      args:
+        creates: "/etc/letsencrypt/live/{{ jenkins_server_name }}/fullchain.pem"
+      register: jenkins_le_issue
+
+    - name: Switch nginx to the Let's Encrypt certificate
+      ansible.builtin.template:
+        src: nginx-jenkins.conf.j2
+        dest: /etc/nginx/sites-available/jenkins.conf
+        mode: "0644"
+      vars:
+        use_le_cert: true
+      notify: Reload nginx
+
+    - name: Enable certbot renewal timer
+      ansible.builtin.service:
+        name: certbot.timer
+        enabled: true
+        state: started
+
+# --- Configuration backup ----------------------------------------------------
+- name: Install backup script
+  ansible.builtin.template:
+    src: jenkins-config-backup.sh.j2
+    dest: /usr/local/sbin/jenkins-config-backup
+    mode: "0750"
+
+- name: Backup service and timer
+  ansible.builtin.copy:
+    dest: "/etc/systemd/system/{{ item.name }}"
+    content: "{{ item.content }}"
+    mode: "0644"
+  loop:
+    - name: jenkins-config-backup.service
+      content: |
+        [Unit]
+        Description=Back up Jenkins configuration (no build history)
+        [Service]
+        Type=oneshot
+        Nice=10
+        IOSchedulingClass=idle
+        ExecStart=/usr/local/sbin/jenkins-config-backup
+    - name: jenkins-config-backup.timer
+      content: |
+        [Unit]
+        Description=Nightly Jenkins configuration backup
+        [Timer]
+        OnCalendar=*-*-* 02:30:00
+        RandomizedDelaySec=15m
+        Persistent=true
+        [Install]
+        WantedBy=timers.target
+  loop_control:
+    label: "{{ item.name }}"
+  notify: Reload systemd
+
+- name: Enable backup timer
+  ansible.builtin.systemd_service:
+    name: jenkins-config-backup.timer
+    enabled: true
+    state: started
+    daemon_reload: true

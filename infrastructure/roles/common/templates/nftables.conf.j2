@@ -1,0 +1,51 @@
+#!/usr/sbin/nft -f
+# {{ ansible_managed }}
+# Replace only our own table; fail2ban keeps its own table (inet f2b-table).
+table inet filter
+delete table inet filter
+
+{% macro allow(port, proto, sources) -%}
+{% set v4 = sources | select('search', '^[0-9.]+(/[0-9]+)?$') | list %}
+{% set v6 = sources | select('search', ':') | list %}
+{% if not sources %}
+    {{ proto }} dport {{ port }} accept
+{% else %}
+{% if v4 %}
+    ip saddr { {{ v4 | join(', ') }} } {{ proto }} dport {{ port }} accept
+{% endif %}
+{% if v6 %}
+    ip6 saddr { {{ v6 | join(', ') }} } {{ proto }} dport {{ port }} accept
+{% endif %}
+{% endif %}
+{%- endmacro %}
+table inet filter {
+  chain input {
+    type filter hook input priority filter; policy drop;
+
+    iif "lo" accept
+    ct state established,related accept
+    ct state invalid drop
+
+    # ICMP (IPv6 neighbour discovery needs this)
+    ip protocol icmp accept
+    ip6 nexthdr icmpv6 accept
+
+    # DHCPv6 client replies
+    ip6 daddr fe80::/64 udp dport 546 accept
+
+    # SSH
+{{ allow(22, 'tcp', common_ssh_sources) }}
+{% for r in common_firewall_rules %}
+    # {{ r.comment | default('port ' ~ r.port) }}
+{{ allow(r.port, r.proto | default('tcp'), r.sources | default([])) }}
+{% endfor %}
+  }
+
+  chain forward {
+    type filter hook forward priority filter; policy drop;
+  }
+
+  chain output {
+    type filter hook output priority filter; policy accept;
+  }
+}
