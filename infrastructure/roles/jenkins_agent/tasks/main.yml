@@ -1,0 +1,170 @@
+- name: Check variables
+  ansible.builtin.assert:
+    that:
+      - jenkins_agent_controller_url is match('^https://')
+      - jenkins_agent_tmp_mode in ['tmpfs', 'disk']
+
+- name: Install Java and curl
+  ansible.builtin.apt:
+    name:
+      - "{{ jenkins_agent_java_package }}"
+      - curl
+    state: present
+
+# Only created when missing; an existing user keeps its uid/gid.
+- name: Jenkins agent user
+  ansible.builtin.user:
+    name: "{{ jenkins_agent_user }}"
+    home: "{{ jenkins_agent_home }}"
+    shell: /bin/bash
+    create_home: true
+
+- name: Restrict the agent home
+  ansible.builtin.file:
+    path: "{{ jenkins_agent_home }}"
+    state: directory
+    owner: "{{ jenkins_agent_user }}"
+    mode: "0700"
+
+# --- agent service -----------------------------------------------------------
+# The script and unit apply at the next agent restart; the role never restarts
+# a running agent, so builds are not interrupted.
+- name: Agent directory
+  ansible.builtin.file:
+    path: "{{ jenkins_agent_dir }}"
+    state: directory
+    owner: "{{ jenkins_agent_user }}"
+    mode: "0755"
+
+- name: Agent start script
+  ansible.builtin.template:
+    src: start-agent.sh.j2
+    dest: "{{ jenkins_agent_dir }}/start-agent.sh"
+    owner: root
+    group: root
+    mode: "0755"
+
+- name: Agent secret
+  ansible.builtin.copy:
+    dest: "{{ jenkins_agent_dir }}/secret-file"
+    content: "{{ jenkins_agent_secret }}"
+    owner: "{{ jenkins_agent_user }}"
+    mode: "0600"
+  no_log: true
+  when: jenkins_agent_secret | length > 0
+
+- name: Restrict the existing agent secret
+  ansible.builtin.file:
+    path: "{{ jenkins_agent_dir }}/secret-file"
+    owner: "{{ jenkins_agent_user }}"
+    mode: "0600"
+  when: jenkins_agent_secret | length == 0
+
+- name: Agent systemd unit
+  ansible.builtin.template:
+    src: jenkins-agent.service.j2
+    dest: /etc/systemd/system/jenkins-agent.service
+    mode: "0644"
+  notify: Reload systemd
+
+- name: Apply unit changes
+  ansible.builtin.meta: flush_handlers
+
+- name: Enable the agent
+  ansible.builtin.systemd_service:
+    name: jenkins-agent
+    enabled: true
+    state: started
+
+# --- restart after JDK upgrades ----------------------------------------------
+- name: JDK check script
+  ansible.builtin.template:
+    src: jenkins-agent-jdk-check.sh.j2
+    dest: /usr/local/sbin/jenkins-agent-jdk-check
+    mode: "0755"
+
+- name: Run the JDK check after apt/dpkg
+  ansible.builtin.copy:
+    dest: /etc/apt/apt.conf.d/99jenkins-agent-jdk-check
+    content: |
+      DPkg::Post-Invoke { "/usr/local/sbin/jenkins-agent-jdk-check || true"; };
+    mode: "0644"
+  when: jenkins_agent_restart_on_jdk_upgrade | bool
+
+- name: Remove the JDK check hook
+  ansible.builtin.file:
+    path: /etc/apt/apt.conf.d/99jenkins-agent-jdk-check
+    state: absent
+  when: not jenkins_agent_restart_on_jdk_upgrade | bool
+
+# --- /tmp --------------------------------------------------------------------
+- name: /tmp as tmpfs
+  when: jenkins_agent_tmp_mode == 'tmpfs'
+  block:
+    - name: Unmask tmp.mount
+      ansible.builtin.systemd_service:
+        name: tmp.mount
+        masked: false
+
+    - name: tmpfs /tmp in fstab
+      ansible.posix.mount:
+        path: /tmp
+        src: tmpfs
+        fstype: tmpfs
+        opts: "size={{ jenkins_agent_tmp_size }}"
+        state: present
+
+- name: /tmp on the root filesystem
+  when: jenkins_agent_tmp_mode == 'disk'
+  block:
+    - name: Remove /tmp from fstab
+      ansible.posix.mount:
+        path: /tmp
+        state: absent_from_fstab
+
+    - name: Mask tmp.mount
+      ansible.builtin.systemd_service:
+        name: tmp.mount
+        masked: true
+
+- name: Check the current /tmp backing
+  ansible.builtin.command: findmnt -n -o FSTYPE --mountpoint /tmp
+  register: jenkins_agent_tmp_fstype
+  changed_when: false
+  failed_when: false
+
+- name: Report pending /tmp change
+  ansible.builtin.debug:
+    msg: >-
+      /tmp on {{ inventory_hostname }} is
+      {{ 'tmpfs' if jenkins_agent_tmp_is_tmpfs else 'on disk' }}, configured as
+      {{ jenkins_agent_tmp_mode }}: reboot when the agent is idle.
+  vars:
+    jenkins_agent_tmp_is_tmpfs: "{{ jenkins_agent_tmp_fstype.stdout | trim == 'tmpfs' }}"
+  when: (jenkins_agent_tmp_mode == 'tmpfs') != (jenkins_agent_tmp_is_tmpfs | bool)
+
+- name: Clean old files from /tmp
+  ansible.builtin.copy:
+    dest: /etc/tmpfiles.d/tmp.conf
+    content: |
+      # Managed by Ansible (role jenkins_agent). Overrides /usr/lib/tmpfiles.d/tmp.conf.
+      q /tmp 1777 root root {{ jenkins_agent_tmp_max_age }}
+    mode: "0644"
+
+- name: Clean timer directory
+  ansible.builtin.file:
+    path: /etc/systemd/system/systemd-tmpfiles-clean.timer.d
+    state: directory
+    mode: "0755"
+
+- name: Run the /tmp clean-up more often
+  ansible.builtin.copy:
+    dest: /etc/systemd/system/systemd-tmpfiles-clean.timer.d/interval.conf
+    # Calendar-based so the schedule never depends on a previous run.
+    content: |
+      [Timer]
+      OnUnitActiveSec=
+      OnCalendar={{ jenkins_agent_tmp_clean_calendar }}
+      Persistent=true
+    mode: "0644"
+  notify: Restart tmpfiles clean timer

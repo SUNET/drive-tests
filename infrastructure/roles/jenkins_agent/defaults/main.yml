@@ -1,0 +1,27 @@
+# Controller the agent connects to (inbound TCP agent).
+jenkins_agent_controller_url: "{{ jenkins_url }}"
+# Node name as configured in Jenkins.
+jenkins_agent_name: "{{ inventory_hostname }}"
+
+jenkins_agent_user: jenkins
+jenkins_agent_home: /var/lib/jenkins
+jenkins_agent_dir: /usr/local/jenkins-service
+jenkins_agent_java_package: openjdk-21-jre-headless
+
+# Agent secret from the controller (Nodes > <node> > status page). Keep it in an
+# ansible-vault file. Empty: leave the existing secret-file content untouched.
+jenkins_agent_secret: ""
+
+# /tmp backing: "tmpfs" (RAM, sized by jenkins_agent_tmp_size) or "disk" (root
+# filesystem). Switching takes effect at the next reboot.
+jenkins_agent_tmp_mode: tmpfs
+jenkins_agent_tmp_size: 64G
+
+# Delete files in /tmp that have not been used for this long, checked every
+# jenkins_agent_tmp_clean_calendar (systemd OnCalendar format).
+jenkins_agent_tmp_max_age: 1d
+jenkins_agent_tmp_clean_calendar: "*-*-* 00/6:00:00"
+
+# Restart the agent after apt replaced the JDK it is running on. Without this
+# the old JVM cannot start processes ("Failed to exec spawn helper").
+jenkins_agent_restart_on_jdk_upgrade: true

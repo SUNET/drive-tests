@@ -1,0 +1,15 @@
+# Managed by Ansible (role jenkins_agent).
+[Unit]
+Description=Jenkins Agent
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+User={{ jenkins_agent_user }}
+WorkingDirectory={{ jenkins_agent_home }}
+ExecStart=/bin/bash {{ jenkins_agent_dir }}/start-agent.sh
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target

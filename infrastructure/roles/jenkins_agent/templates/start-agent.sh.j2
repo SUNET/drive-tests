@@ -1,0 +1,12 @@
+#!/bin/bash
+# Managed by Ansible (role jenkins_agent).
+set -euo pipefail
+cd {{ jenkins_agent_dir }}
+# Fetch the agent matching the controller version; fall back to the cached copy.
+curl -fsS -o agent.jar.new {{ jenkins_agent_controller_url | regex_replace('/$', '') }}/jnlpJars/agent.jar \
+  && mv agent.jar.new agent.jar || rm -f agent.jar.new
+exec java -jar agent.jar \
+  -url {{ jenkins_agent_controller_url }} \
+  -secret @secret-file \
+  -name {{ jenkins_agent_name }} \
+  -workDir {{ jenkins_agent_home }}

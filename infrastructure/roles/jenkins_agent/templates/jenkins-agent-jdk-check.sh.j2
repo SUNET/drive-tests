@@ -1,0 +1,12 @@
+#!/bin/sh
+# Managed by Ansible (role jenkins_agent). Called by apt after every dpkg run.
+# Restarts the Jenkins agent when its JVM still maps JDK files that apt has
+# replaced; such a JVM can no longer start processes.
+for pid in $(pgrep -u {{ jenkins_agent_user }} -f agent.jar); do
+  if grep -q '/usr/lib/jvm/.* (deleted)$' "/proc/$pid/maps" 2>/dev/null; then
+    logger -t jenkins-agent-jdk-check "JDK replaced under agent pid $pid, restarting jenkins-agent"
+    systemctl restart jenkins-agent
+    exit 0
+  fi
+done
+exit 0

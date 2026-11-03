@@ -1,0 +1,8 @@
+# Configure Jenkins agents. Never restarts a running agent; a /tmp backing
+# change is reported and applies at the next reboot.
+#   ansible-playbook playbooks/agents.yml [--limit horizon1...] [--check --diff]
+- name: Jenkins agents
+  hosts: "{{ target | default('jenkins_agents') }}"
+  become: true
+  roles:
+    - jenkins_agent
