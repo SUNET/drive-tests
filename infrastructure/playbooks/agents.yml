@@ -1,8 +1,11 @@
 # Configure Jenkins agents. Never restarts a running agent; a /tmp backing
-# change is reported and applies at the next reboot.
+# change is reported and applies at the next reboot. Agents only connect out
+# (to the controller and test targets), so the firewall admits SSH only.
 #   ansible-playbook playbooks/agents.yml [--limit horizon1...] [--check --diff]
 - name: Jenkins agents
   hosts: "{{ target | default('jenkins_agents') }}"
   become: true
+  serial: "{{ agents_serial | default('100%') }}"
   roles:
+    - common
     - jenkins_agent

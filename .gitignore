@@ -5,3 +5,7 @@ expected_localhost.yaml
 # Local-only infrastructure data (hosts, IPs, findings) - never commit
 infrastructure/inventory/
 infrastructure/todo/
+# Local-only Claude Code session notes - never commit
+CLAUDE.md
+ToDo.md
+Handover.md
