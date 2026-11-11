@@ -900,10 +900,15 @@ class TestWebDAV(unittest.TestCase):
         global logger
         logger.info('test_empty_trashbin')
         drv = sunetnextcloud.TestTarget()
+        # Nodes that have disabled the trash bin app (see expected.yaml)
+        trashbinDisabled = drv.expectedResults['apps']['files_trashbin'].get('exceptenabled', [])
         threads = []
         for fullnode in drv.nodestotest:
             with self.subTest(mynode=fullnode):
                 logger.info(f'TestID: {fullnode}')
+                if fullnode in trashbinDisabled:
+                    logger.info(f'Trash bin is disabled on {fullnode}, skipping')
+                    continue
                 WebDAVCleanTrashbinThread = WebDAVCleanTrashbin(name=fullnode, basicAuth=False, TestWebDAV=self)
                 WebDAVCleanTrashbinThread.start()
                 threads.append(WebDAVCleanTrashbinThread)
@@ -913,6 +918,8 @@ class TestWebDAV(unittest.TestCase):
             thread.join()
 
         for fullnode in drv.nodestotest:
+            if fullnode in trashbinDisabled:
+                continue
             with self.subTest(mynode=fullnode):
                 self.assertTrue(g_testPassed.get(fullnode, False))
 

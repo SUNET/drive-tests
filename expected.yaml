@@ -494,6 +494,8 @@ apps:
     version: 1.16.0
     installed: true
     enabled: true
+    exceptenabled:
+      - umu
   files_versions:
     version: 1.19.1
     installed: true
